@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>面试题 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="同学的一次面试 内存溢出的两种问题及原因 java.lang.OutOfMemoryError 方法区主要存储类的元信息，实现在元数据区。当JVM发现元数据区没有足够的空间分配给加载的类时，抛出该" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.87.0 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/01.%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/02.java/11.%E9%9D%A2%E8%AF%95%E9%A2%98/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="面试题" />
+<meta property="og:description" content="同学的一次面试 内存溢出的两种问题及原因 java.lang.OutOfMemoryError 方法区主要存储类的元信息，实现在元数据区。当JVM发现元数据区没有足够的空间分配给加载的类时，抛出该" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/01.%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/02.java/11.%E9%9D%A2%E8%AF%95%E9%A2%98/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-03-23T19:37:14+00:00" />
+<meta property="article:modified_time" content="2021-03-23T19:37:14+00:00" />
+
+<meta itemprop="name" content="面试题">
+<meta itemprop="description" content="同学的一次面试 内存溢出的两种问题及原因 java.lang.OutOfMemoryError 方法区主要存储类的元信息，实现在元数据区。当JVM发现元数据区没有足够的空间分配给加载的类时，抛出该"><meta itemprop="datePublished" content="2021-03-23T19:37:14+00:00" />
+<meta itemprop="dateModified" content="2021-03-23T19:37:14+00:00" />
+<meta itemprop="wordCount" content="8366">
+<meta itemprop="keywords" content="," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="面试题"/>
+<meta name="twitter:description" content="同学的一次面试 内存溢出的两种问题及原因 java.lang.OutOfMemoryError 方法区主要存储类的元信息，实现在元数据区。当JVM发现元数据区没有足够的空间分配给加载的类时，抛出该"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">面试题</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-03-23 </span>
+        <div class="post-category">
+            <a href="/categories/%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/"> 程序语言 </a>
+            <a href="/categories/java/"> JAVA </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#同学的一次面试">同学的一次面试</a>
+          <ul>
+            <li><a href="#内存溢出的两种问题及原因">内存溢出的两种问题及原因</a></li>
+            <li><a href="#javalangoutofmemoryerror">java.lang.OutOfMemoryError</a></li>
+            <li><a href="#javalangstackoverflowerror">java.lang.StackOverflowError</a></li>
+            <li><a href="#内存模型主要要回收那些类">内存模型主要要回收那些类</a></li>
+            <li><a href="#如何查看gc状态">如何查看GC状态</a></li>
+            <li><a href="#bean是线程安全的吗">Bean是线程安全的吗</a></li>
+            <li><a href="#sleep0可以干嘛">Sleep(0)可以干嘛</a></li>
+          </ul>
+        </li>
+        <li><a href="#大佬的面试题">大佬的面试题</a>
+          <ul>
+            <li><a href="#堆分析器">堆分析器</a></li>
+            <li><a href="#静态变量什么时候会被回收">静态变量什么时候会被回收</a></li>
+          </ul>
+        </li>
+        <li><a href="#知乎上看到的">知乎上看到的</a>
+          <ul>
+            <li><a href="#对象如何进行深拷贝除了clone">对象如何进行深拷贝，除了clone</a></li>
+            <li><a href="#happen-before原则">happen-before原则</a></li>
+            <li><a href="#单例对象会被jvm的gc时回收吗">单例对象会被jvm的gc时回收吗</a></li>
+            <li><a href="#wait与sleep的区别">wait()与sleep()的区别</a></li>
+            <li><a href="#synchronizedobj是锁对象还是代码块">Synchronized(obj){&hellip;}是锁对象还是代码块？</a></li>
+            <li><a href="#如何分析并找出内存泄漏的位置">如何分析并找出内存泄漏的位置</a></li>
+            <li><a href="#java什么情况下会导致内存泄漏">java什么情况下会导致内存泄漏</a></li>
+          </ul>
+        </li>
+        <li><a href="#javaguide上收集的">javaGuide上收集的</a>
+          <ul>
+            <li><a href="#import-java-和-javax-有什么区别">import java 和 javax 有什么区别？</a></li>
+            <li><a href="#说说-sleep-方法和-wait-方法区别和共同点">说说 sleep 方法和 wait 方法区别和共同点</a></li>
+            <li><a href="#为什么我们调用-start-方法时会执行-run-方法为什么我们不能直接调用-run-方法">为什么我们调用-start-方法时会执行-run-方法，为什么我们不能直接调用-run-方法？</a></li>
+          </ul>
+        </li>
+        <li><a href="#牛客网上收集的">牛客网上收集的</a>
+          <ul>
+            <li><a href="#用java来实现生产者消费者模型">用java来实现生产者消费者模型</a></li>
+            <li><a href="#oom问题产生原因以及如何解决">OOM问题产生原因以及如何解决</a></li>
+            <li><a href="#string-从-abc-到-abcd如何分配内存的">string 从 &ldquo;abc&rdquo; 到 &ldquo;abcd&rdquo;，如何分配内存的</a></li>
+            <li><a href="#string-和-byte-如何转换">string 和 []byte 如何转换</a></li>
+            <li><a href="#whiletree-sleep1-是干嘛的">while(tree) {sleep(1)} 是干嘛的</a></li>
+          </ul>
+        </li>
+        <li><a href="#自己面试遇到的">自己面试遇到的</a>
+          <ul>
+            <li><a href="#面向对象三大特性六大原则">面向对象三大特性六大原则</a></li>
+            <li><a href="#什么是多态多态怎么实现">什么是多态？多态怎么实现？</a></li>
+            <li><a href="#java定时任务实现方式">java定时任务实现方式</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="同学的一次面试">同学的一次面试</h2>
+<h3 id="内存溢出的两种问题及原因">内存溢出的两种问题及原因</h3>
+<h3 id="javalangoutofmemoryerror">java.lang.OutOfMemoryError</h3>
+<p>方法区主要存储类的元信息，实现在元数据区。当JVM发现元数据区没有足够的空间分配给加载的类时，抛出该异常。</p>
+<h3 id="javalangstackoverflowerror">java.lang.StackOverflowError</h3>
+<p><code>抛出这个错误表明应用程序因为深递归导致栈被耗尽了。</code>每当java程序启动一个新的线程时，java虚拟机会为他分配一个栈，java栈以帧为单位保持线程运行状态；当线程调用一个方法是，jvm压入一个新的栈帧到这个线程的栈中，只要这个方法还没返回，这个栈帧就存在。 如果方法的嵌套调用层次太多(如递归调用),随着java栈中的帧的增多，最终导致这个线程的栈中的所有栈帧的大小的总和大于-Xss设置的值，而产生生<code>StackOverflowError</code>溢出异常。</p>
+<h3 id="内存模型主要要回收那些类">内存模型主要要回收那些类</h3>
+<p>不再使用的对象需要进行回收，不使用的类也有可能回收。</p>
+<h3 id="如何查看gc状态">如何查看GC状态</h3>
+<p>使用<code>jstat</code>命令，（jstat [Options] vmid [interval] [count]）</p>
+<p><strong>参数说明</strong></p>
+<p>Options，选项，我们一般使用 -gcutil 查看gc情况
+vmid，VM的进程号，即当前运行的java进程号
+interval，间隔时间，单位为秒或者毫秒
+count，打印次数，如果缺省则打印无数次</p>
+<p>比如下面这里我们打印12538进程的GC情况</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/23/f6fed02e40cbf.png" alt="image.png"></p>
+<p><strong>使用阿里开源的Arthas</strong></p>
+<p>参考</p>
+<ol>
+<li><a href="https://blog.csdn.net/zlzlei/article/details/46471627">Linux使用jstat命令查看jvm的GC情况_zlzlei的专栏-CSDN博客</a></li>
+<li><a href="https://segmentfault.com/a/1190000019925820">推荐一款阿里开源的 Java 诊断工具，好用到爆！ - SegmentFault 思否</a></li>
+</ol>
+<h3 id="bean是线程安全的吗">Bean是线程安全的吗</h3>
+<p>容器本身并没有提供Bean的线程安全策略，因此可以说Spring容器中的Bean本身不具备线程安全的特性，但是我们还需要结合不同的Bean进行研究</p>
+<p>Spring 的 bean 作用域（scope）类型有5种：</p>
+<p>1、singleton:单例，默认作用域。</p>
+<p>2、prototype:原型，每次创建一个新对象。</p>
+<p>3、request:请求，每次Http请求创建一个新对象，适用于WebApplicationContext环境下。</p>
+<p>4、session:会话，同一个会话共享一个实例，不同会话使用不用的实例。</p>
+<p>5、global-session:全局会话，所有会话共享一个实例。</p>
+<p>Spring中的Bean默认是单例模式的，框架并没有对bean进行多线程的封装处理。实际上大部分时间Bean是无状态的（比如Dao） 所以说在某种程度上来说Bean其实是安全的。</p>
+<p>参考： <a href="https://cloud.tencent.com/developer/article/1743283">面试：Spring 中的bean 是线程安全的吗？ - 云+社区 - 腾讯云 (tencent.com)</a></p>
+<h3 id="sleep0可以干嘛">Sleep(0)可以干嘛</h3>
+<p>Thread.Sleep(0) 并非是真的要线程挂起0毫秒，意义在于这次调用Thread.Sleep(0)的当前线程确实的被冻结了一下，让其他线程有机会优先执行。Thread.Sleep(0) 是你的线程暂时放弃cpu，也就是释放一些未用的时间片给其他线程或进程使用，就相当于一个让位动作。</p>
+<p><a href="https://blog.csdn.net/qiaoquan3/article/details/56281092">Sleep(0)的妙用_HawkJony的博客-CSDN博客</a></p>
+<h2 id="大佬的面试题">大佬的面试题</h2>
+<h3 id="堆分析器">堆分析器</h3>
+<p>使用<strong>MAT</strong>来进行分析</p>
+<p><a href="https://blog.csdn.net/wuyuxing24/article/details/105456317">Java堆分析器 - Eclipse Memory Analyzer Tool(MAT)_旧路-CSDN博客_java mat</a></p>
+<h3 id="静态变量什么时候会被回收">静态变量什么时候会被回收</h3>
+<p><strong>静态成员一般也可以分为静态基本类型和静态引用类型。</strong></p>
+<p>静态基本类型存储在在静态变量区域；静态引用类型的引用存储在静态变量区域，而实例（具体内容）存储在堆上。静态成员只存在一份，静态成员加载时机：类加载的时候（第一次访问），这个类中所有静态成员就会被加载在静态存储区，同时存储在<a href="https://blog.csdn.net/oTengYue/article/details/48108995#">静态变量区域的成员一旦创建，直到程序退出才会被回收</a>。（注：如果是引用类型，如static student myst=new student()，myst=null这时候，在静态存储区里面存的是一个地址（myst），这个地址指向在堆里面创建的student实例对象，当myst=null的时候，在静态存储区里面的变量会一直存在，但是在堆里面的student实例对象因为没有变量指向它，所以会被回收）。因此如果不用的静态引用类型可以通过设置=null方式让GC可以回收其堆上的空间。</p>
+<h2 id="知乎上看到的">知乎上看到的</h2>
+<h3 id="对象如何进行深拷贝除了clone">对象如何进行深拷贝，除了clone</h3>
+<p>特地谷歌了一下，发现居然还有很多方法</p>
+<ol>
+<li>使用构造函数进行深拷贝</li>
+<li>重载clone方法</li>
+<li>使用Apache Commons Lang进行序列化</li>
+<li>使用Gson序列化</li>
+<li>使用Jackson序列化</li>
+</ol>
+<p><a href="https://wudashan.com/2018/10/14/Java-Deep-Copy/">Java如何对一个对象进行深拷贝？ - 吴大山的博客 | Wudashan Blog</a></p>
+<h3 id="happen-before原则">happen-before原则</h3>
+<p>这个是java内存模型里的，具体参考</p>
+<p><a href="http://interview.xiaoyou66.com/pages/b38788/">JVM模型 | 面试问题浓缩总结 (xiaoyou66.com)</a></p>
+<h3 id="单例对象会被jvm的gc时回收吗">单例对象会被jvm的gc时回收吗</h3>
+<p>java中单例模式创建的对象被自己类中的静态属性所引用，符合第二条，因此，单例对象不会被jvm垃圾收集。</p>
+<p><a href="https://blog.csdn.net/qq876551724/article/details/78805138">Java中单例对象不会被GC回收_qq876551724的博客-CSDN博客</a></p>
+<h3 id="wait与sleep的区别">wait()与sleep()的区别</h3>
+<p>简单来说wait()会释放对象锁而sleep()不会释放对象锁</p>
+<h3 id="synchronizedobj是锁对象还是代码块">Synchronized(obj){&hellip;}是锁对象还是代码块？</h3>
+<p>锁的的是对象，因为会修改对象里面的内容</p>
+<p><a href="https://www.bilibili.com/video/BV1A64y1Q7aD">阿里面试题深度解析：Synchronized(obj){&hellip;}是锁对象还是代码块？Why？_哔哩哔哩 (゜-゜)つロ 干杯~-bilibili</a></p>
+<h3 id="如何分析并找出内存泄漏的位置">如何分析并找出内存泄漏的位置</h3>
+<ul>
+<li>
+<p>在java运行程序的时候，我们可以加入 <code>-XX:+HeapDumpOnOutOfMemoryError</code> 参数，可以生成dump文件，然后当程序抛出异常后，在程序的classpath下会生成以一个以.hprof结尾的文件，我们可以使用 <code>IBM heapAnalyzer</code> 来分析head dump文件，并进行排查</p>
+</li>
+<li>
+<p><strong>Java VisualVM远程分析堆</strong></p>
+<p>就是这个工具，这个工具可以查看详细的内存信息</p>
+<p><img src="https://img.xiaoyou66.com/2021/04/07/72df99c895060.png" alt="image-20210407170434600"></p>
+</li>
+</ul>
+<p>参考：</p>
+<ul>
+<li><a href="https://segmentfault.com/a/1190000022626513">【赵强老师】如何分析Java的内存溢出问题 - SegmentFault 思否</a></li>
+</ul>
+<h3 id="java什么情况下会导致内存泄漏">java什么情况下会导致内存泄漏</h3>
+<p>内存泄漏的表现：</p>
+<ul>
+<li>应用程序长时间连续运行时性能严重下降；</li>
+<li>应用程序中的OutOfMemoryError堆错误；</li>
+<li>自发且奇怪的应用程序崩溃；</li>
+<li>应用程序偶尔会耗尽连接对象；</li>
+</ul>
+<p><strong>导致内存泄漏的原因</strong></p>
+<ul>
+<li>
+<p>未关闭的资源导致内存泄漏</p>
+<p>每当创建连接或者打开流时，JVM都会为这些资源分配内存。如果没有关闭连接，会导致持续占有内存。在任意情况下，资源留下的开放连接都会消耗内存，如果不处理，就会降低性能，甚至OOM。</p>
+<p>解决办法：使用finally块关闭资源；关闭资源的代码，不应该有异常；JDK1.7之后，可以使用太try-with-resource块。</p>
+</li>
+<li>
+<p>不正确的equals()和hashCode()</p>
+</li>
+</ul>
+<p>在HashMap和HashSet这种集合中，常常用到equal()和hashCode()来比较对象，如果重写不合理，将会成为潜在的内存泄漏问题。</p>
+<p>解决办法：用最佳的方式重写equals()和hashCode().</p>
+<ul>
+<li>
+<p>引用了外部类的内部类</p>
+<p>非静态内部类的初始化，总是需要外部类的实例；默认情况下，每个非静态内部类都包含对其外部类的隐式引用，如果我们在应用程序中使用这个内部类对象，那么即使在我们的外部类对象超出范围后，它也不会被垃圾收集器清除掉。</p>
+<p>解决办法：如果内部类不需要访问外部类包含的类成员，可以转换为静态类。</p>
+</li>
+<li>
+<p>finalize方法导致的内存泄漏</p>
+<p>重写finalize()方法时，该类的对象不会立即被垃圾收集器收集，如果finalize()方法的代码有问题，那么会潜在的印发OOM；</p>
+<p>解决办法：避免重写finalize()方法。</p>
+</li>
+<li>
+<p>使用ThreadLocal造成内存泄漏</p>
+<p>使用ThreadLocal时，每个线程只要处于存活状态就可保留对其ThreadLocal变量副本的隐式调用，且将保留其自己的副本。使用不当，就会引起内存泄漏。</p>
+<p>一旦线程不再存在，该线程的threadLocal对象就应该被垃圾收集，而现在线程的创建都是使用线程池，线程池有线程重用的功能，因此线程就不会被垃圾回收器回收。所以使用到ThreadLocal来保留线程池中的线程的变量副本时，ThreadLocal没有显式地删除时，就会一直保留在内存中，不会被垃圾回收。</p>
+<p>解决办法：不再使用ThreadLocal时，调用remove()方法，该方法删除了此变量的当前线程值。不要使用ThreadLocal.set(null)，它只是查找与当前线程关联的Map并将键值中这个threadLocal对象所对应的值为null，并没有清除这个键值对。</p>
+</li>
+</ul>
+<p>参考：</p>
+<ul>
+<li><a href="https://segmentfault.com/a/1190000023521531">面试官：小伙子，你给我说一下Java中什么情况会导致内存泄漏呢？ - SegmentFault 思否</a></li>
+</ul>
+<h2 id="javaguide上收集的">javaGuide上收集的</h2>
+<p><a href="https://snailclimb.gitee.io/javaguide/#/docs/java/basis/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86">JavaGuide (gitee.io)</a></p>
+<h3 id="import-java-和-javax-有什么区别">import java 和 javax 有什么区别？</h3>
+<p>刚开始的时候 JavaAPI 所必需的包是 java 开头的包，javax 当时只是扩展 API 包来使用。然而随着时间的推移，javax 逐渐地扩展成为 Java API 的组成部分。但是，将扩展从 javax 包移动到 java 包确实太麻烦了，最终会破坏一堆现有的代码。因此，最终决定 javax 包将成为标准 API 的一部分。</p>
+<p>所以，实际上 java 和 javax 没有区别。这都是一个名字。</p>
+<h3 id="说说-sleep-方法和-wait-方法区别和共同点">说说 sleep 方法和 wait 方法区别和共同点</h3>
+<ul>
+<li>两者最主要的区别在于：<code>sleep()</code> 方法没有释放锁，而 <code>wait()</code> 方法释放了锁 。</li>
+<li>两者都可以暂停线程的执行。</li>
+<li><code>wait()</code> 通常被用于线程间交互/通信，<code>sleep() </code>通常被用于暂停执行。</li>
+<li><code>wait()</code> 方法被调用后，线程不会自动苏醒，需要别的线程调用同一个对象上的 <code>notify() </code>或者 <code>notifyAll()</code> 方法。<code>sleep() </code>方法执行完成后，线程会自动苏醒。或者可以使用 <code>wait(long timeout)</code> 超时后线程会自动苏醒。</li>
+</ul>
+<h3 id="为什么我们调用-start-方法时会执行-run-方法为什么我们不能直接调用-run-方法">为什么我们调用-start-方法时会执行-run-方法，为什么我们不能直接调用-run-方法？</h3>
+<p>这是另一个非常经典的 java 多线程面试问题，而且在面试中会经常被问到。很简单，但是很多人都会答不上来！</p>
+<p>new 一个 Thread，线程进入了新建状态。调用 <code>start()</code>方法，会启动一个线程并使线程进入了就绪状态，当分配到时间片后就可以开始运行了。 <code>start()</code> 会执行线程的相应准备工作，然后自动执行 <code>run()</code> 方法的内容，这是真正的多线程工作。 但是，直接执行 <code>run()</code> 方法，会把 <code>run()</code> 方法当成一个 main 线程下的普通方法去执行，并不会在某个线程中执行它，所以这并不是多线程工作。</p>
+<p><strong>总结： 调用 <code>start()</code> 方法方可启动线程并使线程进入就绪状态，直接执行 <code>run()</code> 方法的话不会以多线程的方式执行。</strong></p>
+<h2 id="牛客网上收集的">牛客网上收集的</h2>
+<h3 id="用java来实现生产者消费者模型">用java来实现生产者消费者模型</h3>
+<p><a href="https://segmentfault.com/a/1190000024444906">多线程必考的「生产者 - 消费者」模型，看齐姐这篇文章就够了 - SegmentFault 思否</a></p>
+<h3 id="oom问题产生原因以及如何解决">OOM问题产生原因以及如何解决</h3>
+<h4 id="java-heap-space">Java heap space</h4>
+<p>当堆内存（Heap Space）没有足够空间存放新创建的对象时，就会抛出 <code>java.lang.OutOfMemoryError:Javaheap space</code> 错误（根据实际生产经验，可以对程序日志中的 OutOfMemoryError 配置关键字告警，一经发现，立即处理）。</p>
+<p><strong>原因分析</strong></p>
+<p><code>Javaheap space</code> 错误产生的常见原因可以分为以下几类：</p>
+<p>1、请求创建一个超大对象，通常是一个大数组。</p>
+<p>2、超出预期的访问量/数据量，通常是上游系统请求流量飙升，常见于各类促销/秒杀活动，可以结合业务流量指标排查是否有尖状峰值。</p>
+<p>3、过度使用终结器（Finalizer），该对象没有立即被 GC。</p>
+<p>4、内存泄漏（Memory Leak），大量对象引用没有释放，JVM 无法对其自动回收，常见于使用了 File 等资源没有回收。</p>
+<p><strong>解决方案</strong></p>
+<p>针对大部分情况，通常只需要通过 <code>-Xmx</code> 参数调高 JVM 堆内存空间即可。如果仍然没有解决，可以参考以下情况做进一步处理：</p>
+<p>1、如果是超大对象，可以检查其合理性，比如是否一次性查询了数据库全部结果，而没有做结果数限制。</p>
+<p>2、如果是业务峰值压力，可以考虑添加机器资源，或者做限流降级。</p>
+<p>3、如果是内存泄漏，需要找到持有的对象，修改代码设计，比如关闭没有释放的连接。</p>
+<h4 id="gc-overhead-limit-exceeded">GC overhead limit exceeded</h4>
+<p>当 Java 进程花费 98% 以上的时间执行 GC，但只恢复了不到 2% 的内存，且该动作连续重复了 5 次，就会抛出 <code>java.lang.OutOfMemoryError:GC overhead limit exceeded</code> 错误。简单地说，就是应用程序已经基本耗尽了所有可用内存， GC 也无法回收。</p>
+<p>此类问题的原因与解决方案跟 <code>Javaheap space</code> 非常类似，可以参考上文。</p>
+<h4 id="permgen-space">Permgen space</h4>
+<p>该错误表示永久代（Permanent Generation）已用满，通常是因为加载的 class 数目太多或体积太大。</p>
+<p><strong>原因分析</strong></p>
+<p>永久代存储对象主要包括以下几类：</p>
+<p>1、加载/缓存到内存中的 class 定义，包括类的名称，字段，方法和字节码；</p>
+<p>2、常量池；</p>
+<p>3、对象数组/类型数组所关联的 class；</p>
+<p>4、JIT 编译器优化后的 class 信息。</p>
+<p>PermGen 的使用量与加载到内存的 class 的数量/大小正相关。</p>
+<p><strong>解决方案</strong></p>
+<p>根据 Permgen space 报错的时机，可以采用不同的解决方案，如下所示：</p>
+<p>1、程序启动报错，修改 <code>-XX:MaxPermSize</code> 启动参数，调大永久代空间。</p>
+<p>2、应用重新部署时报错，很可能是没有应用没有重启，导致加载了多份 class 信息，只需重启 JVM 即可解决。</p>
+<p>3、运行时报错，应用程序可能会动态创建大量 class，而这些 class 的生命周期很短暂，但是 JVM 默认不会卸载 class，可以设置 <code>-XX:+CMSClassUnloadingEnabled</code> 和 <code>-XX:+UseConcMarkSweepGC</code>这两个参数允许 JVM 卸载 class。</p>
+<p>如果上述方法无法解决，可以通过 jmap 命令 dump 内存对象 <code>jmap-dump:format=b,file=dump.hprof&lt;process-id&gt;</code> ，然后利用 Eclipse MAT <a href="https://www.eclipse.org/mat">https://www.eclipse.org/mat</a> 功能逐一分析开销最大的 classloader 和重复 class。</p>
+<h4 id="metaspace">Metaspace</h4>
+<p>JDK 1.8 使用 Metaspace 替换了永久代（Permanent Generation），该错误表示 Metaspace 已被用满，通常是因为加载的 class 数目太多或体积太大。</p>
+<p>此类问题的原因与解决方法跟 <code>Permgenspace</code> 非常类似，可以参考上文。需要特别注意的是调整 Metaspace 空间大小的启动参数为 <code>-XX:MaxMetaspaceSize</code>。</p>
+<h4 id="unable-to-create-new-native-thread">Unable to create new native thread</h4>
+<p>每个 Java 线程都需要占用一定的内存空间，当 JVM 向底层操作系统请求创建一个新的 native 线程时，如果没有足够的资源分配就会报此类错误。</p>
+<p><strong>原因分析</strong></p>
+<p>JVM 向 OS 请求创建 native 线程失败，就会抛出 <code>Unableto createnewnativethread</code>，常见的原因包括以下几类：</p>
+<p>1、线程数超过操作系统最大线程数 ulimit 限制；</p>
+<p>2、线程数超过 kernel.pid_max（只能重启）；</p>
+<p>3、native 内存不足；</p>
+<p>该问题发生的常见过程主要包括以下几步：</p>
+<p>1、JVM 内部的应用程序请求创建一个新的 Java 线程；</p>
+<p>2、JVM native 方法代理了该次请求，并向操作系统请求创建一个 native 线程；</p>
+<p>3、操作系统尝试创建一个新的 native 线程，并为其分配内存；</p>
+<p>4、如果操作系统的虚拟内存已耗尽，或是受到 32 位进程的地址空间限制，操作系统就会拒绝本次 native 内存分配；</p>
+<p>5、JVM 将抛出 <code>java.lang.OutOfMemoryError:Unableto createnewnativethread</code> 错误。</p>
+<p><strong>解决方案</strong></p>
+<p>1、升级配置，为机器提供更多的内存；</p>
+<p>2、降低 Java Heap Space 大小；</p>
+<p>3、修复应用程序的线程泄漏问题；</p>
+<p>4、限制线程池大小；</p>
+<p>5、使用 -Xss 参数减少线程栈的大小；</p>
+<p>6、调高 OS 层面的线程最大数：执行 <code>ulimia-a</code> 查看最大线程数限制，使用 <code>ulimit-u xxx</code> 调整最大线程数限制。</p>
+<p>ulimit -a &hellip;. 省略部分内容 &hellip;.. max user processes (-u) 16384</p>
+<h4 id="out-of-swap-space">Out of swap space？</h4>
+<p>该错误表示所有可用的虚拟内存已被耗尽。虚拟内存（Virtual Memory）由物理内存（Physical Memory）和交换空间（Swap Space）两部分组成。当运行时程序请求的虚拟内存溢出时就会报 <code>Outof swap space?</code> 错误。</p>
+<p><strong>原因分析</strong></p>
+<p>该错误出现的常见原因包括以下几类：</p>
+<p>1、地址空间不足；</p>
+<p>2、物理内存已耗光；</p>
+<p>3、应用程序的本地内存泄漏（native leak），例如不断申请本地内存，却不释放。</p>
+<p>4、执行 <code>jmap-histo:live&lt;pid&gt;</code> 命令，强制执行 Full GC；如果几次执行后内存明显下降，则基本确认为 Direct ByteBuffer 问题。</p>
+<p><strong>解决方案</strong></p>
+<p>根据错误原因可以采取如下解决方案：</p>
+<p>1、升级地址空间为 64 bit；</p>
+<p>2、使用 Arthas 检查是否为 Inflater/Deflater 解压缩问题，如果是，则显式调用 end 方法。</p>
+<p>3、Direct ByteBuffer 问题可以通过启动参数 <code>-XX:MaxDirectMemorySize</code> 调低阈值。</p>
+<p>4、升级服务器配置/隔离部署，避免争用。</p>
+<h4 id="kill-process-or-sacrifice-child">Kill process or sacrifice child</h4>
+<p>有一种内核作业（Kernel Job）名为 Out of Memory Killer，它会在可用内存极低的情况下“杀死”（kill）某些进程。OOM Killer 会对所有进程进行打分，然后将评分较低的进程“杀死”，具体的评分规则可以参考 Surviving the Linux OOM Killer。</p>
+<p>不同于其他的 OOM 错误， <code>Killprocessorsacrifice child</code> 错误不是由 JVM 层面触发的，而是由操作系统层面触发的。</p>
+<p><strong>原因分析</strong></p>
+<p>默认情况下，Linux 内核允许进程申请的内存总量大于系统可用内存，通过这种“错峰复用”的方式可以更有效的利用系统资源。</p>
+<p>然而，这种方式也会无可避免地带来一定的“超卖”风险。例如某些进程持续占用系统内存，然后导致其他进程没有可用内存。此时，系统将自动激活 OOM Killer，寻找评分低的进程，并将其“杀死”，释放内存资源。</p>
+<p><strong>解决方案</strong></p>
+<p>1、升级服务器配置/隔离部署，避免争用。</p>
+<p>2、OOM Killer 调优。</p>
+<h4 id="requested-array-size-exceeds-vm-limit">Requested array size exceeds VM limit</h4>
+<p>JVM 限制了数组的最大长度，该错误表示程序请求创建的数组超过最大长度限制。</p>
+<p>JVM 在为数组分配内存前，会检查要分配的数据结构在系统中是否可寻址，通常为 <code>Integer.MAX_VALUE-2</code>。</p>
+<p>此类问题比较罕见，通常需要检查代码，确认业务是否需要创建如此大的数组，是否可以拆分为多个块，分批执行。</p>
+<h4 id="direct-buffer-memory">Direct buffer memory</h4>
+<p>Java 允许应用程序通过 Direct ByteBuffer 直接访问堆外内存，许多高性能程序通过 Direct ByteBuffer 结合内存映射文件（Memory Mapped File）实现高速 IO。</p>
+<p><strong>原因分析</strong></p>
+<p>Direct ByteBuffer 的默认大小为 64 MB，一旦使用超出限制，就会抛出 <code>Directbuffer memory</code> 错误。</p>
+<p><strong>解决方案</strong></p>
+<p>1、Java 只能通过 ByteBuffer.allocateDirect 方法使用 Direct ByteBuffer，因此，可以通过 Arthas 等在线诊断工具拦截该方法进行排查。</p>
+<p>2、检查是否直接或间接使用了 NIO，如 netty，jetty 等。</p>
+<p>3、通过启动参数 <code>-XX:MaxDirectMemorySize</code> 调整 Direct ByteBuffer 的上限值。</p>
+<p>4、检查 JVM 参数是否有 <code>-XX:+DisableExplicitGC</code> 选项，如果有就去掉，因为该参数会使 <code>System.gc()</code> 失效。</p>
+<p>5、检查堆外内存使用代码，确认是否存在内存泄漏；或者通过反射调用 <code>sun.misc.Cleaner</code> 的 <code>clean()</code> 方法来主动释放被 Direct ByteBuffer 持有的内存空间。</p>
+<p>6、内存容量确实不足，升级配置。</p>
+<p><a href="https://cloud.tencent.com/developer/article/1480668">教你分析9种 OOM 常见原因及解决方案 - 云+社区 - 腾讯云 (tencent.com)</a></p>
+<h3 id="string-从-abc-到-abcd如何分配内存的">string 从 &ldquo;abc&rdquo; 到 &ldquo;abcd&rdquo;，如何分配内存的</h3>
+<p>string是不可以修改的，所以我们堆string进行加操作时操作系统会新创建一个对象然后修改对象引用</p>
+<p>String s1 = &ldquo;abc&rdquo;;
+s1 += &ldquo;d&rdquo;;
+System.out.println(s1); // &ldquo;abcd&rdquo;
+// 内存中有&quot;abc&quot;，&ldquo;abcd&quot;两个对象，s1从指向&quot;abc&rdquo;，改变指向，指向了&quot;abcd&quot;。</p>
+<h3 id="string-和-byte-如何转换">string 和 []byte 如何转换</h3>
+<p>String转byte[]，就是先转ASCII码（可能还有GBK或者utf-8），然后再转成二进制，如，A-&gt;65-&gt;65的二进制表示.</p>
+<h3 id="whiletree-sleep1-是干嘛的">while(tree) {sleep(1)} 是干嘛的</h3>
+<p>网上找的相关资料说使用sleep可以让线程休眠，避免占用CPU资源</p>
+<h2 id="自己面试遇到的">自己面试遇到的</h2>
+<h3 id="面向对象三大特性六大原则">面向对象三大特性六大原则</h3>
+<p>面向对象的三大特性是&quot;封装、&ldquo;多态&rdquo;、&ldquo;继承&rdquo;，五大原则是&quot;单一职责原则&quot;、&ldquo;开放封闭原则&rdquo;、&ldquo;里氏替换原则&rdquo;、&ldquo;依赖倒置原则&rdquo;、&ldquo;接口分离原则&rdquo;、&ldquo;迪米特原则（高内聚低耦合）&quot;。</p>
+<p><strong>单一职责原则SRP(Single Responsibility Principle)</strong></p>
+<p>是指一个类的功能要单一，不能包罗万象。</p>
+<p><strong>开放封闭原则OCP(Open－Close Principle)</strong></p>
+<p>一个模块在扩展性方面应该是开放的而在更改性方面应该是封闭的</p>
+<p><strong>里式替换原则LSP(the Liskov Substitution Principle LSP)</strong></p>
+<p>子类应当可以替换父类并出现在父类能够出现的任何地方。</p>
+<p><strong>依赖倒置原则DIP(the Dependency Inversion Principle DIP)</strong></p>
+<p>A.高层次的模块不应该依赖于低层次的模块，他们都应该依赖于抽象。</p>
+<p>B.抽象不应该依赖于具体实现，具体实现应该依赖于抽象。</p>
+<p>具体依赖抽象，上层依赖下层。高层模块就是调用端，底层模块就是具体实现类。（应该让底层模块定义抽象接口并且实现，让高层模块调用抽象接口，而不是直接调用实现类。）</p>
+<p><strong>接口分离原则ISP(the Interface Segregation Principle ISP)</strong></p>
+<p>模块间要通过抽象接口隔离开，而不是通过具体的类强耦合起来，即面向接口编程。（提供接口，给其他模块调用）</p>
+<p><strong>迪米特法则（Law of Demeter,简称LoD）</strong></p>
+<p>通俗来讲：一个类对自己依赖的类知道的越少越好。自从我们接触编程开始，就知道了软件编程的总的原则：低耦合，高内聚。无论是面向过程编程还是面向对象编程，只有使各个模块之间的耦合尽量的低，才能提高代码的复用率。</p>
+<p><a href="https://blog.csdn.net/u014590757/article/details/79815831">1.面向对象三大特性六大原则_郑学炜的技术博客-CSDN博客</a></p>
+<h3 id="什么是多态多态怎么实现">什么是多态？多态怎么实现？</h3>
+<p>多态是同一个行为具有多个不同表现形式或形态的能力。多态就是同一个接口，使用不同的实例而执行不同操作</p>
+<p><strong>多态存在的必要条件</strong></p>
+<ul>
+<li>继承</li>
+<li>重写</li>
+<li>父类引用指向子类对象：<strong>Parent p = new Child();</strong></li>
+</ul>
+<p><strong>多态通常有两种实现方法：</strong></p>
+<ol>
+<li>子类继承父类（extends）可以重载或者重写</li>
+<li>类实现接口（implements）</li>
+<li>抽象类或者抽象方法</li>
+</ol>
+<h3 id="java定时任务实现方式">java定时任务实现方式</h3>
+<h4 id="jdk-自带的定时器实现">JDK 自带的定时器实现</h4>
+<p>这个类允许你调度一个java.util.TimerTask任务。主要有以下几个方法：</p>
+<p>schedule(TimerTask task, long delay) 延迟 delay 毫秒 执行</p>
+<p>schedule(TimerTask task, Date time) 特定时间執行</p>
+<p>schedule(TimerTask task, long delay, long period) 延迟 delay 执行并每隔period 执行一次</p>
+<h4 id="quartz-定时器实现">Quartz 定时器实现</h4>
+<p>Quartz是一个完全由Java编写的开源作业调度框架，为在Java应用程序中进行作业调度提供了简单却强大的机制。</p>
+<p>Quartz允许开发人员根据时间间隔来调度作业。它实现了作业和触发器的多对多的关系，还能把多个作业与不同的触发器关联。可以动态的添加删除定时任务，另外很好的支撑集群调度。简单地创建一个org.quarz.Job接口的Java类。</p>
+<h4 id="spring-相关的任务调度">Spring 相关的任务调度</h4>
+<p>Spring 3.0+ 自带的任务调度实现，主要依靠TaskScheduler接口的几个实现类实现。删除和修改任务比较麻烦。
+主要用法有三种： Spring配置文件实现、注解实现、代码动态添加</p>
+<p><a href="https://blog.csdn.net/xybelieve1990/article/details/87875190">Java 定时任务的几种实现方式_好习惯要坚持下去-CSDN博客_java定时任务</a></p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-03-23
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags//"></a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/01.%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/01.go/10.%E9%9D%A2%E8%AF%95%E9%97%AE%E9%A2%98/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">面试问题</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/01.%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/03.cc&#43;&#43;%E8%AF%AD%E8%A8%80/01.%E6%8C%87%E9%92%88%E9%97%AE%E9%A2%98/">
+            <span class="next-text nav-default">指针问题</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

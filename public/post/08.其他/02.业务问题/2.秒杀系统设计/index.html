@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>秒杀系统设计 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="知乎上就有好多现成的例子，我就拿敖丙的来举例吧 秒杀系统会遇到的几个问题 高并发 超卖 恶意请求 链接暴露 暴露了请求地址，被人恶意请求 数据库 请求太多，" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.87.0 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/08.%E5%85%B6%E4%BB%96/02.%E4%B8%9A%E5%8A%A1%E9%97%AE%E9%A2%98/2.%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="秒杀系统设计" />
+<meta property="og:description" content="知乎上就有好多现成的例子，我就拿敖丙的来举例吧 秒杀系统会遇到的几个问题 高并发 超卖 恶意请求 链接暴露 暴露了请求地址，被人恶意请求 数据库 请求太多，" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/08.%E5%85%B6%E4%BB%96/02.%E4%B8%9A%E5%8A%A1%E9%97%AE%E9%A2%98/2.%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-03-30T18:22:43+00:00" />
+<meta property="article:modified_time" content="2021-03-30T18:22:43+00:00" />
+
+<meta itemprop="name" content="秒杀系统设计">
+<meta itemprop="description" content="知乎上就有好多现成的例子，我就拿敖丙的来举例吧 秒杀系统会遇到的几个问题 高并发 超卖 恶意请求 链接暴露 暴露了请求地址，被人恶意请求 数据库 请求太多，"><meta itemprop="datePublished" content="2021-03-30T18:22:43+00:00" />
+<meta itemprop="dateModified" content="2021-03-30T18:22:43+00:00" />
+<meta itemprop="wordCount" content="1691">
+<meta itemprop="keywords" content="," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="秒杀系统设计"/>
+<meta name="twitter:description" content="知乎上就有好多现成的例子，我就拿敖丙的来举例吧 秒杀系统会遇到的几个问题 高并发 超卖 恶意请求 链接暴露 暴露了请求地址，被人恶意请求 数据库 请求太多，"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">秒杀系统设计</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-03-30 </span>
+        <div class="post-category">
+            <a href="/categories/%E5%85%B6%E4%BB%96/"> 其他 </a>
+            <a href="/categories/%E4%B8%9A%E5%8A%A1%E9%97%AE%E9%A2%98/"> 业务问题 </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#秒杀系统会遇到的几个问题">秒杀系统会遇到的几个问题</a></li>
+            <li><a href="#解决办法">解决办法</a></li>
+            <li><a href="#总结">总结</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>知乎上就有好多现成的例子，我就拿敖丙的来举例吧</p>
+<h3 id="秒杀系统会遇到的几个问题">秒杀系统会遇到的几个问题</h3>
+<ul>
+<li><strong>高并发</strong></li>
+<li><strong>超卖</strong></li>
+<li><strong>恶意请求</strong></li>
+<li><strong>链接暴露</strong> 暴露了请求地址，被人恶意请求</li>
+<li><strong>数据库</strong> 请求太多，导致数据库挂掉</li>
+</ul>
+<h3 id="解决办法">解决办法</h3>
+<h4 id="单一职责">单一职责</h4>
+<p>就是使用微服务思想，创建一个单独的数据库和使用独立的服务器。这样即使秒杀系统挂了，也不会影响其他服务</p>
+<h4 id="秒杀链接加盐">秒杀链接加盐</h4>
+<p>就是把URL动态化，每次请求都生成一个随机链接，避免重复请求</p>
+<h4 id="redis集群">Redis集群</h4>
+<p>单机的<strong>Redis</strong>顶不住，我们可以使用集群，秒杀本来就是读多写少，<strong>Redis集群</strong>，<strong>主从同步</strong>、<strong>读写分离</strong>，我们还搞点<strong>哨兵</strong>，开启<strong>持久化</strong>直接无敌高可用！</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/30/ff9b90fd6e2cd.jpg" alt="img"></p>
+<h4 id="nginx">NGINX</h4>
+<p><strong>Nginx</strong>大家想必都不陌生了吧，这玩意是<strong>高性能的web服务器</strong>，并发也随便顶几万不是梦，但是我们的<strong>Tomcat</strong>只能顶几百的并发呀，那简单呀<strong>负载均衡</strong>嘛，一台服务几百，那就多搞点，在秒杀的时候多租点<strong>流量机</strong>。</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/30/a288d33b3a701.jpg" alt="img"></p>
+<p><strong>恶意请求拦截</strong>也需要用到它，一般单个用户请求次数太夸张，不像人为的请求在网关那一层就得拦截掉了，不然请求多了他抢不抢得到是一回事，服务器压力上去了，可能占用网络带宽或者把<strong>服务器打崩、缓存击穿</strong>等等。</p>
+<h4 id="资源静态化">资源静态化</h4>
+<p>前端页面有专门的服务器，我们可以提前把内容都放入CDN中，减少服务器压力</p>
+<h4 id="按钮控制">按钮控制</h4>
+<p>大家有没有发现没到秒杀前，一般按钮都是<strong>置灰</strong>的，只有时间到了，才能点击。</p>
+<p>这是因为怕大家在时间快到的最后几秒秒疯狂请求服务器，然后还没到秒杀的时候基本上服务器就挂了。</p>
+<p>这个时候就需要前端的配合，定时去请求你的后端服务器，获取最新的北京时间，到时间点再给按钮可用状态。</p>
+<p>按钮可以点击之后也得给他置灰几秒，不然他一样在开始之后一直点的。<strong>你敢说你们秒杀的时候不是这样的？</strong></p>
+<h4 id="限流">限流</h4>
+<p>限流这里我觉得应该分为<strong>前端限流</strong>和<strong>后端限流</strong>。</p>
+<p><strong>前端限流</strong>：这个很简单，一般秒杀不会让你一直点的，一般都是点击一下或者两下然后几秒之后才可以继续点击，这也是保护服务器的一种手段。</p>
+<p><strong>后端限流</strong>：秒杀的时候肯定是涉及到后续的订单生成和支付等操作，但是都只是成功的幸运儿才会走到那一步，那一旦100个产品卖光了，return了一个false，前端直接秒杀结束，然后你后端也关闭后续无效请求的介入了。</p>
+<p>Tip：真正的限流还会有限流组件的加入例如：阿里的Sentinel、Hystrix等。我这里就不展开了，就说一下物理的限流。</p>
+<h4 id="库存预热">库存预热</h4>
+<p><strong>秒杀的本质，就是对库存的抢夺</strong>，每个秒杀的用户来你都去数据库查询库存校验库存，然后扣减库存，撇开性能因数，你不觉得这样好繁琐，对业务开发人员都不友好，而且数据库顶不住啊，所以我们可以使用Redis</p>
+<p>那不简单了，我们要开始秒杀前你通过定时任务或者运维同学<strong>提前把商品的库存加载到Redis中</strong>去，让整个流程都在Redis里面去做，然后等秒杀介绍了，再异步的去修改库存就好了。</p>
+<h4 id="lua">Lua</h4>
+<blockquote>
+<p><strong>Lua</strong> 脚本功能是 Reids在 2.6 版本的最大亮点， 通过内嵌对 Lua 环境的支持， Redis 解决了长久以来不能高效地处理 <strong>CAS</strong> （check-and-set）命令的缺点， 并且可以通过组合使用多个命令， 轻松实现以前很难实现或者不能高效实现的模式。</p>
+</blockquote>
+<p>**Lua脚本是类似Redis事务，有一定的原子性，不会被其他命令插队，可以完成一些Redis事务性的操作。**这点是关键。</p>
+<p>知道原理了，我们就写一个脚本把判断库存扣减库存的操作都写在一个脚本丢给Redis去做，那到0了后面的都Return False了是吧，一个失败了你修改一个开关，直接挡住所有的请求，然后再做后面的事情嘛。</p>
+<h4 id="限流降级熔断隔离">限流&amp;降级&amp;熔断&amp;隔离</h4>
+<p>这个为啥要做呢，不怕一万就怕万一，万一你真的顶不住了，<strong>限流</strong>，顶不住就挡一部分出去但是不能说不行，<strong>降级</strong>，降级了还是被打挂了，<strong>熔断</strong>，至少不要影响别的系统，<strong>隔离</strong>，你本身就独立的，但是你会调用其他的系统嘛，你快不行了你别拖累兄弟们啊。</p>
+<h4 id="削峰填谷">削峰填谷</h4>
+<p>一说到这个名词，很多小伙伴就知道了，对的<strong>MQ</strong>，你买东西少了你直接100个请求改库我觉得没问题，但是万一秒杀一万个，10万个呢？服务器挂了，<strong>程序员又要背锅的</strong>。</p>
+<p>你可以把它放消息队列，然后一点点消费去改库存就好了嘛，不过单个商品其实一次修改就够了，我这里说的是<strong>某个点多个商品</strong>一起秒杀的场景，像极了双十一零点。</p>
+<h3 id="总结">总结</h3>
+<p><img src="https://img.xiaoyou66.com/2021/03/30/dd77bc98c1cd0.jpg" alt="img"></p>
+<p><a href="https://www.zhihu.com/question/54895548">(5 条消息) 如何设计秒杀系统？ - 知乎 (zhihu.com)</a></p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-03-30
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags//"></a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/08.%E5%85%B6%E4%BB%96/03.%E4%B8%80%E4%BA%9B%E6%8A%80%E6%9C%AF/1.jwt/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">JWT</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/08.%E5%85%B6%E4%BB%96/02.%E4%B8%9A%E5%8A%A1%E9%97%AE%E9%A2%98/1.%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E6%8A%A2%E7%BA%A2%E5%8C%85%E5%8A%9F%E8%83%BD/">
+            <span class="next-text nav-default">设计一个抢红包功能</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>IO管理 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="Linux IO模式 linux有下面五种网络模式 阻塞 I/O（blocking IO） 默认socket就是阻塞IO，当用户进程调用了recvfrom这个系" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.87.0 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/03.%E5%9F%BA%E7%A1%80%E5%AD%A6%E7%A7%91/01.%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/5.io%E7%AE%A1%E7%90%86/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="IO管理" />
+<meta property="og:description" content="Linux IO模式 linux有下面五种网络模式 阻塞 I/O（blocking IO） 默认socket就是阻塞IO，当用户进程调用了recvfrom这个系" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/03.%E5%9F%BA%E7%A1%80%E5%AD%A6%E7%A7%91/01.%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/5.io%E7%AE%A1%E7%90%86/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-03-20T15:50:06+00:00" />
+<meta property="article:modified_time" content="2021-03-20T15:50:06+00:00" />
+
+<meta itemprop="name" content="IO管理">
+<meta itemprop="description" content="Linux IO模式 linux有下面五种网络模式 阻塞 I/O（blocking IO） 默认socket就是阻塞IO，当用户进程调用了recvfrom这个系"><meta itemprop="datePublished" content="2021-03-20T15:50:06+00:00" />
+<meta itemprop="dateModified" content="2021-03-20T15:50:06+00:00" />
+<meta itemprop="wordCount" content="5143">
+<meta itemprop="keywords" content="," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="IO管理"/>
+<meta name="twitter:description" content="Linux IO模式 linux有下面五种网络模式 阻塞 I/O（blocking IO） 默认socket就是阻塞IO，当用户进程调用了recvfrom这个系"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">IO管理</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-03-20 </span>
+        <div class="post-category">
+            <a href="/categories/%E5%9F%BA%E7%A1%80%E5%AD%A6%E7%A7%91/"> 基础学科 </a>
+            <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"> 操作系统 </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#linux-io模式">Linux IO模式</a></li>
+        <li><a href="#linux-io流">linux IO流</a></li>
+        <li><a href="#selectpollepoll">select、poll、epoll</a></li>
+        <li><a href="#零拷贝">零拷贝</a>
+          <ul>
+            <li><a href="#传统io">传统IO</a></li>
+            <li><a href="#dma拷贝">DMA拷贝</a></li>
+            <li><a href="#零拷贝-1">零拷贝</a></li>
+            <li><a href="#应用场景">应用场景</a></li>
+            <li><a href="#总结">总结</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="linux-io模式">Linux IO模式</h2>
+<p>linux有下面五种网络模式</p>
+<ul>
+<li><strong>阻塞 I/O（blocking IO）</strong></li>
+</ul>
+<p>默认socket就是阻塞IO，当用户进程调用了recvfrom这个系统调用，kernel就开始了IO的第一个阶段：准备数据（对于网络IO来说，很多时候数据在一开始还没有到达。比如，还没有收到一个完整的UDP包。这个时候kernel就要等待足够的数据到来）。这个过程需要等待，也就是说数据被拷贝到操作系统内核的缓冲区中是需要一个过程的。而在用户进程这边，整个进程会被阻塞（当然，是进程自己选择的阻塞）。当kernel一直等到数据准备好了，它就会将数据从kernel中拷贝到用户内存，然后kernel返回结果，用户进程才解除block的状态，重新运行起来。（阻塞IO这两个过程都会被阻塞）</p>
+<ul>
+<li>
+<p><strong>非阻塞 I/O（nonblocking IO）</strong></p>
+<p>当用户进程发出read操作时，如果kernel中的数据还没有准备好，那么它并不会block用户进程，而是立刻返回一个error。从用户进程角度讲 ，它发起一个read操作后，并不需要等待，而是马上就得到了一个结果。用户进程判断结果是一个error时，它就知道数据还没有准备好，于是它可以再次发送read操作。一旦kernel中的数据准备好了，并且又再次收到了用户进程的system call，那么它马上就将数据拷贝到了用户内存，然后返回（特点就是需要用户进程不断主动询问）</p>
+</li>
+<li>
+<p><strong>I/O 多路复用（ IO multiplexing）</strong></p>
+<p>其实就是下面要讲的select,poll,epoll，特点就是一个线程可以同时处理多个网络IO</p>
+</li>
+<li>
+<p><strong>信号驱动 I/O（ signal driven IO）</strong></p>
+<p>这个不常用，可以不记</p>
+</li>
+<li>
+<p><strong>异步 I/O（asynchronous IO）</strong></p>
+<p>用户进程发起read操作之后，立刻就可以开始去做其它的事。而另一方面，从kernel的角度，当它受到一个asynchronous read之后，首先它会立刻返回，所以不会对用户进程产生任何block。然后，kernel会等待数据准备完成，然后将数据拷贝到用户内存，当这一切都完成之后，kernel会给用户进程发送一个signal，告诉它read操作完成了。（其实就是有一个回调操作）</p>
+</li>
+</ul>
+<p>参考： <a href="https://segmentfault.com/a/1190000003063859">Linux IO模式及 select、poll、epoll详解 - SegmentFault 思否</a></p>
+<h2 id="linux-io流">linux IO流</h2>
+<p><img src="https://img.xiaoyou66.com/2021/04/10/017b8bb984779.png" alt="image.png"></p>
+<p>下面这个图就很清晰了</p>
+<p><img src="https://img.xiaoyou66.com/2021/04/10/2036d898afca6.png" alt="image.png"></p>
+<p><a href="https://www.jianshu.com/p/20a9c3cfe517">Linux磁盘IO流程 - 简书 (jianshu.com)</a></p>
+<h2 id="selectpollepoll">select、poll、epoll</h2>
+<p>select，poll，epoll都是IO多路复用的机制。I/O多路复用就是通过一种机制，一个进程可以监视多个描述符，一旦某个描述符就绪（一般是读就绪或者写就绪），能够通知程序进行相应的读写操作。但select，poll，epoll本质上都是同步I/O，因为他们都需要在读写事件就绪后自己负责进行读写，也就是说这个读写过程是阻塞的，而异步I/O则无需自己负责进行读写，异步I/O的实现会负责把数据从内核拷贝到用户空间。</p>
+<ul>
+<li>
+<p><strong>select</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="nf">select</span> <span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="n">fd_set</span> <span class="o">*</span><span class="n">readfds</span><span class="p">,</span> <span class="n">fd_set</span> <span class="o">*</span><span class="n">writefds</span><span class="p">,</span> <span class="n">fd_set</span> <span class="o">*</span><span class="n">exceptfds</span><span class="p">,</span> <span class="k">struct</span> <span class="n">timeval</span> <span class="o">*</span><span class="n">timeout</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>select 函数监视的文件描述符分3类，分别是writefds、readfds、和exceptfds。调用后select函数会阻塞，直到有描述副就绪（有数据 可读、可写、或者有except），或者超时（timeout指定等待时间，如果立即返回设为null即可），函数返回。当select函数返回后，可以 通过遍历fdset，来找到就绪的描述符。</p>
+<p>select目前几乎在所有的平台上支持，其良好跨平台支持也是它的一个优点。select的一 个缺点在于单个进程能够监视的文件描述符的数量存在最大限制，在Linux上一般为1024，可以通过修改宏定义甚至重新编译内核的方式提升这一限制，但 是这样也会造成效率的降低。</p>
+</li>
+<li>
+<p><strong>poll</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="nf">poll</span> <span class="p">(</span><span class="k">struct</span> <span class="n">pollfd</span> <span class="o">*</span><span class="n">fds</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">nfds</span><span class="p">,</span> <span class="kt">int</span> <span class="n">timeout</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>不同与select使用三个位图来表示三个fdset的方式，poll使用一个 pollfd的指针实现。pollfd结构体如下</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="k">struct</span> <span class="n">pollfd</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">fd</span><span class="p">;</span> <span class="cm">/* file descriptor */</span>
+    <span class="kt">short</span> <span class="n">events</span><span class="p">;</span> <span class="cm">/* requested events to watch */</span>
+    <span class="kt">short</span> <span class="n">revents</span><span class="p">;</span> <span class="cm">/* returned events witnessed */</span>
+<span class="p">};</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>pollfd结构包含了要监视的event和发生的event，不再使用select“参数-值”传递的方式。同时，pollfd并没有最大数量限制（但是数量过大后性能也是会下降）。 和select函数一样，poll返回后，需要轮询pollfd来获取就绪的描述符。</p>
+<p>select和poll都需要在返回后，<code>通过遍历文件描述符来获取已经就绪的socket</code>。事实上，同时连接的大量客户端在一时刻可能只有很少的处于就绪状态，因此随着监视的描述符数量的增长，其效率也会线性下降。</p>
+</li>
+<li>
+<p><strong>epoll</strong></p>
+<p>epoll是在2.6内核中提出的，是之前的select和poll的增强版本。相对于select和poll来说，epoll更加灵活，没有描述符限制。epoll使用一个文件描述符管理多个描述符，将用户关系的文件描述符的事件存放到内核的一个事件表中，这样在用户空间和内核空间的copy只需一次。</p>
+<blockquote>
+<p>epoll对文件描述符的操作有两种模式：<strong>LT（level trigger）<strong>和</strong>ET（edge trigger）</strong>。LT模式是默认模式，LT模式与ET模式的区别如下：
+　　<strong>LT模式</strong>：当epoll_wait检测到描述符事件发生并将此事件通知应用程序，<code>应用程序可以不立即处理该事件</code>。下次调用epoll_wait时，会再次响应应用程序并通知此事件。
+　　<strong>ET模式</strong>：当epoll_wait检测到描述符事件发生并将此事件通知应用程序，<code>应用程序必须立即处理该事件</code>。如果不处理，下次调用epoll_wait时，不会再次响应应用程序并通知此事件。</p>
+</blockquote>
+<p>在 select/poll中，进程只有在调用一定的方法后，内核才对所有监视的文件描述符进行扫描，而<strong>epoll事先通过epoll_ctl()来注册一 个文件描述符，一旦基于某个文件描述符就绪时，内核会采用类似callback的回调机制，迅速激活这个文件描述符，当进程调用epoll_wait() 时便得到通知</strong>。(<code>此处去掉了遍历文件描述符，而是通过监听回调的的机制</code>。这正是epoll的魅力所在。)</p>
+<ul>
+<li><strong>优点</strong></li>
+<li>监视的描述符数量不受限制，它所支持的FD上限是最大可以打开文件的数目（select的最大缺点就是进程打开的fd是有数量限制的。这对 于连接数量比较大的服务器来说根本不能满足。虽然也可以选择多进程的解决方案( Apache就是这样实现的)，不过虽然linux上面创建进程的代价比较小，但仍旧是不可忽视的，加上进程间数据同步远比不上线程间同步的高效，所以也不是一种完美的方案。）</li>
+</ul>
+</li>
+</ul>
+<p>三种IO模式对比</p>
+<p><img src="https://img.xiaoyou66.com/2021/04/22/c5b04c467b6bf.jpg" alt="preview"></p>
+<p>参考：<a href="https://segmentfault.com/a/1190000003063859">Linux IO模式及 select、poll、epoll详解 - SegmentFault 思否</a></p>
+<h2 id="零拷贝">零拷贝</h2>
+<p>在讲零拷贝之前先说一下传统IO</p>
+<h3 id="传统io">传统IO</h3>
+<p>基于传统的IO方式，底层实际上通过调用<code>read()</code>和<code>write()</code>来实现。通过<code>read()</code>把数据从硬盘读取到内核缓冲区，再复制到用户缓冲区；然后再通过<code>write()</code>写入到<code>socket缓冲区</code>，最后写入网卡设备。</p>
+<p>整个过程发生了<strong>4次用户态和内核态的上下文切换</strong>和<strong>4次拷贝</strong>，具体流程如下：</p>
+<ol>
+<li>用户进程通过<code>read()</code>方法向操作系统发起调用，此时上下文从用户态转向内核态</li>
+<li>DMA控制器把数据从硬盘中拷贝到读缓冲区</li>
+<li>CPU把读缓冲区数据拷贝到应用缓冲区，上下文从内核态转为用户态，<code>read()</code>返回</li>
+<li>用户进程通过<code>write()</code>方法发起调用，上下文从用户态转为内核态</li>
+<li>CPU将应用缓冲区中数据拷贝到socket缓冲区</li>
+<li>DMA控制器把数据从socket缓冲区拷贝到网卡，上下文从内核态切换回用户态，<code>write()</code>返回</li>
+</ol>
+<p><img src="https://img.xiaoyou66.com/2021/03/30/91137b7176db7.jpg" alt="img"></p>
+<p>从上面我们可以看到，一次简单的IO过程产生了4次上下文切换，这个无疑在高并发场景下会对性能产生较大的影响。</p>
+<h3 id="dma拷贝">DMA拷贝</h3>
+<p>因为对于一个IO操作而言，都是通过CPU发出对应的指令来完成，但是相比CPU来说，IO的速度太慢了，CPU有大量的时间处于等待IO的状态。</p>
+<p>因此就产生了DMA（Direct Memory Access）直接内存访问技术，本质上来说他就是一块主板上独立的芯片，通过它来进行内存和IO设备的数据传输，从而减少CPU的等待时间。</p>
+<p>但是无论谁来拷贝，频繁的拷贝耗时也是对性能的影响。</p>
+<h3 id="零拷贝-1">零拷贝</h3>
+<p>下面就是我们的重点了</p>
+<blockquote>
+<p>零拷贝技术是指计算机执行操作时，CPU不需要先将数据从某处内存复制到另一个特定区域，这种技术通常用于通过网络传输文件时节省CPU周期和内存带宽。</p>
+</blockquote>
+<p>那么对于零拷贝而言，并非真的是完全没有数据拷贝的过程，只不过是减少用户态和内核态的切换次数以及CPU拷贝的次数。</p>
+<p>下面有几种常见的零拷贝技术</p>
+<h4 id="mmapwrite">mmap+write</h4>
+<p>mmap+write简单来说就是使用<code>mmap</code>替换了read+write中的read操作，减少了一次CPU的拷贝。</p>
+<p><code>mmap</code>主要实现方式是将读缓冲区的地址和用户缓冲区的地址进行映射，内核缓冲区和应用缓冲区共享，从而减少了从读缓冲区到用户缓冲区的一次CPU拷贝。（mmap也叫内存映射）</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/30/d14d3f247e329.jpg" alt="img"></p>
+<p>整个过程发生了<strong>4次用户态和内核态的上下文切换</strong>和<strong>3次拷贝</strong>，具体流程如下：</p>
+<ol>
+<li>用户进程通过<code>mmap()</code>方法向操作系统发起调用，上下文从用户态转向内核态</li>
+<li>DMA控制器把数据从硬盘中拷贝到读缓冲区</li>
+<li><strong>上下文从内核态转为用户态，mmap调用返回</strong></li>
+<li>用户进程通过<code>write()</code>方法发起调用，上下文从用户态转为内核态</li>
+<li><strong>CPU将读缓冲区中数据拷贝到socket缓冲区</strong></li>
+<li>DMA控制器把数据从socket缓冲区拷贝到网卡，上下文从内核态切换回用户态，<code>write()</code>返回</li>
+</ol>
+<p><code>mmap</code>的方式节省了一次CPU拷贝，同时由于用户进程中的内存是虚拟的，只是映射到内核的读缓冲区，所以可以节省一半的内存空间，比较适合大文件的传输。</p>
+<h4 id="sendfile">sendfile</h4>
+<p>相比<code>mmap</code>来说，<code>sendfile</code>同样减少了一次CPU拷贝，而且还减少了2次上下文切换。</p>
+<p><code>sendfile</code>是Linux2.1内核版本后引入的一个系统调用函数，通过使用<code>sendfile</code>数据可以直接在内核空间进行传输，因此避免了用户空间和内核空间的拷贝，同时由于使用<code>sendfile</code>替代了<code>read+write</code>从而节省了一次系统调用，也就是2次上下文切换。</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/30/072ce4c9540f0.jpg" alt="img"></p>
+<p>整个过程发生了<strong>2次用户态和内核态的上下文切换</strong>和<strong>3次拷贝</strong>，具体流程如下：</p>
+<ol>
+<li>用户进程通过<code>sendfile()</code>方法向操作系统发起调用，上下文从用户态转向内核态</li>
+<li>DMA控制器把数据从硬盘中拷贝到读缓冲区</li>
+<li>CPU将读缓冲区中数据拷贝到socket缓冲区</li>
+<li>DMA控制器把数据从socket缓冲区拷贝到网卡，上下文从内核态切换回用户态，<code>sendfile</code>调用返回</li>
+</ol>
+<p><code>sendfile</code>方法IO数据对用户空间完全不可见，所以只能适用于完全不需要用户空间处理的情况，比如静态文件服务器。</p>
+<h4 id="sendfiledma-scattergather">sendfile+DMA Scatter/Gather</h4>
+<p>Linux2.4内核版本之后对<code>sendfile</code>做了进一步优化，通过引入新的硬件支持，这个方式叫做DMA Scatter/Gather 分散/收集功能。</p>
+<p>它将读缓冲区中的数据描述信息&ndash;内存地址和偏移量记录到socket缓冲区，由 DMA 根据这些将数据从读缓冲区拷贝到网卡，相比之前版本减少了一次CPU拷贝的过程</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/30/96fab9c3acc28.jpg" alt="img"></p>
+<p>整个过程发生了<strong>2次用户态和内核态的上下文切换</strong>和<strong>2次拷贝</strong>，其中更重要的是完全没有CPU拷贝，具体流程如下：</p>
+<ol>
+<li>用户进程通过<code>sendfile()</code>方法向操作系统发起调用，上下文从用户态转向内核态</li>
+<li>DMA控制器利用scatter把数据从硬盘中拷贝到读缓冲区离散存储</li>
+<li>CPU把读缓冲区中的文件描述符和数据长度发送到socket缓冲区</li>
+<li>DMA控制器根据文件描述符和数据长度，使用scatter/gather把数据从内核缓冲区拷贝到网卡</li>
+<li><code>sendfile()</code>调用返回，上下文从内核态切换回用户态</li>
+</ol>
+<p><code>DMA gather</code>和<code>sendfile</code>一样数据对用户空间不可见，而且需要硬件支持，同时输入文件描述符只能是文件，但是过程中完全没有CPU拷贝过程，极大提升了性能。</p>
+<h3 id="应用场景">应用场景</h3>
+<p>对于MQ而言，无非就是生产者发送数据到MQ然后持久化到磁盘，之后消费者从MQ读取数据。</p>
+<p>对于RocketMQ来说这两个步骤使用的是<code>mmap+write</code>，而Kafka则是使用<code>mmap+write</code>持久化数据，发送数据使用<code>sendfile</code>。</p>
+<h3 id="总结">总结</h3>
+<p>由于CPU和IO速度的差异问题，产生了DMA技术，通过DMA搬运来减少CPU的等待时间。</p>
+<p>传统的IO<code>read+write</code>方式会产生2次DMA拷贝+2次CPU拷贝，同时有4次上下文切换。</p>
+<p>而通过<code>mmap+write</code>方式则产生2次DMA拷贝+1次CPU拷贝，4次上下文切换，通过内存映射减少了一次CPU拷贝，可以减少内存使用，适合大文件的传输。</p>
+<p><code>sendfile</code>方式是新增的一个系统调用函数，产生2次DMA拷贝+1次CPU拷贝，但是只有2次上下文切换。因为只有一次调用，减少了上下文的切换，但是用户空间对IO数据不可见，适用于静态文件服务器。</p>
+<p><code>sendfile+DMA gather</code>方式产生2次DMA拷贝，没有CPU拷贝，而且也只有2次上下文切换。虽然极大地提升了性能，但是需要依赖新的硬件设备支持。</p>
+<p><a href="https://zhuanlan.zhihu.com/p/357820303">阿里二面：什么是mmap？ - 知乎 (zhihu.com)</a></p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-03-20
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags//"></a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/03.%E5%9F%BA%E7%A1%80%E5%AD%A6%E7%A7%91/02.%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/6.%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%E6%80%BB%E7%BB%93/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">高频面试题总结</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/03.%E5%9F%BA%E7%A1%80%E5%AD%A6%E7%A7%91/01.%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/2.%E4%BA%92%E6%96%A5%E5%92%8C%E5%90%8C%E6%AD%A5/">
+            <span class="next-text nav-default">互斥和同步</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
