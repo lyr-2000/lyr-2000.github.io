@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title> - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="[TOC] SpringMVC 详解 一. 构建 SpringMVC 利用 JavaConifg 类代替 XML 文件 利用 SpringMVC 构建的 WEB 项目中, 一般有三个 XML 文件位于 WEB-INF下 : web.xml , dispatcher-servlet.xml , applicationContext.xml, 但是在 Servlet3.0 规范中, 我们使用 JavaConfig 替代所有" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.86.0 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/java/springmvc/springmvc%E5%90%AF%E5%8A%A8/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="" />
+<meta property="og:description" content="[TOC] SpringMVC 详解 一. 构建 SpringMVC 利用 JavaConifg 类代替 XML 文件 利用 SpringMVC 构建的 WEB 项目中, 一般有三个 XML 文件位于 WEB-INF下 : web.xml , dispatcher-servlet.xml , applicationContext.xml, 但是在 Servlet3.0 规范中, 我们使用 JavaConfig 替代所有" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/java/springmvc/springmvc%E5%90%AF%E5%8A%A8/" /><meta property="article:section" content="post" />
+
+
+
+<meta itemprop="name" content="">
+<meta itemprop="description" content="[TOC] SpringMVC 详解 一. 构建 SpringMVC 利用 JavaConifg 类代替 XML 文件 利用 SpringMVC 构建的 WEB 项目中, 一般有三个 XML 文件位于 WEB-INF下 : web.xml , dispatcher-servlet.xml , applicationContext.xml, 但是在 Servlet3.0 规范中, 我们使用 JavaConfig 替代所有">
+
+<meta itemprop="wordCount" content="2282">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content=""/>
+<meta name="twitter:description" content="[TOC] SpringMVC 详解 一. 构建 SpringMVC 利用 JavaConifg 类代替 XML 文件 利用 SpringMVC 构建的 WEB 项目中, 一般有三个 XML 文件位于 WEB-INF下 : web.xml , dispatcher-servlet.xml , applicationContext.xml, 但是在 Servlet3.0 规范中, 我们使用 JavaConfig 替代所有"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title"></h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 0001-01-01 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#springmvc-详解">SpringMVC 详解</a></li>
+    <li><a href="#一-构建-springmvc">一. 构建 SpringMVC</a>
+      <ul>
+        <li><a href="#利用-javaconifg-类代替-xml-文件">利用 JavaConifg 类代替 XML 文件</a></li>
+        <li><a href="#webxml--appnamewebapplicationinitializer">Web.xml &lt;=&gt; AppNameWebApplicationInitializer</a></li>
+        <li><a href="#webconfig-类">WebConfig 类</a></li>
+      </ul>
+    </li>
+    <li><a href="#二-基本的控制器">二. 基本的控制器</a>
+      <ul>
+        <li><a href="#一个小例子">一个小例子</a></li>
+        <li><a href="#controller-注解">@Controller 注解</a></li>
+        <li><a href="#requestmapping-注解">@RequestMapping 注解</a></li>
+        <li><a href="#控制器给-jsp视图-注入数据">控制器给 jsp视图 注入数据</a></li>
+      </ul>
+    </li>
+    <li><a href="#三-控制器接受请求输入">三. 控制器接受请求输入</a>
+      <ul>
+        <li><a href="#接受-get-形式数据-requestparam">接受 GET 形式数据 (@RequestParam)</a></li>
+        <li><a href="#接受-get-形式数据-pathvariable">接受 GET 形式数据 (@PathVariable)</a></li>
+        <li><a href="#接受-post-数据-普通变量为传参">接受 POST 数据 (普通变量为传参)</a></li>
+        <li><a href="#接受-post-数据-实体类为传参">接受 POST 数据 (实体类为传参)</a></li>
+        <li><a href="#post-表单验证-valid">POST 表单验证 (@valid)</a></li>
+      </ul>
+    </li>
+    <li><a href="#四-在-jsp-使用-jstl-标签步骤">四. 在 JSP 使用 JSTL 标签步骤</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>[TOC]</p>
+<h1 id="springmvc-详解">SpringMVC 详解</h1>
+<h1 id="一-构建-springmvc">一. 构建 SpringMVC</h1>
+<h2 id="利用-javaconifg-类代替-xml-文件">利用 JavaConifg 类代替 XML 文件</h2>
+<p>利用 SpringMVC 构建的 WEB 项目中, 一般有三个 XML 文件位于 WEB-INF下 : <code>web.xml</code> , <code>dispatcher-servlet.xml</code> , <code>applicationContext.xml</code>,  但是在 <code>Servlet3.0</code> 规范中, 我们使用 JavaConfig 替代所有的 XML 文件配置, 让程序变得可读性高. 同样的三个XML对应了三个JavacConfig类</p>
+<h2 id="webxml--appnamewebapplicationinitializer">Web.xml &lt;=&gt; AppNameWebApplicationInitializer</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="nn">spitter.config</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer</span><span class="o">;</span>
+
+<span class="c1">// 这个配置文件类的名字可以自己定义, 但是需要继承 AbstractAnnotationConfigDispatcherServletInitializer类
+</span><span class="c1"></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SpitterWebApplicationInitializer</span> <span class="kd">extends</span> <span class="n">AbstractAnnotationConfigDispatcherServletInitializer</span> <span class="o">{</span>
+
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="n">Class</span><span class="o">&lt;?&gt;[]</span> <span class="n">getRootConfigClasses</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">Class</span><span class="o">&lt;?&gt;[]</span> <span class="o">{</span><span class="n">RootConfig</span><span class="o">.</span><span class="na">class</span><span class="o">};</span> <span class="c1">// Important !!
+</span><span class="c1"></span>    <span class="o">}</span>
+	
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="n">Class</span><span class="o">&lt;?&gt;[]</span> <span class="n">getServletConfigClasses</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">Class</span><span class="o">&lt;?&gt;[]</span> <span class="o">{</span><span class="n">WebConfig</span><span class="o">.</span><span class="na">class</span><span class="o">};</span> <span class="c1">// Important !!
+</span><span class="c1"></span>    <span class="o">}</span>
+	
+    <span class="c1">// 这个方法定义 分发器所需要拦截的 URL 地址
+</span><span class="c1"></span>    <span class="c1">// 如果为 &#39;/&#39; 则表示都拦截
+</span><span class="c1"></span>    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="n">String</span><span class="o">[]</span> <span class="nf">getServletMappings</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">String</span><span class="o">[]{</span><span class="s">&#34;/&#34;</span><span class="o">};</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>在 <code>AbstractAnnotationConfigDispatcherServletInitializer</code> 启动的时候,  会同时创建 <strong>两个应用上下文.</strong></p>
+<ul>
+<li>由 <code>WebConfig</code> 定义的 web 组件 bean : 一般就是 <strong>控制器, 视图解析器, 处理映射器</strong></li>
+<li>由 <code>RootConfig</code> 定义的其他 bean : 通常为 <strong>驱动应用后端的中间层, 数据层组件</strong></li>
+</ul>
+<p>通过 <code>getServletConfigClasses</code> 方法返回的带有 <code>@Configuration</code> 注解类用来定义 <code>DispatcherServlet</code> 应用上下文的beans</p>
+<p>通过 <code>getRootConfigClasses</code> 方法返回的 带有 <code>@Configuration</code> 注解类用来定义用来定义 <code>ContextLoaderListener</code> 创建的上下文中的 <code>bean</code></p>
+<p><strong>注意如果项目中, 同时存在 web.xml 和 <code>AbstractAnnotationConfigDispatcherServletInitializer</code>, 那么可能会报错 (初始化错误)</strong></p>
+<h2 id="webconfig-类">WebConfig 类</h2>
+<p><code>WebConfig</code> 用于定义 <strong>一些控制器, 试图解析器, 处理映射器的信息</strong></p>
+<p>一个简单的 <code>WebConfig</code>  定义</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="nn">spitter.config</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Bean</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.ComponentScan</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Configuration</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.ViewResolver</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.config.annotation.EnableWebMvc</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.view.InternalResourceViewResolver</span><span class="o">;</span>
+
+
+<span class="nd">@Configuration</span>
+<span class="nd">@EnableWebMvc</span>	<span class="c1">// 这个注解表示开启的 MVC, 很重要
+</span><span class="c1"></span><span class="nd">@ComponentScan</span><span class="o">(</span><span class="s">&#34;spitter.web&#34;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">WebConfig</span> <span class="kd">extends</span> <span class="n">WebMvcConfigurerAdapter</span> <span class="o">{</span>
+	
+    <span class="cm">/*
+</span><span class="cm">	  给 Spring 容器加入一个 视图解析的 bean
+</span><span class="cm">	  且解析的时候 给 view 定义前缀和后缀
+</span><span class="cm">	  注意 SpringMVC 项目的 &#39;/&#39; 默认是存放web静态资源的, 所以 ’/‘ 即为 整个项目的 &#39;/web/&#39; 目录
+</span><span class="cm">    */</span> 
+    <span class="nd">@Bean</span>
+    <span class="kd">public</span> <span class="n">ViewResolver</span> <span class="nf">viewResolver</span><span class="o">(){</span>
+
+        <span class="n">InternalResourceViewResolver</span> <span class="n">resolver</span> <span class="o">=</span> <span class="k">new</span> <span class="n">InternalResourceViewResolver</span><span class="o">();</span>
+        <span class="n">resolver</span><span class="o">.</span><span class="na">setPrefix</span><span class="o">(</span><span class="s">&#34;/WEB-INF/views/&#34;</span><span class="o">);</span>
+        <span class="n">resolver</span><span class="o">.</span><span class="na">setSuffix</span><span class="o">(</span><span class="s">&#34;.jsp&#34;</span><span class="o">);</span>
+        <span class="n">resolver</span><span class="o">.</span><span class="na">setExposeContextBeansAsAttributes</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+
+        <span class="k">return</span> <span class="n">resolver</span><span class="o">;</span>
+    <span class="o">}</span>	
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">configureDefaultServletHandling</span><span class="o">(</span><span class="n">DefaultServletHandlerConfigurer</span> <span class="n">configurer</span><span class="o">)</span> <span class="o">{</span>
+       <span class="n">configurer</span><span class="o">.</span><span class="na">enable</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="二-基本的控制器">二. 基本的控制器</h1>
+<h2 id="一个小例子">一个小例子</h2>
+<p>控制器及为 MVC 中的 C 层, 在 Spring MVC 中, 用于接受 <code>Dispatcher</code> 转发的请求</p>
+<p>一个简单的 控制器, 表示的含义如下 :</p>
+<ul>
+<li><strong>表示该 web 项目的 URL 为 &lsquo;/hello&rsquo; 的 GET 请求会被定为到 HomeController 下的 home 方法</strong></li>
+<li><strong>返回的 字符串 &ldquo;Home&rdquo; 被 SpringMVC 的视图解析器解析为 : /WEB-INF/views/home.jsp 并返回</strong></li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="nn">spitter.web.controller</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Controller</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestMapping</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestMethod</span><span class="o">;</span>
+
+<span class="nd">@Controller</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">HomeController</span> <span class="o">{</span>
+	
+    <span class="cm">/*
+</span><span class="cm">    	注意此时返回的是, 交给视图解析器的 jsp文件 名称
+</span><span class="cm">    */</span>
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">&#34;/hello&#34;</span><span class="o">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">RequestMethod</span><span class="o">.</span><span class="na">GET</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">home</span><span class="o">(){</span>
+        <span class="k">return</span> <span class="s">&#34;home&#34;</span><span class="o">;</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="controller-注解">@Controller 注解</h2>
+<p><code>@Controller</code> 是一个基于 <code>@Component</code> 的注解, 其实这里写为 <code>@Component</code>, 也是一样的效果</p>
+<p>只不过使用 <code>@Controller</code> 表意上更加友好</p>
+<p>被 <code>@Controller</code> 修饰的 POJO 类则会被 <code>webConfig</code> 扫描的时候, 加入 Spring应用上下文</p>
+<h2 id="requestmapping-注解">@RequestMapping 注解</h2>
+<p><code>@RequestMapping</code> 控制器修饰方法的时候, 表示这个控制器映射的 <code>URL</code> 名称</p>
+<p>同时, 也可以修饰类, 表示这个类的所有方法映射 URL 的公共前缀 比如:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="nd">@Controller</span>
+<span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">&#34;/student&#34;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">StudentController</span> <span class="o">{</span>
+
+    <span class="nd">@Resource</span><span class="o">(</span><span class="n">description</span> <span class="o">=</span> <span class="s">&#34;studentRepository&#34;</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="n">StudentRepository</span> <span class="n">studentRepository</span><span class="o">;</span>
+	
+    <span class="c1">// 此时 getStudents 方法的 URL 映射为 /student/get
+</span><span class="c1"></span>    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">&#34;/get&#34;</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">getStudents</span><span class="o">(</span><span class="n">Model</span> <span class="n">model</span><span class="o">){</span>
+        <span class="n">model</span><span class="o">.</span><span class="na">addAllAttributes</span><span class="o">(</span><span class="n">studentRepository</span><span class="o">.</span><span class="na">findStudent</span><span class="o">(</span><span class="n">3</span><span class="o">));</span>
+        <span class="k">return</span> <span class="s">&#34;get&#34;</span><span class="o">;</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><code>@RequestMapping</code> 可以定义多于一个的映射 URL 例如 :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="nd">@RequestMapping</span><span class="o">({</span><span class="s">&#34;/&#34;</span><span class="o">,</span> <span class="s">&#34;/homepages&#34;</span><span class="o">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="控制器给-jsp视图-注入数据">控制器给 jsp视图 注入数据</h2>
+<p>可以通过 <code>Model</code> 类型的函数传参, 实现给 我们返回的视图渲染数据</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">&#34;/get&#34;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="n">String</span> <span class="nf">getStudents</span><span class="o">(</span><span class="n">Model</span> <span class="n">model</span><span class="o">){</span>
+    <span class="n">model</span><span class="o">.</span><span class="na">addAllAttributes</span><span class="o">(</span><span class="n">studentRepository</span><span class="o">.</span><span class="na">findStudent</span><span class="o">(</span><span class="n">3</span><span class="o">));</span>
+    <span class="k">return</span> <span class="s">&#34;get&#34;</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Model 其实是一个 Map (&ldquo;key&rdquo; =&gt; &ldquo;Value&rdquo;) 形式的封装数据. 它可以被传递给视图, 这样 Jsp 就可以获得渲染数据了, Model 类有如下几种规律</p>
+<ul>
+<li>
+<p>**当调用 <code>addAllAttributes</code> 但是不指定 key 的时候 : **  那么 key 会自动的根据装配的对象确定, 以此为例 value 为 <code>List&lt;Student&gt;</code> 类型, 那么key 即为 studentList.</p>
+</li>
+<li>
+<p><strong>当然我们也可以显示的指定 key :</strong></p>
+</li>
+<li>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">model</span><span class="o">.</span><span class="na">addAllAttributes</span><span class="o">(</span><span class="s">&#34;students&#34;</span><span class="o">,</span> <span class="n">studentRepository</span><span class="o">.</span><span class="na">findStudent</span><span class="o">(</span><span class="n">3</span><span class="o">));</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>如果不想使用 Spring 封装的 Model, **我们亦可以只使用map : **</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">&#34;/get&#34;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="n">String</span> <span class="nf">getStudents</span><span class="o">(</span><span class="n">Map</span> <span class="n">model</span><span class="o">){</span>
+    <span class="n">model</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;students&#34;</span><span class="o">,</span> <span class="n">studentRepository</span><span class="o">.</span><span class="na">findStudent</span><span class="o">(</span><span class="n">3</span><span class="o">));</span>
+    <span class="k">return</span> <span class="s">&#34;get&#34;</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+<h1 id="三-控制器接受请求输入">三. 控制器接受请求输入</h1>
+<p>SpringMVC 接受前端浏览器发送的数据有多种方式 :</p>
+<ul>
+<li>查询参数 : 一般就是 <code>GET</code> 形式拼接在 <code>URL</code> 后面的方式</li>
+<li>表单参数 : 一般就是 <code>POST</code> 形式非明文形式发送数据给服务端</li>
+<li>路径变量 : 一定程度上也 <code>GET</code> 数据请求</li>
+</ul>
+<h2 id="接受-get-形式数据-requestparam">接受 GET 形式数据 (@RequestParam)</h2>
+<p>一般的形式, 可以在相应的方法传参中, 使用 <code>@RequestParam</code> 注解表示接受的 <code>GET</code> 数据 :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java">    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">&#34;/find&#34;</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">getStudentByID</span><span class="o">(</span>
+            <span class="nd">@RequestParam</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">&#34;StudentID&#34;</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">&#34;10&#34;</span><span class="o">)</span> <span class="kt">long</span> <span class="n">studentID</span><span class="o">,</span>
+            <span class="n">Model</span> <span class="n">model</span><span class="o">){</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">studentID</span><span class="o">);</span>
+        <span class="k">return</span> <span class="s">&#34;find&#34;</span><span class="o">;</span>
+    <span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>如果以这种形式, 那么接受的可访问的 <code>URL</code> 便为 :  <code>/student/find?StudentID=20</code></p>
+<p>显然这种访问形式是不理想的, 直接通过 <code>URL</code> 的形式标示比通过 问号连接的形式更加友好</p>
+<p>**@RequestParam 注解 : **</p>
+<p>表示该方法接受前端的 <code>GET</code> 数据. 常用的 参数有 :</p>
+<ul>
+<li>Value : 表示接受 <code>GET</code> 的数据 <code>KEY</code> 名</li>
+<li>defaultValue : 表示如果不传递的默认值</li>
+</ul>
+<h2 id="接受-get-形式数据-pathvariable">接受 GET 形式数据 (@PathVariable)</h2>
+<p>在原始的 <code>GET</code> 传递数据的时候, 我们的 <code>URL</code> 表现为  :</p>
+<p><code>/student/find?StudentID=20</code></p>
+<p>此时我们通过 <strong>占位符 + <code>@PathVariable</code></strong> 的形式将其变为 :</p>
+<p><code>/student/find/20</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">&#34;findAD/{StudentID}&#34;</span><span class="o">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">RequestMethod</span><span class="o">.</span><span class="na">GET</span><span class="o">)</span>
+<span class="kd">public</span> <span class="n">String</span> <span class="nf">getStudentByIDAd</span><span class="o">(</span>
+    <span class="c1">// 使用 PathVariable 注解
+</span><span class="c1"></span>    <span class="nd">@PathVariable</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">&#34;StudentID&#34;</span><span class="o">)</span> <span class="kt">long</span> <span class="n">studentID</span><span class="o">,</span>
+    <span class="n">Model</span> <span class="n">model</span><span class="o">){</span>
+
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">studentID</span><span class="o">);</span>
+    <span class="k">return</span> <span class="s">&#34;findAD&#34;</span><span class="o">;</span>
+
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>通过 <strong><code>@RequestMapping()</code>占位符</strong> 的形式实现 :</p>
+<p>在 <code>value</code> 参数中利用 <code>{MyParma}</code> 进行标注占位符. 此时占位符标注的值要和 <code>@PathVariable</code> 相同, 即为 :</p>
+<p><code>@PathVariable(name = &quot;MyParma&quot;)</code> , 这样可以直接对 <code>URL</code> 进行解析, 并且赋予变量.</p>
+<p><strong>值得注意的是, 通过这种形式是没有默认值的</strong></p>
+<h2 id="接受-post-数据-普通变量为传参">接受 POST 数据 (普通变量为传参)</h2>
+<p><code>SpringMVC</code> 接受 <code>POST</code> 形式的数据非常简单, <strong>只需要在接受函数的传递参数里面声明即可(变量名和表单的 name 一致)</strong></p>
+<p>例如我们的表单如下 :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-html" data-lang="html">   <span class="p">&lt;</span><span class="nt">form</span> <span class="na">method</span><span class="o">=</span><span class="s">&#34;post&#34;</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p">&gt;</span> studentID :<span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#34;text&#34;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#34;studentID&#34;</span> <span class="p">/&gt;</span> <span class="p">&lt;/</span><span class="nt">label</span><span class="p">&gt;</span> <span class="p">&lt;</span><span class="nt">br</span><span class="p">/&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p">&gt;</span> name :<span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#34;text&#34;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#34;name&#34;</span> <span class="p">/&gt;</span> <span class="p">&lt;/</span><span class="nt">label</span><span class="p">&gt;</span> <span class="p">&lt;</span><span class="nt">br</span><span class="p">/&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p">&gt;</span> age :<span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#34;text&#34;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#34;age&#34;</span> <span class="p">/&gt;</span> <span class="p">&lt;/</span><span class="nt">label</span><span class="p">&gt;</span> <span class="p">&lt;</span><span class="nt">br</span><span class="p">/&gt;</span>
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#34;submit&#34;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#34;register&#34;</span><span class="p">/&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">form</span><span class="p">&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>则接受的方法可以写为 :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="cm">/*
+</span><span class="cm">	函数的传递参数顺序不需要和表单一一对应
+</span><span class="cm">	只需要变量名一致即可
+</span><span class="cm">*/</span>
+<span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">&#34;/register&#34;</span><span class="o">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">RequestMethod</span><span class="o">.</span><span class="na">POST</span><span class="o">)</span>
+<span class="kd">public</span> <span class="n">String</span> <span class="nf">saveStudent</span><span class="o">(</span><span class="n">String</span> <span class="n">studentID</span><span class="o">,</span> <span class="n">String</span> <span class="n">name</span><span class="o">,</span> <span class="n">String</span> <span class="n">age</span><span class="o">){</span>
+	<span class="n">Student</span> <span class="n">student</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Student</span><span class="o">(</span><span class="n">studentID</span><span class="o">,</span> <span class="n">name</span><span class="o">,</span> <span class="n">age</span><span class="o">);</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">student</span><span class="o">);</span>
+    <span class="k">return</span> <span class="s">&#34;Register&#34;</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="接受-post-数据-实体类为传参">接受 POST 数据 (实体类为传参)</h2>
+<p>我们也可以直接在传递参数的时候, 将实体类作为传递参数 :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">&#34;/register&#34;</span><span class="o">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">RequestMethod</span><span class="o">.</span><span class="na">POST</span><span class="o">)</span>
+<span class="kd">public</span> <span class="n">String</span> <span class="nf">saveStudent</span><span class="o">(</span><span class="n">Student</span> <span class="n">student</span><span class="o">){</span>
+
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">student</span><span class="o">);</span>
+    <span class="k">return</span> <span class="s">&#34;Register&#34;</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>此种方式有一个值得注意的点 : 实体类通过 无参构造函数 + setter函数 去构造实例</strong></p>
+<p><strong>因此, 如果通过这种方式, 必须让实体类有 无参构造函数 且定义 setter 方法</strong></p>
+<h2 id="post-表单验证-valid">POST 表单验证 (@valid)</h2>
+<p><strong>当以实体类作为 POST 接受传参的时候, 我们可以利用 <code>@valid</code> 对实体类相应字段进行验证</strong></p>
+<p>在验证规则上, 我们需要直接定义在实体类的成员变量中 :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="c1">// 实体类 Student
+</span><span class="c1"></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Student</span> <span class="o">{</span>
+
+    <span class="nd">@NotNull</span>
+    <span class="nd">@Size</span><span class="o">(</span><span class="n">min</span><span class="o">=</span><span class="n">5</span><span class="o">,</span> <span class="n">max</span><span class="o">=</span><span class="n">16</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">studentID</span><span class="o">;</span>
+
+    <span class="nd">@NotNull</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+
+    <span class="nd">@NotNull</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">age</span><span class="o">;</span>
+
+	<span class="o">...</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>然后在接受方法控制器中 加入 <code>@valid</code> 注解:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">&#34;/register&#34;</span><span class="o">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">RequestMethod</span><span class="o">.</span><span class="na">POST</span><span class="o">)</span>
+<span class="kd">public</span> <span class="n">String</span> <span class="nf">saveStudent</span><span class="o">(</span><span class="nd">@valid</span> <span class="n">Student</span> <span class="n">student</span><span class="o">,</span> <span class="n">Errors</span> <span class="n">errors</span><span class="o">){</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">errors</span><span class="o">.</span><span class="na">hasErrors</span><span class="o">()){</span>
+        <span class="c1">// 验证不通过
+</span><span class="c1"></span>        <span class="c1">// do somethings ...
+</span><span class="c1"></span>    <span class="o">}</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">student</span><span class="o">);</span>
+    <span class="k">return</span> <span class="s">&#34;Register&#34;</span><span class="o">;</span>
+<span class="o">}</span>	
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="四-在-jsp-使用-jstl-标签步骤">四. 在 JSP 使用 JSTL 标签步骤</h1>
+<ol>
+<li>
+<p>首先在 <code>web/WEB-INF/lib</code> 下面倒入两个 <code>JAR</code> 包 : <code>jstl.jar, standard.jar</code></p>
+</li>
+<li>
+<p>在 <code>Project Structure</code> 的 <code>Modules</code> 里面添加刚加入的两个 <code>Jar</code> 包</p>
+</li>
+<li>
+<p>在 <code>Project Structure</code> 的 <code>Artifacts</code> 里面将 刚加入的 <code>jar</code> 包  <code>Put into output root</code></p>
+</li>
+<li>
+<p>在使用相关头文件标签的时候, 引入即可, 例如 : s</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">&lt;%@ taglib prefix=&#34;c&#34; uri=&#34;http://java.sun.com/jsp/jstl/core&#34; %&gt;
+&lt;c:out value=&#34;{$ID}&#34;&gt;
+</code></pre></td></tr></table>
+</div>
+</div></li>
+</ol>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        0001-01-01
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/java/springmvc/springmvc/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default"></span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

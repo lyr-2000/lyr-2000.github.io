@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>锁和事务 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="事务 [TOC] 事务的概念 可以将多个 一条或者多条SQL语句聚合在一起, 且这些语句, 要么所有都可以正确的执行, 要么都不能执行(原子性) 事务可以被更专业的" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.86.0 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/mysql/mysql%E9%94%81%E4%B8%8E%E4%BA%8B%E5%8A%A1%E4%B8%8E%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="锁和事务" />
+<meta property="og:description" content="事务 [TOC] 事务的概念 可以将多个 一条或者多条SQL语句聚合在一起, 且这些语句, 要么所有都可以正确的执行, 要么都不能执行(原子性) 事务可以被更专业的" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/mysql/mysql%E9%94%81%E4%B8%8E%E4%BA%8B%E5%8A%A1%E4%B8%8E%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-08-14T22:43:02+08:00" />
+<meta property="article:modified_time" content="2021-08-14T22:43:02+08:00" />
+
+<meta itemprop="name" content="锁和事务">
+<meta itemprop="description" content="事务 [TOC] 事务的概念 可以将多个 一条或者多条SQL语句聚合在一起, 且这些语句, 要么所有都可以正确的执行, 要么都不能执行(原子性) 事务可以被更专业的"><meta itemprop="datePublished" content="2021-08-14T22:43:02+08:00" />
+<meta itemprop="dateModified" content="2021-08-14T22:43:02+08:00" />
+<meta itemprop="wordCount" content="2749">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="锁和事务"/>
+<meta name="twitter:description" content="事务 [TOC] 事务的概念 可以将多个 一条或者多条SQL语句聚合在一起, 且这些语句, 要么所有都可以正确的执行, 要么都不能执行(原子性) 事务可以被更专业的"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">锁和事务</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-14 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#事务">事务</a></li>
+    <li><a href="#事务的概念">事务的概念</a></li>
+    <li><a href="#acid">ACID</a>
+      <ul>
+        <li><a href="#1-原子性-atomicity">1. 原子性 (Atomicity)</a></li>
+        <li><a href="#2-一致性-consistency">2. 一致性 (Consistency)</a></li>
+        <li><a href="#3-隔离性-isolation">3. 隔离性 (Isolation)</a></li>
+        <li><a href="#4-持久性-durability">4. 持久性 (Durability)</a></li>
+      </ul>
+    </li>
+    <li><a href="#autocommit">AUTOCOMMIT</a></li>
+    <li><a href="#数据库锁">数据库锁</a>
+      <ul>
+        <li><a href="#锁的粒度">锁的粒度</a></li>
+        <li><a href="#myisam-表锁">MyISAM 表锁</a></li>
+        <li><a href="#myisam-如何加表锁">MyISAM 如何加表锁</a></li>
+        <li><a href="#innodb-锁">InnoDB 锁</a></li>
+      </ul>
+    </li>
+    <li><a href="#innodb-并发事务带来的问题">InnoDB 并发事务带来的问题</a></li>
+    <li><a href="#事务隔离级别">事务隔离级别</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h1 id="事务">事务</h1>
+<p>[TOC]</p>
+<h1 id="事务的概念">事务的概念</h1>
+<p>可以将多个 <strong>一条或者多条SQL语句聚合在一起, 且这些语句, 要么所有都可以正确的执行, 要么都不能执行(原子性)</strong></p>
+<p>事务可以被更专业的定义为 : <strong>事务指的是满足 ACID 特性的一组操作</strong></p>
+<p>如下图, 启动事务之后, 数据库的 <strong>相关行进入中间态</strong>, 直到commit之后, 如果所有的都被正确执行, 才将这一系列SQL的结果提交, 如果有失败, 则执行roolback操作, 从而保证数据的一致性.</p>
+<img src='//image/2019-7-19-transaction.png' style='width:400px'/>
+<p>从sql表述上如下:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="cm">/* 启动事务*/</span><span class="w">
+</span><span class="w"></span><span class="k">start</span><span class="w"> </span><span class="k">transaction</span><span class="p">;</span><span class="w">
+</span><span class="w">	</span><span class="cm">/*
+</span><span class="cm">	sql code
+</span><span class="cm">	...
+</span><span class="cm">	*/</span><span class="w">
+</span><span class="w"></span><span class="k">if</span><span class="w"> </span><span class="k">sql</span><span class="w"> </span><span class="n">exc</span><span class="w"> </span><span class="n">success</span><span class="w"> 
+</span><span class="w">	</span><span class="k">commit</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="k">else</span><span class="w"> 
+</span><span class="w">	</span><span class="n">roolback</span><span class="p">;</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><h1 id="acid">ACID</h1>
+<h2 id="1-原子性-atomicity">1. 原子性 (Atomicity)</h2>
+<p>事务被视为 <strong>最小的不可分割的单元</strong>, 要么事物内的SQL被全部提交, 要被全部失败则回滚</p>
+<p>回滚操作是实现依赖于 <strong>回滚日志</strong> , 可以记录事务执行的操作, 失败则反向执行即可</p>
+<h2 id="2-一致性-consistency">2. 一致性 (Consistency)</h2>
+<p>数据库在事务的执行前后都是保持一致性的, 所有事务对一个数据的读取结果都是相同的.</p>
+<h2 id="3-隔离性-isolation">3. 隔离性 (Isolation)</h2>
+<p>一个事务所做的修改在最终提交以前，对其它事务是不可见的。</p>
+<p>举个例子 : 在一个事务的执行过程中, 就算此时对某一行进行了修改. 此时其他用户对这一行进行 <strong>查询$^{[1]}$时候</strong></p>
+<p><strong>查询的还是之前的值</strong>, 只到事务commit后, 才能查询到新的值</p>
+<h2 id="4-持久性-durability">4. 持久性 (Durability)</h2>
+<p>一旦事务提交, 就会被 <strong>永久保存</strong>, 即使服务器崩溃, 结果也不会丢失</p>
+<p>实现方式 : 利用 <strong>重做日志</strong></p>
+<p><small> [1] 实际上, MySQL的事务过程对某一行实行的写锁, 及其他用户对相关行还是可以进行读取 </small></p>
+<h1 id="autocommit">AUTOCOMMIT</h1>
+<p>MySQL 默认采取了自动提交的方式, <strong>即使不显示的 start transaction 开启一个事物</strong>, 服务器也会将每个操作作为一个事物提交</p>
+<p>MySQL 允许关闭自动提交模式 :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="cm">/* 
+</span><span class="cm">	关闭自动提交模式 
+</span><span class="cm">	一旦关闭自动提交模式, 所有的SQL语句都会被认为在同一个事务范围
+</span><span class="cm">	并且必须显示的对事务进行 提交 或者 回滚
+</span><span class="cm">*/</span><span class="w">
+</span><span class="w"></span><span class="k">set</span><span class="w"> </span><span class="n">autocommit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><h1 id="数据库锁">数据库锁</h1>
+<blockquote>
+<p><a href="https://www.cnblogs.com/leedaily/p/8378779.html">数据库锁</a></p>
+</blockquote>
+<h2 id="锁的粒度">锁的粒度</h2>
+<p>数据库的锁分为三种:</p>
+<ul>
+<li>行锁 : 表中的一行记录被锁定</li>
+<li>页锁 : 这里的页指的是一个内存页的数据</li>
+<li>表锁 : 整个表都被锁定</li>
+</ul>
+<p>各个粒度的选择各有利弊 : 粒度越细的锁, 所占的资源越多, 但是用户的自由性越大</p>
+<p>在选择锁的时候, 需要做锁开销和并发行的权衡</p>
+<p>**从数据库类型上看 : **</p>
+<table>
+<thead>
+<tr>
+<th>数据库类型</th>
+<th>支持类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MySQL</td>
+<td>行锁, 页锁, 表锁</td>
+</tr>
+<tr>
+<td>SQL Server</td>
+<td>行锁, 页锁, 表锁</td>
+</tr>
+<tr>
+<td>Oracle</td>
+<td>仅支持 行锁</td>
+</tr>
+</tbody>
+</table>
+<p><strong>从数据库引擎上看 :</strong></p>
+<table>
+<thead>
+<tr>
+<th>Engine</th>
+<th>支持锁类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>InnoDB (Mysql默认)</td>
+<td><strong>行锁 (默认)</strong> / 表锁</td>
+</tr>
+<tr>
+<td>MyISAM</td>
+<td>表级锁</td>
+</tr>
+<tr>
+<td>MEMORY</td>
+<td>表级锁</td>
+</tr>
+<tr>
+<td>BDB</td>
+<td>页面锁</td>
+</tr>
+</tbody>
+</table>
+<h2 id="myisam-表锁">MyISAM 表锁</h2>
+<p>对于 <strong>MyISAM</strong> 表级锁有两种模式, <strong>读锁, 写锁</strong></p>
+<ul>
+<li>
+<p>如果一个表被加了读锁, 那么 <strong>不会阻塞其他用户的读操作, 但是会阻塞其他用户的写操作</strong></p>
+</li>
+<li>
+<p>如果一个表被加了写锁, 那么 <strong>会阻塞其他用户的读写操作</strong></p>
+</li>
+</ul>
+<h2 id="myisam-如何加表锁">MyISAM 如何加表锁</h2>
+<p>给 <strong>MyISAM</strong> 添加表锁有 <strong>两种方式</strong></p>
+<ol>
+<li>
+<p>自动添加</p>
+<p>MyISAM 在执行一个 <code>select</code> 语句的时候, 会自动的给数据表加上一个读锁</p>
+<p>MyISAM 在执行 <code>delete, update,insert 等 </code> 语句的时候, 会自动给表上一个写锁</p>
+</li>
+<li>
+<p>显示添加</p>
+<p>由于 <strong>MyISAM 不支持事物的操作, 所以显示的添加锁一定程度上是为了模拟事物的操作</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="c1">-- 表示给 myTable 添加一个读锁
+</span><span class="c1"></span><span class="k">Lock</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="n">myTable</span><span class="w"> </span><span class="k">read</span><span class="w"> </span><span class="k">local</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">select</span><span class="w"> </span><span class="p">...</span><span class="w">
+</span><span class="w"></span><span class="k">select</span><span class="w"> </span><span class="p">...</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="n">Unlock</span><span class="w"> </span><span class="k">table</span><span class="p">;</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ol>
+<h2 id="innodb-锁">InnoDB 锁</h2>
+<p>和 <strong>MyISAM</strong> 最的不同是</p>
+<ol>
+<li>InnoDB 支持事务</li>
+<li>InnoDB 支持行锁</li>
+</ol>
+<p>InnoDB 实现了两种类型的行锁, <strong>共享和排他锁</strong></p>
+<table>
+<thead>
+<tr>
+<th>锁类型</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>共享锁 S</td>
+<td>事务在读取一行数据记录时候, 会加上 S 锁, 此时再有读请求过来会被满足, 但是写请求被阻塞. 如果一个事务 A 对一个数据集上了 S 锁, 那么 事物 A 无法对数据集进行修改, 只能读相关的数据集. 且此时其他的事务可与对这个数据集上 S 锁, 但是还是无法上 X 锁</td>
+</tr>
+<tr>
+<td>排他锁 X</td>
+<td>阻止其他事物取得相同数据集的 S, X 锁. 如果事务 A 对于一个数据集上了 X 锁, 那么会阻止其他事务上 S, X 锁</td>
+</tr>
+</tbody>
+</table>
+<p>注意一个关键点 :</p>
+<p>**InnoDB 下 : **</p>
+<p><code>update, insert, delete</code> 等语句都会默认的给要操作的数据集加上 X 锁</p>
+<p>但是一般的 <code>select</code> 语句是默 认不加锁的, <strong>是 S, X 锁都不加</strong>. 也就是说, 在一个数据集被加了 X, S 锁的情况下, 一般的 <code>select</code> 语句照样可以执行</p>
+<p><strong>但是不走一般情况<code>select</code> 语句也是可以加锁的</strong></p>
+<ul>
+<li>**select 语句加 S 锁 : **  <code>select * from table lock in share mode</code></li>
+<li>**select 语句加 X 锁 : ** <code>select * from table for update</code></li>
+</ul>
+<h1 id="innodb-并发事务带来的问题">InnoDB 并发事务带来的问题</h1>
+<p>在 <strong>InnoDB based</strong> 的数据库上, 事务是一个最小的逻辑处理单元. 默认在没有开启事物的情况下, <strong>InnoDB 一个语句就是一个事物 (隐式的开启, 提交)</strong></p>
+<p>总结对应关系 :</p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>描述</th>
+<th>隔离级别</th>
+<th>防止问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>脏读</td>
+<td>事务1读取了事务2对某个字段 <strong>未提交的修改</strong>, 然后事务2 Rollback, 此时事务1使用的数据即为脏数据</td>
+<td>Read Uncommited</td>
+<td>None</td>
+</tr>
+<tr>
+<td>丢失修改</td>
+<td>事务1, 事务2 同时对某一个字段进行了修改, 由于事务的隔离性, 会导致修改结果覆盖</td>
+<td>Read Commited</td>
+<td>脏读</td>
+</tr>
+<tr>
+<td>不可重读</td>
+<td>事务1, 读取事物2提交前后的字段结果不一样</td>
+<td>Non-repeated-Reda</td>
+<td>脏读, 丢失修改</td>
+</tr>
+<tr>
+<td>幻读</td>
+<td>事务1 统计时候, 事务2的 <strong>增删</strong>, 导致统计结果不同</td>
+<td>SERIALIZABLE</td>
+<td>前三种</td>
+</tr>
+</tbody>
+</table>
+<p>一个事务便可以看成一个线程, 和并发程序一样, 多事务并行的话, 可能会造成下列一些问题 :</p>
+<ul>
+<li>
+<p><strong>脏读（Dirty read）</strong> :  一个事物对一个数据进行了修改, <strong>但是还没有提交的时候</strong>, 此时另一个事务读取了这个 <strong>还没有提交的</strong> 的数据, 从而形成了不正确的操作 e.g.</p>
+<p><img src="/image/DirtyRead.png" alt="DirtyRead"></p>
+</li>
+<li>
+<p><strong>丢失修改（Lost to modify)</strong> : 两个事务同时对一个数据进行了修改, 便可能造成其中一个修改丢失 .e.g. 事务一 执行 A = A +1 的时候, 事务B执行 A = A + 10, 由于两个事务读取的 A 一样, 从而, 最后会丢失一次修改</p>
+</li>
+<li>
+<p><strong>不可重复读（Unrepeatableread）:</strong> 值在一个事务内, 多次读取一个数据, 在前一次读取后, 另一个事务对这个数据进行了修改, 从而下一次读取造成了 <strong>两次读取不一致的</strong> 的情况 e.g.</p>
+<p><img src="/image/Non-repeatable.png" alt="Non-repeatable"></p>
+</li>
+<li>
+<p><strong>幻读（Phantom read）:</strong> 在一个 事务T1 读取多行数据的时候, 另一个事务T2 在对这多行数据进行了 <strong>删除 OR 新增</strong> , 从而事务T1 再次读取的时候 便发现可原来并不存在的数据</p>
+</li>
+</ul>
+<p><img src="/image/Phantom_read.png" alt="Phantom_read"></p>
+<p><strong>不可重复度和幻读区别：</strong></p>
+<p>不可重复读的重点是 <strong>修改</strong>，幻读的重点在于 <strong>新增或者删除</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">例1（同样的条件, 你读取过的数据, 再次读取出来发现值不一样了 ）：事务1中的A先生读取自己的工资为 1000的操作还没完成，事务2中的B先生就修改了A的工资为2000，导 致A再读自己的工资时工资变为 2000；这就是不可重复读。
+
+例2（同样的条件, 第1次和第2次读出来的记录数不一样 ）：假某工资单表中工资大于3000的有4人，事务1读取了所有工资大于3000的人，共查到4条记录，这时事务2 又插入了一条工资大于3000的记录，事务1再次读取时查到的记录就变为了5条，这样就导致了幻读。
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="事务隔离级别">事务隔离级别</h1>
+<p>针对以上四个问题,  数据库设计了四种隔离级别, <strong>实现难度和消耗依次上升</strong></p>
+<ul>
+<li><strong>READ-UMCOMMITED(读取未提交)</strong> : 最低级别的隔离, 以上提到的问题都不能避免</li>
+<li><strong>READ-COMMITED(读取提交)</strong> : <strong>只</strong>允许事务读取已经提交的数据, <strong>可以防止 脏读, 但是幻读或不可重复读仍有可能发生</strong>。</li>
+<li><strong>REPEATABLE-READ(可重复读)：</strong> 同一事务, 对同一字段多次读取的结果是一致的, 除非事务自己修改, <strong>但是不能防止 幻读</strong></li>
+<li><strong>SERIALIZABLE(可串行化) :</strong> 最高的隔离级别，完全服从ACID的隔离级别。<strong>所有的事务依次逐个执行</strong>，这样事务之间就完全不可能产生干扰，也就是说，<strong>该级别可以防止脏读、不可重复读以及幻读</strong>。</li>
+</ul>
+<p><strong>InnoDB</strong> 默认的事务隔离级别为 <strong>可重复读</strong> , 也可以根据自己业务进行调整, 显然的时候, 隔离级别越高, 安全性能越高, 但是时间消耗也越高, 所以对于需要根据具体的业务动态的权衡</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-14
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/linux/%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">进程管理</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/linux/%E9%AA%9A%E6%93%8D%E4%BD%9C/">
+            <span class="next-text nav-default">骚操作</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

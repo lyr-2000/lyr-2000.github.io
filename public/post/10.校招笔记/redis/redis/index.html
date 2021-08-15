@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Redis - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="Redis 一. 概述 二. 数据类型 String List (列表) set 集合 hset 散列表 zset 有序集合 字段自增命令 Redis 获得所有的 key 值 三. Redis 持久化方式 四. Redis 如何于 MySQL保持数据的一致性" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.86.0 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/redis/redis/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="Redis" />
+<meta property="og:description" content="Redis 一. 概述 二. 数据类型 String List (列表) set 集合 hset 散列表 zset 有序集合 字段自增命令 Redis 获得所有的 key 值 三. Redis 持久化方式 四. Redis 如何于 MySQL保持数据的一致性" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/redis/redis/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-08-14T22:43:02+08:00" />
+<meta property="article:modified_time" content="2021-08-14T22:43:02+08:00" />
+
+<meta itemprop="name" content="Redis">
+<meta itemprop="description" content="Redis 一. 概述 二. 数据类型 String List (列表) set 集合 hset 散列表 zset 有序集合 字段自增命令 Redis 获得所有的 key 值 三. Redis 持久化方式 四. Redis 如何于 MySQL保持数据的一致性"><meta itemprop="datePublished" content="2021-08-14T22:43:02+08:00" />
+<meta itemprop="dateModified" content="2021-08-14T22:43:02+08:00" />
+<meta itemprop="wordCount" content="4234">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Redis"/>
+<meta name="twitter:description" content="Redis 一. 概述 二. 数据类型 String List (列表) set 集合 hset 散列表 zset 有序集合 字段自增命令 Redis 获得所有的 key 值 三. Redis 持久化方式 四. Redis 如何于 MySQL保持数据的一致性"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Redis</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-14 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#redis">Redis</a></li>
+    <li><a href="#一-概述">一. 概述</a></li>
+    <li><a href="#二-数据类型及命令">二. 数据类型及命令</a>
+      <ul>
+        <li><a href="#string">string</a></li>
+        <li><a href="#list-列表">list (列表)</a></li>
+        <li><a href="#set-集合">set 集合</a></li>
+        <li><a href="#hset-散列表">hset 散列表</a></li>
+        <li><a href="#zset-有序集合">zset 有序集合</a></li>
+        <li><a href="#字段自增命令">字段自增命令</a></li>
+        <li><a href="#key-值匹配">key 值匹配</a></li>
+        <li><a href="#选择数据库">选择数据库</a></li>
+      </ul>
+    </li>
+    <li><a href="#三-redis-持久化方式">三. Redis 持久化方式</a></li>
+    <li><a href="#四-redis-如何于-mysql保持数据的一致性">四. Redis 如何于 MySQL保持数据的一致性</a>
+      <ul>
+        <li><a href="#41-只读redis">4.1 只读Redis</a></li>
+        <li><a href="#42-做场景划分">4.2 做场景划分</a></li>
+      </ul>
+    </li>
+    <li><a href="#五-redis-和-memcached-比较">五. Redis 和 Memcached 比较</a>
+      <ul>
+        <li><a href="#51-数据类型">5.1 数据类型</a></li>
+        <li><a href="#52-数据持久化">5.2 数据持久化</a></li>
+        <li><a href="#53-分布式">5.3 分布式</a></li>
+        <li><a href="#54-内存管理机制">5.4 内存管理机制</a></li>
+        <li><a href="#55-线程模型">5.5 线程模型</a></li>
+      </ul>
+    </li>
+    <li><a href="#六-redis-单线程结构">六. Redis 单线程结构</a>
+      <ul>
+        <li><a href="#为什么单线程的条件下-还非常的块">为什么单线程的条件下, 还非常的块</a></li>
+      </ul>
+    </li>
+    <li><a href="#七-redis-的底层数据结构">七. Redis 的底层数据结构</a></li>
+    <li><a href="#八-redis-过期时间">八. Redis 过期时间</a></li>
+    <li><a href="#九-redis-事务">九. Redis 事务</a></li>
+    <li><a href="#十-redis-乐观锁实现数据同步">十. Redis 乐观锁实现数据同步</a></li>
+    <li><a href="#十一-redis-底层数据结构">十一. Redis 底层数据结构</a>
+      <ul>
+        <li><a href="#散列表-字典">散列表 (字典)</a></li>
+        <li><a href="#跳跃表-有序集合">跳跃表 (有序集合)</a></li>
+      </ul>
+    </li>
+    <li><a href="#十二-redis-过期策略">十二. Redis 过期策略</a>
+      <ul>
+        <li><a href="#删除过期键对象">删除过期键对象</a></li>
+        <li><a href="#内存溢出回收策略">内存溢出回收策略</a></li>
+      </ul>
+    </li>
+    <li><a href="#十三-缓存可能存在的安全隐患">十三. 缓存可能存在的安全隐患</a>
+      <ul>
+        <li><a href="#缓存穿透">缓存穿透</a>
+          <ul>
+            <li><a href="#步隆过滤器">步隆过滤器</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <ul>
+<li><a href="#redis">Redis</a></li>
+<li><a href="#%E4%B8%80-%E6%A6%82%E8%BF%B0">一. 概述</a></li>
+<li><a href="#%E4%BA%8C-%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B">二. 数据类型</a>
+<ul>
+<li><a href="#string">String</a></li>
+<li><a href="#list-%E5%88%97%E8%A1%A8">List (列表)</a></li>
+<li><a href="#set-%E9%9B%86%E5%90%88">set 集合</a></li>
+<li><a href="#hset-%E6%95%A3%E5%88%97%E8%A1%A8">hset 散列表</a></li>
+<li><a href="#zset-%E6%9C%89%E5%BA%8F%E9%9B%86%E5%90%88">zset 有序集合</a></li>
+<li><a href="#%E5%AD%97%E6%AE%B5%E8%87%AA%E5%A2%9E%E5%91%BD%E4%BB%A4">字段自增命令</a></li>
+<li><a href="#redis-%E8%8E%B7%E5%BE%97%E6%89%80%E6%9C%89%E7%9A%84-key-%E5%80%BC">Redis 获得所有的 key 值</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%89-redis-%E6%8C%81%E4%B9%85%E5%8C%96%E6%96%B9%E5%BC%8F">三. Redis 持久化方式</a></li>
+<li><a href="#%E5%9B%9B-redis-%E5%A6%82%E4%BD%95%E4%BA%8E-mysql%E4%BF%9D%E6%8C%81%E6%95%B0%E6%8D%AE%E7%9A%84%E4%B8%80%E8%87%B4%E6%80%A7">四. Redis 如何于 MySQL保持数据的一致性</a>
+<ul>
+<li><a href="#41-%E5%8F%AA%E8%AF%BBredis">4.1 只读Redis</a></li>
+<li><a href="#42-%E5%81%9A%E5%9C%BA%E6%99%AF%E5%88%92%E5%88%86">4.2 做场景划分</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BA%94-redis-%E5%92%8C-memcached-%E6%AF%94%E8%BE%83">五. Redis 和 Memcached 比较</a>
+<ul>
+<li><a href="#51-%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B">5.1 数据类型</a></li>
+<li><a href="#52-%E6%95%B0%E6%8D%AE%E6%8C%81%E4%B9%85%E5%8C%96">5.2 数据持久化</a></li>
+<li><a href="#53-%E5%88%86%E5%B8%83%E5%BC%8F">5.3 分布式</a></li>
+<li><a href="#54-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6">5.4 内存管理机制</a></li>
+<li><a href="#55-%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B">5.5 线程模型</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%AD-redis-%E5%8D%95%E7%BA%BF%E7%A8%8B%E7%BB%93%E6%9E%84">六. Redis 单线程结构</a>
+<ul>
+<li><a href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%95%E7%BA%BF%E7%A8%8B%E7%9A%84%E6%9D%A1%E4%BB%B6%E4%B8%8B-%E8%BF%98%E9%9D%9E%E5%B8%B8%E7%9A%84%E5%9D%97">为什么单线程的条件下, 还非常的块</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%83-redis-%E7%9A%84%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">七. Redis 的底层数据结构</a></li>
+<li><a href="#%E5%85%AB-redis-%E8%BF%87%E6%9C%9F%E6%97%B6%E9%97%B4">八. Redis 过期时间</a></li>
+<li><a href="#%E4%B9%9D-redis-%E4%BA%8B%E5%8A%A1">九. Redis 事务</a></li>
+<li><a href="#%E5%8D%81-redis-%E4%B9%90%E8%A7%82%E9%94%81%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5">十. Redis 乐观锁实现数据同步</a></li>
+<li><a href="#%E5%8D%81%E4%B8%80-redis-%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">十一. Redis 底层数据结构</a>
+<ul>
+<li><a href="#%E6%95%A3%E5%88%97%E8%A1%A8-%E5%AD%97%E5%85%B8">散列表 (字典)</a></li>
+<li><a href="#%E8%B7%B3%E8%B7%83%E8%A1%A8-%E6%9C%89%E5%BA%8F%E9%9B%86%E5%90%88">跳跃表 (有序集合)</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8D%81%E4%BA%8C-redis-%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5">十二. Redis 过期策略</a>
+<ul>
+<li><a href="#%E5%88%A0%E9%99%A4%E8%BF%87%E6%9C%9F%E9%94%AE%E5%AF%B9%E8%B1%A1">删除过期键对象</a></li>
+<li><a href="#%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E5%9B%9E%E6%94%B6%E7%AD%96%E7%95%A5">内存溢出回收策略</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8D%81%E4%B8%89-%E7%BC%93%E5%AD%98%E5%8F%AF%E8%83%BD%E5%AD%98%E5%9C%A8%E7%9A%84%E5%AE%89%E5%85%A8%E9%9A%90%E6%82%A3">十三. 缓存可能存在的安全隐患</a>
+<ul>
+<li><a href="#%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F">缓存穿透</a>
+<ul>
+<li><a href="#%E6%AD%A5%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8">步隆过滤器</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="redis">Redis</h1>
+<p>[TOC]</p>
+<h1 id="一-概述">一. 概述</h1>
+<ul>
+<li>
+<p>速度非常快的 NoSQL 内存数据库</p>
+</li>
+<li>
+<p>键值对的形式进行存储 (Key-Value), 其中 key 只能为字符串, Value <strong>支持五种形式</strong></p>
+</li>
+<li>
+<p>Redis 支持将数据写入硬盘, 下次使用的时候, 直接从硬盘读取</p>
+</li>
+<li>
+<p>Redis 是一个 效率非常高的 <strong>单线程 epoll 的IO多路复用模型</strong></p>
+</li>
+</ul>
+<h1 id="二-数据类型及命令">二. 数据类型及命令</h1>
+<p><img src='/image/2019-08-01-Redis-datastruct.png' /></p>
+<table>
+<thead>
+<tr>
+<th>数据类型</th>
+<th>可以存储的值</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>STRING</td>
+<td>字符串、整数或者浮点数</td>
+<td>1. 对整个字符串或者字符串的其中一部分执行操作  2.  对整数和浮点数执行自增或者自减操作</td>
+</tr>
+<tr>
+<td>LIST</td>
+<td>一个链表, 存的值为 字符串</td>
+<td>从两端压入或者弹出元素  对单个或者多个元素进行修剪， 只保留一个范围内的元素</td>
+</tr>
+<tr>
+<td>SET</td>
+<td>无序集合</td>
+<td>添加、获取、移除单个元素 检查一个元素是否存在于集合中 计算交集、并集、差集 从集合里面随机获取元素</td>
+</tr>
+<tr>
+<td>HASH</td>
+<td>包含键值对的无序散列表</td>
+<td>添加、获取、移除单个键值对 获取所有键值对 检查某个键是否存在</td>
+</tr>
+<tr>
+<td>ZSET</td>
+<td>有序集合</td>
+<td>添加、获取、删除元素 根据分值范围或者成员来获取元素 计算一个键的排名</td>
+</tr>
+</tbody>
+</table>
+<h2 id="string">string</h2>
+<p>String  是 Redis 中最简单的结构 仅仅支持三种命令:</p>
+<ul>
+<li>
+<p>Set : 设置值</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 表示 key =&gt; name </span>
+<span class="c1"># value =&gt; fangzhou</span>
+SET name fangzhou
+
+<span class="c1"># value 之间如果有空格需要打上双引号</span>
+SET name <span class="s2">&#34;fang zhou&#34;</span>
+
+<span class="c1"># ❌</span>
+SET name fang zhou
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>Get : 获取值</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">get name
+&gt; fangzhou
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>Del : 删除值</p>
+</li>
+</ul>
+<h2 id="list-列表">list (列表)</h2>
+<ul>
+<li>
+<p>有序性 : 基于队列实现 (FIFO, 先进先出) 的结构</p>
+</li>
+<li>
+<p>重复性: <strong>List 允许有相同的元素出现</strong></p>
+</li>
+</ul>
+<p>有如下命令</p>
+<table>
+<thead>
+<tr>
+<th>command</th>
+<th>des</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rpush [list_name] [item]</td>
+<td>List中压入一个值</td>
+</tr>
+<tr>
+<td>lpop    [list_name]</td>
+<td>List中取出一个值</td>
+</tr>
+<tr>
+<td>lindex [list_name] [index]</td>
+<td>List中以 index (索引) 查找一个值</td>
+</tr>
+<tr>
+<td>lrange [list_name][begin][end]</td>
+<td>list中查找 [begin][end] 范围的值</td>
+</tr>
+</tbody>
+</table>
+<h2 id="set-集合">set 集合</h2>
+<ul>
+<li>唯一性: <strong>和列表的区别 : 集合不允许有相同的元素出现</strong> (通过 <strong>散列表</strong> 的方式实现)</li>
+<li>无序性 : 使用无序的方式存储数据 (字符串) , 所以不能保证元素的取出顺序</li>
+</ul>
+<p>对于集合的操作命令 :</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sadd [set_name] [item]</td>
+<td>给集合添加一个元素</td>
+</tr>
+<tr>
+<td>smembers [set_name]</td>
+<td>显示集合的所有元素</td>
+</tr>
+<tr>
+<td>sismember [set_name][item]</td>
+<td>检查 item 是不是在集合中, 返回一个布尔值</td>
+</tr>
+<tr>
+<td>srem [set_name] [item]</td>
+<td>如果item 在集合中, 那么删除它</td>
+</tr>
+</tbody>
+</table>
+<h2 id="hset-散列表">hset 散列表</h2>
+<p>一个微小版本的 Redis, 因为Redis就是这种 Key =&gt; Value 的形式, 而 Redis 里面的 散列表 就是存储了这样的一些键值对</p>
+<img src='/image/2019-08-01-hset.png' style='width:500px'/>
+<p>命令如下 :</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hset [hash_name] [key] [ value]</td>
+<td>在 hash_name 的表里面存储一对 key =&gt; value</td>
+</tr>
+<tr>
+<td>hget [hash_name] [key]</td>
+<td>获取 hash_name 的表里面的 key 对应的 值</td>
+</tr>
+<tr>
+<td>hgetall [hash_name]</td>
+<td>获取hash_name 所有的值</td>
+</tr>
+<tr>
+<td>hdel [hash_name] [key]</td>
+<td>删除 hash_table 里的 key =&gt; value 对</td>
+</tr>
+</tbody>
+</table>
+<h2 id="zset-有序集合">zset 有序集合</h2>
+<p><img src ='https://github.com/CyC2018/CS-Notes/raw/master/notes/pics/1202b2d6-9469-4251-bd47-ca6034fb6116.png' style="width:400px" ></p>
+<ul>
+<li>zset 是redis中 唯一 既支持 (key =&gt; value)访问形式, 又支持顺序(index) 访问的数据结构</li>
+</ul>
+<p>命令如下:</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>zadd [zset_name] [scores] [member_name]</td>
+<td>给有序集合添加一个成员, 其中 排序分数[scores] 必须为 数字类型 (int , double). <strong>插入成员的时候就按照 [scores] 排序</strong></td>
+</tr>
+<tr>
+<td>zrange [zset_name] [begin][end]  -[withscores]</td>
+<td>查看 zset_name 中所有的member, withscores 为可选项表示 输出带有 scores. 否则只输出 member</td>
+</tr>
+<tr>
+<td>zrangebysrcore [zset_name]  [scores-begin] [scores-end] -[withscores]</td>
+<td>按分数筛选 zset_name 里面的 member [scores-begin] [scores-end], 为查找分数的范围</td>
+</tr>
+<tr>
+<td>zrem [zset_name][member_name]</td>
+<td>如果 set_name 里面有 member_name 则删除该成员</td>
+</tr>
+</tbody>
+</table>
+<h2 id="字段自增命令">字段自增命令</h2>
+<p>Redis 支持对某个字段的自增操作</p>
+<p>对于字段的自增操作分为两种情况  :</p>
+<ul>
+<li>
+<p><strong>如果 value 值为 string 类型, 那么可以直接使用 INCR / INCRBY 命令</strong></p>
+<p><code>INCR age</code> 对 <code>age </code> 的 value 值进行自增操作, 如果值不存在, 那么初始化为 0 再执行自增</p>
+<p><code>INCRBY age increment</code>  对 age 的 value 执行增量为 <code>increment</code> 的操作, 增量为负的情况下, 即为自减. 同样的, 如果不存在某个值, 则初始化为 0 再执行操作</p>
+</li>
+<li>
+<p><strong>如果 value 值为 HashMap, 那么需要使用 HINCRBY 命令</strong></p>
+<p><code>HINCRBY myHashSet age 10</code> 表示对哈希表 myHashSet 的 age 字段自增 10</p>
+</li>
+</ul>
+<h2 id="key-值匹配">key 值匹配</h2>
+<p>通过 <code>Keys pattern</code> 的命令去实现对我们 redis 里面所有的 keys 的查询.</p>
+<p><strong>注意, 对于五种数据类型的 value 值, key 值都是通过这个命令去获得</strong></p>
+<p>比如在投票场景 :</p>
+<p>我们可以通过 voteHashSet_voteId_userId 作为哈希表的 key 值. 在投票场景便可以通过这种方式去实现 key值查找</p>
+<p>比如投票1的候选人hashset如下 :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">voteHashSet_1_2
+voteHashSet_1_3
+voteHashSet_1_4
+</code></pre></td></tr></table>
+</div>
+</div><p>那么我们返回所有候选者信息的时候, 就可以使用</p>
+<p><code>keys voteHashSet_1_*</code> 去找到所有和这次投有关的候选人哈希表的 key 值, 从而实现遍历</p>
+<h2 id="选择数据库">选择数据库</h2>
+<p>Redis Select 命令用于切换到指定的数据库，数据库索引号 index 用数字值指定，以 0 作为起始索引值。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># index = 0, 1, 2 代表不同的数据库</span>
+redis 127.0.0.1:6379&gt; SELECT index 
+</code></pre></td></tr></table>
+</div>
+</div><p>不同数据库之间数据隔离, 比如 :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">redis 127.0.0.1:6379&gt; SET db_number <span class="m">0</span>         <span class="c1"># 默认使用 0 号数据库</span>
+OK
+
+redis 127.0.0.1:6379&gt; SELECT <span class="m">1</span>                <span class="c1"># 使用 1 号数据库</span>
+OK
+
+redis 127.0.0.1:6379<span class="o">[</span>1<span class="o">]</span>&gt; GET db_number        <span class="c1"># 已经切换到 1 号数据库，注意 Redis 现在的命令提示符多了个 [1]</span>
+<span class="o">(</span>nil<span class="o">)</span>
+
+redis 127.0.0.1:6379<span class="o">[</span>1<span class="o">]</span>&gt; SET db_number <span class="m">1</span>
+OK
+
+redis 127.0.0.1:6379<span class="o">[</span>1<span class="o">]</span>&gt; GET db_number
+<span class="s2">&#34;1&#34;</span>
+
+redis 127.0.0.1:6379<span class="o">[</span>1<span class="o">]</span>&gt; SELECT <span class="m">3</span>             <span class="c1"># 再切换到 3 号数据库</span>
+OK
+
+redis 127.0.0.1:6379<span class="o">[</span>3<span class="o">]</span>&gt;                      <span class="c1"># 提示符从 [1] 改变成了 [3]</span>
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="三-redis-持久化方式">三. Redis 持久化方式</h1>
+<p>Redis 有两种方式可以将内存的数据转存到磁盘, 实现持久化存储.</p>
+<ul>
+<li>
+<p><strong>快照的方式(snapshotting, RDB)</strong> :</p>
+<p>在某个时间点去形成数据库中, 所有数据的副本, 然后将快照进行存储备份</p>
+</li>
+<li>
+<p>🌟<strong>只追加文件（append-only file, AOF）</strong></p>
+<p>这种方式为现在的主流方法, 主要思想是, 执行命令后, 将命令输出到磁盘上.</p>
+<p>输出的时机有三种 : <strong>每执行一次命令</strong> , <strong>一秒中执行一次</strong> , <strong>让系统决定</strong></p>
+</li>
+</ul>
+<p>两种方式既可以单独使用, 也可以同时使用</p>
+<h1 id="四-redis-如何于-mysql保持数据的一致性">四. Redis 如何于 MySQL保持数据的一致性</h1>
+<p>Redis 作为缓存层, 如何保证和 MySQL 的一致性, 我们有如下的策略</p>
+<h2 id="41-只读redis">4.1 只读Redis</h2>
+<p>我们可以处理数据请求时, 分为读请求和写请求:</p>
+<p><strong>对于读请求 :</strong></p>
+<p>如果 Redis有 , 则我们直接返回Redis的数据</p>
+<p><strong>对于写请求</strong></p>
+<p>我们直接写入 MySQL, 然后同步更新 Redis</p>
+<h2 id="42-做场景划分">4.2 做场景划分</h2>
+<p>对于 <strong>实时性高的数据</strong> 我们使用 MySQL 直接存储, 比如 : 实时的金融数据, 比分数据, 这些存入缓存也没有用</p>
+<p>对于 <strong>实时性较低的数据</strong></p>
+<ol>
+<li>
+<p>在并放性不高的情况下 :  我们 则经过 Redis 缓存层, 比如排行榜, 好有列表等. <strong>读操作</strong> 直接走Redis, <strong>写操作</strong> 可以 MySQL端定义CRUD触发器，在触发CRUD操作后写数据到Redis</p>
+</li>
+<li>
+<p>在高放性情况下 : 对于写操作, 我们可以先在 Redis 修改直接返回, 然后定期写入MySQL即可</p>
+</li>
+</ol>
+<h1 id="五-redis-和-memcached-比较">五. Redis 和 Memcached 比较</h1>
+<p>两者都是非关系型内存键值数据库，主要有以下不同：</p>
+<h2 id="51-数据类型">5.1 数据类型</h2>
+<p>Memcached 只支持字符串类型, Redis 支持五种不同的数据类型</p>
+<h2 id="52-数据持久化">5.2 数据持久化</h2>
+<p>Redis 支持两种持久化策略：RDB 快照和 AOF 日志，而 Memcached 不支持持久化。</p>
+<h2 id="53-分布式">5.3 分布式</h2>
+<ul>
+<li>Memcached 不支持分布式, 只能自己用 一致性Hash实现</li>
+<li>Redis Cluster 实现了分布式的支持</li>
+</ul>
+<h2 id="54-内存管理机制">5.4 内存管理机制</h2>
+<ul>
+<li>在 Redis 中，并不是所有数据都一直存储在内存中，可以将一些很久没用的 value 交换到磁盘，而 Memcached 的数据则会一直在内存中。</li>
+</ul>
+<h2 id="55-线程模型">5.5 线程模型</h2>
+<p>Memcached 是 <strong>多线程模型, 使用的非阻塞 IO复用</strong> 的网络模型</p>
+<p>Redis 使用 <strong>单线程的多路IO</strong> 模型</p>
+<h1 id="六-redis-单线程结构">六. Redis 单线程结构</h1>
+<blockquote>
+<p><a href="https://www.jianshu.com/p/4022fbcbbc0a">Redis运行机制</a></p>
+</blockquote>
+<p><code>Redis </code>底层使用单线程模型.</p>
+<p>redis单线程取到了相关套接字之后对其进行读写，这里以客户端发来set key value命令为例子，单线程读取到这个命令之后，对命令进行解析、查找命令表、调用命令对应的函数、写入数据库、返回写入结果给客户端。也就是说redis单线程除了负责读写套接字还负责执行命令的业务逻辑。除此之外redis单线程还负责调用垃圾回收函数进行垃圾回收。</p>
+<p>也就是说, <code>Redis</code> 单线程管所有的操作, 全套服务</p>
+<h2 id="为什么单线程的条件下-还非常的块">为什么单线程的条件下, 还非常的块</h2>
+<ol>
+<li><code>Redis</code> 底层使用了一些特殊的数据结构, 比如 <strong>跳跃表</strong> 等等, 在存储数据结构的优化上, 让数据的存储更加的快速</li>
+<li>使用了 <code>IO多路复用技术</code> , 底层封装了四种, 选择性能最优的执行.</li>
+</ol>
+<h1 id="七-redis-的底层数据结构">七. Redis 的底层数据结构</h1>
+<h1 id="八-redis-过期时间">八. Redis 过期时间</h1>
+<p>我们可以自己设置一个 <code>key</code> 的过期时间, 从而 <code>redis </code>在时间到的时候, 便会自动的将其删除</p>
+<p>那么到时间后, 将这一批 <code>key</code> 删除的策略有</p>
+<ul>
+<li>
+<p>定期删除 :</p>
+<p><strong>定期抽取部分删</strong></p>
+<p>redis默认是每隔 100ms 就<strong>随机抽取</strong>一些设置了过期时间的key，检查其是否过期，如果过期就删除。注意这里是随机抽取的。为什么要随机呢？你想一想假如 redis 存了几十万个 key ，每隔100ms就遍历所有的设置过期时间的 key 的话，就会给 CPU 带来很大的负载！</p>
+</li>
+<li>
+<p>惰性删除</p>
+<p><strong>查了删</strong></p>
+<p>定期删除可能会导致很多过期 key 到了时间并没有被删除掉。所以就有了惰性删除。假如你的过期 key，靠定期删除没有被删除掉，还停留在内存里，除非你的系统去查一下那个 key，才会被redis给删除掉。这就是所谓的惰性删除，也是够懒的哈！</p>
+</li>
+</ul>
+<h1 id="九-redis-事务">九. Redis 事务</h1>
+<p>redis 通过 <code>MULTI</code> , <code>EXEC</code>, <code>WATCH</code> 等命令来实现事务的功能.</p>
+<p>redis 事务一次将多个请求打包, 然后按照顺序执行多个命令的机制, 且期间不会中断去执行其他客户端的请求</p>
+<p>在传统的事务特点 <code>ACID</code> , redis 具有  <code>一致性</code>, <code>隔离性</code>  , 但是不能保证 <code>原子性</code> , <code>持久性</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 开启事务</span>
+MULTI
+
+<span class="c1"># 这一系列操作会被先放入操作队列</span>
+<span class="c1"># 然后在 EXEC 的时候一起执行</span>
+<span class="c1"># 但是其中有一条命令执行不成功, 不会引起其他命令的执行 =&gt; 不具有 ·原子性·</span>
+<span class="nb">set</span> name fz
+<span class="nb">set</span> age <span class="m">20</span>
+...
+
+<span class="c1"># 执行事务</span>
+<span class="nb">exec</span>
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="十-redis-乐观锁实现数据同步">十. Redis 乐观锁实现数据同步</h1>
+<p><code>Redis</code> 可以利用 <code>Watch </code>+ <code>MULTI</code> + <code>EXEC</code> 组合命令的方式 去实现一个 <code>key</code> 值的同步操作</p>
+<p>使用场景如下 , 当有两个 <code>Clients</code> 同时对 <code>Redis</code> 的某一 <code>key</code>  值操作:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># Client-1</span>
+get votes 
+
+<span class="c1"># cilent-2</span>
+get votes
+
+
+<span class="c1"># 此时预期的结果应该是 votes 加二, 可以结果仅为加一</span>
+
+
+<span class="c1"># client1</span>
+<span class="nb">set</span> <span class="nv">votes</span> <span class="o">=</span>&gt; votes + <span class="m">1</span>
+
+<span class="c1"># client2</span>
+<span class="nb">set</span> <span class="nv">votes</span> <span class="o">=</span>&gt; votes + <span class="m">1</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>要解决上面的问题, 我们可以用 <code>Watch</code> + 事务的操作</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># client1</span>
+watch votes
+
+<span class="c1"># 开启事务</span>
+multi
+
+get votes 
+<span class="nb">set</span> <span class="nv">votes</span> <span class="o">=</span>&gt; votes + <span class="m">1</span>
+
+<span class="c1"># 执行</span>
+<span class="nb">exec</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>此时如果 <code>client2</code> 来了之后, 如果对 <code>Votes</code> 值进行了改变, 那么这个 <strong>事务的操作就会回滚</strong></p>
+<p><strong>从而实现了数据的安全.</strong></p>
+<h1 id="十一-redis-底层数据结构">十一. Redis 底层数据结构</h1>
+<h2 id="散列表-字典">散列表 (字典)</h2>
+<p>DICT 底层就是平常的 <strong>散列表</strong> 的数据结构, 使用拉链法解决 <strong>Hash冲突</strong></p>
+<h2 id="跳跃表-有序集合">跳跃表 (有序集合)</h2>
+<p><strong>有序集合 的底层数据结构之一</strong> 所以在 <strong>Redis</strong> 中 有序集合不是用 红黑树实现</p>
+<p>跳跃表是基于 <strong>多个有序链</strong> 表实现的 查询过程如下:</p>
+<p><img src='/image/2019-09-06-JumpTable1.png' /></p>
+<p>查找的时候, 从上层指针开始查找, 找到对应的区间到下一层去查找.</p>
+<p>查找 <strong>22</strong> , 首先 <strong>L2 到 25 超过 22 的范围, 指针下移</strong></p>
+<p><img src='/image/2019-09-06-JumpTable2.png' /></p>
+<p>和红黑树相比, 跳跃表有如下的有点 :</p>
+<ul>
+<li>插入非常快, 因为不需要 <strong>红黑树的自选平衡操作</strong></li>
+<li>更容易实现</li>
+<li>支持无锁操作</li>
+</ul>
+<h1 id="十二-redis-过期策略">十二. Redis 过期策略</h1>
+<p><strong>Redis 过期回收的时间 :</strong></p>
+<ul>
+<li>删除达到时间的键对象</li>
+<li>内存使用达到 <strong>Maxmemory</strong> 上限的时候触发内存溢出控制策略</li>
+</ul>
+<h2 id="删除过期键对象">删除过期键对象</h2>
+<p>主要针对的是, 如何删除键过期的对象, 如果是采用的过期即删除的方式, 那么对于 <strong>单线程的Redis</strong> 来说维护成本比较高, 所以一般采取如下的两种方法进行删除</p>
+<ul>
+<li>
+<p>惰性删除 : 当客户端下一次调用这个 <strong>Key-value</strong> 的时候, 如果发现已经过期, 那么会主动的将其删除</p>
+</li>
+<li>
+<p>定时任务删除 : 让 Redis 定时的去删除一些过去的过期的 <code>key-value</code></p>
+<p>​</p>
+</li>
+</ul>
+<h2 id="内存溢出回收策略">内存溢出回收策略</h2>
+<p>当 <strong>Redis</strong> 所占用的内存满了之后, 我们便需要从内存中淘汰数据, 淘汰的策略有如下几种选择 :</p>
+<ul>
+<li>
+<p>LRU 淘汰策略</p>
+</li>
+<li>
+<p>&hellip;.</p>
+</li>
+</ul>
+<h1 id="十三-缓存可能存在的安全隐患">十三. 缓存可能存在的安全隐患</h1>
+<h2 id="缓存穿透">缓存穿透</h2>
+<p>就是一直访问一个 缓存不存在的值, 同时这个值也不存在与数据库中, 从而每次的请求都会打到数据库上, 但是不会去给缓存写值, 因为根本不存在</p>
+<p>这种攻击便为 <strong>缓存穿透</strong></p>
+<h3 id="步隆过滤器">步隆过滤器</h3>
+<blockquote>
+<p><a href="https://www.jianshu.com/p/2104d11ee0a2">步隆过滤器</a></p>
+</blockquote>
+<p>当一个key值不在 redis的时候, 我们只需要去判断 这个要查询的值是否存在于我们的 mysql 中即可.</p>
+<p>如何去判断就是采用了我们的 <strong>布隆过滤器</strong> 的一个思想</p>
+<p>数据库中, 所有的</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-14
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/react-ecology/react/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">react</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/react-ecology/redux/">
+            <span class="next-text nav-default">redux</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

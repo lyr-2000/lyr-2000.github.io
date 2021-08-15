@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>关系数据库设计理论 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="[TOC] 一. 关系数据库设计理论 函数依赖 记 A-&amp;gt;B 表示 A 函数决定 B，也可以说 B 函数依赖于 A。 functional dependency A → B is valid in a relational table R or that A functionally determines B 假设 X, Y, Z be the nonempty subsets of {A1, &amp;hellip;, An}" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.86.0 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/mysql/%E5%85%B3%E7%B3%BB%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E7%90%86%E8%AE%BA/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="关系数据库设计理论" />
+<meta property="og:description" content="[TOC] 一. 关系数据库设计理论 函数依赖 记 A-&gt;B 表示 A 函数决定 B，也可以说 B 函数依赖于 A。 functional dependency A → B is valid in a relational table R or that A functionally determines B 假设 X, Y, Z be the nonempty subsets of {A1, &hellip;, An}" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/mysql/%E5%85%B3%E7%B3%BB%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E7%90%86%E8%AE%BA/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-08-14T22:43:02+08:00" />
+<meta property="article:modified_time" content="2021-08-14T22:43:02+08:00" />
+
+<meta itemprop="name" content="关系数据库设计理论">
+<meta itemprop="description" content="[TOC] 一. 关系数据库设计理论 函数依赖 记 A-&gt;B 表示 A 函数决定 B，也可以说 B 函数依赖于 A。 functional dependency A → B is valid in a relational table R or that A functionally determines B 假设 X, Y, Z be the nonempty subsets of {A1, &hellip;, An}"><meta itemprop="datePublished" content="2021-08-14T22:43:02+08:00" />
+<meta itemprop="dateModified" content="2021-08-14T22:43:02+08:00" />
+<meta itemprop="wordCount" content="1073">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="关系数据库设计理论"/>
+<meta name="twitter:description" content="[TOC] 一. 关系数据库设计理论 函数依赖 记 A-&gt;B 表示 A 函数决定 B，也可以说 B 函数依赖于 A。 functional dependency A → B is valid in a relational table R or that A functionally determines B 假设 X, Y, Z be the nonempty subsets of {A1, &hellip;, An}"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">关系数据库设计理论</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-14 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#一-关系数据库设计理论">一. 关系数据库设计理论</a>
+      <ul>
+        <li><a href="#函数依赖">函数依赖</a></li>
+        <li><a href="#异常">异常</a></li>
+        <li><a href="#范式-normal-form">范式 (Normal Form)</a>
+          <ul>
+            <li><a href="#inf-第一范式">INF (第一范式)</a></li>
+            <li><a href="#2nf-第二范式">2NF (第二范式)</a></li>
+            <li><a href="#3nf-第三范式">3NF (第三范式)</a></li>
+            <li><a href="#bcnf">BCNF</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>[TOC]</p>
+<h1 id="一-关系数据库设计理论">一. 关系数据库设计理论</h1>
+<h2 id="函数依赖">函数依赖</h2>
+<p>记 A-&gt;B 表示 A 函数决定 B，也可以说 B 函数依赖于 A。</p>
+<p>functional dependency A → B is valid in a  relational table R or that A functionally determines B</p>
+<hr>
+<p>假设  X, Y, Z be the nonempty subsets of {A1, &hellip;, An}</p>
+<p>我们有如下的结论 :</p>
+<ul>
+<li>
+<p>If Y ⊆ X then X → Y (reflexivity axiom) 如果 Y 属于 X 那么</p>
+</li>
+<li>
+<p>If X → Y then X, Z → Y, Z (augmentation axiom), 如果 X 确定 Y, 那么 X, Z 确定 Y. Z</p>
+</li>
+<li>
+<p>If X → Y and Y → Z then X → Z (transitivity axiom 传递函数依赖)</p>
+</li>
+</ul>
+<hr>
+<p>完全函数依赖 ( fully functionally dependent) 和 部分函数依赖 :</p>
+<p>对于 A-&gt;B，如果能找到 A 的真子集 A'，使得 A'-&gt; B，那么 A-&gt;B 就是 <strong>部分函数依赖</strong>，否则就是 <strong>完全函数依赖</strong></p>
+<p>简单来说 A -&gt; B 中 A是一个最小的集合, 那么 A对B就是完全函数依赖</p>
+<hr>
+<p><strong>如何确定 键码 :</strong></p>
+<p>如果 {A1，A2，&hellip; ，An} 是关系的一个或多个属性的 <strong>集合</strong> ，该集合函数 <strong>决定了关系的其它所有属性</strong> 并且是<strong>最小的</strong>，那么该集合就称为 <strong>键码</strong></p>
+<p>即 如果 X 为 R 的一个子集, 且如果 X 可以决定 R的其他所有的属性, 且 X 为最小的子集, 我们有, X 为 R的一个键码</p>
+<h2 id="异常">异常</h2>
+<p>以下展现一个 <strong>不符合范式</strong> 设计的数据表可能出现的问题</p>
+<p>以下的学生课程关系的函数依赖为 {Sno, Cname} -&gt; {Sname, Sdept, Mname, Grade} 即</p>
+<p><strong>键码为 {Sno, Cname}</strong>。也就是说，确定学生和课程之后，就能确定其它信息。</p>
+<table>
+<thead>
+<tr>
+<th>Sno</th>
+<th>Sname</th>
+<th>Sdept</th>
+<th>Mname</th>
+<th>Cname</th>
+<th>Grade</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>学生-1</td>
+<td>学院-1</td>
+<td>院长-1</td>
+<td>课程-1</td>
+<td>90</td>
+</tr>
+<tr>
+<td>2</td>
+<td>学生-2</td>
+<td>学院-2</td>
+<td>院长-2</td>
+<td>课程-2</td>
+<td>80</td>
+</tr>
+<tr>
+<td>2</td>
+<td>学生-2</td>
+<td>学院-2</td>
+<td>院长-2</td>
+<td>课程-1</td>
+<td>100</td>
+</tr>
+<tr>
+<td>3</td>
+<td>学生-3</td>
+<td>学院-2</td>
+<td>院长-2</td>
+<td>课程-2</td>
+<td>95</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>冗余数据：例如 <code>学生-2</code> 出现了两次。</li>
+<li>修改异常：修改了一个记录中的信息，但是另一个记录中相同的信息却没有被修改。</li>
+<li>删除异常：删除一个信息，那么也会丢失其它信息。例如删除了 <code>课程-1</code> 需要删除第一行和第三行，那么 <code>学生-1</code> 的信息就会丢失。</li>
+<li>插入异常：例如想要插入一个学生的信息，如果这个学生还没选课，那么就无法插入。</li>
+</ul>
+<h2 id="范式-normal-form">范式 (Normal Form)</h2>
+<p>范式的提出是为了解决以上的四种异常.</p>
+<p>高级别范式的依赖于低级别的范式，1NF 是最低级别的范式。</p>
+<h3 id="inf-第一范式">INF (第一范式)</h3>
+<p>第一范式要求, 我们设计的表的字段都是具有 <strong>原子性</strong>, 即表字段不可再分</p>
+<p>例如 :</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>address</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fz</td>
+<td>| Country| Province |City|Stresst |</td>
+</tr>
+</tbody>
+</table>
+<p>字段 address 又可以被分为 下面的四个字段 | Country| Province | City | Stresst |</p>
+<p>所以此时这个 字段不符合 <strong>原子性</strong></p>
+<p>这个表不符合 1NF (不符合 1NF 的表通常被称为 0NF)</p>
+<p><strong>注意, 符合1NF 仅仅是数据表设计的最基本的要求, 满足 1NF 仍然会有很多问题出现, 比如上面的例子表就符合1NF的要求</strong></p>
+<h3 id="2nf-第二范式">2NF (第二范式)</h3>
+<p>第二范式要求 : 我们的设计的表的 <strong>非主属性</strong> 完全依赖函数于 <strong>主属性 (主键)</strong></p>
+<p>完全函数依赖的概念再复习一遍 :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">已知 A , B 且 A -&gt; B.
+
+如果存在 A&#39; 为 A 的一个真子集, 且 A&#39; -&gt; B, 那么我们说, A, B为部分函数依赖
+
+否则为完全函数依赖
+</code></pre></td></tr></table>
+</div>
+</div><p>以上的 表设计举例, 我们有如下的 依赖关系 :</p>
+<p>{Sno, Cname} -&gt; {Sname, Sdept, Mname, Grade}</p>
+<p>且 观察表我们可以发现, 还有如下的依赖关系 :</p>
+<p>Sno -&gt; Sname, Sdept</p>
+<h3 id="3nf-第三范式">3NF (第三范式)</h3>
+<p>没有传递依赖</p>
+<h3 id="bcnf">BCNF</h3>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-14
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/zookeeper/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">zookeeper</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/">
+            <span class="next-text nav-default">分布式事务</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

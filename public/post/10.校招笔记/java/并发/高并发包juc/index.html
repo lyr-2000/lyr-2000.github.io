@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>高并发JUC - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="[TOC] 锁的类型 互斥锁 mutex 任意一个时刻, 都只能有一个现象访问该对象 常见的互斥锁有 : synchronized 底层的互斥信号量 ReentrantLock 读写锁 rwlock 分为读锁和写锁。处于读操作时，可以允许" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.86.0 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/java/%E5%B9%B6%E5%8F%91/%E9%AB%98%E5%B9%B6%E5%8F%91%E5%8C%85juc/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="高并发JUC" />
+<meta property="og:description" content="[TOC] 锁的类型 互斥锁 mutex 任意一个时刻, 都只能有一个现象访问该对象 常见的互斥锁有 : synchronized 底层的互斥信号量 ReentrantLock 读写锁 rwlock 分为读锁和写锁。处于读操作时，可以允许" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/java/%E5%B9%B6%E5%8F%91/%E9%AB%98%E5%B9%B6%E5%8F%91%E5%8C%85juc/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-08-14T22:43:02+08:00" />
+<meta property="article:modified_time" content="2021-08-14T22:43:02+08:00" />
+
+<meta itemprop="name" content="高并发JUC">
+<meta itemprop="description" content="[TOC] 锁的类型 互斥锁 mutex 任意一个时刻, 都只能有一个现象访问该对象 常见的互斥锁有 : synchronized 底层的互斥信号量 ReentrantLock 读写锁 rwlock 分为读锁和写锁。处于读操作时，可以允许"><meta itemprop="datePublished" content="2021-08-14T22:43:02+08:00" />
+<meta itemprop="dateModified" content="2021-08-14T22:43:02+08:00" />
+<meta itemprop="wordCount" content="1447">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="高并发JUC"/>
+<meta name="twitter:description" content="[TOC] 锁的类型 互斥锁 mutex 任意一个时刻, 都只能有一个现象访问该对象 常见的互斥锁有 : synchronized 底层的互斥信号量 ReentrantLock 读写锁 rwlock 分为读锁和写锁。处于读操作时，可以允许"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">高并发JUC</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-14 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#锁的类型">锁的类型</a>
+      <ul>
+        <li><a href="#互斥锁-mutex">互斥锁 mutex</a></li>
+        <li><a href="#读写锁-rwlock">读写锁 rwlock</a></li>
+      </ul>
+    </li>
+    <li><a href="#juc">J.U.C</a></li>
+    <li><a href="#synchronized-和-juc-效率区别">synchronized 和 J.U.C 效率区别</a></li>
+    <li><a href="#juc---aqs">J.U.C - AQS</a></li>
+    <li><a href="#semaphore-信号量-允许多个线程同时访问">Semaphore 信号量 允许多个线程同时访问</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>[TOC]</p>
+<h1 id="锁的类型">锁的类型</h1>
+<h2 id="互斥锁-mutex">互斥锁 mutex</h2>
+<p>任意一个时刻, 都只能有一个现象访问该对象</p>
+<p>常见的互斥锁有 :</p>
+<ul>
+<li>synchronized 底层的互斥信号量</li>
+<li>ReentrantLock</li>
+</ul>
+<h2 id="读写锁-rwlock">读写锁 rwlock</h2>
+<ul>
+<li>分为读锁和写锁。处于读操作时，可以允许多个线程</li>
+<li>同时获得读操作。但是同一时刻只能有一个线程可以获得写锁, 写锁的存在会阻塞其他获取读锁的线程.</li>
+</ul>
+<h1 id="juc">J.U.C</h1>
+<p><strong>J.U.C</strong> 即为 <code>java.util.concurrent</code>  , 由于这个包的引入, 大大提高了并发的性能</p>
+<p>在这个包的帮助下, 我们便可以实现一些自己的锁, 只需要继承 <code>lock</code> 接口</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MLock</span> <span class="kd">implements</span> <span class="n">Lock</span><span class="o">{</span>
+	<span class="c1">// ...
+</span><span class="c1"></span><span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><code>J.U.C</code> 已经包下实现了很多功能的锁如 :</p>
+<ul>
+<li>ReentrantLock</li>
+<li>Semaphore</li>
+<li>CountDownLatch</li>
+<li>&hellip;</li>
+</ul>
+<h1 id="synchronized-和-juc-效率区别">synchronized 和 J.U.C 效率区别</h1>
+<blockquote>
+<p><a href="http://www.lwyyyyyy.cn/getArticleDetailInfo?articleId=77">synchronized 和 AQS 效率问题</a></p>
+</blockquote>
+<p>因为 <code>synchronized</code> 在编译过后会生成<code>monitorenter</code>, <code>monitorexit</code> 指令, 这都是直接利用了</p>
+<p><code>os</code> 的互斥量机制, 是直接和 <code>os</code> 打交道, <strong>所以如果线程没有获得资源会立即阻塞</strong> 涉及到 用户态</p>
+<p>和核心态之间的切换, 这个切换会非常耗时.</p>
+<p>所以我们直接引入 <code>J.U.C</code> , 实现 <code>JDK</code> 层面的加锁, 在使用上,会先 <strong>尝试自旋</strong> 取锁, <strong>如果失败才会被阻塞</strong>, 从而一定</p>
+<p>程度上提高了同步的效率</p>
+<p>从而实现了 基于 <code>JDK</code> 实现高并发的 第二派系  ( 区别于 <code>synchronized</code> <code>JVM</code> 实现了的第一派系 )</p>
+<p><strong>在两种的效率上, 并发数不高的情况下,  两者耗时差不多, 但是如果 并发量很高, 则 <code>JUC</code> 效率很高</strong></p>
+<h1 id="juc---aqs">J.U.C - AQS</h1>
+<blockquote>
+<p><a href="https://www.jianshu.com/p/e4301229f59e">一步步讲解 tryAcquire 实现过程</a></p>
+</blockquote>
+<p><strong>AQS 是这个 <code>J.U.C</code> 的核心内容</strong></p>
+<p><code>AQS = AbstractQueuedSynchronizer </code> , 位于 <code>java.util.concurrent.locks</code> 包下</p>
+<p>AQS是一个用来 <strong>构建锁和同步器的框架</strong> , <strong>是锁的实现框架!!</strong></p>
+<p><code>ReentrantLock</code> , <code>Semaphore</code> , <code>CountDownLatch</code>  等等一些基本的锁, 在</p>
+<p>核心实现上都是利用了 <strong>A.Q.S</strong>  实现的 (<strong>A.Q.S</strong> 为这些 <strong>锁的内部接口类</strong> ) , 我们自己实现 <strong>lock</strong> 的时候也</p>
+<p>需要在 <strong>lock内部</strong> 定义一个 <strong>Syn 实现 A.Q.S 接口</strong></p>
+<p><strong>AQS核心思想是 :</strong>  如果此时请求的 <strong>资源空闲</strong>, 则将当前请求的线程设置为 工作线程, 并且将共享资源设定为</p>
+<p><strong>锁定状态</strong> , 如果被请求的资源 <strong>被锁定</strong>,  <strong>那么就需要一套线程阻塞等待以及被唤醒时锁分配的机制</strong> 这个分配机</p>
+<p>制就是利用 <strong>CLH(一个双向队列)</strong> 实现的, 即 将暂时没有获取到锁的线程加入到这个队列</p>
+<blockquote>
+<p>CLH 就是一个 负责维护 线程阻塞等待以及被唤醒时锁分配的机制 的一个双向队列</p>
+</blockquote>
+<p><img src="https://camo.githubusercontent.com/55090fdc22963d41a3e56d5dadb17dfa7ad6379f/68747470733a2f2f6d792d626c6f672d746f2d7573652e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f4a6176612532302545372541382538422545352542412538462545352539312539382545352542462538352545352541342538372545462542432539412545352542392542362545352538462539312545372539462541352545382541462538362545372542332542422545372542422539462545362538302542422545372542422539332f434c482e706e67" alt="enter image description here"></p>
+<p>对于共享资源的争取方式, 不同的同步器实现也不一样, 比如 :</p>
+<ul>
+<li><strong>Exclusive (独占)</strong> : 只有一个线程能执行，如ReentrantLock</li>
+<li><strong>Share (共享)</strong> : 多个线程可同时执行，如Semaphore/CountDownLatch。Semaphore、CountDownLatCh、 CyclicBarrier、ReadWriteLock &hellip;</li>
+</ul>
+<p>我们只需要去实现 共享资源额争取方式 ,至于 <strong>线程阻塞等待以及被唤醒时锁分配的机制 已经由 A.Q.S 实现好了</strong></p>
+<p><strong>AQS使用了模板方法模式，自定义同步器时需要重写下面几个AQS提供的模板方法：</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">isHeldExclusively</span><span class="o">()</span><span class="c1">//该线程是否正在独占资源。只有用到condition才需要去实现它。
+</span><span class="c1"></span><span class="n">tryAcquire</span><span class="o">(</span><span class="kt">int</span><span class="o">)</span><span class="c1">//独占方式。尝试获取资源，成功则返回true，失败则返回false。
+</span><span class="c1"></span><span class="n">tryRelease</span><span class="o">(</span><span class="kt">int</span><span class="o">)</span><span class="c1">//独占方式。尝试释放资源，成功则返回true，失败则返回false。
+</span><span class="c1"></span><span class="n">tryAcquireShared</span><span class="o">(</span><span class="kt">int</span><span class="o">)</span><span class="c1">//共享方式。尝试获取资源。负数表示失败；0表示成功，但没有剩余可用资源；正数表示成功，且有剩余资源。
+</span><span class="c1"></span><span class="n">tryReleaseShared</span><span class="o">(</span><span class="kt">int</span><span class="o">)</span><span class="c1">//共享方式。尝试释放资源，成功则返回true，失败则返回false。
+</span></code></pre></td></tr></table>
+</div>
+</div><p>一般来说，自定义同步器要么是独占方法，要么是共享方式，他们也只需实现<code>tryAcquire-tryRelease</code>、<code>tryAcquireShared-tryReleaseShared</code>中的一种即可。但AQS也支持自定义同步器同时实现独占和共享两种方式，如<code>ReentrantReadWriteLock</code>。</p>
+<h1 id="semaphore-信号量-允许多个线程同时访问">Semaphore 信号量 允许多个线程同时访问</h1>
+<p>#ReentrantLock 可重入锁 (互斥锁)</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-14
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/java/%E5%B9%B6%E5%8F%91/%E7%BA%BF%E7%A8%8B%E6%B1%A0/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">线程池</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/java/spring/iocii/">
+            <span class="next-text nav-default"></span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

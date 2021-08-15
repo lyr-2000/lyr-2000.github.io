@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title> - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="Spring [TOC] 一. 概述 二 .IOC 控制反转原理 IOC : 控制反转, 指创建对象的权利交给对象 .包括了 依赖注入 和 依赖查找 IOC 的主要作用是用来 减少 我们的项目给类之间的依赖的" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.86.0 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/java/spring/iocii/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="" />
+<meta property="og:description" content="Spring [TOC] 一. 概述 二 .IOC 控制反转原理 IOC : 控制反转, 指创建对象的权利交给对象 .包括了 依赖注入 和 依赖查找 IOC 的主要作用是用来 减少 我们的项目给类之间的依赖的" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/java/spring/iocii/" /><meta property="article:section" content="post" />
+
+
+
+<meta itemprop="name" content="">
+<meta itemprop="description" content="Spring [TOC] 一. 概述 二 .IOC 控制反转原理 IOC : 控制反转, 指创建对象的权利交给对象 .包括了 依赖注入 和 依赖查找 IOC 的主要作用是用来 减少 我们的项目给类之间的依赖的">
+
+<meta itemprop="wordCount" content="2862">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content=""/>
+<meta name="twitter:description" content="Spring [TOC] 一. 概述 二 .IOC 控制反转原理 IOC : 控制反转, 指创建对象的权利交给对象 .包括了 依赖注入 和 依赖查找 IOC 的主要作用是用来 减少 我们的项目给类之间的依赖的"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title"></h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 0001-01-01 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#spring">Spring</a></li>
+    <li><a href="#一-概述">一. 概述</a></li>
+    <li><a href="#二-ioc-控制反转原理">二 .IOC 控制反转原理</a>
+      <ul>
+        <li><a href="#21-传统项目上的依赖关系">2.1 传统项目上的依赖关系</a></li>
+        <li><a href="#22-工厂模式松耦合">2.2 工厂模式松耦合</a></li>
+        <li><a href="#23-spring-ioc-容器">2.3 Spring IOC 容器</a></li>
+      </ul>
+    </li>
+    <li><a href="#三-bean对象创建方式">三. Bean对象创建方式</a>
+      <ul>
+        <li><a href="#31-默认构造函数创建">3.1 默认构造函数创建</a></li>
+        <li><a href="#32-使用工厂中的方法创建类">3.2 使用工厂中的方法创建类</a></li>
+        <li><a href="#33-使用工厂中的静态方法创建类">3.3 使用工厂中的静态方法创建类</a></li>
+      </ul>
+    </li>
+    <li><a href="#四-bean-的作用范围">四. Bean 的作用范围</a></li>
+    <li><a href="#五-bean-生命周期">五. Bean 生命周期</a>
+      <ul>
+        <li><a href="#51-单例对象">5.1 单例对象</a></li>
+        <li><a href="#52-多例对象">5.2 多例对象</a></li>
+      </ul>
+    </li>
+    <li><a href="#六-依赖注入">六. 依赖注入</a>
+      <ul>
+        <li><a href="#61-什么是依赖注入">6.1 什么是依赖注入</a></li>
+        <li><a href="#62-依赖注入的-三类-数据类型">6.2 依赖注入的 三类 数据类型</a></li>
+        <li><a href="#63-依赖注入的-三种方式">6.3 依赖注入的 三种方式</a></li>
+        <li><a href="#64-两个-bean-相互依赖的注入问题">6.4 两个 bean 相互依赖的注入问题</a></li>
+        <li><a href="#65-复杂类型的注入问题">6.5 复杂类型的注入问题</a></li>
+      </ul>
+    </li>
+    <li><a href="#七-容纳你的beans">七. 容纳你的Beans</a></li>
+    <li><a href="#八-bean-生命周期">八. Bean 生命周期</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h1 id="spring">Spring</h1>
+<p>[TOC]</p>
+<h1 id="一-概述">一. 概述</h1>
+<h1 id="二-ioc-控制反转原理">二 .IOC 控制反转原理</h1>
+<p><code>IOC</code> :  控制反转, 指创建对象的权利交给对象 .包括了 <code>依赖注入</code> 和 <code>依赖查找</code></p>
+<p>IOC 的主要作用是用来 <strong>减少</strong> 我们的项目给类之间的依赖的, <strong>借助于“第三方”实现具有依赖关系的对象之间的解耦</strong>如下图：</p>
+<h2 id="21-传统项目上的依赖关系">2.1 传统项目上的依赖关系</h2>
+<p>例如 <strong>传统MVC架构</strong> 下的一个项目 :</p>
+<img src='../image/2019-08-08-NormDependancy.png' style='width:700px'>
+<p>以一个 <code>Account</code> <code>Save</code> 流程来看 : <img src='../image/2019-08-08-NormAccountSaving.png' /></p>
+<p>各个层次的数据类之间有很强的依赖关系. 为了减少我们的这种依赖关系, 我们引入 <code>工厂模式</code> 去构建一个 <code>BeanFoctry</code>, 达到 <code>松耦合</code> 的目的</p>
+<h2 id="22-工厂模式松耦合">2.2 工厂模式松耦合</h2>
+<p>利用 <code>Beans</code> 工厂 <code>配置 + 反射</code> 的机制 可以创建任何的类</p>
+<p>基本的思路就是 : 作为一个中间工厂, 可以实例化各个类, 使用的时候, 只需要传入类名, 则可以实现对对应类的实例化.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="nn">factory</span><span class="o">;</span>
+
+
+<span class="cm">/* 创建一个Bean对象的工厂 */</span>
+<span class="cm">/* Bean 就是可重用组建的意思 */</span>
+
+<span class="kn">import</span> <span class="nn">java.io.InputStream</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.HashMap</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Map</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Properties</span><span class="o">;</span>
+
+<span class="cm">/*
+</span><span class="cm">*       这个类主要工作就是用于创建我们的 Service 和 Dao 对象的， 创建步骤如下：
+</span><span class="cm">*       1. 需要一个配置文件来配置我们的 Service 和 dao
+</span><span class="cm">*       2. 通过 反射机制 来创建我们的反射对象
+</span><span class="cm">*
+</span><span class="cm">*       配置文件可以是 : xml or properties
+</span><span class="cm">**/</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeanFactory</span> <span class="o">{</span>
+
+    <span class="c1">// 定义一个 Properties 对象
+</span><span class="c1"></span>    <span class="kd">private</span> <span class="kd">static</span> <span class="n">Properties</span> <span class="n">props</span><span class="o">;</span>
+
+    <span class="c1">// 一个静态 Map 存放我们需要创建的 对象
+</span><span class="c1"></span>    <span class="c1">// 将我们的程序设计为 单例
+</span><span class="c1"></span>    <span class="kd">private</span> <span class="kd">static</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Object</span><span class="o">&gt;</span> <span class="n">beans</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Object</span><span class="o">&gt;();</span>
+
+
+    <span class="c1">// 使用 静态代码块为 Properties 赋值
+</span><span class="c1"></span>    <span class="kd">static</span> <span class="o">{</span>
+
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">props</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Properties</span><span class="o">();</span>
+            <span class="c1">// 创建一个 字节流读取 对象
+</span><span class="c1"></span>            <span class="n">InputStream</span> <span class="n">is</span> <span class="o">=</span> <span class="n">BeanFactory</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getClassLoader</span><span class="o">().</span><span class="na">getResourceAsStream</span><span class="o">(</span><span class="s">&#34;bean.properties&#34;</span><span class="o">);</span>
+            <span class="c1">// 获得 properties 文件流对象
+</span><span class="c1"></span>            <span class="n">props</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="n">is</span><span class="o">);</span>
+<span class="c1">//            Enumeration&lt;String&gt; keys =  props.keys();
+</span><span class="c1"></span>
+
+        <span class="o">}</span><span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">){</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="n">ExceptionInInitializerError</span><span class="o">(</span><span class="s">&#34;初始化 pro 失败&#34;</span><span class="o">);</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+
+    <span class="c1">// 通过 className 来返回一个 class 实例
+</span><span class="c1"></span>    <span class="kd">public</span> <span class="kd">static</span> <span class="n">Object</span> <span class="nf">getBean</span><span class="o">(</span><span class="n">String</span> <span class="n">className</span><span class="o">){</span>
+
+        <span class="n">Object</span> <span class="n">bean</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">String</span> <span class="n">beanPath</span> <span class="o">=</span> <span class="n">props</span><span class="o">.</span><span class="na">getProperty</span><span class="o">(</span><span class="n">className</span><span class="o">);</span>
+
+            <span class="c1">// 通过反射的机制 获得一个类的实例
+</span><span class="c1"></span>            <span class="k">if</span><span class="o">(!</span><span class="n">beans</span><span class="o">.</span><span class="na">containsKey</span><span class="o">(</span><span class="n">className</span><span class="o">)){</span>
+                <span class="n">beans</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">className</span><span class="o">,</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="n">beanPath</span><span class="o">).</span><span class="na">newInstance</span><span class="o">());</span>
+            <span class="o">}</span>
+
+            <span class="n">bean</span> <span class="o">=</span> <span class="n">beans</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">className</span><span class="o">);</span>
+        <span class="o">}</span><span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">){</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">bean</span><span class="o">;</span>
+
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>所以我们加入工厂之后松耦合了 Client 和 资源的依赖关系 如下:</p>
+<img src='../image/2019-08-08-NoIOC.png' style='width:400px'>
+<center/> 无工厂
+<img src='../image/2019-08-08-HasIOC.png' style='width:400px'>
+<center/>有工厂
+<h2 id="23-spring-ioc-容器">2.3 Spring IOC 容器</h2>
+<p>根据以上的内容, 我们 <code>Spring</code> 框架就是采用</p>
+<h1 id="三-bean对象创建方式">三. Bean对象创建方式</h1>
+<h2 id="31-默认构造函数创建">3.1 默认构造函数创建</h2>
+<p>在 <code>Spring</code> 配置文件, 配置 <code>id</code> 和 <code>class</code> 后, 且没有其他属性, 则是使用默认构造函数创建</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="nt">&lt;bean</span> <span class="na">id=</span><span class="s">&#39;AccountService&#39;</span> <span class="na">class=</span><span class="s">&#39;AccountService的全路径&#39;</span> <span class="nt">&gt;&lt;/bean&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>注意</strong> 此时如果没有 类默认构造函数, 那么会创建失败</p>
+<h2 id="32-使用工厂中的方法创建类">3.2 使用工厂中的方法创建类</h2>
+<p>我们需要创建的 类是由 工厂创建, 我们无法直接创建</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">InstanceFactory</span><span class="o">{</span>
+    
+    <span class="c1">// 通过工厂创建 MyClass类
+</span><span class="c1"></span>    <span class="kd">public</span> <span class="n">MyClass</span> <span class="nf">getMyClassInstance</span><span class="o">(){</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">MyClass</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这种情况下  我们需要 指定 <code>factor-bean</code> 和 <code>factor-method</code> 两个属性</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="nt">&lt;bean</span> <span class="na">id=</span><span class="s">&#34;InstanceFactory&#34;</span> <span class="err">class&#34;FullPath_InstanceFactory&#34;</span><span class="nt">&gt;&lt;/bean&gt;</span>
+<span class="nt">&lt;bean</span> <span class="na">id=</span><span class="s">&#34;MyClass&#34;</span> <span class="na">factor-bean=</span><span class="s">&#34;InstanceFactory&#34;</span> <span class="na">factor-method=</span><span class="s">&#34;getMyClassInstance&#34;</span><span class="nt">&gt;&lt;/bean&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="33-使用工厂中的静态方法创建类">3.3 使用工厂中的静态方法创建类</h2>
+<p>如果此时为 <code>静态工厂</code> :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">InstanceFactory</span><span class="o">{</span>
+    
+    <span class="c1">// 通过工厂创建 MyClass类
+</span><span class="c1"></span>    <span class="kd">public</span> <span class="kd">static</span> <span class="n">MyClass</span> <span class="nf">getMyClassInstance</span><span class="o">(){</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">MyClass</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>此时直接在一个 <code>bean</code>标签写 <code>factory-method</code> 代表此时的 <code>factory-method</code> 为一个 静态方法</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="nt">&lt;bean</span> <span class="na">id=</span><span class="s">&#34;MyClass&#34;</span> <span class="err">class&#34;FullPath_InstanceFactory&#34;</span> <span class="na">factory-method=</span><span class="s">&#34;getMyClassInstance&#34;</span><span class="nt">&gt;&lt;/bean&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="四-bean-的作用范围">四. Bean 的作用范围</h1>
+<p>通常情况下, <code>Bean </code> 创建的一般都是 <code>单例</code> 的  :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">AccountService</span> <span class="n">as1</span> <span class="o">=</span> <span class="n">ac</span><span class="o">.</span><span class="na">getBean</span><span class="o">(</span><span class="s">&#34;accountService&#34;</span><span class="o">);</span>
+<span class="n">AccountService</span> <span class="n">as2</span> <span class="o">=</span> <span class="n">ac</span><span class="o">.</span><span class="na">getBean</span><span class="o">(</span><span class="s">&#34;accountService&#34;</span><span class="o">);</span>
+
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">as1</span> <span class="o">==</span> <span class="n">as2</span><span class="o">);</span> <span class="c1">// true
+</span></code></pre></td></tr></table>
+</div>
+</div><p>如果想调整它的作用范围, 那么我们可以利用 <code>scope</code> 属性去修改</p>
+<p><code>scope</code> 可取值如下 :</p>
+<ul>
+<li><code>singleton</code>  : 单例, 也是默认方式</li>
+<li><code>prototype</code>  : 多例</li>
+<li><code>request</code> : 作用于 web 应用的 请求范围</li>
+<li><code>session </code> : 作用于 web 应用的 会话范围</li>
+<li><code>global-session</code> : 作用于 <strong>集群的</strong> 会话范围</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="c">&lt;!-- 默认为单例 --&gt;</span>
+<span class="nt">&lt;bean</span> <span class="err">...</span> <span class="na">scope =</span> <span class="s">&#34;singleton&#34;</span><span class="nt">&gt;&lt;/bean&gt;</span>
+
+<span class="c">&lt;!-- 多例 --&gt;</span>
+<span class="nt">&lt;bean</span> <span class="err">...</span> <span class="na">scope =</span> <span class="s">&#34;prototype&#34;</span><span class="nt">&gt;&lt;/bean&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="五-bean-生命周期">五. Bean 生命周期</h1>
+<h2 id="51-单例对象">5.1 单例对象</h2>
+<p><code>出生</code> :  <strong>当容器创建的时候, 对象出生</strong></p>
+<p><code>活着</code> :  只要容器还在, 那么一直存活</p>
+<p><code>死亡</code> :  随着容器的销毁被销毁</p>
+<p>也就是说, 单例对象的 生命周期 == 容器生命周期</p>
+<h2 id="52-多例对象">5.2 多例对象</h2>
+<p><code>出生</code> : <strong>当我们使用对象的时候, Spring才会创建一个对象</strong></p>
+<p><code>活着</code> :  对象使用则会活着</p>
+<p><code>死亡</code> :  使用 <strong>JVM 的 GC</strong> 回收</p>
+<h1 id="六-依赖注入">六. 依赖注入</h1>
+<p><strong>IOC的作用只是降低耦合, 但是还是有 依赖的存在</strong></p>
+<p>依赖就是当前 <code>Bean</code> 里面封装的其他类型变量</p>
+<h2 id="61-什么是依赖注入">6.1 什么是依赖注入</h2>
+<p>在当前类中需要用到其他类的对象 :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">Class</span> <span class="n">car</span><span class="o">{</span>
+    <span class="c1">// 则说明 car 和 wheel 之间有依赖关系
+</span><span class="c1"></span>    <span class="kd">public</span> <span class="n">wheel</span> <span class="n">w</span> <span class="o">=</span> <span class="k">new</span> <span class="n">wheel</span><span class="o">();</span>
+    
+	<span class="c1">// code ...
+</span><span class="c1"></span><span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>我们将这种 依赖关系, 依然交给 <code>Spring</code> 维护</p>
+<p>依赖关系的维护 就叫做 : 依赖注入</p>
+<h2 id="62-依赖注入的-三类-数据类型">6.2 依赖注入的 三类 数据类型</h2>
+<ul>
+<li>基本类型 和 String</li>
+<li>其他的 bean 类型</li>
+<li>复杂类型 e.g : <code>数组</code> , <code>集合</code> , <code>Map</code>&hellip;</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Person</span><span class="o">{</span>
+    
+    <span class="c1">//.. 如此的成员变量则需要实现依赖著注入
+</span><span class="c1"></span>    <span class="kd">public</span> <span class="n">String</span> <span class="n">Name</span><span class="o">;</span>
+	<span class="kd">public</span> <span class="n">Date</span> <span class="n">BirthDay</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="n">Integer</span> <span class="n">age</span><span class="o">;</span>
+        
+    
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="63-依赖注入的-三种方式">6.3 依赖注入的 三种方式</h2>
+<ul>
+<li>构造函数直接注入</li>
+<li>🌟 set 方法注入</li>
+<li>注解方法注入</li>
+</ul>
+<hr>
+<p><strong>构造函数直接注入</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Person</span><span class="o">{</span>
+    
+    <span class="c1">//.. 如此的成员变量则需要实现依赖著注入
+</span><span class="c1"></span>    <span class="kd">public</span> <span class="n">String</span> <span class="n">Name</span><span class="o">;</span>
+	<span class="kd">public</span> <span class="n">Date</span> <span class="n">BirthDay</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="n">Integer</span> <span class="n">age</span><span class="o">;</span>
+    <span class="n">Person</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">,</span> <span class="n">Date</span> <span class="n">day</span><span class="o">,</span> <span class="n">Integer</span> <span class="n">age</span><span class="o">){</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="n">Name</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">day</span> <span class="o">=</span> <span class="n">BirthDay</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">age</span> <span class="o">=</span> <span class="n">age</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>如果构造函数带有了传参, 那么我们需要在对应的 <code>xml</code>  的 <code>&lt;constructor-arg&gt;&lt;/constructor-arg&gt; </code>标签进行说明</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="c">&lt;!-- 
+</span><span class="c">constructor-arg 可以带有的属性 :
+</span><span class="c">	type  : 构造函数传递参数类型
+</span><span class="c">	index : 指定索引 (从 0 开始)
+</span><span class="c">	🌟(最常用) name  : 指定给构造函数中指定的名称的传参数赋值
+</span><span class="c">	===================(以上三个属性 给哪个参数赋值)==========================
+</span><span class="c">	value : 用于提供基本类型,String类型的数据
+</span><span class="c">	ref :	用于指定其他的 Bean 类型的数据 (需要在 IoC核心容器中出现过的 Bean 对象)
+</span><span class="c">--&gt;</span>
+<span class="nt">&lt;bean</span> <span class="na">id=</span><span class="s">&#34;person&#34;</span> <span class="na">class=</span><span class="s">&#34;FullPath_Person&#34;</span><span class="nt">&gt;</span>
+	<span class="nt">&lt;constructor-arg</span> <span class="na">name=</span><span class="s">&#34;name&#34;</span> <span class="na">value=</span><span class="s">&#34;fz&#34;</span><span class="nt">&gt;&lt;/constructor-arg&gt;</span>
+    
+    
+    <span class="c">&lt;!-- Spring 可以直接将 &#34;18&#34; 装化为 Integer --&gt;</span>
+    <span class="nt">&lt;constructor-arg</span> <span class="na">name=</span><span class="s">&#34;age&#34;</span> <span class="na">value=</span><span class="s">&#34;18&#34;</span><span class="nt">&gt;&lt;/constructor-arg&gt;</span>
+    
+    
+    <span class="c">&lt;!-- 此时的day为一个日期对象, 则不能直接用字符串表示了--&gt;</span>
+    <span class="c">&lt;!-- 此时我们再反射创建一个 Date 对象, 然后用 ref属性引用--&gt;</span>
+    <span class="nt">&lt;constructor-arg</span> <span class="na">name=</span><span class="s">&#34;day&#34;</span> <span class="na">ref=</span><span class="s">&#34;now&#34;</span><span class="nt">&gt;&lt;/constructor-arg&gt;</span>
+<span class="nt">&lt;/bean&gt;</span>
+
+
+<span class="nt">&lt;bean</span> <span class="na">id=</span><span class="s">&#34;now&#34;</span> <span class="na">class=</span><span class="s">&#34;java.util.Date&#34;</span><span class="nt">&gt;&lt;/bean&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>构造函数 <strong>优势</strong> :</p>
+<p>在获取bean对象, 注入数据是必须的, 否则无法创建成功</p>
+<p>构造函数 <strong>劣势</strong> :</p>
+<p>如果创建对象时候, 如果不需要提供数据初始化的时候, 我们也必须给它注入值</p>
+<hr>
+<p>🌟 <strong>set 方法的注入</strong></p>
+<p>此时 <strong>构造函数还是默认构造函数</strong> , 我们的 <strong>赋值操作</strong> 放在 对象的成员函数里</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Person</span><span class="o">{</span>
+    <span class="c1">//.. 如此的成员变量则需要实现依赖著注入
+</span><span class="c1"></span>    <span class="kd">public</span> <span class="n">String</span> <span class="n">Name</span><span class="o">;</span>
+	<span class="kd">public</span> <span class="n">Date</span> <span class="n">BirthDay</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="n">Integer</span> <span class="n">age</span><span class="o">;</span>
+        
+    <span class="c1">// 构造函数还是 隐式 调用
+</span><span class="c1"></span>    
+    <span class="c1">// 用 set成员函数的模式去给成员赋值
+</span><span class="c1"></span>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setMyName</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">){</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">Name</span> <span class="o">=</span> <span class="n">name</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setMyBirthDay</span><span class="o">(</span><span class="n">Date</span> <span class="n">day</span><span class="o">){</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">BirthDay</span> <span class="o">=</span> <span class="n">day</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setMyAge</span><span class="o">(</span><span class="n">Integer</span> <span class="n">age</span><span class="o">){</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">age</span> <span class="o">=</span> <span class="n">age</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>此时的 <code>xml</code> 便可以用 <code>property</code> 标签来注入依赖</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="nt">&lt;bean</span> <span class="na">id=</span><span class="s">&#34;now&#34;</span> <span class="na">class=</span><span class="s">&#34;java.util.date&#34;</span><span class="nt">&gt;&lt;/bean&gt;</span>
+
+<span class="nt">&lt;bean</span> <span class="na">id=</span><span class="s">&#34;Person&#34;</span> <span class="na">class=</span><span class="s">&#34;FullPath_Person&#34;</span><span class="nt">&gt;</span>
+    <span class="c">&lt;!-- 此时 name 为Person里面成员 set函数 的名称--&gt;</span>
+	<span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">&#34;MyName&#34;</span> <span class="na">value=</span><span class="s">&#34;fz&#34;</span><span class="nt">&gt;&lt;/property&gt;</span>
+	<span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">&#34;MyBirthDay&#34;</span> <span class="na">ref=</span><span class="s">&#34;now&#34;</span><span class="nt">&gt;&lt;/property&gt;</span>
+    <span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">&#34;MyAge&#34;</span> <span class="na">value=</span><span class="s">&#34;18&#34;</span><span class="nt">&gt;&lt;/property&gt;</span>
+<span class="nt">&lt;/bean&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>此时 <code>property</code> 标签 不同于 构造函数,  可以自定义给需要赋值的 变量赋值 ,拥有更大的灵活性 !!</p>
+<h2 id="64-两个-bean-相互依赖的注入问题">6.4 两个 bean 相互依赖的注入问题</h2>
+<p>如果是通过get,set 注入就不会有问题</p>
+<p>如果是通过构造函数注入，SPRING就会报循环引用注入出错</p>
+<h2 id="65-复杂类型的注入问题">6.5 复杂类型的注入问题</h2>
+<p>复杂类型包括 我们常用的 <code>Java 容器</code>, <code>Java 数组</code></p>
+<p>对于 <strong>复杂类型</strong> 的注入, 我们还是选用 <code>set</code> 的方式</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Person</span><span class="o">{</span>
+    <span class="c1">//.. 如此的成员变量则需要实现依赖著注入
+</span><span class="c1"></span>	<span class="kd">public</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">my_map</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="n">List</span> <span class="n">my_list</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="n">String</span><span class="o">[]</span> <span class="n">my_string</span><span class="o">;</span>    
+    
+    <span class="kd">public</span> <span class="nf">setMyMap</span><span class="o">(</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">my_map</span><span class="o">){</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">my_map</span> <span class="o">=</span> <span class="n">my_map</span><span class="o">;</span>
+    <span class="o">}</span>
+    
+    <span class="kd">public</span> <span class="nf">setMyList</span><span class="o">(</span><span class="n">List</span> <span class="n">my_list</span><span class="o">){</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">my_list</span> <span class="o">=</span> <span class="n">my_list</span><span class="o">;</span>
+    <span class="o">}</span>
+    
+    <span class="kd">public</span> <span class="nf">setMyStringArray</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">my_string</span><span class="o">){</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">my_string</span><span class="o">=</span> <span class="n">my_string</span><span class="o">;</span>
+    <span class="o">}</span>
+    
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在 <code>xml</code> 文件里面可以 :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="c">&lt;!-- 
+</span><span class="c">	对于 list, array, set 注入的标签 可以互换
+</span><span class="c">	
+</span><span class="c">	对于 map, props 注入的标签 可以互换
+</span><span class="c">--&gt;</span>
+<span class="nt">&lt;bean</span> <span class="na">id=</span><span class="s">&#34;person&#34;</span> <span class="na">class=</span><span class="s">&#34;FullPath_person&#34;</span><span class="nt">&gt;</span>
+    
+    
+	<span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">&#34;MyList&#34;</span><span class="nt">&gt;</span>
+    	<span class="nt">&lt;list&gt;</span>
+        	<span class="nt">&lt;value&gt;</span>A<span class="nt">&lt;/value&gt;</span>
+            <span class="nt">&lt;value&gt;</span>B<span class="nt">&lt;/value&gt;</span>
+            <span class="nt">&lt;value&gt;</span>C<span class="nt">&lt;/value&gt;</span>
+        <span class="nt">&lt;/list&gt;</span>
+    <span class="nt">&lt;/property&gt;</span>
+    
+    
+    <span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">&#34;MyStringArray&#34;</span><span class="nt">&gt;</span>
+    	<span class="nt">&lt;array&gt;</span>
+        	<span class="nt">&lt;value&gt;</span>A<span class="nt">&lt;/value&gt;</span>
+            <span class="nt">&lt;value&gt;</span>B<span class="nt">&lt;/value&gt;</span>
+            <span class="nt">&lt;value&gt;</span>C<span class="nt">&lt;/value&gt;</span>
+        <span class="nt">&lt;/array&gt;</span>
+    <span class="nt">&lt;/property&gt;</span>
+    
+    
+    <span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">&#34;MyMap&#34;</span><span class="nt">&gt;</span>
+    	<span class="nt">&lt;map&gt;</span>
+        	<span class="nt">&lt;props</span> <span class="na">key=</span><span class="s">&#34;A&#34;</span><span class="nt">&gt;</span>1<span class="nt">&lt;/value&gt;</span>	
+            <span class="nt">&lt;props</span> <span class="na">key=</span><span class="s">&#34;B&#34;</span><span class="nt">&gt;</span>2<span class="nt">&lt;/value&gt;</span>
+            <span class="nt">&lt;props</span> <span class="na">key=</span><span class="s">&#34;C&#34;</span><span class="nt">&gt;</span>3<span class="nt">&lt;/value&gt;</span>
+        <span class="nt">&lt;/map&gt;</span>
+    <span class="nt">&lt;/property&gt;</span>
+    
+    
+<span class="nt">&lt;/bean&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="七-容纳你的beans">七. 容纳你的Beans</h1>
+<p>在 Spring 中实现了多个 Beans 的容器, 但是总结下 主要就是两种方式 :</p>
+<ul>
+<li>BeanFactory, 就是最简单的容器, 只提供最基础的 DI 支持</li>
+<li>ApplicationContext 应用上下文, 基于 BeanFactory 构建, 可以在BeanFactory的基础上提供很多高级的功能.</li>
+</ul>
+<p>ApplicationContext 是我们的首选, 由于大部分时候 BeanFactory 提供的功能过于简.</p>
+<p>有多个类实现了 ApplicationContext 接口, 大致有以下几个 :</p>
+<ol>
+<li><code>AnnotationApplicationContext</code> : 从一个 <code>JavaConfig</code> 类文件中加载出 Beans</li>
+<li><code>ClassPathXmlApplicationContext</code>: 从类路径下的一个或者多个 XML 文件 中加载出 Beans</li>
+<li><code>FileSystemXmlApplicationContext : </code> 从系统的绝对路径中的一个或者多个 XML 中加载出 Beans</li>
+</ol>
+<p>实例化应用上下文类后就可以利用 <code>getBean(&quot;beanID&quot;)</code> 方法来获得一个 Bean 了</p>
+<h1 id="八-bean-生命周期">八. Bean 生命周期</h1>
+<p>不同于 传统的一个对象的 创建, 销毁过程 : 直接 New 实例化就可以用了, 然后回收的时候 调用 <code>finalize</code> 就被 GC 了</p>
+<p>一个 Bean 的生命周期要显得复杂很多 :</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        0001-01-01
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/java/%E5%B9%B6%E5%8F%91/%E9%AB%98%E5%B9%B6%E5%8F%91%E5%8C%85juc/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">高并发JUC</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/10.%E6%A0%A1%E6%8B%9B%E7%AC%94%E8%AE%B0/java/springmvc/springmvc/">
+            <span class="next-text nav-default"></span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
