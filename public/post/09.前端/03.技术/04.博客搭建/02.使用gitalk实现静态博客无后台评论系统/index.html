@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>使用Gitalk实现静态博客无后台评论系统 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="使用Gitalk实现静态博客无后台评论系统 前言 Gitalk，一个基于 Github Issue 和 Preact 开发的评论插件。 下面我们来用它在vuepress搭建的博客中搭建" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.87.0 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/09.%E5%89%8D%E7%AB%AF/03.%E6%8A%80%E6%9C%AF/04.%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/02.%E4%BD%BF%E7%94%A8gitalk%E5%AE%9E%E7%8E%B0%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E6%97%A0%E5%90%8E%E5%8F%B0%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="使用Gitalk实现静态博客无后台评论系统" />
+<meta property="og:description" content="使用Gitalk实现静态博客无后台评论系统 前言 Gitalk，一个基于 Github Issue 和 Preact 开发的评论插件。 下面我们来用它在vuepress搭建的博客中搭建" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/09.%E5%89%8D%E7%AB%AF/03.%E6%8A%80%E6%9C%AF/04.%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/02.%E4%BD%BF%E7%94%A8gitalk%E5%AE%9E%E7%8E%B0%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E6%97%A0%E5%90%8E%E5%8F%B0%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2019-12-25T14:27:01+00:00" />
+<meta property="article:modified_time" content="2019-12-25T14:27:01+00:00" />
+
+<meta itemprop="name" content="使用Gitalk实现静态博客无后台评论系统">
+<meta itemprop="description" content="使用Gitalk实现静态博客无后台评论系统 前言 Gitalk，一个基于 Github Issue 和 Preact 开发的评论插件。 下面我们来用它在vuepress搭建的博客中搭建"><meta itemprop="datePublished" content="2019-12-25T14:27:01+00:00" />
+<meta itemprop="dateModified" content="2019-12-25T14:27:01+00:00" />
+<meta itemprop="wordCount" content="1144">
+<meta itemprop="keywords" content="," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="使用Gitalk实现静态博客无后台评论系统"/>
+<meta name="twitter:description" content="使用Gitalk实现静态博客无后台评论系统 前言 Gitalk，一个基于 Github Issue 和 Preact 开发的评论插件。 下面我们来用它在vuepress搭建的博客中搭建"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">使用Gitalk实现静态博客无后台评论系统</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2019-12-25 </span>
+        <div class="post-category">
+            <a href="/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
+            <a href="/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"> 博客搭建 </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#使用gitalk实现静态博客无后台评论系统">使用Gitalk实现静态博客无后台评论系统</a>
+      <ul>
+        <li><a href="#前言">前言</a></li>
+        <li><a href="#准备">准备</a></li>
+        <li><a href="#实现">实现</a>
+          <ul>
+            <li><a href="#安装">安装</a></li>
+            <li><a href="#使用">使用</a></li>
+            <li><a href="#bug修复">BUG修复</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h1 id="使用gitalk实现静态博客无后台评论系统">使用Gitalk实现静态博客无后台评论系统</h1>
+<h2 id="前言">前言</h2>
+<p>Gitalk，一个基于 Github Issue 和 Preact 开发的评论插件。</p>
+<p>下面我们来用它在vuepress搭建的博客中搭建评论区吧</p>
+<!-- more -->
+<h2 id="准备">准备</h2>
+<p>使用一个新的东西首先当然是要了解它</p>
+<p>Gitalk demo：<a href="https://gitalk.github.io/">https://gitalk.github.io/</a></p>
+<p>Gitalk github：<a href="https://github.com/gitalk/gitalk">https://github.com/gitalk/gitalk</a></p>
+<h2 id="实现">实现</h2>
+<p>如何实现？最好的方法我认为是看<a href="https://github.com/gitalk/gitalk/blob/master/readme-cn.md">官方文档</a>，这里我只是记录一下实现的步骤。</p>
+<p>使用一个别人已经开发好的 <a href="https://github.com/dongyuanxin/vuepress-plugin-comment">vuepress-plugin-comment</a> 插件来帮助我们把Gitalk应用到vuepress搭建的静态博客。</p>
+<h3 id="安装">安装</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh">npm install --save vuepress-plugin-comment
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="使用">使用</h3>
+<p><code>options</code>的配置和<code>Gitalk</code>的配置相同</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-js" data-lang="js"><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">plugins</span><span class="o">:</span> <span class="p">[</span>
+    <span class="p">[</span>
+      <span class="s1">&#39;vuepress-plugin-comment&#39;</span><span class="p">,</span>
+      <span class="p">{</span>
+        <span class="nx">choosen</span><span class="o">:</span> <span class="s1">&#39;gitalk&#39;</span><span class="p">,</span> 
+        <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+          <span class="nx">clientID</span><span class="o">:</span> <span class="s1">&#39;GitHub Application Client ID&#39;</span><span class="p">,</span>
+          <span class="nx">clientSecret</span><span class="o">:</span> <span class="s1">&#39;GitHub Application Client Secret&#39;</span><span class="p">,</span>
+          <span class="nx">repo</span><span class="o">:</span> <span class="s1">&#39;GitHub repo&#39;</span><span class="p">,</span>
+          <span class="nx">owner</span><span class="o">:</span> <span class="s1">&#39;GitHub repo owner&#39;</span><span class="p">,</span>
+          <span class="nx">admin</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;GitHub repo owner and collaborators, only these guys can initialize github issues&#39;</span><span class="p">],</span>
+          <span class="nx">distractionFreeMode</span><span class="o">:</span> <span class="kc">false</span> 
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>需要 <strong>GitHub Application</strong>，如果没有 <a href="https://github.com/settings/applications/new">点击这里申请</a>，<code>Authorization callback URL</code> 填写当前使用插件页面的域名。</p>
+<p><img src="https://raw.githubusercontent.com/xugaoyi/image_store/master/blog/QQ%E6%88%AA%E5%9B%BE20191220124134.jpg" alt=""></p>
+<p>申请完成就会得 Client ID 和 Client Secret。然后把对应参数填写到配置中，例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-js" data-lang="js"><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">plugins</span><span class="o">:</span> <span class="p">[</span>
+    <span class="p">[</span>
+      <span class="s1">&#39;vuepress-plugin-comment&#39;</span><span class="p">,</span>
+      <span class="p">{</span>
+        <span class="nx">choosen</span><span class="o">:</span> <span class="s1">&#39;gitalk&#39;</span><span class="p">,</span> 
+        <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+          <span class="nx">clientID</span><span class="o">:</span> <span class="s1">&#39;a6e*******4709b88b&#39;</span><span class="p">,</span>
+          <span class="nx">clientSecret</span><span class="o">:</span> <span class="s1">&#39;f0e***************beb8b2d54d7241&#39;</span><span class="p">,</span>
+          <span class="nx">repo</span><span class="o">:</span> <span class="s1">&#39;blog&#39;</span><span class="p">,</span> <span class="c1">// GitHub 仓库
+</span><span class="c1"></span>          <span class="nx">owner</span><span class="o">:</span> <span class="s1">&#39;xugaoyi&#39;</span><span class="p">,</span> <span class="c1">// GitHub仓库所有者
+</span><span class="c1"></span>          <span class="nx">admin</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;xugaoyi&#39;</span><span class="p">],</span> <span class="c1">// 对仓库有写权限的人
+</span><span class="c1"></span>          <span class="nx">distractionFreeMode</span><span class="o">:</span> <span class="kc">false</span> 
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>配置好之后重启项目就发现页面上多了一个评论区，说明评论功能实现啦。但还是有一些bug，继续完善它~</p>
+<h3 id="bug修复">BUG修复</h3>
+<p><strong>评论区与博客样式不匹配</strong></p>
+<p>解决办法：新增全局样式文件<code>.vuepress/styles/index.styl</code>，写入样式</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-stylus" data-lang="stylus"><span class="err">#vuepress</span><span class="o">-</span><span class="err">plugin</span><span class="o">-</span><span class="err">comment</span>
+  <span class="py">max-width</span> <span class="nv">$contentWidth</span>
+  <span class="py">margin</span> <span class="err">0</span> <span class="err">auto</span>
+  <span class="py">padding</span> <span class="err">2rem</span> <span class="err">2</span><span class="p">.</span><span class="nc">5rem</span>
+  <span class="kp">@media</span> <span class="p">(</span><span class="py">max-width</span><span class="p">:</span> <span class="nv">$MQNarrow</span><span class="p">)</span>
+    <span class="py">padding</span> <span class="err">2rem</span>
+  <span class="kp">@media</span> <span class="p">(</span><span class="py">max-width</span><span class="p">:</span> <span class="nv">$MQMobileNarrow</span><span class="p">)</span>
+    <span class="py">padding</span> <span class="err">1</span><span class="p">.</span><span class="nc">5rem</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>评论区出现 Error: Validation Failed.</strong></p>
+<p>问题分析：当页面 链接过长  或 存在中文链接，导致整个链接字符串长度超过50时，会造成请求issues接口失败，出现422状态码。（中文链接会自动转码，变得很长，id参数默认取的是链接，长度不能超过50）</p>
+<p>解决办法：手动设置id取值，限制长度不超过50。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-js" data-lang="js"><span class="p">{</span>
+ <span class="nx">choosen</span><span class="o">:</span> <span class="s1">&#39;gitalk&#39;</span><span class="p">,</span> 
+ <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+   <span class="p">...</span>
+   <span class="nx">id</span><span class="o">:</span> <span class="s2">&#34;&lt;%- (window.location.origin + (frontmatter.to.path || window.location.pathname)).slice(-50) %&gt;&#34;</span><span class="p">,</span> <span class="c1">//  页面的唯一标识,长度不能超过50
+</span><span class="c1"></span>   <span class="nx">title</span><span class="o">:</span> <span class="s2">&#34;「评论」&lt;%- document.title %&gt;&#34;</span><span class="p">,</span> <span class="c1">// GitHub issue 的标题
+</span><span class="c1"></span>   <span class="nx">labels</span><span class="o">:</span> <span class="p">[</span><span class="s2">&#34;Gitalk&#34;</span><span class="p">,</span> <span class="s2">&#34;Comment&#34;</span><span class="p">],</span> <span class="c1">// GitHub issue 的标签
+</span><span class="c1"></span>   <span class="nx">body</span><span class="o">:</span><span class="s2">&#34;&lt;%- document.title %&gt;：&lt;%- window.location.origin + (frontmatter.to.path || window.location.pathname) %&gt;&#34;</span> <span class="c1">// GitHub issue 的内容
+</span><span class="c1"></span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>访问变量时，如 <code>$frontmatter</code> 或 <code>window</code>等，请使用  <strong>EJS</strong> 语法。因为在配置中不能使用回调函数，会被vuepress过滤，因此使用 <strong>EJS</strong> 语法。 ——插件作者文档说明</p>
+</blockquote>
+<p><strong>切换页面后评论区内容还是上一个页面的评论</strong></p>
+<p>解决：id在获取<code>path</code>时使用 <code>frontmatter.to.path</code>，插件内置了 ``frontmatter.from<code>、</code>frontmatter.to`。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-js" data-lang="js"><span class="p">{</span>
+ <span class="nx">choosen</span><span class="o">:</span> <span class="s1">&#39;gitalk&#39;</span><span class="p">,</span> 
+ <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+   <span class="p">...</span>
+   <span class="nx">id</span><span class="o">:</span> <span class="s2">&#34;&lt;%- (window.location.origin + (frontmatter.to.path || window.location.pathname)).slice(-50) %&gt;&#34;</span><span class="p">,</span> <span class="c1">//  页面的唯一标识,长度不能超过50
+</span><span class="c1"></span>   <span class="nx">title</span><span class="o">:</span> <span class="s2">&#34;「评论」&lt;%- document.title %&gt;&#34;</span><span class="p">,</span> <span class="c1">// GitHub issue 的标题
+</span><span class="c1"></span>   <span class="nx">labels</span><span class="o">:</span> <span class="p">[</span><span class="s2">&#34;Gitalk&#34;</span><span class="p">,</span> <span class="s2">&#34;Comment&#34;</span><span class="p">],</span> <span class="c1">// GitHub issue 的标签
+</span><span class="c1"></span>   <span class="nx">body</span><span class="o">:</span><span class="s2">&#34;&lt;%- document.title %&gt;：&lt;%- window.location.origin + (frontmatter.to.path || window.location.pathname) %&gt;&#34;</span> <span class="c1">// GitHub issue 的内容
+</span><span class="c1"></span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2019-12-25
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags//"></a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/09.%E5%89%8D%E7%AB%AF/03.%E6%8A%80%E6%9C%AF/01.%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/15.yaml%E8%AF%AD%E8%A8%80%E6%95%99%E7%A8%8B/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">yaml语言教程</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/09.%E5%89%8D%E7%AB%AF/03.%E6%8A%80%E6%9C%AF/04.%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/01.%E8%A7%A3%E5%86%B3%E7%99%BE%E5%BA%A6%E6%97%A0%E6%B3%95%E6%94%B6%E5%BD%95%E6%90%AD%E5%BB%BA%E5%9C%A8github%E4%B8%8A%E7%9A%84%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E7%9A%84%E9%97%AE%E9%A2%98/">
+            <span class="next-text nav-default">解决百度无法收录搭建在GitHub上的个人博客的问题</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

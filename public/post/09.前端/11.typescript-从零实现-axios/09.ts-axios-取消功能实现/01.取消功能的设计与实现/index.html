@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>取消功能的设计与实现 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="HuangYi" /><meta name="description" content="取消功能的设计与实现 需求分析 有些场景下，我们希望能主动取消请求，比如常见的搜索框案例，在用户输入过程中，搜索框的内容也在不断变化，正常情况每" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.87.0 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/09.%E5%89%8D%E7%AB%AF/11.typescript-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/09.ts-axios-%E5%8F%96%E6%B6%88%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0/01.%E5%8F%96%E6%B6%88%E5%8A%9F%E8%83%BD%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="取消功能的设计与实现" />
+<meta property="og:description" content="取消功能的设计与实现 需求分析 有些场景下，我们希望能主动取消请求，比如常见的搜索框案例，在用户输入过程中，搜索框的内容也在不断变化，正常情况每" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/09.%E5%89%8D%E7%AB%AF/11.typescript-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/09.ts-axios-%E5%8F%96%E6%B6%88%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0/01.%E5%8F%96%E6%B6%88%E5%8A%9F%E8%83%BD%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2020-01-05T10:56:02+00:00" />
+<meta property="article:modified_time" content="2020-01-05T10:56:02+00:00" />
+
+<meta itemprop="name" content="取消功能的设计与实现">
+<meta itemprop="description" content="取消功能的设计与实现 需求分析 有些场景下，我们希望能主动取消请求，比如常见的搜索框案例，在用户输入过程中，搜索框的内容也在不断变化，正常情况每"><meta itemprop="datePublished" content="2020-01-05T10:56:02+00:00" />
+<meta itemprop="dateModified" content="2020-01-05T10:56:02+00:00" />
+<meta itemprop="wordCount" content="2989">
+<meta itemprop="keywords" content="TypeScript," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="取消功能的设计与实现"/>
+<meta name="twitter:description" content="取消功能的设计与实现 需求分析 有些场景下，我们希望能主动取消请求，比如常见的搜索框案例，在用户输入过程中，搜索框的内容也在不断变化，正常情况每"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">取消功能的设计与实现</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2020-01-05 </span>
+        <div class="post-category">
+            <a href="/categories/typescript-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/"> 《TypeScript 从零实现 axios》 </a>
+            <a href="/categories/ts-axios-%E5%8F%96%E6%B6%88%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0/"> ts-axios 取消功能实现 </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#取消功能的设计与实现">取消功能的设计与实现</a>
+      <ul>
+        <li><a href="#需求分析">需求分析</a></li>
+        <li><a href="#异步分离的设计方案">异步分离的设计方案</a></li>
+        <li><a href="#canceltoken-类实现">CancelToken 类实现</a>
+          <ul>
+            <li><a href="#接口定义">接口定义</a></li>
+            <li><a href="#代码实现">代码实现</a></li>
+          </ul>
+        </li>
+        <li><a href="#canceltoken-扩展静态接口">CancelToken 扩展静态接口</a>
+          <ul>
+            <li><a href="#接口定义-1">接口定义</a></li>
+            <li><a href="#代码实现-1">代码实现</a></li>
+          </ul>
+        </li>
+        <li><a href="#cancel-类实现及-axios-的扩展">Cancel 类实现及 axios 的扩展</a>
+          <ul>
+            <li><a href="#接口定义-2">接口定义</a></li>
+            <li><a href="#代码实现-2">代码实现</a></li>
+          </ul>
+        </li>
+        <li><a href="#额外逻辑实现">额外逻辑实现</a></li>
+        <li><a href="#demo-编写">demo 编写</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h1 id="取消功能的设计与实现">取消功能的设计与实现</h1>
+<h2 id="需求分析">需求分析</h2>
+<p>有些场景下，我们希望能主动取消请求，比如常见的搜索框案例，在用户输入过程中，搜索框的内容也在不断变化，正常情况每次变化我们都应该向服务端发送一次请求。但是当用户输入过快的时候，我们不希望每次变化请求都发出去，通常一个解决方案是前端用 debounce 的方案，比如延时 200ms 发送请求。这样当用户连续输入的字符，只要输入间隔小于 200ms，前面输入的字符都不会发请求。</p>
+<p>但是还有一种极端情况是后端接口很慢，比如超过 1s 才能响应，这个时候即使做了 200ms 的 debounce，但是在我慢慢输入（每个输入间隔超过 200ms）的情况下，在前面的请求没有响应前，也有可能发出去多个请求。因为接口的响应时长是不定的，如果先发出去的请求响应时长比后发出去的请求要久一些，后请求的响应先回来，先请求的响应后回来，就会出现前面请求响应结果覆盖后面请求响应结果的情况，那么就乱了。因此在这个场景下，我们除了做 debounce，还希望后面的请求发出去的时候，如果前面的请求还没有响应，我们可以把前面的请求取消。</p>
+<p>从 axios 的取消接口设计层面，我们希望做如下的设计：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">const</span> <span class="nx">CancelToken</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">CancelToken</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">source</span> <span class="o">=</span> <span class="nx">CancelToken</span><span class="p">.</span><span class="nx">source</span><span class="p">();</span>
+
+<span class="nx">axios</span><span class="p">.</span><span class="kr">get</span><span class="p">(</span><span class="s1">&#39;/user/12345&#39;</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">cancelToken</span>: <span class="kt">source.token</span>
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">axios</span><span class="p">.</span><span class="nx">isCancel</span><span class="p">(</span><span class="nx">e</span><span class="p">))</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Request canceled&#39;</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">message</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="c1">// 处理错误
+</span><span class="c1"></span>  <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="c1">// 取消请求 (请求原因是可选的)
+</span><span class="c1"></span><span class="nx">source</span><span class="p">.</span><span class="nx">cancel</span><span class="p">(</span><span class="s1">&#39;Operation canceled by the user.&#39;</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>我们给 <code>axios</code> 添加一个 <code>CancelToken</code> 的对象，它有一个 <code>source</code> 方法可以返回一个 <code>source</code> 对象，<code>source.token</code> 是在每次请求的时候传给配置对象中的 <code>cancelToken</code> 属性，然后在请求发出去之后，我们可以通过 <code>source.cancel</code> 方法取消请求。</p>
+<p>我们还支持另一种方式的调用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">const</span> <span class="nx">CancelToken</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">CancelToken</span><span class="p">;</span>
+<span class="kd">let</span> <span class="nx">cancel</span><span class="p">;</span>
+
+<span class="nx">axios</span><span class="p">.</span><span class="kr">get</span><span class="p">(</span><span class="s1">&#39;/user/12345&#39;</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">cancelToken</span>: <span class="kt">new</span> <span class="nx">CancelToken</span><span class="p">(</span><span class="kd">function</span> <span class="nx">executor</span><span class="p">(</span><span class="nx">c</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">cancel</span> <span class="o">=</span> <span class="nx">c</span><span class="p">;</span>
+  <span class="p">})</span>
+<span class="p">});</span>
+
+<span class="c1">// 取消请求
+</span><span class="c1"></span><span class="nx">cancel</span><span class="p">();</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><code>axios.CancelToken</code> 是一个类，我们直接把它实例化的对象传给请求配置中的 <code>cancelToken</code> 属性，<code>CancelToken</code> 的构造函数参数支持传入一个 <code>executor</code> 方法，该方法的参数是一个取消函数 <code>c</code>，我们可以在 <code>executor</code> 方法执行的内部拿到这个取消函数 <code>c</code>，赋值给我们外部定义的 <code>cancel</code> 变量，之后我们可以通过调用这个 <code>cancel</code> 方法来取消请求。</p>
+<h2 id="异步分离的设计方案">异步分离的设计方案</h2>
+<p>通过需求分析，我们知道想要实现取消某次请求，我们需要为该请求配置一个 <code>cancelToken</code>，然后在外部调用一个 <code>cancel</code> 方法。</p>
+<p>请求的发送是一个异步过程，最终会执行 <code>xhr.send</code> 方法，<code>xhr</code> 对象提供了 <a href="https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/abort"><code>abort</code></a> 方法，可以把请求取消。因为我们在外部是碰不到 <code>xhr</code> 对象的，所以我们想在执行 <code>cancel</code> 的时候，去执行 <code>xhr.abort</code> 方法。</p>
+<p>现在就相当于我们在 <code>xhr</code> 异步请求过程中，插入一段代码，当我们在外部执行 <code>cancel</code> 函数的时候，会驱动这段代码的执行，然后执行 <code>xhr.abort</code> 方法取消请求。</p>
+<p>我们可以利用 Promise 实现异步分离，也就是在 <code>cancelToken</code> 中保存一个 <code>pending</code> 状态的 Promise 对象，然后当我们执行 <code>cancel</code> 方法的时候，能够访问到这个 Promise 对象，把它从 <code>pending</code> 状态变成 <code>resolved</code> 状态，这样我们就可以在 <code>then</code> 函数中去实现取消请求的逻辑，类似如下的代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript">
+<span class="k">if</span> <span class="p">(</span><span class="nx">cancelToken</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">cancelToken</span><span class="p">.</span><span class="nx">promise</span>
+    <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">reason</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">abort</span><span class="p">()</span>
+      <span class="nx">reject</span><span class="p">(</span><span class="nx">reason</span><span class="p">)</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="canceltoken-类实现">CancelToken 类实现</h2>
+<p>接下来，我们就来实现这个 <code>CancelToken</code> 类，先来看一下接口定义：</p>
+<h3 id="接口定义">接口定义</h3>
+<p><code>types/index.ts</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="kr">interface</span> <span class="nx">AxiosRequestConfig</span> <span class="p">{</span>
+  <span class="c1">// ...
+</span><span class="c1"></span>  <span class="nx">cancelToken?</span>: <span class="kt">CancelToken</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="kr">interface</span> <span class="nx">CancelToken</span> <span class="p">{</span>
+  <span class="nx">promise</span>: <span class="kt">Promise</span><span class="p">&lt;</span><span class="nt">string</span><span class="p">&gt;</span>
+  <span class="nx">reason?</span>: <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="kr">interface</span> <span class="nx">Canceler</span> <span class="p">{</span>
+  <span class="p">(</span><span class="nx">message?</span>: <span class="kt">string</span><span class="p">)</span><span class="o">:</span> <span class="k">void</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="kr">interface</span> <span class="nx">CancelExecutor</span> <span class="p">{</span>
+  <span class="p">(</span><span class="nx">cancel</span>: <span class="kt">Canceler</span><span class="p">)</span><span class="o">:</span> <span class="k">void</span>
+<span class="p">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>其中 <code>CancelToken</code> 是实例类型的接口定义，<code>Canceler</code> 是取消方法的接口定义，<code>CancelExecutor</code> 是 <code>CancelToken</code> 类构造函数参数的接口定义。</p>
+<h3 id="代码实现">代码实现</h3>
+<p>我们单独创建 <code>cancel</code> 目录来管理取消相关的代码，在 <code>cancel</code> 目录下创建 <code>CancelToken.ts</code> 文件：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="p">{</span> <span class="nx">CancelExecutor</span> <span class="p">}</span> <span class="kr">from</span> <span class="s1">&#39;../types&#39;</span>
+
+<span class="kr">interface</span> <span class="nx">ResolvePromise</span> <span class="p">{</span>
+  <span class="p">(</span><span class="nx">reason?</span>: <span class="kt">string</span><span class="p">)</span><span class="o">:</span> <span class="k">void</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="kr">class</span> <span class="nx">CancelToken</span> <span class="p">{</span>
+  <span class="nx">promise</span>: <span class="kt">Promise</span><span class="p">&lt;</span><span class="nt">string</span><span class="p">&gt;</span>
+  <span class="nx">reason?</span>: <span class="kt">string</span>
+
+  <span class="kr">constructor</span><span class="p">(</span><span class="nx">executor</span>: <span class="kt">CancelExecutor</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">resolvePromise</span>: <span class="kt">ResolvePromise</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">promise</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">&lt;</span><span class="nt">string</span><span class="p">&gt;(</span><span class="nx">resolve</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">resolvePromise</span> <span class="o">=</span> <span class="nx">resolve</span>
+    <span class="p">})</span>
+
+    <span class="nx">executor</span><span class="p">(</span><span class="nx">message</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">reason</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span>
+      <span class="p">}</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">reason</span> <span class="o">=</span> <span class="nx">message</span>
+      <span class="nx">resolvePromise</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">reason</span><span class="p">)</span>
+    <span class="p">})</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在 <code>CancelToken</code> 构造函数内部，实例化一个 <code>pending</code> 状态的 Promise 对象，然后用一个 <code>resolvePromise</code> 变量指向 <code>resolve</code> 函数。接着执行 <code>executor</code> 函数，传入一个 <code>cancel</code> 函数，在 <code>cancel</code> 函数内部，会调用 <code>resolvePromise</code> 把 Promise 对象从 <code>pending</code> 状态变为 <code>resolved</code> 状态。</p>
+<p>接着我们在 <code>xhr.ts</code> 中插入一段取消请求的逻辑。</p>
+<p><code>core/xhr.ts</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">const</span> <span class="p">{</span> <span class="cm">/*....*/</span> <span class="nx">cancelToken</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">config</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="nx">cancelToken</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">cancelToken</span><span class="p">.</span><span class="nx">promise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">reason</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">abort</span><span class="p">()</span>
+    <span class="nx">reject</span><span class="p">(</span><span class="nx">reason</span><span class="p">)</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这样就满足了第二种使用方式，接着我们要实现第一种使用方式，给 <code>CancelToken</code> 扩展静态接口。</p>
+<h2 id="canceltoken-扩展静态接口">CancelToken 扩展静态接口</h2>
+<h3 id="接口定义-1">接口定义</h3>
+<p><code>types/index.ts</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="kr">interface</span> <span class="nx">CancelTokenSource</span> <span class="p">{</span>
+  <span class="nx">token</span>: <span class="kt">CancelToken</span>
+  <span class="nx">cancel</span>: <span class="kt">Canceler</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="kr">interface</span> <span class="nx">CancelTokenStatic</span> <span class="p">{</span>
+  <span class="k">new</span><span class="p">(</span><span class="nx">executor</span>: <span class="kt">CancelExecutor</span><span class="p">)</span><span class="o">:</span> <span class="nx">CancelToken</span>
+
+  <span class="nx">source</span><span class="p">()</span><span class="o">:</span> <span class="nx">CancelTokenSource</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>其中 <code>CancelTokenSource</code> 作为 <code>CancelToken</code> 类静态方法 <code>source</code> 函数的返回值类型，<code>CancelTokenStatic</code> 则作为 <code>CancelToken</code> 类的类类型。</p>
+<h3 id="代码实现-1">代码实现</h3>
+<p><code>cancel/CancelToken.ts</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="k">default</span> <span class="kr">class</span> <span class="nx">CancelToken</span> <span class="p">{</span>
+  <span class="c1">// ...
+</span><span class="c1"></span>
+  <span class="kr">static</span> <span class="nx">source</span><span class="p">()</span><span class="o">:</span> <span class="nx">CancelTokenSource</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">cancel</span><span class="o">!:</span> <span class="nx">Canceler</span>
+    <span class="kr">const</span> <span class="nx">token</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">CancelToken</span><span class="p">(</span><span class="nx">c</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">cancel</span> <span class="o">=</span> <span class="nx">c</span>
+    <span class="p">})</span>
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="nx">cancel</span><span class="p">,</span>
+      <span class="nx">token</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><code>source</code> 的静态方法很简单，定义一个 <code>cancel</code> 变量实例化一个 <code>CancelToken</code> 类型的对象，然后在 <code>executor</code> 函数中，把 <code>cancel</code> 指向参数 <code>c</code> 这个取消函数。</p>
+<p>这样就满足了我们第一种使用方式，但是在第一种使用方式的例子中，我们在捕获请求的时候，通过 <code>axios.isCancel</code> 来判断这个错误参数 e 是不是一次取消请求导致的错误，接下来我们对取消错误的原因做一层包装，并且把给 <code>axios</code> 扩展静态方法</p>
+<h2 id="cancel-类实现及-axios-的扩展">Cancel 类实现及 axios 的扩展</h2>
+<h3 id="接口定义-2">接口定义</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="kr">interface</span> <span class="nx">Cancel</span> <span class="p">{</span>
+  <span class="nx">message?</span>: <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="kr">interface</span> <span class="nx">CancelStatic</span> <span class="p">{</span>
+  <span class="k">new</span><span class="p">(</span><span class="nx">message?</span>: <span class="kt">string</span><span class="p">)</span><span class="o">:</span> <span class="nx">Cancel</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="kr">interface</span> <span class="nx">AxiosStatic</span> <span class="kr">extends</span> <span class="nx">AxiosInstance</span> <span class="p">{</span>
+  <span class="nx">create</span><span class="p">(</span><span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosInstance</span>
+
+  <span class="nx">CancelToken</span>: <span class="kt">CancelTokenStatic</span>
+  <span class="nx">Cancel</span>: <span class="kt">CancelStatic</span>
+  <span class="nx">isCancel</span><span class="o">:</span> <span class="p">(</span><span class="nx">value</span>: <span class="kt">any</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="kr">boolean</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>其中 <code>Cancel</code> 是实例类型的接口定义，<code>CancelStatic</code> 是类类型的接口定义，并且我们给 <code>axios</code> 扩展了多个静态方法。</p>
+<h3 id="代码实现-2">代码实现</h3>
+<p>我在 <code>cancel</code> 目录下创建 <code>Cancel.ts</code> 文件。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="k">default</span> <span class="kr">class</span> <span class="nx">Cancel</span> <span class="p">{</span>
+  <span class="nx">message?</span>: <span class="kt">string</span>
+
+  <span class="kr">constructor</span><span class="p">(</span><span class="nx">message?</span>: <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">message</span> <span class="o">=</span> <span class="nx">message</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="kd">function</span> <span class="nx">isCancel</span><span class="p">(</span><span class="nx">value</span>: <span class="kt">any</span><span class="p">)</span><span class="o">:</span> <span class="kr">boolean</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">value</span> <span class="k">instanceof</span> <span class="nx">Cancel</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><code>Cancel</code> 类非常简单，拥有一个 <code>message</code> 的公共属性。<code>isCancel</code> 方法也非常简单，通过 <code>instanceof</code> 来判断传入的值是不是一个 <code>Cancel</code> 对象。</p>
+<p>接着我们对 <code>CancelToken</code> 类中的 <code>reason</code> 类型做修改，把它变成一个 <code>Cancel</code> 类型的实例。</p>
+<p>先修改定义部分。</p>
+<p><code>types/index.ts</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="kr">interface</span> <span class="nx">CancelToken</span> <span class="p">{</span>
+  <span class="nx">promise</span>: <span class="kt">Promise</span><span class="p">&lt;</span><span class="nt">Cancel</span><span class="p">&gt;</span>
+  <span class="nx">reason?</span>: <span class="kt">Cancel</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>再修改实现部分：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="nx">Cancel</span> <span class="kr">from</span> <span class="s1">&#39;./Cancel&#39;</span>
+
+<span class="kr">interface</span> <span class="nx">ResolvePromise</span> <span class="p">{</span>
+  <span class="p">(</span><span class="nx">reason?</span>: <span class="kt">Cancel</span><span class="p">)</span><span class="o">:</span> <span class="k">void</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="kr">class</span> <span class="nx">CancelToken</span> <span class="p">{</span>
+  <span class="nx">promise</span>: <span class="kt">Promise</span><span class="p">&lt;</span><span class="nt">Cancel</span><span class="p">&gt;</span>
+  <span class="nx">reason?</span>: <span class="kt">Cancel</span>
+
+  <span class="kr">constructor</span><span class="p">(</span><span class="nx">executor</span>: <span class="kt">CancelExecutor</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">resolvePromise</span>: <span class="kt">ResolvePromise</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">promise</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">&lt;</span><span class="nt">Cancel</span><span class="p">&gt;(</span><span class="nx">resolve</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">resolvePromise</span> <span class="o">=</span> <span class="nx">resolve</span>
+    <span class="p">})</span>
+
+    <span class="nx">executor</span><span class="p">(</span><span class="nx">message</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">reason</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span>
+      <span class="p">}</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">reason</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Cancel</span><span class="p">(</span><span class="nx">message</span><span class="p">)</span>
+      <span class="nx">resolvePromise</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">reason</span><span class="p">)</span>
+    <span class="p">})</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>接下来我们给 <code>axios</code> 扩展一些静态方法，供用户使用。</p>
+<p><code>axios.ts</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="nx">CancelToken</span> <span class="kr">from</span> <span class="s1">&#39;./cancel/CancelToken&#39;</span>
+<span class="kr">import</span> <span class="nx">Cancel</span><span class="p">,</span> <span class="p">{</span> <span class="nx">isCancel</span> <span class="p">}</span> <span class="kr">from</span> <span class="s1">&#39;./cancel/Cancel&#39;</span>
+
+<span class="nx">axios</span><span class="p">.</span><span class="nx">CancelToken</span> <span class="o">=</span> <span class="nx">CancelToken</span>
+<span class="nx">axios</span><span class="p">.</span><span class="nx">Cancel</span> <span class="o">=</span> <span class="nx">Cancel</span>
+<span class="nx">axios</span><span class="p">.</span><span class="nx">isCancel</span> <span class="o">=</span> <span class="nx">isCancel</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="额外逻辑实现">额外逻辑实现</h2>
+<p>除此之外，我们还需要实现一些额外逻辑，比如当一个请求携带的 <code>cancelToken</code> 已经被使用过，那么我们甚至都可以不发送这个请求，只需要抛一个异常即可，并且抛异常的信息就是我们取消的原因，所以我们需要给 <code>CancelToken</code> 扩展一个方法。</p>
+<p>先修改定义部分。</p>
+<p><code>types/index.ts</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="kr">interface</span> <span class="nx">CancelToken</span> <span class="p">{</span>
+  <span class="nx">promise</span>: <span class="kt">Promise</span><span class="p">&lt;</span><span class="nt">Cancel</span><span class="p">&gt;</span>
+  <span class="nx">reason?</span>: <span class="kt">Cancel</span>
+
+  <span class="nx">throwIfRequested</span><span class="p">()</span><span class="o">:</span> <span class="k">void</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>添加一个 <code>throwIfRequested</code> 方法，接下来实现它：</p>
+<p><code>cancel/CancelToken.ts</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="k">default</span> <span class="kr">class</span> <span class="nx">CancelToken</span> <span class="p">{</span>
+  <span class="c1">// ...
+</span><span class="c1"></span>
+  <span class="nx">throwIfRequested</span><span class="p">()</span><span class="o">:</span> <span class="k">void</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">reason</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">throw</span> <span class="k">this</span><span class="p">.</span><span class="nx">reason</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>判断如果存在 <code>this.reason</code>，说明这个 <code>token</code> 已经被使用过了，直接抛错。</p>
+<p>接下来在发送请求前增加一段逻辑。</p>
+<p><code>core/dispatchRequest.ts</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="k">default</span> <span class="kd">function</span> <span class="nx">dispatchRequest</span><span class="p">(</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span> <span class="p">{</span>
+  <span class="nx">throwIfCancellationRequested</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span>
+  <span class="nx">processConfig</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span>
+
+  <span class="c1">// ...
+</span><span class="c1"></span><span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">throwIfCancellationRequested</span><span class="p">(</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="k">void</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">config</span><span class="p">.</span><span class="nx">cancelToken</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">config</span><span class="p">.</span><span class="nx">cancelToken</span><span class="p">.</span><span class="nx">throwIfRequested</span><span class="p">()</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>发送请求前检查一下配置的 cancelToken 是否已经使用过了，如果已经被用过则不用法请求，直接抛异常。</p>
+<h2 id="demo-编写">demo 编写</h2>
+<p>在 <code>examples</code> 目录下创建 <code>cancel</code> 目录，在 <code>cancel</code> 目录下创建 <code>index.html</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&#34;en&#34;</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&#34;utf-8&#34;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>Cancel example<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&#34;/__build__/cancel.js&#34;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>接着创建 <code>app.ts</code> 作为入口文件：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="nx">axios</span><span class="p">,</span> <span class="p">{</span> <span class="nx">Canceler</span> <span class="p">}</span> <span class="kr">from</span> <span class="s1">&#39;../../src/index&#39;</span>
+
+<span class="kr">const</span> <span class="nx">CancelToken</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">CancelToken</span>
+<span class="kr">const</span> <span class="nx">source</span> <span class="o">=</span> <span class="nx">CancelToken</span><span class="p">.</span><span class="nx">source</span><span class="p">()</span>
+
+<span class="nx">axios</span><span class="p">.</span><span class="kr">get</span><span class="p">(</span><span class="s1">&#39;/cancel/get&#39;</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">cancelToken</span>: <span class="kt">source.token</span>
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">axios</span><span class="p">.</span><span class="nx">isCancel</span><span class="p">(</span><span class="nx">e</span><span class="p">))</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Request canceled&#39;</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">message</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+
+<span class="nx">setTimeout</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">source</span><span class="p">.</span><span class="nx">cancel</span><span class="p">(</span><span class="s1">&#39;Operation canceled by the user.&#39;</span><span class="p">)</span>
+
+  <span class="nx">axios</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/cancel/post&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">a</span>: <span class="kt">1</span> <span class="p">},</span> <span class="p">{</span> <span class="nx">cancelToken</span>: <span class="kt">source.token</span> <span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">axios</span><span class="p">.</span><span class="nx">isCancel</span><span class="p">(</span><span class="nx">e</span><span class="p">))</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">message</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">})</span>
+<span class="p">},</span> <span class="mi">100</span><span class="p">)</span>
+
+<span class="kd">let</span> <span class="nx">cancel</span>: <span class="kt">Canceler</span>
+
+<span class="nx">axios</span><span class="p">.</span><span class="kr">get</span><span class="p">(</span><span class="s1">&#39;/cancel/get&#39;</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">cancelToken</span>: <span class="kt">new</span> <span class="nx">CancelToken</span><span class="p">(</span><span class="nx">c</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">cancel</span> <span class="o">=</span> <span class="nx">c</span>
+  <span class="p">})</span>
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">axios</span><span class="p">.</span><span class="nx">isCancel</span><span class="p">(</span><span class="nx">e</span><span class="p">))</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Request canceled&#39;</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+
+<span class="nx">setTimeout</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">cancel</span><span class="p">()</span>
+<span class="p">},</span> <span class="mi">200</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>我们的 demo 展示了 2 种使用方式，也演示了如果一个 token 已经被使用过，则再次携带该 token 的请求并不会发送。</p>
+<p>至此，我们完成了 <code>ts-axios</code> 的请求取消功能，我们巧妙地利用了 Promise 实现了异步分离。目前官方 <code>axios</code> 库的一些大的 feature 我们都已经实现了，下面的章节我们就开始补充完善 <code>ts-axios</code> 的其它功能。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">HuangYi</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2020-01-05
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/typescript/">TypeScript</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/09.%E5%89%8D%E7%AB%AF/11.typescript-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/11.ts-axios-%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/10.%E5%89%A9%E4%BD%99%E6%A8%A1%E5%9D%97%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">剩余模块单元测试</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/09.%E5%89%8D%E7%AB%AF/11.typescript-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/08.ts-axios-%E9%85%8D%E7%BD%AE%E5%8C%96%E5%AE%9E%E7%8E%B0/01.%E5%90%88%E5%B9%B6%E9%85%8D%E7%BD%AE%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/">
+            <span class="next-text nav-default">合并配置的设计与实现</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
