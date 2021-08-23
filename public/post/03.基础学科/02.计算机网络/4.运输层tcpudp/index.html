@@ -49,7 +49,7 @@
 <meta itemprop="name" content="运输层(TCP,UDP)">
 <meta itemprop="description" content="TCP的三次握手 问题1 TCP可以建立两次握手嘛 不可以。有两个原因：首先，可能会出现已失效的连接请求报文段又传到了服务器端。 其次，两次握手无法"><meta itemprop="datePublished" content="2021-03-20T15:50:06+00:00" />
 <meta itemprop="dateModified" content="2021-03-20T15:50:06+00:00" />
-<meta itemprop="wordCount" content="6483">
+<meta itemprop="wordCount" content="6717">
 <meta itemprop="keywords" content="," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="运输层(TCP,UDP)"/>
 <meta name="twitter:description" content="TCP的三次握手 问题1 TCP可以建立两次握手嘛 不可以。有两个原因：首先，可能会出现已失效的连接请求报文段又传到了服务器端。 其次，两次握手无法"/>
@@ -179,6 +179,7 @@
         </li>
         <li><a href="#tcp拥塞控制">TCP拥塞控制</a>
           <ul>
+            <li></li>
             <li><a href="#什么情况下会出现拥塞">什么情况下会出现拥塞</a></li>
             <li><a href="#拥塞控制的四种算法">拥塞控制的四种算法</a></li>
             <li><a href="#慢开始和拥塞避免">慢开始和拥塞避免</a></li>
@@ -226,6 +227,7 @@
 <p>服务器每收到一次客户端的请求后都会重新复位一个计时器，时间通常是设置为2小时，若两小时还没有收到客户端的任何数据，服务器就会发送一个探测报文段，以后每隔75秒钟发送一次。若一连发送10个探测报文仍然没反应，服务器就认为客户端出了故障，接着就关闭连接。</p>
 <h3 id="问题四-什么是初始序列号">问题四 什么是初始序列号</h3>
 <p>TCP连接的一方A，随机选择一个32位的序列号（Sequence Number）作为发送数据的初始序列号（Initial Sequence Number，ISN），比如为1000，以该序列号为原点，对要传送的数据进行编号：1001、1002&hellip;三次握手时，把这个初始序列号传送给另一方B，以便在传输数据时，B可以确认什么样的数据编号是合法的；同时在进行数据传输时，A还可以确认B收到的每一个字节，如果A收到了B的确认编号（acknowledge number）是2001，就说明编号为1001-2000的数据已经被B成功接受。</p>
+<p>序列号 ，简称 seq, 用来确认消息顺序【相当于数据库的主键，唯一标识消息的实体】</p>
 <h2 id="tcp的四次挥手">TCP的四次挥手</h2>
 <p><img src="https://img.xiaoyou66.com/images/2020/11/23/V4CxA.png" alt="img"></p>
 <h3 id="问题1-为什么不能把服务器发送的ack和fin合并起来变成三次挥手close_wait状态意义是什么">问题1 为什么不能把服务器发送的ACK和FIN合并起来，变成三次挥手（CLOSE_WAIT状态意义是什么）？</h3>
@@ -295,6 +297,12 @@
 <li>需要注意的是，<strong>接收方接收 tcp 报文的顺序是不确定的，并非是一定先收到 35 再收到 36，也可能是先收到 36，37，再收到 35.</strong></li>
 </ul>
 <h2 id="tcp拥塞控制">TCP拥塞控制</h2>
+<h4 id="专有名词解释">专有名词解释</h4>
+<ol>
+<li><em>CWnd</em>是计算机网络中拥塞窗口（congestion window）的简写， congestion 是拥塞的意思</li>
+<li>RWnd 全称是 (receiver window ) 接收方窗口</li>
+<li>ssthresh  慢启动阈值 【到达这个阈值，就会改为拥塞避免算法】</li>
+</ol>
 <h3 id="什么情况下会出现拥塞">什么情况下会出现拥塞</h3>
 <ul>
 <li>在某段时间，若对网络中某资源的需求超过了该资源所能提供的可用部分，网络的性能就要变坏——产生拥塞(congestion)。</li>
@@ -302,6 +310,15 @@
 <li>若网络中有许多资源同时产生拥塞，网络的性能就要明显变坏，整个网络的吞吐量将随输入负荷的增大而下降。</li>
 </ul>
 <p>如果网络出现拥塞，分组将会丢失，此时发送方会继续重传，从而导致网络拥塞程度更高。因此当出现拥塞时，应当控制发送方的速率。这一点和流量控制很像，但是出发点不同。<strong>流量控制是为了让接收方能来得及接收，而拥塞控制是为了降低整个网络的拥塞程度。</strong></p>
+<ul>
+<li>
+<p>其实 说简单点有2种</p>
+<ol>
+<li>数据信道的问题， 信道带宽不够，比如路由器接受太多数据，无法处理，就会进行丢包</li>
+<li>发送接收方问题，自己不够牛逼，无法处理这么多的数据，然后就出现拥塞</li>
+</ol>
+</li>
+</ul>
 <h3 id="拥塞控制的四种算法">拥塞控制的四种算法</h3>
 <p>慢开始、拥塞避免、快重传、快恢复</p>
 <p><img src="https://img.xiaoyou66.com/2021/03/22/1c571b76b8ff9.jpg" alt="img"></p>
@@ -312,6 +329,14 @@
 <li><strong>如果出现了超时，则令 ssthresh = cwnd/2，然后重新执行慢开始。</strong></li>
 </ol>
 <h3 id="快重传与快恢复">快重传与快恢复</h3>
+<ul>
+<li>解释：
+<ul>
+<li>快速重传： 重复确认的序号想 下一个数据包重新传一遍</li>
+<li>快速回复</li>
+</ul>
+</li>
+</ul>
 <p>在接收方，要求每次接收到报文段都应该对最后一个已收到的有序报文段进行确认。例如已经接收到 M1 和 M2，此时收到 M4，应当发送对 M2 的确认。</p>
 <p>在发送方，如果收到 <strong>三个重复确认</strong> ，那么可以知道下一个报文段丢失，此时执行快重传，立即重传下一个报文段。例如收到三个 M2，则 M3 丢失，立即重传 M3。</p>
 <p>在这种情况下，<strong>只是丢失个别报文段，而不是网络拥塞。因此执行快恢复</strong>，令 ssthresh = cwnd/2 ，cwnd = ssthresh，注意到此时直接进入拥塞避免。慢开始和快恢复的快慢指的是 cwnd 的设定值，而不是 cwnd 的增长速率。慢开始 cwnd 设定为 1，而快恢复 cwnd 设定为 ssthresh。</p>
@@ -326,10 +351,10 @@
 <h3 id="流量控制和拥塞控制区别">流量控制和拥塞控制区别</h3>
 <ul>
 <li>拥塞控制所要做的都有一个前提，就是网络能够承受现有的网络负荷。</li>
-<li>拥塞控制是一个全局性的过程，涉及到所有的主机、所有的路由器，以及与降低网络传输性能有关的所有因素。</li>
-<li>流量控制往往指在给定的发送端和接收端之间的点对点通信量的控制。</li>
+<li><strong>拥塞控制</strong>是一个<strong>全局性</strong>的过程，涉及到<strong>所有的主机、所有的路由器，以及与降低网络传输性能有关的所有因素</strong>。</li>
+<li><strong>流量控制</strong>往往指在给定的发送端和接收端之间的<strong>点对点通信量</strong>的控制。</li>
 <li>流量控制所要做的就是抑制发送端发送数据的速率，以便使接收端来得及接收。</li>
-<li>流量控制属于通信双方协商；拥塞控制涉及通信链路全局。</li>
+<li><strong>流量控制</strong>属于<strong>通信双方协商</strong>；<strong>拥塞控制</strong>涉及<strong>通信链路全局</strong>。</li>
 <li>流量控制需要通信双方各维护一个发送窗、一个接收窗，对任意一方，接收窗大小由自身决定，发送窗大小由接收方响应的TCP报文段中窗口值确定；拥塞控制的拥塞窗口大小变化由试探性发送一定数据量数据探查网络状况后而自适应调整。</li>
 <li>实际最终发送窗口 = min{流控发送窗口，拥塞窗口}。</li>
 </ul>
@@ -417,11 +442,7 @@
             <span class="prev-text nav-default">网络层(IP,ICMP,ARP)</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
-        <a class="next" href="/post/03.%E5%9F%BA%E7%A1%80%E5%AD%A6%E7%A7%91/01.%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/1.%E8%BF%9B%E7%A8%8B%E5%92%8C%E7%BA%BF%E7%A8%8B/">
-            <span class="next-text nav-default">进程和线程</span>
-            <span class="next-text nav-mobile">下一篇</span>
-            <i class="iconfont icon-right"></i>
-          </a>
+        
       </nav>
     </footer>
   </article>
