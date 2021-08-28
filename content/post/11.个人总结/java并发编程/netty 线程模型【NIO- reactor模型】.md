@@ -7,6 +7,18 @@ author: LYR
 
 
 
+## NIO原理
+
+![image-20210829002740868](https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_08_29_00__27_43image-20210829002740868.png)
+
+设置一个场景， 从 socket里面读取数据，读到 '\n' 为止，把读到的数据写入到另一个 socket里面，这个就是 c 和 java nio的2种实现
+
+
+
+
+
+
+
 
 
 ## netty的原理
