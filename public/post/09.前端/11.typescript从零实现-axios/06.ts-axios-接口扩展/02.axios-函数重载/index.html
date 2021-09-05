@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>axios 函数重载 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="HuangYi" /><meta name="description" content="axios 函数重载 需求分析 目前我们的 axios 函数只支持传入 1 个参数，如下： 1 2 3 4 5 6 7 axios({ url: &amp;#39;/extend/post&amp;#39;, method: &amp;#39;post&amp;#39;, data: { msg: &amp;#39;hi&amp;#39; } }) 我们希望该函数也能支持传入 2 个参数，如下： 1" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.87.0 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/09.%E5%89%8D%E7%AB%AF/11.typescript%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/06.ts-axios-%E6%8E%A5%E5%8F%A3%E6%89%A9%E5%B1%95/02.axios-%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="axios 函数重载" />
+<meta property="og:description" content="axios 函数重载 需求分析 目前我们的 axios 函数只支持传入 1 个参数，如下： 1 2 3 4 5 6 7 axios({ url: &#39;/extend/post&#39;, method: &#39;post&#39;, data: { msg: &#39;hi&#39; } }) 我们希望该函数也能支持传入 2 个参数，如下： 1" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/09.%E5%89%8D%E7%AB%AF/11.typescript%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/06.ts-axios-%E6%8E%A5%E5%8F%A3%E6%89%A9%E5%B1%95/02.axios-%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2020-01-05T10:56:02+00:00" />
+<meta property="article:modified_time" content="2020-01-05T10:56:02+00:00" />
+
+<meta itemprop="name" content="axios 函数重载">
+<meta itemprop="description" content="axios 函数重载 需求分析 目前我们的 axios 函数只支持传入 1 个参数，如下： 1 2 3 4 5 6 7 axios({ url: &#39;/extend/post&#39;, method: &#39;post&#39;, data: { msg: &#39;hi&#39; } }) 我们希望该函数也能支持传入 2 个参数，如下： 1"><meta itemprop="datePublished" content="2020-01-05T10:56:02+00:00" />
+<meta itemprop="dateModified" content="2020-01-05T10:56:02+00:00" />
+<meta itemprop="wordCount" content="816">
+<meta itemprop="keywords" content="TypeScript," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="axios 函数重载"/>
+<meta name="twitter:description" content="axios 函数重载 需求分析 目前我们的 axios 函数只支持传入 1 个参数，如下： 1 2 3 4 5 6 7 axios({ url: &#39;/extend/post&#39;, method: &#39;post&#39;, data: { msg: &#39;hi&#39; } }) 我们希望该函数也能支持传入 2 个参数，如下： 1"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">axios 函数重载</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2020-01-05 </span>
+        <div class="post-category">
+            <a href="/categories/typescript-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/"> 《TypeScript 从零实现 axios》 </a>
+            <a href="/categories/ts-axios-%E6%8E%A5%E5%8F%A3%E6%89%A9%E5%B1%95/"> ts-axios 接口扩展 </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#axios-函数重载">axios 函数重载</a>
+      <ul>
+        <li><a href="#需求分析">需求分析</a></li>
+        <li><a href="#重载实现">重载实现</a></li>
+        <li><a href="#编写-demo">编写 demo</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h1 id="axios-函数重载">axios 函数重载</h1>
+<h2 id="需求分析">需求分析</h2>
+<p>目前我们的 axios 函数只支持传入 1 个参数，如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="nx">axios</span><span class="p">({</span>
+  <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;/extend/post&#39;</span><span class="p">,</span>
+  <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span>
+  <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">msg</span><span class="o">:</span> <span class="s1">&#39;hi&#39;</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>我们希望该函数也能支持传入 2 个参数，如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="nx">axios</span><span class="p">(</span><span class="s1">&#39;/extend/post&#39;</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span>
+  <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">msg</span><span class="o">:</span> <span class="s1">&#39;hello&#39;</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>第一个参数是 <code>url</code>，第二个参数是 <code>config</code>，这个函数有点类似 <code>axios.get</code> 方法支持的参数类型，不同的是如果我们想要指定 HTTP 方法类型，仍然需要在 <code>config</code> 传入 <code>method</code>。</p>
+<p>这就用到我们之前所学的函数重载知识点了，接下来我们来实现它。</p>
+<h2 id="重载实现">重载实现</h2>
+<p>首先我们要修改 <code>AxiosInstance</code> 的类型定义。</p>
+<p><code>types/index.ts</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="kr">interface</span> <span class="nx">AxiosInstance</span> <span class="kr">extends</span> <span class="nx">Axios</span> <span class="p">{</span>
+  <span class="p">(</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span>
+
+  <span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>我们增加一种函数的定义，它支持 2 个参数，其中 <code>url</code> 是必选参数，<code>config</code> 是可选参数。</p>
+<p>由于 <code>axios</code> 函数实际上指向的是 <code>request</code> 函数，所以我们来修改 <code>request</code> 函数的实现。</p>
+<p><code>core/Axios.ts</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript">  <span class="nx">request</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">any</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">any</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">url</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">config</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">config</span> <span class="o">=</span> <span class="p">{}</span>
+      <span class="p">}</span>
+      <span class="nx">config</span><span class="p">.</span><span class="nx">url</span> <span class="o">=</span> <span class="nx">url</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">config</span> <span class="o">=</span> <span class="nx">url</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">dispatchRequest</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span>
+  <span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>我们把 <code>request</code> 函数的参数改成 2 个，<code>url</code> 和 <code>config</code> 都是 <code>any</code> 类型，<code>config</code> 还是可选参数。</p>
+<p>接着在函数体我们判断 <code>url</code> 是否为字符串类型，一旦它为字符串类型，则继续对 <code>config</code> 判断，因为它可能不传，如果为空则构造一个空对象，然后把 <code>url</code> 添加到 <code>config.url</code> 中。如果 <code>url</code> 不是字符串类型，则说明我们传入的就是单个参数，且 <code>url</code> 就是 <code>config</code>，因此把 <code>url</code> 赋值给 <code>config</code>。</p>
+<p>这里要注意的是，我们虽然修改了 <code>request</code> 的实现，支持了 2 种参数，但是我们对外提供的 <code>request</code> 接口仍然不变，可以理解为这仅仅是内部的实现的修改，与对外接口不必一致，只要保留实现兼容接口即可。</p>
+<h2 id="编写-demo">编写 demo</h2>
+<p><code>examples/extend/app.ts</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-typescript" data-lang="typescript"><span class="nx">axios</span><span class="p">({</span>
+  <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;/extend/post&#39;</span><span class="p">,</span>
+  <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span>
+  <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">msg</span><span class="o">:</span> <span class="s1">&#39;hi&#39;</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+
+<span class="nx">axios</span><span class="p">(</span><span class="s1">&#39;/extend/post&#39;</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span>
+  <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">msg</span><span class="o">:</span> <span class="s1">&#39;hello&#39;</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>我们使用了 <code>axios</code> 2 种请求方式，打开页面运行 <code>demo</code>，通过 network 我们可以看到 2 种请求都是运行正常的。</p>
+<p>至此我们实现了 <code>axios</code> 函数的重载。官方 axios 支持了一种能力，我们可以去定义返回数据的类型，并在请求的时候指定该类型，然后在响应数据中我们就可以获取到该数据类型。下一节课我们就来实现这个 feature。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">HuangYi</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2020-01-05
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/typescript/">TypeScript</a>
+          </div>
+      <nav class="post-nav">
+        
+        <a class="next" href="/post/09.%E5%89%8D%E7%AB%AF/11.typescript%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/06.ts-axios-%E6%8E%A5%E5%8F%A3%E6%89%A9%E5%B1%95/03.%E5%93%8D%E5%BA%94%E6%95%B0%E6%8D%AE%E6%94%AF%E6%8C%81%E6%B3%9B%E5%9E%8B/">
+            <span class="next-text nav-default">响应数据支持泛型</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
