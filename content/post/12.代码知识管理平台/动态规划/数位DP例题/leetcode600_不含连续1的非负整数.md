@@ -1,7 +1,9 @@
 ---
 title: "不含连续1的非负整数"
 date: 2021-08-14T22:42:48+08:00
-draft: true
+draft: false
+
+
 
 ---
 
@@ -41,29 +43,32 @@ Difficulty: **困难**
 
 
 连续2个1 就不合法了，因此 我们 假设 所求值为 $dp[len][bit] $
-$$
-\begin{flalign} 
- 
-&可以获得，状态转移方程为: \\
-\\
-&dp[len][0] = (dp[len-1][1] + dp[len-1][0]);\\
-\\
-&dp[len][1] = dp[len-1][0];\\
- 
-\end{flalign}
-$$
+
+
+
+---
+
+
+
+## 数位DP 公式推导
+
+$$ \begin{align} & dp[len][0] = (dp[len-1][1] + dp[len-1][0])\\\\ & dp[len][1] = dp[len-1][0] \end{align}$$
+
+
+
+
+
+
+
 
 
 
 
 #### 对 DP 公式的概括
 
+ 
 $$
-\begin{align}
-& dp[t] = 
-\begin{cases}
-dp[t-1] + dp[t-2] , t>=2\\
-1,  t<2
+\begin{align} & dp[t] =  \begin{cases} dp[t-1] + dp[t-2] , t>=2\\\\ 1,t<2
 \end{cases}
 \end{align}
 $$
@@ -72,7 +77,7 @@ $$
 
 
 
-
+ 
 
 
 
