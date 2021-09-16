@@ -61,3 +61,45 @@ Java语言中类的加载、连接和初始化过程都是在程序运行期间�
 
 
 
+
+
+
+
+####  双亲委派机制
+
+
+
+
+
+![image-20210916160946361](https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_09_16_16_09_48image-20210916160946361.png)
+
+
+
+
+
+###  JAVA 语言怎么实现跨平台
+
+
+
+1. jvm 将java代码编译为.class 文件的中间代码文件， 通过 jvm 来解释执行 这个 字节码， 将字节码翻译为适配操作系统底层的机器语言， jvm 是不跨平台的， 每个操作系统要安装对应版本的jvm 进行语言解释。
+
+
+
+
+
+###  什么是 OOM ， 哪里会出现 OOM
+
+out of memory
+
+- 堆内存异常 ， java.lang.OutOfMemoryError, java heap space
+- 栈内存溢出， stackOverflowError
+- 永久代溢出， java.lang.OutOfMemoryError: Permgen space
+
+
+
+
+
+
+
+
+
