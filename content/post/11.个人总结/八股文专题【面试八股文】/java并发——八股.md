@@ -9,6 +9,150 @@ author: LYR
 
 ## java 并发八股文
 
+[面试题网站](http://r.coderead.cn/r//6%E3%80%81%E5%85%B6%E5%AE%83/35%E9%81%93%E9%9D%A2%E8%AF%95%E7%9C%9F%E9%A2%98.pdf)
+
+
+
+###  线程生命周期
+
+
+
+当线程被创建并启动以后，它既不是一启动就进入了执行状态，也不是一直处于执行状态。在线程的生命周期中，它要经过**新建**(New)、**就绪**（Runnable）、**运行**（Running）、**阻塞**(Blocked)和**死亡**(Dead)**5种状态**。尤其是当线程启动以后，它不可能一直"霸占"着CPU独自运行，所以CPU需要在多条线程之间切换，于是线程状态也会多次在运行、阻塞之间切换
+
+\1. 新建状态 NEW，当程序使用new关键字创建了一个线程之后，该线程就处于新建状态，此时仅由JVM为其分配内存，并初始化其成员变量的值
+
+\2. 就绪状态 Runnable，当线程对象调用了start()方法之后，该线程处于就绪状态。Java虚拟机会为其创建方法调用栈和程序计数器，等待调度运行
+
+\3. 运行状态 Running ，如果处于就绪状态的线程获得了CPU，开始执行run()方法的线程执行体，则该线程处于运行状态
+
+\4. 阻塞状态 Blocked，当处于运行状态的线程失去所占用资源之后，便进入阻塞状态
+
+\5. 终结状态 DEAD
+
+
+
+
+
+
+
+###  线程的几种阻塞状态
+
+1. 等待阻塞 wait 
+2. 同步阻塞 synchronzied
+3. 其他阻塞  join ,yield 等
+
+
+
+
+
+
+
+
+
+![https://img-blog.csdnimg.cn/20200506223058854.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3Fpbnd1eGlhbjE5ODkxMjEx,size_16,color_FFFFFF,t_70](https://img-blog.csdnimg.cn/20200506223058854.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3Fpbnd1eGlhbjE5ODkxMjEx,size_16,color_FFFFFF,t_70)
+
+###  synchronzied原理
+
+1. 锁池
+
+   - 所有需要竞争同步的线程都会放入锁池， 比如当前对象的锁被其他一个线程得到，则其他线程需要在这个锁池里面进行等待，当前面的线程释放同步锁中的线程去竞争同步锁，当某个 得到后会进入就绪队列进行等待CPU 资源分配
+
+2. 等待池	
+
+   - 当我们调用wait 方法后，线程会进入等待池，等待池线程不会竞争锁 。 只有调用 notify 或者 notifyAll 后 等待池的线程才会去竞争锁， notify() 是随机从等待池选出一个线程放到锁池 ， 而 notifyAll 是等待池的所有线程放到锁池当中
+
+3. sleep 是Thread的静态方法， wait 是 Object定义的方法
+
+4. sleep不会释放锁， wait 释放锁，并且加入到等待队列中
+
+   1. sleep原理： CPU的执行权执行资格释放出去。 时间结束了再获取 CPU资源，参与CPU调度，获得 CPU 资源就继续运行
+   2. sleep不会释放锁，其他线程也无法获取这个锁，如果希望 获得锁，可以 通过调用这个线程 的 interrupt方法 让这个 线程 把锁吐出来。 这个线程就会抛出个 interruptexception 的异常返回，和 wait一样
+   3. yield 调用后会释放一下 CPU执行权限，线程会处于就绪状态，仍然有 CPU执行资格，下次CPU可能还会选到这个线程 执行 
+   4. join 表示线程进入阻塞状态， 线程b调用了A 的join， b就进入阻塞队列，知道 A结束或者A 被中断唤醒
+
+   
+
+
+
+
+
+
+
+###  hashMap 和 hashTable 的区别
+
+1. HashMap 方法没有 synchronzied 修饰，线程不安全， hashTable线程安全
+2. HashMap key 和 value 允许为 null， 而 Hashtable 不允许， concurrentHashMap key value 也不能为空
+
+
+
+
+
+
+
+```java
+Hashtable table = new Hashtable();
+table.put(null,null);
+/*
+异常结果：
+Exception in thread "main" java.lang.NullPointerException
+	at java.util.Hashtable.put(Hashtable.java:460)
+	at Main.main(Main.java:10)
+
+*/
+
+  Hashtable table = new Hashtable();
+         table.put(null,"d");
+
+/*
+Exception in thread "main" java.lang.NullPointerException
+	at java.util.Hashtable.put(Hashtable.java:465)
+	at Main.main(Main.java:10)
+
+*/
+
+//hashtable 源码
+ public synchronized V put(K key, V value) {
+        // Make sure the value is not null
+        if (value == null) {
+            //这里 value 也不能为 null
+            throw new NullPointerException();
+        }
+
+        // Makes sure the key is not already in the hashtable.
+        Entry<?,?> tab[] = table;
+        //这里 如果 null，就会抛出异常
+        int hash = key.hashCode(); //这里直接空指针
+    
+     
+ // concurrentHashMap源码
+     Map table = new ConcurrentHashMap<>();
+         table.put("d",null);
+     /*
+     Exception in thread "main" java.lang.NullPointerException
+	at java.util.concurrent.ConcurrentHashMap.putVal(ConcurrentHashMap.java:1011)
+	at java.util.concurrent.ConcurrentHashMap.put(ConcurrentHashMap.java:1006)
+	at Main.main(Main.java:12)
+
+     
+     */
+      final V putVal(K key, V value, boolean onlyIfAbsent) {
+          //直接对 key 和 value 进行空指针检测了
+        if (key == null || value == null) throw new NullPointerException();
+        int hash = spread(key.hashCode());
+        int binCount = 0;
+     
+```
+
+
+
+
+
+
+
+
+
+
+
 ####  java 线程的几种状态
 
 - 新建状态： 当创建一个线程时， 此线程进入新建状态，但此时还未启动
@@ -19,9 +163,9 @@ author: LYR
 
 - 阻塞状态，放弃 CPU的使用权
 
-  - 等待阻塞
-  - 同步阻塞
-  - 其他阻塞
+  - 等待阻塞  【wait】
+  - 同步阻塞  【synchronized 】
+  - 其他阻塞  【join，sleep 】
 
 - 死亡状态，退出了 run方法
 
@@ -41,18 +185,140 @@ author: LYR
 
 
 1. 创建线程池：
-   1. 核心线程数
-   2. 最大线程数
-   3. keepaliveTime 最大线程的存活时间
+   1. 核心线程数 corePoolSize: 提高线程利用率，降低销毁线程的成本
+   2. 最大线程数 maxinumPoolSize
+   3. keepaliveTime 最大线程的存活时间【超过核心线程数的那部分线程】
    4. 任务队列
-   5. 线程工厂
-   6. 拒绝策略
+   5. 线程工厂 【用来创建线程，自定义线程名字，优先级等】
+   6. 拒绝策略 【超过了最大线程，无空闲处理，只能拒绝策略】
 
 2. 核心线程数是线程池里面最小 初始化的线程数，
    1. 流程： 任务先提交到核心线程运行，
    2. 如果核心线程不空闲，就提交到等待队列
    3. 等待队列满的话，就尝试尝试创建线程去处理任务
    4. 如果已经最大线程数了，没有空闲线程，执行拒绝策略
+
+- 线程池的底层工作原理：
+  - 队列 + 线程
+  - 线程池复用原理：
+    - 线程池对 Thread进行了封装，并不是每次执行任务都会调用 `Thread().start()`
+    - 而是让每个线程去执行一个循环任务，在循环任务中不断检查是否有新任务需要执行，有就执行
+
+
+
+我们可以看到，源码中是 直接调用的 run ，而不是调用 start
+
+```java
+    final void runWorker(Worker w) {
+        Thread wt = Thread.currentThread();
+        // 要执行的任务
+        Runnable task = w.firstTask;
+        w.firstTask = null;
+        // 释放锁，运行中断
+        w.unlock(); // allow interrupts
+        boolean completedAbruptly = true;
+        try {
+            while (task != null || (task = getTask()) != null) {
+                // worker 获取锁
+                w.lock();
+                // If pool is stopping, ensure thread is interrupted;
+                // if not, ensure thread is not interrupted.  This
+                // requires a recheck in second case to deal with
+                // shutdownNow race while clearing interrupt
+
+                // 确保只有当线程是stoping时，才会被设置为中断，否则清楚中断标示
+                // 如果线程池状态 >= STOP ,且当前线程没有设置中断状态，则wt.interrupt()
+                // 如果线程池状态 < STOP，但是线程已经中断了，再次判断线程池是否 >= STOP，如果是 wt.interrupt()
+                if ((runStateAtLeast(ctl.get(), STOP) ||
+                        (Thread.interrupted() &&
+                                runStateAtLeast(ctl.get(), STOP))) &&
+                        !wt.isInterrupted())
+                    wt.interrupt();
+                try {
+                    // 自定义方法
+                    beforeExecute(wt, task);
+                    Throwable thrown = null;
+                    try {
+                        // 执行任务
+                        task.run();
+                    } catch (RuntimeException x) {
+                        thrown = x;
+                        throw x;
+                    } catch (Error x) {
+                        thrown = x;
+                        throw x;
+                    } catch (Throwable x) {
+                        thrown = x;
+                        throw new Error(x);
+                    } finally {
+                        afterExecute(task, thrown);
+                    }
+                } finally {
+                    // 完成任务数 + 1
+                    task = null;
+                    w.completedTasks++;
+                    w.unlock();
+                }
+            }
+            completedAbruptly = false;
+        } finally {
+            processWorkerExit(w, completedAbruptly);
+        }
+    }
+```
+
+
+
+#####  线程池为什么要用阻塞队列
+
+为什么要先添加到 workerQueue, 而不是先创建最大线程
+
+一般的队列只能保证优先长度的缓冲区，超过缓冲区，就无法保留当前任务了，阻塞
+
+队列 通过阻塞可以保留住当前想要继续入队的任务。
+
+
+
+##### 默认的拒绝策略
+
+```java 
+  /**
+     * The default rejected execution handler
+     */
+    private static final RejectedExecutionHandler defaultHandler =
+            new AbortPolicy();
+
+/**
+     * A handler for rejected tasks that throws a
+     * {@code RejectedExecutionException}.
+     */
+    public static class AbortPolicy implements RejectedExecutionHandler {
+        /**
+         * Creates an {@code AbortPolicy}.
+         */
+        public AbortPolicy() {
+        }
+
+        /**
+         * Always throws RejectedExecutionException.
+         *
+         * @param r the runnable task requested to be executed
+         * @param e the executor attempting to execute this task
+         * @throws RejectedExecutionException always
+         */
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+            throw new RejectedExecutionException("Task " + r.toString() +
+                    " rejected from " +
+                    e.toString());
+        }
+    }
+```
+
+
+
+
+
+
 
 
 
@@ -126,6 +392,11 @@ ThreadLocalMap 的 Entry 的那个 key 是一个弱引用，也就是说 ThreadL
 原理：
 
 1.  ThreadLocal 作为 key 存放在 线程对象的ThreadLocalMap 内
+2.  如果 threadLocal 作为弱引用被回收，那么 ThreadLocalMap 里面 的 Entry 那个 key 就会成为null， 剩下那个 value 【 后期调用 set,get ,remove 的话，都会被清理掉】
+
+
+
+
 
 
 
@@ -280,6 +551,31 @@ ThreadLocalMap使用ThreadLocal的弱引用作为key，如果一个ThreadLocal�
 
 
 
+### ThreadLocal八股文
+
+HashMap是使用拉链法解决hash冲突的，ThreadLocalMap是使用线性探测解决hash冲突的（内部只维护Entey数组，没有链表）。所以，源码中在清除泄漏的Entry时，会进行rehash，防止数组的当前位置为null后，有hash冲突的Entry访问不到的问题。
+
+回归本质，ThreadLocalMap是用来存放对象的，在一次线程的执行栈中，存放数据后方便我们在任意的地方取得我们想要的值而不被其他线程干扰。**ThreadLocalMap本身并没有为外界提供取出和存放数据的API，我们所能获得数据的方式只有通过ThreadLocal类提供的API来间接的从ThreadLocalMap取出数据，所以，当我们用不了key（ThreadLocal对象）的API也就无法从ThreadLocalMap里取出指定的数据。**
+
+
+
+### ThreadLocal 使用技巧
+
+所以，ThreadLocal的建议使用方法：
+
+1. **设计为static的，被class对象给强引用，线程存活期间就不会被回收，也不用remove，完全不用担心内存泄漏**
+   - ThreadLocal就是entry里的key。你这里的ThreadLocal被class对象强引用，不会被回收了
+2. **设计为非static的，长对象（比如被spring管理的对象）的内部，也不会被回收**
+3. **没必要在方法中创建ThreadLocal对象**
+
+
+
+
+
+
+
+
+
 ## 锁原理
 
 
@@ -364,6 +660,20 @@ ThreadLocalMap使用ThreadLocal的弱引用作为key，如果一个ThreadLocal�
 - 简单来说就是将一个值分散成多个值，在并发的时候就可以**分散压力**，性能有所提高。
 
 
+
+
+
+
+
+##  java 异常体系
+
+java 中所有异常都来自父类的Throwable 
+
+下面2个之类， Error 和 Exception
+
+Error 是程序无法处理的错误，一旦出现这个错误，程序就被迫停止运行
+
+exception不会导致程序停止，又分为 RunTimeException 和 checkedException 检查异常  ，程序编译过程中就会导致程序编译不通过。
 
 
 

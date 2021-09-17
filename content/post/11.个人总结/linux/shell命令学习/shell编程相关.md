@@ -67,6 +67,29 @@ exit退出状态只能是一个介于 0~255 之间的整数，其中只有 0 表
 
 
 
+###  引入其他的脚本函数
+
+用 source 或者 . 引入
+
+```shell
+#! /bin/bash
+source ./app.sh
+# appname 在 app.sh 里面定义了
+echo $appname
+
+
+```
+
+终端其实是一个大的 .bashrc 文件，登录的时候 其实会执行 .bashrc内容
+
+如果 我们修改了 .bashrc ，就要 source一下
+
+
+
+
+
+
+
 
 
 
