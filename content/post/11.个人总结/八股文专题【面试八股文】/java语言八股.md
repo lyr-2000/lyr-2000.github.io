@@ -11,9 +11,54 @@ author: LYR
 
 
 
+###  并发编程三要素
+
+1. 原子性，不可分割
+2. 有序性， 程序执行顺序和代码顺序保持一致
+3. 可见性【可用性】， 一个线程对共享变量的修改，另一个线程立马能看到
 
 
 
+###  epoll 和 poll
+
+1. select 模型，用数组存储 socket连接文件描述符，容量固定，需要轮询判断是否有IO操作 $O(n)$
+2. Poll 模型， 使用链表存储 socket文件描述符，克服了 数组容量默认1024的限制，同样需要轮询
+3. epoll 模型，使用事件通知模型，发生IO 事件时， 应用程序才进行IO操作，不需要主动去轮询 判断有没有IO操作
+
+
+
+### ArrayList 缩容机制
+
+HashMap 是没有缩容机制的。 ArrayList 有
+
+但是 ArrayList 不会自动缩容，要手动调用 trimToSize(), remove和 clear 都不会自动改变elementData的长度，
+
+只会将对应元素设置为 null，以便垃圾收集器回收掉不使用的元素，节省内存
+
+注意ArrayList 是 1.5倍库容，hashMap 2倍
+
+
+
+
+
+```java
+/**
+     * Trims the capacity of this <tt>ArrayList</tt> instance to be the
+     * list's current size.  An application can use this operation to minimize
+     * the storage of an <tt>ArrayList</tt> instance.
+     */
+    public void trimToSize() {
+        modCount++;
+        //判断当前容量与数组长度的大小关系
+        if (size < elementData.length) {
+        	//如果size小于elementData.length，则将数组拷贝到长度为size的数组中，如果size==0，则将elementData 置为空数组，{}
+            elementData = (size == 0)
+              ? EMPTY_ELEMENTDATA
+              : Arrays.copyOf(elementData, size);
+        }
+    }
+
+```
 
 
 
@@ -26,6 +71,10 @@ author: LYR
 ## concurrentHashMap 扩容机制
 
 
+
+数组的长度大于等于64 并且 链表长度大于8 转到 红黑树，
+
+红黑树节点数量小于 6 转为链表
 
 
 
