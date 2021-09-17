@@ -11,4 +11,8 @@ rm -rf /www/wwwroot/doc.lyr-2000.xyz/*
 # git commit -am'generate html files'
 # git push
 
+git add .
+git commit -am'generate html file'
+git push
+
 
