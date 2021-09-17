@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>neo4j基本概念 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="neo4j 基本概念 参考学习教程 neo4j的数据模型 neo4j cql 图数据库 通过apache lucene 索引 支持unique 约束 包含一个用于执行 cql 命令的 UI： NEO4J 数据库浏览器" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.86.0 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/mysql/%E5%85%B6%E4%BB%96%E6%95%B0%E6%8D%AE%E5%BA%93/neo4j/neo4j%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="neo4j基本概念" />
+<meta property="og:description" content="neo4j 基本概念 参考学习教程 neo4j的数据模型 neo4j cql 图数据库 通过apache lucene 索引 支持unique 约束 包含一个用于执行 cql 命令的 UI： NEO4J 数据库浏览器" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/mysql/%E5%85%B6%E4%BB%96%E6%95%B0%E6%8D%AE%E5%BA%93/neo4j/neo4j%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+
+<meta itemprop="name" content="neo4j基本概念">
+<meta itemprop="description" content="neo4j 基本概念 参考学习教程 neo4j的数据模型 neo4j cql 图数据库 通过apache lucene 索引 支持unique 约束 包含一个用于执行 cql 命令的 UI： NEO4J 数据库浏览器"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="wordCount" content="1255">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="neo4j基本概念"/>
+<meta name="twitter:description" content="neo4j 基本概念 参考学习教程 neo4j的数据模型 neo4j cql 图数据库 通过apache lucene 索引 支持unique 约束 包含一个用于执行 cql 命令的 UI： NEO4J 数据库浏览器"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">neo4j基本概念</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#neo4j-基本概念">neo4j 基本概念</a></li>
+          </ul>
+        </li>
+        <li><a href="#java-操作代码">java 操作代码</a>
+          <ul>
+            <li></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h3 id="neo4j-基本概念">neo4j 基本概念</h3>
+<p><a href="https://www.bilibili.com/video/BV1tM4y1g7fk?p=33&amp;spm_id_from=pageDriver">参考学习教程</a></p>
+<h4 id="neo4j的数据模型">neo4j的数据模型</h4>
+<ol>
+<li>neo4j cql</li>
+<li>图数据库</li>
+<li>通过apache lucene 索引</li>
+<li>支持unique 约束</li>
+<li>包含一个用于执行 cql 命令的 UI： NEO4J 数据库浏览器</li>
+<li>ACID 完整的特性</li>
+<li>rest api ，任何编程语言都可以用</li>
+<li>UI MVC</li>
+<li>支持2种java api , cypher api 和 native java api</li>
+</ol>
+<p>图数据库数据模型的主要构建块是：</p>
+<ul>
+<li>节点</li>
+<li>关系</li>
+<li>属性</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_09_16_12_00_57image-20210916120055016.png" alt="image-20210916120055016"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_09_16_12_23_53image-20210916122351584.png" alt="image-20210916122351584"></p>
+<h2 id="java-操作代码">java 操作代码</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="nd">@RelationshipEntity</span><span class="o">(</span><span class="n">type</span><span class="o">=</span><span class="s">&#34;WRITER_OF&#34;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">WriterOf</span> <span class="kd">extends</span> <span class="n">AbstractEntity</span> <span class="o">{</span>
+   <span class="nd">@StartNode</span>
+   <span class="kd">private</span> <span class="n">Person</span> <span class="n">writer</span><span class="o">;</span>
+
+   <span class="nd">@EndNode</span>
+   <span class="kd">private</span> <span class="n">Book</span> <span class="n">book</span><span class="o">;</span>
+
+   <span class="kd">private</span> <span class="n">Date</span> <span class="n">startDate</span><span class="o">;</span>
+   <span class="kd">private</span> <span class="n">Date</span> <span class="n">endDate</span><span class="o">;</span>
+   <span class="err">……</span>
+<span class="o">}</span>
+
+<span class="nd">@NodeEntity</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Person</span> <span class="kd">extends</span> <span class="n">NamedEntity</span> <span class="o">{</span>
+   <span class="nd">@Relationship</span><span class="o">(</span><span class="n">type</span><span class="o">=</span><span class="s">&#34;WRITER_OF&#34;</span><span class="o">)</span>
+   <span class="kd">private</span> <span class="n">Set</span><span class="o">&lt;</span><span class="n">WriterOf</span><span class="o">&gt;</span> <span class="n">writings</span><span class="o">;</span>
+
+   <span class="nd">@Relationship</span><span class="o">(</span><span class="n">type</span><span class="o">=</span><span class="s">&#34;READER_OF&#34;</span><span class="o">)</span>
+   <span class="kd">private</span> <span class="n">Set</span><span class="o">&lt;</span><span class="n">Book</span><span class="o">&gt;</span> <span class="n">books</span><span class="o">;</span>
+   <span class="err">……</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_09_16_13_27_41image-20210916132739239.png" alt="image-20210916132739239"></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="k">select</span><span class="w"> </span><span class="k">distinct</span><span class="w"> 
+</span><span class="w"></span><span class="n">a</span><span class="p">.</span><span class="n">from_name</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="n">b</span><span class="p">.</span><span class="n">from_name</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="n">c</span><span class="p">.</span><span class="n">from_name</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="n">d</span><span class="p">.</span><span class="n">from_name</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="n">e</span><span class="p">.</span><span class="n">from_name</span><span class="w">
+</span><span class="w"></span><span class="k">from</span><span class="w"> 
+</span><span class="w">	</span><span class="n">star_relation</span><span class="w"> </span><span class="n">a</span><span class="w">
+</span><span class="w"></span><span class="k">left</span><span class="w"> </span><span class="k">join</span><span class="w"> </span><span class="n">star_relation</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">from_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">from_name</span><span class="w">
+</span><span class="w"></span><span class="k">left</span><span class="w"> </span><span class="k">join</span><span class="w"> </span><span class="n">star_relation</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">from_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">from_name</span><span class="w">
+</span><span class="w"></span><span class="k">left</span><span class="w"> </span><span class="k">join</span><span class="w"> </span><span class="n">star_relation</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">from_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">from_name</span><span class="w">
+</span><span class="w"></span><span class="k">left</span><span class="w"> </span><span class="k">join</span><span class="w"> </span><span class="n">star_relation</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">from_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">from_name</span><span class="w">
+</span><span class="w"></span><span class="k">where</span><span class="w"> 
+</span><span class="w">	</span><span class="n">a</span><span class="p">.</span><span class="n">from_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;郭富城&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">from_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;向华强&#39;</span><span class="w">
+</span><span class="w">
+</span><span class="w">
+</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>使用 mysql 查询会有非常昂贵的代价， 是 4个笛卡尔积构成的</p>
+<h4 id="neo4j查询">NEO4j查询</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">return (:Star[name:&#34;郭富城&#34;])-[*..5]-&gt;(:Star{name:&#34;向华强&#34;})  limit 50
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="关系型数据库的核心">关系型数据库的核心</h4>
+<ul>
+<li>节点</li>
+<li>关系</li>
+</ul>
+<h4 id="练习">练习</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">create (:pig{name:&#34;猪爷爷&#34;,age:15});
+create (:pig{name:&#34;猪奶奶&#34;,age:13})
+// 创建了 猪爷爷和猪奶奶2个标签
+// 创建关系
+match (a:pig{name:&#34;猪奶奶&#34; }) match(a:pig{name:&#34;猪爷爷&#34; }) create(a)-[r:夫妻]-&gt;(b) return r;
+
+create (:pig{name:&#34;猪爸爸&#34;,age:12})-[:夫妻{age:5}]-&gt;(:pig{name:&#34;猪妈妈&#34;,age:9});
+match (a:pig{name:&#34;猪爸爸&#34;}) match(b:pig{name:&#34;猪爷爷&#34;}) create (b)-[r:父子]-&gt;(a) return r;
+                                                                
+</code></pre></td></tr></table>
+</div>
+</div><p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_09_16_13_48_06image-20210916134806092.png" alt="image-20210916134806092"></p>
+<h4 id="neo4j-修改操作">neo4j 修改操作</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">match (n:pig{name:&#34;猪妈妈&#34;}) set n.age=8;
+ 
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="最短路径查询">最短路径查询</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">match p=allshortestpaths((a:Star{name:&#34;郭富城&#34;})-[*..5]-&gt;(b:Star{name:&#34;向华强&#34;}) ) return p;
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="查找王菲的所有关系">查找王菲的所有关系</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">return (:Star{name:&#34;王菲&#34;}) --&gt;() limit 50
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="其他的骚操作">其他的骚操作</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">//创建多标签节点
+create (a🐷die{name:&#34;猪祖夫&#34;,age:22}) return a.name;
+//删除节点
+m             
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        
+        
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+
+
+</body>
+</html>
