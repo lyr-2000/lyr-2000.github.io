@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="LYR" /><meta name="description" content="重新 equals 一定要重新 hashCode concurrentHashMap 扩容机制 golang，java ， python的垃圾回收机制 参考文档 golang gc Golang 的三色标记法 golang 的垃圾回收(GC)是基于标记清扫算" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+<meta name="author" content="LYR" /><meta name="description" content="重新 equals 一定要重新 hashCode 并发编程三要素 原子性，不可分割 有序性， 程序执行顺序和代码顺序保持一致 可见性【可用性】， 一个线程对共享变量的修改，另一个线程" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
 
 
 
@@ -40,19 +40,19 @@
 
 
 <meta property="og:title" content="java语言八股" />
-<meta property="og:description" content="重新 equals 一定要重新 hashCode concurrentHashMap 扩容机制 golang，java ， python的垃圾回收机制 参考文档 golang gc Golang 的三色标记法 golang 的垃圾回收(GC)是基于标记清扫算" />
+<meta property="og:description" content="重新 equals 一定要重新 hashCode 并发编程三要素 原子性，不可分割 有序性， 程序执行顺序和代码顺序保持一致 可见性【可用性】， 一个线程对共享变量的修改，另一个线程" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/java%E8%AF%AD%E8%A8%80%E5%85%AB%E8%82%A1/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
 <meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
 
 <meta itemprop="name" content="java语言八股">
-<meta itemprop="description" content="重新 equals 一定要重新 hashCode concurrentHashMap 扩容机制 golang，java ， python的垃圾回收机制 参考文档 golang gc Golang 的三色标记法 golang 的垃圾回收(GC)是基于标记清扫算"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="description" content="重新 equals 一定要重新 hashCode 并发编程三要素 原子性，不可分割 有序性， 程序执行顺序和代码顺序保持一致 可见性【可用性】， 一个线程对共享变量的修改，另一个线程"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
-<meta itemprop="wordCount" content="1786">
+<meta itemprop="wordCount" content="2326">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="java语言八股"/>
-<meta name="twitter:description" content="重新 equals 一定要重新 hashCode concurrentHashMap 扩容机制 golang，java ， python的垃圾回收机制 参考文档 golang gc Golang 的三色标记法 golang 的垃圾回收(GC)是基于标记清扫算"/>
+<meta name="twitter:description" content="重新 equals 一定要重新 hashCode 并发编程三要素 原子性，不可分割 有序性， 程序执行顺序和代码顺序保持一致 可见性【可用性】， 一个线程对共享变量的修改，另一个线程"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -149,7 +149,13 @@
   <ul>
     <li>
       <ul>
-        <li><a href="#重新-equals-一定要重新-hashcode">重新 equals 一定要重新 hashCode</a></li>
+        <li><a href="#重新-equals-一定要重新-hashcode">重新 equals 一定要重新 hashCode</a>
+          <ul>
+            <li><a href="#并发编程三要素">并发编程三要素</a></li>
+            <li><a href="#epoll-和-poll">epoll 和 poll</a></li>
+            <li><a href="#arraylist-缩容机制">ArrayList 缩容机制</a></li>
+          </ul>
+        </li>
         <li><a href="#concurrenthashmap-扩容机制">concurrentHashMap 扩容机制</a>
           <ul>
             <li><a href="#golangjava--python的垃圾回收机制">golang，java ， python的垃圾回收机制</a></li>
@@ -171,7 +177,64 @@
 </div>
     <div class="post-content">
       <h2 id="重新-equals-一定要重新-hashcode">重新 equals 一定要重新 hashCode</h2>
-<h2 id="concurrenthashmap-扩容机制">concurrentHashMap 扩容机制</h2>
+<h3 id="并发编程三要素">并发编程三要素</h3>
+<ol>
+<li>原子性，不可分割</li>
+<li>有序性， 程序执行顺序和代码顺序保持一致</li>
+<li>可见性【可用性】， 一个线程对共享变量的修改，另一个线程立马能看到</li>
+</ol>
+<h3 id="epoll-和-poll">epoll 和 poll</h3>
+<ol>
+<li>select 模型，用数组存储 socket连接文件描述符，容量固定，需要轮询判断是否有IO操作 $O(n)$</li>
+<li>Poll 模型， 使用链表存储 socket文件描述符，克服了 数组容量默认1024的限制，同样需要轮询</li>
+<li>epoll 模型，使用事件通知模型，发生IO 事件时， 应用程序才进行IO操作，不需要主动去轮询 判断有没有IO操作</li>
+</ol>
+<h3 id="arraylist-缩容机制">ArrayList 缩容机制</h3>
+<p>HashMap 是没有缩容机制的。 ArrayList 有</p>
+<p>但是 ArrayList 不会自动缩容，要手动调用 trimToSize(), remove和 clear 都不会自动改变elementData的长度，</p>
+<p>只会将对应元素设置为 null，以便垃圾收集器回收掉不使用的元素，节省内存</p>
+<p>注意ArrayList 是 1.5倍库容，hashMap 2倍</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="cm">/**
+</span><span class="cm">     * Trims the capacity of this &lt;tt&gt;ArrayList&lt;/tt&gt; instance to be the
+</span><span class="cm">     * list&#39;s current size.  An application can use this operation to minimize
+</span><span class="cm">     * the storage of an &lt;tt&gt;ArrayList&lt;/tt&gt; instance.
+</span><span class="cm">     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">trimToSize</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">modCount</span><span class="o">++;</span>
+        <span class="c1">//判断当前容量与数组长度的大小关系
+</span><span class="c1"></span>        <span class="k">if</span> <span class="o">(</span><span class="n">size</span> <span class="o">&lt;</span> <span class="n">elementData</span><span class="o">.</span><span class="na">length</span><span class="o">)</span> <span class="o">{</span>
+        	<span class="c1">//如果size小于elementData.length，则将数组拷贝到长度为size的数组中，如果size==0，则将elementData 置为空数组，{}
+</span><span class="c1"></span>            <span class="n">elementData</span> <span class="o">=</span> <span class="o">(</span><span class="n">size</span> <span class="o">==</span> <span class="n">0</span><span class="o">)</span>
+              <span class="o">?</span> <span class="n">EMPTY_ELEMENTDATA</span>
+              <span class="o">:</span> <span class="n">Arrays</span><span class="o">.</span><span class="na">copyOf</span><span class="o">(</span><span class="n">elementData</span><span class="o">,</span> <span class="n">size</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="concurrenthashmap-扩容机制">concurrentHashMap 扩容机制</h2>
+<p>数组的长度大于等于64 并且 链表长度大于8 转到 红黑树，</p>
+<p>红黑树节点数量小于 6 转为链表</p>
 <h3 id="golangjava--python的垃圾回收机制">golang，java ， python的垃圾回收机制</h3>
 <p><a href="https://blog.csdn.net/big_white_py/article/details/107623488">参考文档</a></p>
 <p><a href="https://www.cnblogs.com/FG123/p/12828665.html?ivk_sa=1024320u">golang gc</a></p>
