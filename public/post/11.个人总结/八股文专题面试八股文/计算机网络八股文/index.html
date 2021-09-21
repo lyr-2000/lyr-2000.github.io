@@ -49,7 +49,7 @@
 <meta itemprop="name" content="计算机网络八股文">
 <meta itemprop="description" content="TCP 相关 TCP 流量控制 学习教程 建立连接 会有 syn &#43; ack 机制， 表示 建立连接和 接收成功 发送数据会有 seq&#43; ACK 机制， 表示发送数据包的序列化 还有对应的应答 公式： $ TC"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
-<meta itemprop="wordCount" content="1543">
+<meta itemprop="wordCount" content="2990">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="计算机网络八股文"/>
 <meta name="twitter:description" content="TCP 相关 TCP 流量控制 学习教程 建立连接 会有 syn &#43; ack 机制， 表示 建立连接和 接收成功 发送数据会有 seq&#43; ACK 机制， 表示发送数据包的序列化 还有对应的应答 公式： $ TC"/>
@@ -169,6 +169,14 @@
           </ul>
         </li>
         <li><a href="#dns-的过程">DNS 的过程</a></li>
+        <li><a href="#需要记忆的-tcp-流程图">需要记忆的 TCP 流程图</a></li>
+        <li><a href="#tcp-可靠传输原理">TCP 可靠传输原理</a>
+          <ul>
+            <li><a href="#校验和">校验和</a></li>
+            <li><a href="#crc-循环冗余校验原理">CRC 循环冗余校验原理</a></li>
+            <li><a href="#回退n步协议">回退N步协议</a></li>
+          </ul>
+        </li>
       </ul>
     </li>
   </ul>
@@ -190,6 +198,13 @@
 <li>拥塞控制 是 对于路由器而言的 【路由器资源不足，就会丢包】</li>
 <li>流量控制是对于那个接收方而言的 【接收方资源不足】</li>
 </ol>
+<p>实际上，拥塞控制主要有这几种常用算法</p>
+<ul>
+<li>慢启动</li>
+<li>拥塞避免</li>
+<li>拥塞发生</li>
+<li>快速恢复</li>
+</ul>
 <p><a href="https://www.bilibili.com/video/BV1c4411d7jb?p=61">学习视频</a></p>
 <p>相关概念： 拥塞窗口 $cwnd$</p>
 <ul>
@@ -341,6 +356,67 @@
 <p>假如我们要向192.168.0.X，子网掩码为：255.255.255.0的子网中发送广播包。</p>
 <h2 id="dns-的过程">DNS 的过程</h2>
 <p><a href="https://zhuanlan.zhihu.com/p/55240680">https://zhuanlan.zhihu.com/p/55240680</a></p>
+<h2 id="需要记忆的-tcp-流程图">需要记忆的 TCP 流程图</h2>
+<p><img src="https://pic1.zhimg.com/v2-245b7a106bae594ff2a84d1a305a3764_b.jpg" alt="https://pic1.zhimg.com/v2-245b7a106bae594ff2a84d1a305a3764_b.jpg"></p>
+<p>开始客户端和服务器都处于CLOSED状态，然后服务端开始监听某个端口，进入LISTEN状态</p>
+<ul>
+<li>第一次握手(SYN=1, seq=x)，发送完毕后，客户端进入 SYN_SEND 状态</li>
+<li>第二次握手(SYN=1, ACK=1, seq=y, ACKnum=x+1)， 发送完毕后，服务器端进入 SYN_RCVD 状态。</li>
+<li>第三次握手(ACK=1，ACKnum=y+1)，发送完毕后，客户端进入 ESTABLISHED 状态，当服务器端接收到这个包时,也进入 ESTABLISHED 状态，TCP 握手，即可以开始数据传输。</li>
+</ul>
+<p><img src="https://pic2.zhimg.com/v2-5ab61a8e3d4b30c5f7fb661b3daead71_b.jpg" alt="https://pic2.zhimg.com/v2-5ab61a8e3d4b30c5f7fb661b3daead71_b.jpg"></p>
+<p>第一次挥手(FIN=1，seq=u)，发送完毕后，客户端进入FIN_WAIT_1 状态</p>
+<p>第二次挥手(ACK=1，ack=u+1,seq =v)，发送完毕后，服务器端进入CLOSE_WAIT 状态，客户端接收到这个确认包之后，进入 FIN_WAIT_2 状态</p>
+<p>第三次挥手(FIN=1，ACK1,seq=w,ack=u+1)，发送完毕后，服务器端进入LAST_ACK 状态，等待来自客户端的最后一个ACK。</p>
+<p>第四次挥手(ACK=1，seq=u+1,ack=w+1)，客户端接收到来自服务器端的关闭请求，发送一个确认包，并进入 TIME_WAIT状态，<strong>等待了某个固定时间（两个最大段生命周期，2MSL，2 Maximum Segment Lifetime）之后</strong>，没有收到服务器端的 ACK ，认为服务器端已经正常关闭连接，于是自己也关闭连接，进入 CLOSED 状态。服务器端接收到这个确认包之后，关闭连接，进入 CLOSED 状态。</p>
+<h2 id="tcp-可靠传输原理">TCP 可靠传输原理</h2>
+<h3 id="校验和">校验和</h3>
+<p><strong>三者检验和的异同</strong></p>
+<p>​    TCP和UDP检验和是一个端到端的检验和，由发送端计算，然后由接收端验证。</p>
+<p>​    TCP和UDP检验和覆盖首部和数据，而IP首部中的检验和只覆盖IP的首部，不覆盖IP数据报中的任何数据。</p>
+<p>​    TCP的检验和是必需的，而UDP的检验和是可选的。</p>
+<p>​    TCP和UDP计算检验和时，都要加上一个12字节的伪首部。</p>
+<h4 id="奇偶校验">奇偶校验</h4>
+<p>在发送的数据后面添加1位奇偶校验位，使整个数据中<code>1的个数</code>位奇数（奇校验）或偶数（偶校验）。</p>
+<p><img src="https://pic3.zhimg.com/80/v2-cc872a051205cdf5b086aedd023c7de2_720w.jpg" alt="https://pic3.zhimg.com/80/v2-cc872a051205cdf5b086aedd023c7de2_720w.jpg"></p>
+<p><a href="https://zhuanlan.zhihu.com/p/26509678">参考博客_知乎的网友</a></p>
+<ol>
+<li>
+<p>原理： 最后一位 bit 放 1 或者 0 ，表示数据中有奇数个 1 ，偶数个0</p>
+</li>
+<li>
+<p>然后接收方这边去数，是不是有偶数个1 【出现偶数个1 就出错】</p>
+<ol>
+<li>
+<p>例如还是ASCII码 大写字母 A</p>
+<blockquote>
+<p>奇校验 正确码流 11000001</p>
+<p><strong>错1位</strong> 11000011 变成了偶数个1，能检测出错误</p>
+<p>错2位 11000010 变成了奇数个1，检测不出错误</p>
+<p><strong>错3位</strong> 11001010 变成了偶数个1，能检测出错误</p>
+</blockquote>
+</li>
+</ol>
+</li>
+</ol>
+<h3 id="crc-循环冗余校验原理">CRC 循环冗余校验原理</h3>
+<h3 id="回退n步协议">回退N步协议</h3>
+<p>发送方将0-4号分组，依次连续发送出去，经过互联网的传输，正确到达了接收方，在没有出现乱序和误码，接收方按序接收他们，每接收1个，接收方就向前滑动一个位置，并给发送方发送针对所接收分组的确认分组，0-4号确认分组经互联网的传输正确达到了发送方，发送方每接收一个接收，就向前滑动一个位置，随后，发送方将收到确认的数据分组从缓存中删除了，接收方将确认的数据交给上层。</p>
+<p><strong>「累积确认」</strong></p>
+<p>接收方不一定要对收到的数据分组逐个发送确认，而是收到几个数据分组后，对按序到达的最后一个数据分组发送确认，$ACK_n$表示序号为n及以前的所有数据分组都已正确接收。</p>
+<p><strong>「优点」</strong></p>
+<ul>
+<li>即使确认部分分组丢失，发送方也可不必重传！</li>
+<li>减少接收方的开销。</li>
+</ul>
+<p><strong>「缺点」</strong></p>
+<ul>
+<li>不能向发送方及时反映出接收方已正确接收的数据分组信息。</li>
+</ul>
+<p><strong>「出差错情况」</strong></p>
+<p><img src="https://pic4.zhimg.com/80/v2-dd9d3979bbfe5915da8318e05c6f2563_720w.jpg" alt="img"></p>
+<p>在本例中尽管序号为1076的数据分组正确到达接收方，由于5号分组出现了误码不被接收，他们也会受到牵连不被接收，发送方还要重传这些数据分组，这就是回退n帧（Go-back-N）。</p>
+<p>在本例中，当发送方窗口尺寸超过7时也会出现问题（接收方无法分辨新旧分组），在此不做解释！</p>
 
     </div>
 
