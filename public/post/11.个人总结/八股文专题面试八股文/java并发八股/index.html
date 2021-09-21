@@ -49,7 +49,7 @@
 <meta itemprop="name" content="java并发八股">
 <meta itemprop="description" content="java 并发八股文 面试题网站 线程生命周期 当线程被创建并启动以后，它既不是一启动就进入了执行状态，也不是一直处于执行状态。在线程的生命周期中，它要经"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
-<meta itemprop="wordCount" content="6274">
+<meta itemprop="wordCount" content="8085">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="java并发八股"/>
 <meta name="twitter:description" content="java 并发八股文 面试题网站 线程生命周期 当线程被创建并启动以后，它既不是一启动就进入了执行状态，也不是一直处于执行状态。在线程的生命周期中，它要经"/>
@@ -183,6 +183,15 @@
           </ul>
         </li>
         <li><a href="#java-异常体系">java 异常体系</a></li>
+        <li><a href="#锁升级体系">锁升级体系</a>
+          <ul>
+            <li><a href="#偏向锁">偏向锁</a></li>
+            <li><a href="#轻量级锁">轻量级锁</a></li>
+            <li><a href="#偏向锁和轻量级锁区别">偏向锁和轻量级锁区别</a></li>
+            <li><a href="#缺点">缺点</a></li>
+            <li><a href="#小结">小结</a></li>
+          </ul>
+        </li>
       </ul>
     </li>
   </ul>
@@ -1052,6 +1061,64 @@
 <p>下面2个之类， Error 和 Exception</p>
 <p>Error 是程序无法处理的错误，一旦出现这个错误，程序就被迫停止运行</p>
 <p>exception不会导致程序停止，又分为 RunTimeException 和 checkedException 检查异常  ，程序编译过程中就会导致程序编译不通过。</p>
+<h2 id="锁升级体系">锁升级体系</h2>
+<h3 id="偏向锁">偏向锁</h3>
+<p><img src="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663595731/81C849792BC1096ED3F02F6A55CF6D0C" alt="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663595731/81C849792BC1096ED3F02F6A55CF6D0C"></p>
+<p>作者：路人zhang
+链接：https://www.nowcoder.com/discuss/744436?channel=-1&amp;source_id=profile_follow_post_nctrack
+来源：牛客网</p>
+<p>引入偏向锁的目的：减少只有一个线程执行同步代码块时的性能消耗，即在没有其他线程竞争的情况下，一个线程获得了锁。</p>
+<p>偏向锁的获取流程：</p>
+<ol>
+<li>检查对象头中Mark Word是否为可偏向状态，如果不是则直接升级为轻量级锁。</li>
+<li>如果是，判断Mark Work中的线程ID是否指向当前线程，如果是，则执行同步代码块。</li>
+<li>如果不是，则进行CAS操作竞争锁，如果竞争到锁，则将Mark Work中的线程ID设为当前线程ID，执行同步代码块。</li>
+<li>如果竞争失败，升级为轻量级锁。</li>
+</ol>
+<p>偏向锁的撤销：</p>
+<p>只有等到竞争，持有偏向锁的线程才会撤销偏向锁。偏向锁撤销后会恢复到无锁或者轻量级锁的状态。</p>
+<ol>
+<li>偏向锁的撤销需要到达全局安全点，全局安全点表示一种状态，该状态下所有线程都处于暂停状态。</li>
+<li>判断锁对象是否处于无锁状态，即获得偏向锁的线程如果已经退出了临界区，表示同步代码已经执行完了。重新竞争锁的线程会进行CAS操作替代原来线程的ThreadID。</li>
+<li>如果获得偏向锁的线程还处于临界区之内，表示同步代码还未执行完，将获得偏向锁的线程升级为轻量级锁。</li>
+</ol>
+<p>一句话简单总结偏向锁原理：使用CAS操作将当前线程的ID记录到对象的Mark Word中</p>
+<p>作者：路人zhang
+链接：https://www.nowcoder.com/discuss/744436?channel=-1&amp;source_id=profile_follow_post_nctrack
+来源：牛客网</p>
+<h3 id="轻量级锁">轻量级锁</h3>
+<p>入轻量级锁的目的：在多线程交替执行同步代码块时（未发生竞争），避免使用互斥量（重量锁）带来的性能消耗。但多个线程同时进入临界区（发生竞争）则会使得轻量级锁膨胀为重量级锁。</p>
+<p>轻量级锁的获取流程：</p>
+<ol>
+<li>首先判断当前对象是否处于一个无锁的状态，如果是，Java虚拟机将在当前线程的栈帧建立一个锁记录（Lock Record），用于存储对象目前的Mark Word的拷贝，如图所示。</li>
+</ol>
+<p><img src="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663618914/AA3859A7110B4404D965F160B823E0A7" alt="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663618914/AA3859A7110B4404D965F160B823E0A7"></p>
+<p><img src="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663632877/5DC575272443DA641481CF5A3DA35383" alt="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663632877/5DC575272443DA641481CF5A3DA35383"></p>
+<p>然而，自旋锁的一大好处就是减少线程切换的开销。在这里没有必要直接阻塞当前线程，大可以像轻量级锁一样，自旋一会，失败了再阻塞。</p>
+<h3 id="偏向锁和轻量级锁区别">偏向锁和轻量级锁区别</h3>
+<p>轻量级锁一开始是没有自旋功能，所以自旋不是其出现的原因的，而是其后来的优化，其最初的设计目的是在没有线程争用的情况下实现使用CAS操作代替OS的锁以提高性能。</p>
+<p>轻量级锁在<strong>多线程不存在竞争和单线程不存在竞争两种场景中表现出一样的行为</strong>，这是不合理的，所以偏向锁通过记录线程ID来优化单线程不存在竞争这种场景。</p>
+<p>作者：专业划水运动员
+链接：https://www.zhihu.com/question/291789546/answer/959050258
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</p>
+<p>在没有实际竞争的情况下，还能够针对部分场景继续优化。如果不仅仅没有实际竞争，自始至终，使用锁的线程都只有一个，那么，维护轻量级锁都是浪费的。<strong>偏向锁的目标是，减少无竞争且只有一个线程使用锁的情况下，使用轻量级锁产生的性能消耗</strong>。轻量级锁每次申请、释放锁都至少需要一次CAS，但偏向锁只有初始化时需要一次CAS。</p>
+<p>“偏向”的意思是，<em>偏向锁假定将来只有第一个申请锁的线程会使用锁</em>（不会有任何线程再来申请锁），因此，<em>只需要在Mark Word中CAS记录owner（本质上也是更新，但初始值为空），如果记录成功，则偏向锁获取成功</em>，记录锁状态为偏向锁，<em>以后当前线程等于owner就可以零成本的直接获得锁；否则，说明有其他线程竞争，膨胀为轻量级锁</em>。</p>
+<p>偏向锁无法使用自旋锁优化，因为一旦有其他线程申请锁，就破坏了偏向锁的假定。</p>
+<h3 id="缺点">缺点</h3>
+<p>同样的，如果明显存在其他线程申请锁，那么偏向锁将很快膨胀为轻量级锁。</p>
+<blockquote>
+<p>不过这个副作用已经小的多。</p>
+<p>如果需要，使用参数-XX:-UseBiasedLocking禁止偏向锁优化（默认打开）。</p>
+</blockquote>
+<h3 id="小结">小结</h3>
+<blockquote>
+<p>偏向锁、轻量级锁、重量级锁分配和膨胀的详细过程见后。会涉及一些Mark Word与CAS的知识。</p>
+</blockquote>
+<p>作者：猴子007
+链接：https://www.jianshu.com/p/36eedeb3f912
+来源：简书
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</p>
 
     </div>
 
@@ -1073,9 +1140,9 @@
 <footer class="post-footer">
       
       <nav class="post-nav">
-        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/java-gc/">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/java-spring%E5%85%A8%E5%AE%B6%E6%A1%B6/">
             <i class="iconfont icon-left"></i>
-            <span class="prev-text nav-default">java gc 垃圾回收机制</span>
+            <span class="prev-text nav-default">java spring全家桶</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
         <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/java%E8%AF%AD%E8%A8%80%E5%85%AB%E8%82%A1/">
