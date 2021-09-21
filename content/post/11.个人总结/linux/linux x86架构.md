@@ -1,5 +1,5 @@
 ---
-title: "linux x86架构"
+title: "linux x86架构【linux体系学习】"
 date: 2021-08-17T13:48:22+08:00
 draft: false
 author: LYR
@@ -22,6 +22,26 @@ CPU
 对于一个计算机来讲，最核心的就是**CPU**（Central Processing Unit，中央处理器）。这是这台计算机的大脑，所有的设备都围绕它展开。
 
 CPU 就相当于咱们公司的程序员，我们常说，二十一世最缺的是什么？是人才！所以，大量水平高、干活快的程序员，才是营商环境中最重要的部分。
+
+
+
+
+
+###  linux 体系学习
+
+
+
+[GNU是什么，和linux的关系](https://www.zhihu.com/question/319783573/answer/656033035)
+
+
+
+1. linux内核
+2. GNU/Linux : 通常以源码方式提供
+   1. 自由、灵活
+
+
+
+
 
 
 

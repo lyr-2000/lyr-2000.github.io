@@ -31,7 +31,28 @@ https://www.bilibili.com/video/BV1zL4y1e7YN?p=2&spm_id_from=pageDriver
 
 聚集索引是 数据放在 索引的叶子节点， 非聚集索引 是 索引和数据分离，索引有指针 指向那个数据
 
+作者：路人zhang
+链接：https://www.nowcoder.com/discuss/744436?channel=-1&source_id=profile_follow_post_nctrack
+来源：牛客网
 
+
+
+聚簇索引和非聚簇索引最主要的区别是**数据和索引是否分开存储**。
+
+- 聚簇索引：将数据和索引放到一起存储，索引结构的叶子节点保留了数据行。 
+- 非聚簇索引：将数据进和索引分开存储，索引叶子节点存储的是指向数据行的地址。 
+
+在InnoDB存储引擎中，默认的索引为B+树索引，利用主键创建的索引为主索引，也是聚簇索引，在主索引之上创建的索引为辅助索引，也是非聚簇索引。为什么说辅助索引是在主索引之上创建的呢，因为辅助索引中的叶子节点存储的是主键。
+
+在MyISAM存储引擎中，默认的索引也是B+树索引，但主索引和辅助索引都是非聚簇索引，也就是说索引结构的叶子节点存储的都是一个指向数据行的地址。并且使用辅助索引检索无需访问主键的索引。
+
+可以从非常经典的两张图看看它们的区别(图片来源于网络)：
+
+![https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663662791/E8B5126C6C720C4643F2543CB83781CB](https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663662791/E8B5126C6C720C4643F2543CB83781CB)
+
+
+
+![https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663675751/70BCE6DF348B8AAF62246C6079F56E09](https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663675751/70BCE6DF348B8AAF62246C6079F56E09)
 
 ## 回表和覆盖索引
 
@@ -45,7 +66,143 @@ https://www.bilibili.com/video/BV1zL4y1e7YN?p=2&spm_id_from=pageDriver
 
 
 
+##   慢sql优化 会考虑哪些
 
+作者：路人zhang
+链接：https://www.nowcoder.com/discuss/744436?channel=-1&source_id=profile_follow_post_nctrack
+来源：牛客网
+
+
+
+ 慢查询一般用于记录执行时间超过某个临界值的SQL语句的日志。
+
+相关参数：
+
+- slow_query_log：是否开启慢日志查询，1表示开启，0表示关闭。 
+- slow_query_log_file：MySQL数据库慢查询日志存储路径。 
+- long_query_time：慢查询阈值，当SQL语句查询时间大于阈值，会被记录在日志上。 
+- log_queries_not_using_indexes：未使用索引的查询会被记录到慢查询日志中。 
+- log_output：日志存储方式。“FILE”表示将日志存入文件。“TABLE”表示将日志存入数据库。 
+
+如何对慢查询进行优化？
+
+- 分析语句的执行计划，**查看SQL语句的索引是否命中** 
+- 优化数据库的结构，**将字段很多的表分解成多个表，或者考虑建立中间表**。 
+- **优化LIMIT分页。**
+
+
+
+
+
+
+
+
+
+
+
+##  锁
+
+###  间隙锁【 MVCC RR ， 解决幻读原理】
+
+mysql 的 mvcc  RR 解决了幻读，默认开启了间隙锁解决了这个问题
+
+**行锁（Record Lock）**：锁直接加在索引记录上面。
+**间隙锁（Gap Lock）**：锁加在不存在的空闲空间，可以是两个索引记录之间，也可能是第一个索引记录之前或最后一个索引之后的空间。
+**Next-Key Lock**：行锁与间隙锁组合起来用就叫做Next-Key Lock。
+
+
+
+**什么是间隙锁？**
+
+![https://img2020.cnblogs.com/blog/1885839/202101/1885839-20210128112714117-529285989.png](https://img2020.cnblogs.com/blog/1885839/202101/1885839-20210128112714117-529285989.png)
+
+正常等值条件 并且值存在的情况下加的是行锁
+
+如果等值条件 值不存在的情况下加的是间隙锁，或者范围查询，加的也是间隙锁
+
+举个例子：
+
+根据主键id，不只是有五个行锁，还会有六个间隙锁，*左开右闭原则*，（-∞，5]（5，10]（10，15]（15，20]（20，25]（25，+supernum]
+
+例如 select * from table where id = 10 for update;  等值条件，id是存在的，加行锁就可以了
+
+select * from table where id = 7 for update; 等值条件，id不存在，加（5，10] 间隙锁，这范围间不允许插入数据，直到这个事务提交完成释放锁
+
+select * from table where id > 24; 范围条件，加间隙锁
+
+通过行锁+间隙锁的机制保证了事务A select之后，**其他事务相应的insert操作会阻塞**
+
+**什么是undolog?** 
+
+undolog存放不同事务版本下的不同数据，
+
+用于 1.历史恢复 通过undolog恢复之前版本的数据  2. 读老版本 根据条件读旧版本的数据
+
+每次数据变更都会产生undolog记录，undolog记录分为 insert undo_log 和 update undo_log
+
+insert操作属于insert undo_log，只针对当前事务，在insert操作后产生undo_log记录，在事务提交后删除undo_log记录，说白了就是给当前事务自己看的.
+
+update 和 delete操作属于update undo_log，会根据隔离级别不同事务版本的数据可见性不同
+
+ 
+
+ 
+
+**什么是readView?**
+
+快照  存放了当前活跃的一些事务版本号，以及上一个版本的地址.   用来做可见性判断
+
+readview根据生成时间不同，产生了RC,RR两种可见性
+
+RC：每条select创建一个新的readview ，所以导致读提交 读到的都是最新提交的！
+
+RR：事务开始的时候创建一个readview, 一直到事务结束都用的这个readview，也就避免了不可重复读
+
+ 
+
+**当前读与快照读**
+
+单条普通的select语句属于快照读
+
+select for update , insert, update, delete 属于当前读
+
+快照读由mvcc+undolog实现
+
+当前读由行锁+间隙锁实现
+
+ 
+
+##  缓存篇
+
+####  缓存的常见问题
+
+作者：路人zhang
+链接：https://www.nowcoder.com/discuss/744436?channel=-1&source_id=profile_follow_post_nctrack
+来源：牛客网
+
+
+
+缓存穿透：指缓存和数据库中都没有的数据，所有请求都打在数据库上，造成数据库短时间承受大量请求而挂掉
+
+解决方法：
+
+- 增加接口校验，过滤一些不合法请求，比如大量订单号为-1的数据 
+- 从缓存和数据库都不能获取到的数据，可以先对空的结果进行缓存，比如key-null，缓存有效期要设置的短一些 
+- 采用布隆过滤器，过滤掉一定不存在的数据 
+
+缓存击穿：指缓存中没有但数据库中有的数据，一般是在高并发的情况下，某些热门key突然过期，导致所有请求直接打到数据库上
+
+解决方法：：
+
+- 设置热点数据永不过期 
+- 加互斥锁 
+
+缓存雪崩：大量缓存在一段时间内集中过期，导致查询的数据都打在数据库上，和缓存击穿的区别是缓存过期的数量
+
+解决方法：
+
+- 将缓存的过期时间设置随机，避免大量缓存同时过期 
+- 服务降级或熔断
 
 
 
