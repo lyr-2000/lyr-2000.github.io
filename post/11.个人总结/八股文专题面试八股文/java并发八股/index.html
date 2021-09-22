@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>java并发八股 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="java 并发八股文 面试题网站 线程生命周期 当线程被创建并启动以后，它既不是一启动就进入了执行状态，也不是一直处于执行状态。在线程的生命周期中，它要经" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/java%E5%B9%B6%E5%8F%91%E5%85%AB%E8%82%A1/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="java并发八股" />
+<meta property="og:description" content="java 并发八股文 面试题网站 线程生命周期 当线程被创建并启动以后，它既不是一启动就进入了执行状态，也不是一直处于执行状态。在线程的生命周期中，它要经" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/java%E5%B9%B6%E5%8F%91%E5%85%AB%E8%82%A1/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="java并发八股">
+<meta itemprop="description" content="java 并发八股文 面试题网站 线程生命周期 当线程被创建并启动以后，它既不是一启动就进入了执行状态，也不是一直处于执行状态。在线程的生命周期中，它要经">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="8085">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="java并发八股"/>
+<meta name="twitter:description" content="java 并发八股文 面试题网站 线程生命周期 当线程被创建并启动以后，它既不是一启动就进入了执行状态，也不是一直处于执行状态。在线程的生命周期中，它要经"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">java并发八股</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#java-并发八股文">java 并发八股文</a>
+          <ul>
+            <li><a href="#线程生命周期">线程生命周期</a></li>
+            <li><a href="#线程的几种阻塞状态">线程的几种阻塞状态</a></li>
+            <li><a href="#synchronzied原理">synchronzied原理</a></li>
+            <li><a href="#hashmap-和-hashtable-的区别">hashMap 和 hashTable 的区别</a></li>
+          </ul>
+        </li>
+        <li><a href="#线程池原理">线程池原理</a>
+          <ul>
+            <li></li>
+          </ul>
+        </li>
+        <li><a href="#hashmap-相关公式">hashMap 相关公式</a></li>
+        <li><a href="#concurrenthashmap-核心公式">concurrentHashMap 核心公式</a>
+          <ul>
+            <li><a href="#sizectl-字段取值">sizeCtl 字段取值</a></li>
+          </ul>
+        </li>
+        <li><a href="#threadlocal-源码">ThreadLocal 源码</a>
+          <ul>
+            <li></li>
+            <li><a href="#threadlocal-补充">ThreadLocal 补充：</a></li>
+            <li><a href="#threadlocal八股文">ThreadLocal八股文</a></li>
+            <li><a href="#threadlocal-使用技巧">ThreadLocal 使用技巧</a></li>
+          </ul>
+        </li>
+        <li><a href="#锁原理">锁原理</a></li>
+        <li><a href="#longadder-高性能原理">LongAdder 高性能原理</a>
+          <ul>
+            <li><a href="#longadder-公式原理">longAdder 公式原理：</a></li>
+          </ul>
+        </li>
+        <li><a href="#java-异常体系">java 异常体系</a></li>
+        <li><a href="#锁升级体系">锁升级体系</a>
+          <ul>
+            <li><a href="#偏向锁">偏向锁</a></li>
+            <li><a href="#轻量级锁">轻量级锁</a></li>
+            <li><a href="#偏向锁和轻量级锁区别">偏向锁和轻量级锁区别</a></li>
+            <li><a href="#缺点">缺点</a></li>
+            <li><a href="#小结">小结</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="java-并发八股文">java 并发八股文</h2>
+<p><a href="http://r.coderead.cn/r//6%E3%80%81%E5%85%B6%E5%AE%83/35%E9%81%93%E9%9D%A2%E8%AF%95%E7%9C%9F%E9%A2%98.pdf">面试题网站</a></p>
+<h3 id="线程生命周期">线程生命周期</h3>
+<p>当线程被创建并启动以后，它既不是一启动就进入了执行状态，也不是一直处于执行状态。在线程的生命周期中，它要经过<strong>新建</strong>(New)、<strong>就绪</strong>（Runnable）、<strong>运行</strong>（Running）、<strong>阻塞</strong>(Blocked)和<strong>死亡</strong>(Dead)<strong>5种状态</strong>。尤其是当线程启动以后，它不可能一直&quot;霸占&quot;着CPU独自运行，所以CPU需要在多条线程之间切换，于是线程状态也会多次在运行、阻塞之间切换</p>
+<p>\1. 新建状态 NEW，当程序使用new关键字创建了一个线程之后，该线程就处于新建状态，此时仅由JVM为其分配内存，并初始化其成员变量的值</p>
+<p>\2. 就绪状态 Runnable，当线程对象调用了start()方法之后，该线程处于就绪状态。Java虚拟机会为其创建方法调用栈和程序计数器，等待调度运行</p>
+<p>\3. 运行状态 Running ，如果处于就绪状态的线程获得了CPU，开始执行run()方法的线程执行体，则该线程处于运行状态</p>
+<p>\4. 阻塞状态 Blocked，当处于运行状态的线程失去所占用资源之后，便进入阻塞状态</p>
+<p>\5. 终结状态 DEAD</p>
+<h3 id="线程的几种阻塞状态">线程的几种阻塞状态</h3>
+<ol>
+<li>等待阻塞 wait</li>
+<li>同步阻塞 synchronzied</li>
+<li>其他阻塞  join ,yield 等</li>
+</ol>
+<p><img src="https://img-blog.csdnimg.cn/20200506223058854.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3Fpbnd1eGlhbjE5ODkxMjEx,size_16,color_FFFFFF,t_70" alt="https://img-blog.csdnimg.cn/20200506223058854.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3Fpbnd1eGlhbjE5ODkxMjEx,size_16,color_FFFFFF,t_70"></p>
+<h3 id="synchronzied原理">synchronzied原理</h3>
+<ol>
+<li>
+<p>锁池</p>
+<ul>
+<li>所有需要竞争同步的线程都会放入锁池， 比如当前对象的锁被其他一个线程得到，则其他线程需要在这个锁池里面进行等待，当前面的线程释放同步锁中的线程去竞争同步锁，当某个 得到后会进入就绪队列进行等待CPU 资源分配</li>
+</ul>
+</li>
+<li>
+<p>等待池</p>
+<ul>
+<li>当我们调用wait 方法后，线程会进入等待池，等待池线程不会竞争锁 。 只有调用 notify 或者 notifyAll 后 等待池的线程才会去竞争锁， notify() 是随机从等待池选出一个线程放到锁池 ， 而 notifyAll 是等待池的所有线程放到锁池当中</li>
+</ul>
+</li>
+<li>
+<p>sleep 是Thread的静态方法， wait 是 Object定义的方法</p>
+</li>
+<li>
+<p>sleep不会释放锁， wait 释放锁，并且加入到等待队列中</p>
+<ol>
+<li>sleep原理： CPU的执行权执行资格释放出去。 时间结束了再获取 CPU资源，参与CPU调度，获得 CPU 资源就继续运行</li>
+<li>sleep不会释放锁，其他线程也无法获取这个锁，如果希望 获得锁，可以 通过调用这个线程 的 interrupt方法 让这个 线程 把锁吐出来。 这个线程就会抛出个 interruptexception 的异常返回，和 wait一样</li>
+<li>yield 调用后会释放一下 CPU执行权限，线程会处于就绪状态，仍然有 CPU执行资格，下次CPU可能还会选到这个线程 执行</li>
+<li>join 表示线程进入阻塞状态， 线程b调用了A 的join， b就进入阻塞队列，知道 A结束或者A 被中断唤醒</li>
+</ol>
+</li>
+</ol>
+<h3 id="hashmap-和-hashtable-的区别">hashMap 和 hashTable 的区别</h3>
+<ol>
+<li>HashMap 方法没有 synchronzied 修饰，线程不安全， hashTable线程安全</li>
+<li>HashMap key 和 value 允许为 null， 而 Hashtable 不允许， concurrentHashMap key value 也不能为空</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="n">Hashtable</span> <span class="n">table</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Hashtable</span><span class="o">();</span>
+<span class="n">table</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span><span class="kc">null</span><span class="o">);</span>
+<span class="cm">/*
+</span><span class="cm">异常结果：
+</span><span class="cm">Exception in thread &#34;main&#34; java.lang.NullPointerException
+</span><span class="cm">	at java.util.Hashtable.put(Hashtable.java:460)
+</span><span class="cm">	at Main.main(Main.java:10)
+</span><span class="cm">
+</span><span class="cm">*/</span>
+
+  <span class="n">Hashtable</span> <span class="n">table</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Hashtable</span><span class="o">();</span>
+         <span class="n">table</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span><span class="s">&#34;d&#34;</span><span class="o">);</span>
+
+<span class="cm">/*
+</span><span class="cm">Exception in thread &#34;main&#34; java.lang.NullPointerException
+</span><span class="cm">	at java.util.Hashtable.put(Hashtable.java:465)
+</span><span class="cm">	at Main.main(Main.java:10)
+</span><span class="cm">
+</span><span class="cm">*/</span>
+
+<span class="c1">//hashtable 源码
+</span><span class="c1"></span> <span class="kd">public</span> <span class="kd">synchronized</span> <span class="n">V</span> <span class="nf">put</span><span class="o">(</span><span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// Make sure the value is not null
+</span><span class="c1"></span>        <span class="k">if</span> <span class="o">(</span><span class="n">value</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">//这里 value 也不能为 null
+</span><span class="c1"></span>            <span class="k">throw</span> <span class="k">new</span> <span class="n">NullPointerException</span><span class="o">();</span>
+        <span class="o">}</span>
+
+        <span class="c1">// Makes sure the key is not already in the hashtable.
+</span><span class="c1"></span>        <span class="n">Entry</span><span class="o">&lt;?,?&gt;</span> <span class="n">tab</span><span class="o">[]</span> <span class="o">=</span> <span class="n">table</span><span class="o">;</span>
+        <span class="c1">//这里 如果 null，就会抛出异常
+</span><span class="c1"></span>        <span class="kt">int</span> <span class="n">hash</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="na">hashCode</span><span class="o">();</span> <span class="c1">//这里直接空指针
+</span><span class="c1"></span>    
+     
+ <span class="c1">// concurrentHashMap源码
+</span><span class="c1"></span>     <span class="n">Map</span> <span class="n">table</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ConcurrentHashMap</span><span class="o">&lt;&gt;();</span>
+         <span class="n">table</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;d&#34;</span><span class="o">,</span><span class="kc">null</span><span class="o">);</span>
+     <span class="cm">/*
+</span><span class="cm">     Exception in thread &#34;main&#34; java.lang.NullPointerException
+</span><span class="cm">	at java.util.concurrent.ConcurrentHashMap.putVal(ConcurrentHashMap.java:1011)
+</span><span class="cm">	at java.util.concurrent.ConcurrentHashMap.put(ConcurrentHashMap.java:1006)
+</span><span class="cm">	at Main.main(Main.java:12)
+</span><span class="cm">
+</span><span class="cm">     
+</span><span class="cm">     */</span>
+      <span class="kd">final</span> <span class="n">V</span> <span class="nf">putVal</span><span class="o">(</span><span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">,</span> <span class="kt">boolean</span> <span class="n">onlyIfAbsent</span><span class="o">)</span> <span class="o">{</span>
+          <span class="c1">//直接对 key 和 value 进行空指针检测了
+</span><span class="c1"></span>        <span class="k">if</span> <span class="o">(</span><span class="n">key</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">value</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="k">throw</span> <span class="k">new</span> <span class="n">NullPointerException</span><span class="o">();</span>
+        <span class="kt">int</span> <span class="n">hash</span> <span class="o">=</span> <span class="n">spread</span><span class="o">(</span><span class="n">key</span><span class="o">.</span><span class="na">hashCode</span><span class="o">());</span>
+        <span class="kt">int</span> <span class="n">binCount</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+     
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="java-线程的几种状态">java 线程的几种状态</h4>
+<ul>
+<li>
+<p>新建状态： 当创建一个线程时， 此线程进入新建状态，但此时还未启动</p>
+</li>
+<li>
+<p>就绪状态，调用 start后，处于就绪状态【可运行状态】 等待被CPU调度</p>
+</li>
+<li>
+<p>运行状态， 获得CPU的使用权</p>
+</li>
+<li>
+<p>阻塞状态，放弃 CPU的使用权</p>
+<ul>
+<li>等待阻塞  【wait】</li>
+<li>同步阻塞  【synchronized 】</li>
+<li>其他阻塞  【join，sleep 】</li>
+</ul>
+</li>
+<li>
+<p>死亡状态，退出了 run方法</p>
+<ul>
+<li><code>new Thread().start()</code> 默认为 非守护线程【所有线程执行完成才退出】</li>
+<li><code>thread.setDoamen(true)</code> 设置为守护线程， jvm不关心守护线程</li>
+</ul>
+</li>
+</ul>
+<h2 id="线程池原理">线程池原理</h2>
+<ol>
+<li>
+<p>创建线程池：</p>
+<ol>
+<li>核心线程数 corePoolSize: 提高线程利用率，降低销毁线程的成本</li>
+<li>最大线程数 maxinumPoolSize</li>
+<li>keepaliveTime 最大线程的存活时间【超过核心线程数的那部分线程】</li>
+<li>任务队列</li>
+<li>线程工厂 【用来创建线程，自定义线程名字，优先级等】</li>
+<li>拒绝策略 【超过了最大线程，无空闲处理，只能拒绝策略】</li>
+</ol>
+</li>
+<li>
+<p>核心线程数是线程池里面最小 初始化的线程数，</p>
+<ol>
+<li>流程： 任务先提交到核心线程运行，</li>
+<li>如果核心线程不空闲，就提交到等待队列</li>
+<li>等待队列满的话，就尝试尝试创建线程去处理任务</li>
+<li>如果已经最大线程数了，没有空闲线程，执行拒绝策略</li>
+</ol>
+</li>
+</ol>
+<ul>
+<li>线程池的底层工作原理：
+<ul>
+<li>队列 + 线程</li>
+<li>线程池复用原理：
+<ul>
+<li>线程池对 Thread进行了封装，并不是每次执行任务都会调用 <code>Thread().start()</code></li>
+<li>而是让每个线程去执行一个循环任务，在循环任务中不断检查是否有新任务需要执行，有就执行</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>我们可以看到，源码中是 直接调用的 run ，而不是调用 start</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java">    <span class="kd">final</span> <span class="kt">void</span> <span class="nf">runWorker</span><span class="o">(</span><span class="n">Worker</span> <span class="n">w</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Thread</span> <span class="n">wt</span> <span class="o">=</span> <span class="n">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">();</span>
+        <span class="c1">// 要执行的任务
+</span><span class="c1"></span>        <span class="n">Runnable</span> <span class="n">task</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="na">firstTask</span><span class="o">;</span>
+        <span class="n">w</span><span class="o">.</span><span class="na">firstTask</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="c1">// 释放锁，运行中断
+</span><span class="c1"></span>        <span class="n">w</span><span class="o">.</span><span class="na">unlock</span><span class="o">();</span> <span class="c1">// allow interrupts
+</span><span class="c1"></span>        <span class="kt">boolean</span> <span class="n">completedAbruptly</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="k">while</span> <span class="o">(</span><span class="n">task</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">||</span> <span class="o">(</span><span class="n">task</span> <span class="o">=</span> <span class="n">getTask</span><span class="o">())</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// worker 获取锁
+</span><span class="c1"></span>                <span class="n">w</span><span class="o">.</span><span class="na">lock</span><span class="o">();</span>
+                <span class="c1">// If pool is stopping, ensure thread is interrupted;
+</span><span class="c1"></span>                <span class="c1">// if not, ensure thread is not interrupted.  This
+</span><span class="c1"></span>                <span class="c1">// requires a recheck in second case to deal with
+</span><span class="c1"></span>                <span class="c1">// shutdownNow race while clearing interrupt
+</span><span class="c1"></span>
+                <span class="c1">// 确保只有当线程是stoping时，才会被设置为中断，否则清楚中断标示
+</span><span class="c1"></span>                <span class="c1">// 如果线程池状态 &gt;= STOP ,且当前线程没有设置中断状态，则wt.interrupt()
+</span><span class="c1"></span>                <span class="c1">// 如果线程池状态 &lt; STOP，但是线程已经中断了，再次判断线程池是否 &gt;= STOP，如果是 wt.interrupt()
+</span><span class="c1"></span>                <span class="k">if</span> <span class="o">((</span><span class="n">runStateAtLeast</span><span class="o">(</span><span class="n">ctl</span><span class="o">.</span><span class="na">get</span><span class="o">(),</span> <span class="n">STOP</span><span class="o">)</span> <span class="o">||</span>
+                        <span class="o">(</span><span class="n">Thread</span><span class="o">.</span><span class="na">interrupted</span><span class="o">()</span> <span class="o">&amp;&amp;</span>
+                                <span class="n">runStateAtLeast</span><span class="o">(</span><span class="n">ctl</span><span class="o">.</span><span class="na">get</span><span class="o">(),</span> <span class="n">STOP</span><span class="o">)))</span> <span class="o">&amp;&amp;</span>
+                        <span class="o">!</span><span class="n">wt</span><span class="o">.</span><span class="na">isInterrupted</span><span class="o">())</span>
+                    <span class="n">wt</span><span class="o">.</span><span class="na">interrupt</span><span class="o">();</span>
+                <span class="k">try</span> <span class="o">{</span>
+                    <span class="c1">// 自定义方法
+</span><span class="c1"></span>                    <span class="n">beforeExecute</span><span class="o">(</span><span class="n">wt</span><span class="o">,</span> <span class="n">task</span><span class="o">);</span>
+                    <span class="n">Throwable</span> <span class="n">thrown</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+                    <span class="k">try</span> <span class="o">{</span>
+                        <span class="c1">// 执行任务
+</span><span class="c1"></span>                        <span class="n">task</span><span class="o">.</span><span class="na">run</span><span class="o">();</span>
+                    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">RuntimeException</span> <span class="n">x</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">thrown</span> <span class="o">=</span> <span class="n">x</span><span class="o">;</span>
+                        <span class="k">throw</span> <span class="n">x</span><span class="o">;</span>
+                    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Error</span> <span class="n">x</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">thrown</span> <span class="o">=</span> <span class="n">x</span><span class="o">;</span>
+                        <span class="k">throw</span> <span class="n">x</span><span class="o">;</span>
+                    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Throwable</span> <span class="n">x</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">thrown</span> <span class="o">=</span> <span class="n">x</span><span class="o">;</span>
+                        <span class="k">throw</span> <span class="k">new</span> <span class="n">Error</span><span class="o">(</span><span class="n">x</span><span class="o">);</span>
+                    <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+                        <span class="n">afterExecute</span><span class="o">(</span><span class="n">task</span><span class="o">,</span> <span class="n">thrown</span><span class="o">);</span>
+                    <span class="o">}</span>
+                <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+                    <span class="c1">// 完成任务数 + 1
+</span><span class="c1"></span>                    <span class="n">task</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+                    <span class="n">w</span><span class="o">.</span><span class="na">completedTasks</span><span class="o">++;</span>
+                    <span class="n">w</span><span class="o">.</span><span class="na">unlock</span><span class="o">();</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+            <span class="n">completedAbruptly</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+            <span class="n">processWorkerExit</span><span class="o">(</span><span class="n">w</span><span class="o">,</span> <span class="n">completedAbruptly</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h5 id="线程池为什么要用阻塞队列">线程池为什么要用阻塞队列</h5>
+<p>为什么要先添加到 workerQueue, 而不是先创建最大线程</p>
+<p>一般的队列只能保证优先长度的缓冲区，超过缓冲区，就无法保留当前任务了，阻塞</p>
+<p>队列 通过阻塞可以保留住当前想要继续入队的任务。</p>
+<h5 id="默认的拒绝策略">默认的拒绝策略</h5>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java">  <span class="cm">/**
+</span><span class="cm">     * The default rejected execution handler
+</span><span class="cm">     */</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">RejectedExecutionHandler</span> <span class="n">defaultHandler</span> <span class="o">=</span>
+            <span class="k">new</span> <span class="n">AbortPolicy</span><span class="o">();</span>
+
+<span class="cm">/**
+</span><span class="cm">     * A handler for rejected tasks that throws a
+</span><span class="cm">     * {@code RejectedExecutionException}.
+</span><span class="cm">     */</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">AbortPolicy</span> <span class="kd">implements</span> <span class="n">RejectedExecutionHandler</span> <span class="o">{</span>
+        <span class="cm">/**
+</span><span class="cm">         * Creates an {@code AbortPolicy}.
+</span><span class="cm">         */</span>
+        <span class="kd">public</span> <span class="nf">AbortPolicy</span><span class="o">()</span> <span class="o">{</span>
+        <span class="o">}</span>
+
+        <span class="cm">/**
+</span><span class="cm">         * Always throws RejectedExecutionException.
+</span><span class="cm">         *
+</span><span class="cm">         * @param r the runnable task requested to be executed
+</span><span class="cm">         * @param e the executor attempting to execute this task
+</span><span class="cm">         * @throws RejectedExecutionException always
+</span><span class="cm">         */</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">rejectedExecution</span><span class="o">(</span><span class="n">Runnable</span> <span class="n">r</span><span class="o">,</span> <span class="n">ThreadPoolExecutor</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="n">RejectedExecutionException</span><span class="o">(</span><span class="s">&#34;Task &#34;</span> <span class="o">+</span> <span class="n">r</span><span class="o">.</span><span class="na">toString</span><span class="o">()</span> <span class="o">+</span>
+                    <span class="s">&#34; rejected from &#34;</span> <span class="o">+</span>
+                    <span class="n">e</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="hashmap-相关公式">hashMap 相关公式</h2>
+<ol>
+<li>
+<p>计算哈希值公式：</p>
+<ul>
+<li>$hash = hashCode \wedge (hashCode&raquo;&gt;16)$</li>
+<li>高16位和 低16位异或，加大散列程度</li>
+</ul>
+</li>
+<li>
+<p>计算槽位公式：</p>
+<ol>
+<li>$index = (n-1)&amp;hash$</li>
+<li>满足条件 ： $n=2^k$,  即 n 是 2的幂</li>
+</ol>
+</li>
+<li>
+<p>高低位链迁移条件：</p>
+<ol>
+<li>$condition = e.hash &amp;   oldCap$</li>
+<li>如果得到0 ，放入低位链</li>
+<li>如果得到1， 放入高位链</li>
+<li>公式：
+<ol>
+<li>$low_index = j$</li>
+<li>$hi_index = j+oldCap$</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>
+<p>扩容阈值相关公式：</p>
+<ol>
+<li>
+<p>数组扩容：</p>
+<ol>
+<li>$newCap = oldCap&laquo;1$ ， 2倍扩容</li>
+</ol>
+</li>
+<li>
+<p>阈值公式：</p>
+<ol>
+<li>
+<p>hashMap初始化的时候</p>
+<ol>
+<li>$newThr = default_load_factor*default_initial_capacity$</li>
+</ol>
+</li>
+<li>
+<p>小于容量限制时候：</p>
+<ol>
+<li>$newThr = oldThr &laquo; 1$ , 直接就是原来的2倍，到达这个阈值，就会触发扩容，并且修改 新阈值</li>
+</ol>
+</li>
+<li>
+<p>oldCap 已经超过最大容量了，无法扩容，就将阈值设为无穷大</p>
+<ol>
+<li>$threshold = INF$</li>
+</ol>
+</li>
+<li>
+<p>加载因子公式： $default_load_factor = 0.75f$</p>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<h2 id="concurrenthashmap-核心公式">concurrentHashMap 核心公式</h2>
+<h3 id="sizectl-字段取值">sizeCtl 字段取值</h3>
+<ol>
+<li>-1 正在创建 table</li>
+<li>$-N$ 表示 $N-1$ 个线程正在复制 table</li>
+<li>在 table 被初始化前，代表根据构造函数传入的值计算出的应被初始化的大小</li>
+<li>在 table 被初始化后，则被设置为 table 大小 的 75%，代表 table 的容量（数组容量）。</li>
+</ol>
+<h2 id="threadlocal-源码">ThreadLocal 源码</h2>
+<p>ThreadLocalMap 的 Entry 的那个 key 是一个弱引用，也就是说 ThreadLocal 对象被回收的话，他是不影响的， 【弱引用不参与root算法】</p>
+<p>原理：</p>
+<ol>
+<li>ThreadLocal 作为 key 存放在 线程对象的ThreadLocalMap 内</li>
+<li>如果 threadLocal 作为弱引用被回收，那么 ThreadLocalMap 里面 的 Entry 那个 key 就会成为null， 剩下那个 value 【 后期调用 set,get ,remove 的话，都会被清理掉】</li>
+</ol>
+<p>源码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span>
+<span class="kd">class</span> <span class="nc">Thread</span> <span class="kd">implements</span> <span class="n">Runnable</span> <span class="o">{</span>
+    <span class="cm">/* Make sure registerNatives is the first thing &lt;clinit&gt; does. */</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">native</span> <span class="kt">void</span> <span class="nf">registerNatives</span><span class="o">();</span>
+    <span class="kd">static</span> <span class="o">{</span>
+        <span class="n">registerNatives</span><span class="o">();</span>
+    <span class="o">}</span>
+    
+    <span class="o">...</span>
+    
+    <span class="cm">/* ThreadLocal values pertaining to this thread. This map is maintained
+</span><span class="cm">     * by the ThreadLocal class. */</span>
+    <span class="n">ThreadLocal</span><span class="o">.</span><span class="na">ThreadLocalMap</span> <span class="n">threadLocals</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+
+    <span class="cm">/*
+</span><span class="cm">     * InheritableThreadLocal values pertaining to this thread. This map is
+</span><span class="cm">     * maintained by the InheritableThreadLocal class.
+</span><span class="cm">     */</span>
+    <span class="n">ThreadLocal</span><span class="o">.</span><span class="na">ThreadLocalMap</span> <span class="n">inheritableThreadLocals</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>    
+    
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java">  <span class="cm">/**
+</span><span class="cm">     * 类似HashMap，进行元素存取时，要清理遇到的垃圾值，且合并原先紧密相邻的元素（除去垃圾值会造成新空槽）
+</span><span class="cm">     */</span>
+    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">ThreadLocalMap</span> <span class="o">{</span>
+
+        <span class="cm">/**
+</span><span class="cm">         * 键值对实体的存储结构
+</span><span class="cm">         */</span>
+        <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Entry</span> <span class="kd">extends</span> <span class="n">WeakReference</span><span class="o">&lt;</span><span class="n">ThreadLocal</span><span class="o">&lt;?&gt;&gt;</span> <span class="o">{</span>
+            <span class="cm">/**
+</span><span class="cm">             * 当前线程关联的 value，这个 value 并没有用弱引用追踪
+</span><span class="cm">             */</span>
+            <span class="n">Object</span> <span class="n">value</span><span class="o">;</span>
+
+            <span class="cm">/**
+</span><span class="cm">             * 构造键值对
+</span><span class="cm">             *
+</span><span class="cm">             * @param k k 作 key,作为 key 的 ThreadLocal 会被包装为一个弱引用
+</span><span class="cm">             * @param v v 作 value
+</span><span class="cm">             */</span>
+            <span class="n">Entry</span><span class="o">(</span><span class="n">ThreadLocal</span><span class="o">&lt;?&gt;</span> <span class="n">k</span><span class="o">,</span> <span class="n">Object</span> <span class="n">v</span><span class="o">)</span> <span class="o">{</span>
+                <span class="kd">super</span><span class="o">(</span><span class="n">k</span><span class="o">);</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">v</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>入代码说是：</p>
+<pre><code>1. $key = ThreadLocal$
+2. ThreadLocalMap 相当于一个大容器
+</code></pre>
+<p>为什么不用HashMap 呢？ 因为 弱引用不影响对象回收【这样就导致可能会内存泄漏，内存无法回收】</p>
+<p>表示 ThreadLocalMap 是使用 ThreadLocal 的弱引用作为 Key 的，弱引用的对象在 GC 时会被回收。</p>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/681b63e289c051593e4be3f9ca6e20c6.png" alt="https://img-blog.csdnimg.cn/img_convert/681b63e289c051593e4be3f9ca6e20c6.png"></p>
+<p>下面我们分两种情况讨论：</p>
+<ul>
+<li><strong>key 使用强引用</strong>：引用的ThreadLocal的对象被回收了，但是ThreadLocalMap还持有ThreadLocal的强引用，如果没有手动删除，ThreadLocal不会被回收，导致Entry内存泄漏。</li>
+<li><strong>key 使用弱引用</strong>：引用的ThreadLocal的对象被回收了，由于ThreadLocalMap持有ThreadLocal的弱引用，即使没有手动删除，ThreadLocal也会被回收。value在下一次ThreadLocalMap调用set,get，remove的时候会被清除。</li>
+</ul>
+<h4 id="threadlocal为什么会内存泄漏">ThreadLocal为什么会内存泄漏</h4>
+<p><strong>原理：</strong> <strong>key 会在下一次 gc 的时候置为 null，因为是 weakReference ， 由于 ThreadLocalMap 中的机制，无法再访问那些 key 为 null的 entry， 这些 entry 会引用强引用的 value，就导致 value 无法被回收，而不是 key 无法被回收</strong></p>
+<p>ThreadLocalMap使用ThreadLocal的弱引用作为key，如果一个ThreadLocal没有外部强引用来引用它，那么系统 GC 的时候，这个ThreadLocal势必会被回收，这样一来，ThreadLocalMap中就会出现key为null的Entry，就没有办法访问这些key为null的Entry的value，如果当前线程再迟迟不结束的话，这些key为null的Entry的value就会一直存在一条强引用链：Thread Ref -&gt; Thread -&gt; ThreaLocalMap -&gt; Entry -&gt; value永远无法回收，造成内存泄漏。</p>
+<p>其实，ThreadLocalMap的设计中已经考虑到这种情况，也加上了一些防护措施：在ThreadLocal的get(),set(),remove()的时候都会清除线程ThreadLocalMap里所有key为null的value。</p>
+<p>但是这些被动的预防措施并不能保证不会内存泄漏：</p>
+<ul>
+<li>使用static的ThreadLocal，延长了ThreadLocal的生命周期，可能导致的内存泄漏(参考ThreadLocal 内存泄露的实例分析)。</li>
+<li>分配使用了ThreadLocal又不再调用get(),set(),remove()方法，那么就会导致内存泄漏。</li>
+</ul>
+<h3 id="threadlocal-补充">ThreadLocal 补充：</h3>
+<pre><code>1. threadLocal 内部会有清理过期数据的方法，调用 remove 某种程度上解决了这个内存泄漏的问题 
+</code></pre>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java">		<span class="cm">/**
+</span><span class="cm">     * Sets the current thread&#39;s copy of this thread-local variable
+</span><span class="cm">     * to the specified value.  Most subclasses will have no need to
+</span><span class="cm">     * override this method, relying solely on the {@link #initialValue}
+</span><span class="cm">     * method to set the values of thread-locals.
+</span><span class="cm">     *
+</span><span class="cm">     * @param value the value to be stored in the current thread&#39;s copy of
+</span><span class="cm">     *        this thread-local.
+</span><span class="cm">     *
+</span><span class="cm">     * 设置当前线程的局部变量的值
+</span><span class="cm">     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">set</span><span class="o">(</span><span class="n">T</span> <span class="n">value</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Thread</span> <span class="n">t</span> <span class="o">=</span> <span class="n">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">();</span>
+        <span class="c1">//获取当前线程所对应的ThreadLocalMap，
+</span><span class="c1"></span>        <span class="n">ThreadLocalMap</span> <span class="n">map</span> <span class="o">=</span> <span class="n">getMap</span><span class="o">(</span><span class="n">t</span><span class="o">);</span>
+        <span class="c1">//如果不为空，则调用ThreadLocalMap的set()方法，key就是当前ThreadLocal
+</span><span class="c1"></span>        <span class="c1">//如果不存在，则调用createMap()方法新建一个
+</span><span class="c1"></span>        <span class="k">if</span> <span class="o">(</span><span class="n">map</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
+            <span class="n">map</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">value</span><span class="o">);</span>
+        <span class="k">else</span>
+            <span class="n">createMap</span><span class="o">(</span><span class="n">t</span><span class="o">,</span> <span class="n">value</span><span class="o">);</span>
+    <span class="o">}</span>
+
+
+		<span class="cm">/**
+</span><span class="cm">     * Create the map associated with a ThreadLocal. Overridden in
+</span><span class="cm">     * InheritableThreadLocal.
+</span><span class="cm">     *
+</span><span class="cm">     * @param t the current thread
+</span><span class="cm">     * @param firstValue value for the initial entry of the map
+</span><span class="cm">     */</span>
+    <span class="kt">void</span> <span class="nf">createMap</span><span class="o">(</span><span class="n">Thread</span> <span class="n">t</span><span class="o">,</span> <span class="n">T</span> <span class="n">firstValue</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">t</span><span class="o">.</span><span class="na">threadLocals</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ThreadLocalMap</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">firstValue</span><span class="o">);</span>
+    <span class="o">}</span>
+
+		<span class="cm">/**
+</span><span class="cm">     * Removes the current thread&#39;s value for this thread-local
+</span><span class="cm">     * variable.  If this thread-local variable is subsequently
+</span><span class="cm">     * {@linkplain #get read} by the current thread, its value will be
+</span><span class="cm">     * reinitialized by invoking its {@link #initialValue} method,
+</span><span class="cm">     * unless its value is {@linkplain #set set} by the current thread
+</span><span class="cm">     * in the interim.  This may result in multiple invocations of the
+</span><span class="cm">     * {@code initialValue} method in the current thread.
+</span><span class="cm">     *
+</span><span class="cm">     * @since 1.5
+</span><span class="cm">     *
+</span><span class="cm">     * 将当前线程局部变量的值删除。该方法的目的是减少内存的占用。
+</span><span class="cm">     * 当然，我们不需要显示调用该方法，因为一个线程结束后，它所对应的局部变量就会被垃圾回收。
+</span><span class="cm">     */</span>
+     <span class="kd">public</span> <span class="kt">void</span> <span class="nf">remove</span><span class="o">()</span> <span class="o">{</span>
+         <span class="n">ThreadLocalMap</span> <span class="n">m</span> <span class="o">=</span> <span class="n">getMap</span><span class="o">(</span><span class="n">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">());</span>
+         <span class="k">if</span> <span class="o">(</span><span class="n">m</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
+             <span class="n">m</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+     <span class="o">}</span>
+
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="threadlocal八股文">ThreadLocal八股文</h3>
+<p>HashMap是使用拉链法解决hash冲突的，ThreadLocalMap是使用线性探测解决hash冲突的（内部只维护Entey数组，没有链表）。所以，源码中在清除泄漏的Entry时，会进行rehash，防止数组的当前位置为null后，有hash冲突的Entry访问不到的问题。</p>
+<p>回归本质，ThreadLocalMap是用来存放对象的，在一次线程的执行栈中，存放数据后方便我们在任意的地方取得我们想要的值而不被其他线程干扰。<strong>ThreadLocalMap本身并没有为外界提供取出和存放数据的API，我们所能获得数据的方式只有通过ThreadLocal类提供的API来间接的从ThreadLocalMap取出数据，所以，当我们用不了key（ThreadLocal对象）的API也就无法从ThreadLocalMap里取出指定的数据。</strong></p>
+<h3 id="threadlocal-使用技巧">ThreadLocal 使用技巧</h3>
+<p>所以，ThreadLocal的建议使用方法：</p>
+<ol>
+<li><strong>设计为static的，被class对象给强引用，线程存活期间就不会被回收，也不用remove，完全不用担心内存泄漏</strong>
+<ul>
+<li>ThreadLocal就是entry里的key。你这里的ThreadLocal被class对象强引用，不会被回收了</li>
+</ul>
+</li>
+<li><strong>设计为非static的，长对象（比如被spring管理的对象）的内部，也不会被回收</strong></li>
+<li><strong>没必要在方法中创建ThreadLocal对象</strong></li>
+</ol>
+<h2 id="锁原理">锁原理</h2>
+<ul>
+<li>syncrhonzied 原理
+<ul>
+<li>执行 monitorenter 时，对象的计数器+1，执行 monitorexit 时候，对象计数器 - 1</li>
+<li>计数器为0时候，锁就释放了。</li>
+</ul>
+</li>
+<li>LockSupport原理</li>
+<li>AQS 实现原理
+<ol>
+<li>将每一条请求共享资源的线程封装成 $CLH$ 队列(虚拟双向队列)的 一个节点来实现缩的分配</li>
+<li>volatile 修饰 state 变量，保证了 state的可见性，cas 算法 去修改state 变量，保证了 state修改的原子性</li>
+<li>如果被请求共享资源空闲，则 当前线程设置为工作线程，锁定共享资源</li>
+<li>获取不到锁的线程 就加入到队列中等待唤醒</li>
+</ol>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"> <span class="cm">/**
+</span><span class="cm">     * Inserts node into queue, initializing if necessary. See picture above.
+</span><span class="cm">     * @param node the node to insert
+</span><span class="cm">     * @return node&#39;s predecessor
+</span><span class="cm">     * enq()的作用很简单。如果CLH队列为空，则新建一个CLH表头；然后将node添加到CLH末尾。
+</span><span class="cm">     * 否则，直接将node添加到CLH末尾。
+</span><span class="cm">     *
+</span><span class="cm">     * 1、这里通过一个死循环方式调用CAS，即使有高并发的场景，无限循环将会最终成功把当前线程追加到队尾
+</span><span class="cm">     * 2、第一次循环tail肯定为null，则会初始化一个默认的node，并将head=tail指向该node
+</span><span class="cm">     * 3、第二次循环的时候，会将当前node追加到1中创建的node尾部
+</span><span class="cm">     */</span>
+    <span class="kd">private</span> <span class="n">Node</span> <span class="nf">enq</span><span class="o">(</span><span class="kd">final</span> <span class="n">Node</span> <span class="n">node</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//无限死循环
+</span><span class="c1"></span>        <span class="k">for</span> <span class="o">(;;)</span> <span class="o">{</span>
+            <span class="n">Node</span> <span class="n">t</span> <span class="o">=</span> <span class="n">tail</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">t</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span> <span class="c1">// Must initialize
+</span><span class="c1"></span>                <span class="c1">//如果尾节点是空， cas 插入 头节点（抢第一)
+</span><span class="c1"></span>                <span class="k">if</span> <span class="o">(</span><span class="n">compareAndSetHead</span><span class="o">(</span><span class="k">new</span> <span class="n">Node</span><span class="o">()))</span>
+                    <span class="c1">//这个只是一个 dummy 节点，虚拟节点 用来做标记的， 里面的 thread 是 空的
+</span><span class="c1"></span>                    <span class="n">tail</span> <span class="o">=</span> <span class="n">head</span><span class="o">;</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="n">node</span><span class="o">.</span><span class="na">prev</span> <span class="o">=</span> <span class="n">t</span><span class="o">;</span>
+                <span class="c1">//如果尾不为空 ，cas 设置尾节点
+</span><span class="c1"></span>                <span class="k">if</span> <span class="o">(</span><span class="n">compareAndSetTail</span><span class="o">(</span><span class="n">t</span><span class="o">,</span> <span class="n">node</span><span class="o">))</span> <span class="o">{</span>
+                    <span class="c1">//tail.next = node ,and tail = node
+</span><span class="c1"></span>                    <span class="n">t</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">node</span><span class="o">;</span>
+                    <span class="k">return</span> <span class="n">t</span><span class="o">;</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>countdownlatch 实现原理：
+<ul>
+<li>任务分为 N个子线程去执行，state初始化为N，n个线程并行执行</li>
+<li>执行完就 countdown 1次，cas操作减去1</li>
+<li>n个子线程执行完毕后，state= 0， 会unpark 主调用线程， 主线程就会从 await 函数返回，执行后序</li>
+</ul>
+</li>
+</ul>
+<h2 id="longadder-高性能原理">LongAdder 高性能原理</h2>
+<h3 id="longadder-公式原理">longAdder 公式原理：</h3>
+<p><img src="https://img-blog.csdn.net/20170305230028229?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvdTAxMTM5Mjg5Nw==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="https://img-blog.csdn.net/20170305230028229?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvdTAxMTM5Mjg5Nw==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast"></p>
+<p><img src="https://gitee.com/alan-tang-tt/yuan/raw/master/%E6%AD%BB%E7%A3%95%20java%E5%B9%B6%E5%8F%91%E5%8C%85/resource/LongAdder1.png" alt="https://gitee.com/alan-tang-tt/yuan/raw/master/%25E6%25AD%25BB%25E7%25A3%2595%2520java%25E5%25B9%25B6%25E5%258F%2591%25E5%258C%2585/resource/LongAdder1.png"></p>
+<p>使用AtomicLong时，在高并发下大量线程会同时去竞争更新<strong>同一个原子变量</strong>，但是由于同时只有一个线程的CAS会成功，所以其他线程会不断尝试自旋尝试CAS操作，这会浪费不少的CPU资源。</p>
+<p>而LongAdder可以概括成这样：内部核心数据value<strong>分离</strong>成一个数组(Cell)，每个线程访问时,通过哈希等算法映射到其中一个数字进行计数，而最终的计数结果，则为这个数组的<strong>求和累加</strong>。</p>
+<ul>
+<li>简单来说就是将一个值分散成多个值，在并发的时候就可以<strong>分散压力</strong>，性能有所提高。</li>
+</ul>
+<h2 id="java-异常体系">java 异常体系</h2>
+<p>java 中所有异常都来自父类的Throwable</p>
+<p>下面2个之类， Error 和 Exception</p>
+<p>Error 是程序无法处理的错误，一旦出现这个错误，程序就被迫停止运行</p>
+<p>exception不会导致程序停止，又分为 RunTimeException 和 checkedException 检查异常  ，程序编译过程中就会导致程序编译不通过。</p>
+<h2 id="锁升级体系">锁升级体系</h2>
+<h3 id="偏向锁">偏向锁</h3>
+<p><img src="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663595731/81C849792BC1096ED3F02F6A55CF6D0C" alt="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663595731/81C849792BC1096ED3F02F6A55CF6D0C"></p>
+<p>作者：路人zhang
+链接：https://www.nowcoder.com/discuss/744436?channel=-1&amp;source_id=profile_follow_post_nctrack
+来源：牛客网</p>
+<p>引入偏向锁的目的：减少只有一个线程执行同步代码块时的性能消耗，即在没有其他线程竞争的情况下，一个线程获得了锁。</p>
+<p>偏向锁的获取流程：</p>
+<ol>
+<li>检查对象头中Mark Word是否为可偏向状态，如果不是则直接升级为轻量级锁。</li>
+<li>如果是，判断Mark Work中的线程ID是否指向当前线程，如果是，则执行同步代码块。</li>
+<li>如果不是，则进行CAS操作竞争锁，如果竞争到锁，则将Mark Work中的线程ID设为当前线程ID，执行同步代码块。</li>
+<li>如果竞争失败，升级为轻量级锁。</li>
+</ol>
+<p>偏向锁的撤销：</p>
+<p>只有等到竞争，持有偏向锁的线程才会撤销偏向锁。偏向锁撤销后会恢复到无锁或者轻量级锁的状态。</p>
+<ol>
+<li>偏向锁的撤销需要到达全局安全点，全局安全点表示一种状态，该状态下所有线程都处于暂停状态。</li>
+<li>判断锁对象是否处于无锁状态，即获得偏向锁的线程如果已经退出了临界区，表示同步代码已经执行完了。重新竞争锁的线程会进行CAS操作替代原来线程的ThreadID。</li>
+<li>如果获得偏向锁的线程还处于临界区之内，表示同步代码还未执行完，将获得偏向锁的线程升级为轻量级锁。</li>
+</ol>
+<p>一句话简单总结偏向锁原理：使用CAS操作将当前线程的ID记录到对象的Mark Word中</p>
+<p>作者：路人zhang
+链接：https://www.nowcoder.com/discuss/744436?channel=-1&amp;source_id=profile_follow_post_nctrack
+来源：牛客网</p>
+<h3 id="轻量级锁">轻量级锁</h3>
+<p>入轻量级锁的目的：在多线程交替执行同步代码块时（未发生竞争），避免使用互斥量（重量锁）带来的性能消耗。但多个线程同时进入临界区（发生竞争）则会使得轻量级锁膨胀为重量级锁。</p>
+<p>轻量级锁的获取流程：</p>
+<ol>
+<li>首先判断当前对象是否处于一个无锁的状态，如果是，Java虚拟机将在当前线程的栈帧建立一个锁记录（Lock Record），用于存储对象目前的Mark Word的拷贝，如图所示。</li>
+</ol>
+<p><img src="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663618914/AA3859A7110B4404D965F160B823E0A7" alt="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663618914/AA3859A7110B4404D965F160B823E0A7"></p>
+<p><img src="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663632877/5DC575272443DA641481CF5A3DA35383" alt="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663632877/5DC575272443DA641481CF5A3DA35383"></p>
+<p>然而，自旋锁的一大好处就是减少线程切换的开销。在这里没有必要直接阻塞当前线程，大可以像轻量级锁一样，自旋一会，失败了再阻塞。</p>
+<h3 id="偏向锁和轻量级锁区别">偏向锁和轻量级锁区别</h3>
+<p>轻量级锁一开始是没有自旋功能，所以自旋不是其出现的原因的，而是其后来的优化，其最初的设计目的是在没有线程争用的情况下实现使用CAS操作代替OS的锁以提高性能。</p>
+<p>轻量级锁在<strong>多线程不存在竞争和单线程不存在竞争两种场景中表现出一样的行为</strong>，这是不合理的，所以偏向锁通过记录线程ID来优化单线程不存在竞争这种场景。</p>
+<p>作者：专业划水运动员
+链接：https://www.zhihu.com/question/291789546/answer/959050258
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</p>
+<p>在没有实际竞争的情况下，还能够针对部分场景继续优化。如果不仅仅没有实际竞争，自始至终，使用锁的线程都只有一个，那么，维护轻量级锁都是浪费的。<strong>偏向锁的目标是，减少无竞争且只有一个线程使用锁的情况下，使用轻量级锁产生的性能消耗</strong>。轻量级锁每次申请、释放锁都至少需要一次CAS，但偏向锁只有初始化时需要一次CAS。</p>
+<p>“偏向”的意思是，<em>偏向锁假定将来只有第一个申请锁的线程会使用锁</em>（不会有任何线程再来申请锁），因此，<em>只需要在Mark Word中CAS记录owner（本质上也是更新，但初始值为空），如果记录成功，则偏向锁获取成功</em>，记录锁状态为偏向锁，<em>以后当前线程等于owner就可以零成本的直接获得锁；否则，说明有其他线程竞争，膨胀为轻量级锁</em>。</p>
+<p>偏向锁无法使用自旋锁优化，因为一旦有其他线程申请锁，就破坏了偏向锁的假定。</p>
+<h3 id="缺点">缺点</h3>
+<p>同样的，如果明显存在其他线程申请锁，那么偏向锁将很快膨胀为轻量级锁。</p>
+<blockquote>
+<p>不过这个副作用已经小的多。</p>
+<p>如果需要，使用参数-XX:-UseBiasedLocking禁止偏向锁优化（默认打开）。</p>
+</blockquote>
+<h3 id="小结">小结</h3>
+<blockquote>
+<p>偏向锁、轻量级锁、重量级锁分配和膨胀的详细过程见后。会涉及一些Mark Word与CAS的知识。</p>
+</blockquote>
+<p>作者：猴子007
+链接：https://www.jianshu.com/p/36eedeb3f912
+来源：简书
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/java-spring%E5%85%A8%E5%AE%B6%E6%A1%B6/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">java spring全家桶</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/java%E8%AF%AD%E8%A8%80%E5%85%AB%E8%82%A1/">
+            <span class="next-text nav-default">java语言八股</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+
+
+</body>
+</html>

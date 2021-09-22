@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>redis数据结构 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="redis 为什么最大 512M redis中用int来修饰len字段，int为4个字节，也就是32位，那么最大能表示 $2^32$ 次方。所以2^32/8/1024/102" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/redis%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="redis数据结构" />
+<meta property="og:description" content="redis 为什么最大 512M redis中用int来修饰len字段，int为4个字节，也就是32位，那么最大能表示 $2^32$ 次方。所以2^32/8/1024/102" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/redis%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="redis数据结构">
+<meta itemprop="description" content="redis 为什么最大 512M redis中用int来修饰len字段，int为4个字节，也就是32位，那么最大能表示 $2^32$ 次方。所以2^32/8/1024/102">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="3808">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="redis数据结构"/>
+<meta name="twitter:description" content="redis 为什么最大 512M redis中用int来修饰len字段，int为4个字节，也就是32位，那么最大能表示 $2^32$ 次方。所以2^32/8/1024/102"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">redis数据结构</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#redis-为什么最大-512m">redis 为什么最大 512M</a>
+          <ul>
+            <li></li>
+          </ul>
+        </li>
+        <li><a href="#redis-主从哨兵">redis 主从哨兵</a></li>
+        <li><a href="#redis-list-的源码">redis list 的源码</a>
+          <ul>
+            <li></li>
+          </ul>
+        </li>
+        <li><a href="#redis-geo-hash算法原理">redis geo hash算法原理</a></li>
+        <li><a href="#redis-crc-循环冗余校验算法">redis CRC 循环冗余校验算法</a></li>
+        <li><a href="#redis-内存回收机制">redis 内存回收机制</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="redis-为什么最大-512m">redis 为什么最大 512M</h2>
+<p>redis中用int来修饰len字段，int为4个字节，也就是32位，那么最大能表示 $2^32$ 次方。所以2^32/8/1024/1024=512m</p>
+<p>redis  使用 SDS 对  string 类型 的  key  进行了压缩</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="k">struct</span> <span class="nf">__attribute__</span> <span class="p">((</span><span class="n">__packed__</span><span class="p">))</span> <span class="n">sdshdr5</span> <span class="p">{</span>
+    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">flags</span><span class="p">;</span> <span class="cm">/* 3 lsb of type, and 5 msb of string length */</span>
+    <span class="kt">char</span> <span class="n">buf</span><span class="p">[];</span>
+<span class="p">};</span>
+<span class="k">struct</span> <span class="nf">__attribute__</span> <span class="p">((</span><span class="n">__packed__</span><span class="p">))</span> <span class="n">sdshdr8</span> <span class="p">{</span>
+    <span class="kt">uint8_t</span> <span class="n">len</span><span class="p">;</span> <span class="cm">/* used */</span>
+    <span class="kt">uint8_t</span> <span class="n">alloc</span><span class="p">;</span> <span class="cm">/* excluding the header and null terminator */</span>
+    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">flags</span><span class="p">;</span> <span class="cm">/* 3 lsb of type, 5 unused bits */</span>
+    <span class="kt">char</span> <span class="n">buf</span><span class="p">[];</span>
+<span class="p">};</span>
+<span class="k">struct</span> <span class="nf">__attribute__</span> <span class="p">((</span><span class="n">__packed__</span><span class="p">))</span> <span class="n">sdshdr16</span> <span class="p">{</span>
+    <span class="kt">uint16_t</span> <span class="n">len</span><span class="p">;</span> <span class="cm">/* used */</span>
+    <span class="kt">uint16_t</span> <span class="n">alloc</span><span class="p">;</span> <span class="cm">/* excluding the header and null terminator */</span>
+    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">flags</span><span class="p">;</span> <span class="cm">/* 3 lsb of type, 5 unused bits */</span>
+    <span class="kt">char</span> <span class="n">buf</span><span class="p">[];</span>
+<span class="p">};</span>
+<span class="k">struct</span> <span class="nf">__attribute__</span> <span class="p">((</span><span class="n">__packed__</span><span class="p">))</span> <span class="n">sdshdr32</span> <span class="p">{</span>
+    <span class="kt">uint32_t</span> <span class="n">len</span><span class="p">;</span> <span class="cm">/* used */</span>
+    <span class="kt">uint32_t</span> <span class="n">alloc</span><span class="p">;</span> <span class="cm">/* excluding the header and null terminator */</span>
+    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">flags</span><span class="p">;</span> <span class="cm">/* 3 lsb of type, 5 unused bits */</span>
+    <span class="kt">char</span> <span class="n">buf</span><span class="p">[];</span>
+<span class="p">};</span>
+<span class="k">struct</span> <span class="nf">__attribute__</span> <span class="p">((</span><span class="n">__packed__</span><span class="p">))</span> <span class="n">sdshdr64</span> <span class="p">{</span>
+    <span class="kt">uint64_t</span> <span class="n">len</span><span class="p">;</span> <span class="cm">/* used */</span>
+    <span class="kt">uint64_t</span> <span class="n">alloc</span><span class="p">;</span> <span class="cm">/* excluding the header and null terminator */</span>
+    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">flags</span><span class="p">;</span> <span class="cm">/* 3 lsb of type, 5 unused bits */</span>
+    <span class="kt">char</span> <span class="n">buf</span><span class="p">[];</span>
+<span class="p">};</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cm">/* Helper function for sdssplitargs() that converts a hex digit into an
+</span><span class="cm"> * integer from 0 to 15 */</span>
+<span class="cm">/* 将表示 16 进制的字符转换为对应的整数值 */</span>
+<span class="kt">int</span> <span class="nf">hex_digit_to_int</span><span class="p">(</span><span class="kt">char</span> <span class="n">c</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">switch</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="sc">&#39;0&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;1&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;2&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;3&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">3</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;4&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">4</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;5&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">5</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;6&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">6</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;7&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">7</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;8&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">8</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;9&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">9</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;a&#39;</span><span class="o">:</span> <span class="k">case</span> <span class="sc">&#39;A&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">10</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;b&#39;</span><span class="o">:</span> <span class="k">case</span> <span class="sc">&#39;B&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">11</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;c&#39;</span><span class="o">:</span> <span class="k">case</span> <span class="sc">&#39;C&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">12</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;d&#39;</span><span class="o">:</span> <span class="k">case</span> <span class="sc">&#39;D&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">13</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;e&#39;</span><span class="o">:</span> <span class="k">case</span> <span class="sc">&#39;E&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">14</span><span class="p">;</span>
+    <span class="k">case</span> <span class="sc">&#39;f&#39;</span><span class="o">:</span> <span class="k">case</span> <span class="sc">&#39;F&#39;</span><span class="o">:</span> <span class="k">return</span> <span class="mi">15</span><span class="p">;</span>
+    <span class="k">default</span><span class="o">:</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>redis单个key存入512M大小</p>
+<p>1。key不要太长，尽量不要超过1024字节，这不仅消耗内存，而且会降低查找的效率。</p>
+<p>2。key也不要太短，太短的话，key的可读性会降低</p>
+<p>3。在一个项目中，key最好使用统一的命名模式，例如：user:123</p>
+<p>我们熟悉的redis支持5种数据类型，其实不止5种，我们会主要介绍这5种。String(字符串)，hash(哈希)，list（列表），set(集合)及zset(sorted set:有序集合)等</p>
+<p>一个key对应一个value。String类型是二进制安全的，意思是String可以包含任何数据。比如jpg图片或者序列化的对象。String类型是redis最基本的数据类型，一个键最大能存储512MB。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cm">/*-----------------------------------------------------------------------------
+</span><span class="cm"> * String Commands
+</span><span class="cm"> * 字符串相关命令
+</span><span class="cm"> *----------------------------------------------------------------------------*/</span>
+
+<span class="cm">/* 检查字符串是否超过允许的最大长度（512MB） */</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">checkStringLength</span><span class="p">(</span><span class="n">client</span> <span class="o">*</span><span class="n">c</span><span class="p">,</span> <span class="kt">long</span> <span class="kt">long</span> <span class="n">size</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">512</span><span class="o">*</span><span class="mi">1024</span><span class="o">*</span><span class="mi">1024</span><span class="p">)</span> <span class="p">{</span>
+        <span class="cm">/* 超过则返回异常信息给客户端 */</span>
+        <span class="n">addReplyError</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="s">&#34;string exceeds maximum allowed size (512MB)&#34;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">C_ERR</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">C_OK</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="c1">//其实作者是对 这个 size 做了检查， 超过 512M 直接异常，不鸟你
+</span><span class="c1"></span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="redis-key-使用注意点">redis key 使用注意点</h4>
+<p>著作权归https://pdai.tech所有。 链接：https://www.pdai.tech/md/db/nosql-redis/db-redis-x-redis-ds.html</p>
+<ul>
+<li><strong>二进制安全</strong></li>
+</ul>
+<p>因为C字符串以空字符作为字符串结束的标识，而对于一些二进制文件（如图片等），内容可能包括空字符串，因此C字符串无法正确存取；而所有 SDS 的API 都是以处理二进制的方式来处理 <code>buf</code> 里面的元素，并且 SDS 不是以空字符串来判断是否结束，而是以 len 属性表示的长度来判断字符串是否结束。</p>
+<p><img src="https://www.pdai.tech/_images/db/redis/db-redis-object-2-3.png" alt="https://www.pdai.tech/_images/db/redis/db-redis-object-2-3.png"></p>
+<h2 id="redis-主从哨兵">redis 主从哨兵</h2>
+<p>著作权归https://pdai.tech所有。 链接：https://www.pdai.tech/md/db/nosql-redis/db-redis-x-copy.html</p>
+<p><strong>主从复制的作用</strong>主要包括：</p>
+<ul>
+<li><strong>数据冗余</strong>：主从复制实现了数据的热备份，是持久化之外的一种数据冗余方式。</li>
+<li><strong>故障恢复</strong>：当主节点出现问题时，可以由从节点提供服务，实现快速的故障恢复；实际上是一种服务的冗余。</li>
+<li><strong>负载均衡</strong>：在主从复制的基础上，配合读写分离，可以由主节点提供写服务，由从节点提供读服务（即写Redis数据时应用连接主节点，读Redis数据时应用连接从节点），分担服务器负载；尤其是在写少读多的场景下，通过多个从节点分担读负载，可以大大提高Redis服务器的并发量。</li>
+<li><strong>高可用基石</strong>：除了上述作用以外，主从复制还是哨兵和集群能够实施的基础，因此说主从复制是Redis高可用的基础。</li>
+</ul>
+<p>主从库之间采用的是<strong>读写分离</strong>的方式。</p>
+<ul>
+<li>读操作：主库、从库都可以接收；</li>
+<li>写操作：首先到主库执行，然后，主库将写操作同步给从库。</li>
+</ul>
+<p><img src="https://www.pdai.tech/_images/db/redis/db-redis-copy-1.png" alt="https://www.pdai.tech/_images/db/redis/db-redis-copy-1.png"></p>
+<h2 id="redis-list-的源码">redis list 的源码</h2>
+<h4 id="adlist-源码">adlist 源码</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cm">/* adlist.h - A generic doubly linked list implementation
+</span><span class="cm"> *
+</span><span class="cm"> */</span>
+
+<span class="cp">#ifndef __ADLIST_H__
+</span><span class="cp">#define __ADLIST_H__
+</span><span class="cp"></span>
+<span class="cm">/* Node, List, and Iterator are the only data structures used currently. */</span>
+
+<span class="cm">/* 双向链表节点 */</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">listNode</span> <span class="p">{</span>
+    <span class="k">struct</span> <span class="nc">listNode</span> <span class="o">*</span><span class="n">prev</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="nc">listNode</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="o">*</span><span class="n">value</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">listNode</span><span class="p">;</span>
+
+<span class="cm">/* 有方向的迭代器 */</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">listIter</span> <span class="p">{</span>
+    <span class="n">listNode</span> <span class="o">*</span><span class="n">next</span><span class="p">;</span>
+    <span class="cm">/* 0：从头遍历  1：从尾遍历 */</span>
+    <span class="kt">int</span> <span class="n">direction</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">listIter</span><span class="p">;</span>
+
+<span class="cm">/* 双向链表 */</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">list</span> <span class="p">{</span>
+    <span class="n">listNode</span> <span class="o">*</span><span class="n">head</span><span class="p">;</span>
+    <span class="n">listNode</span> <span class="o">*</span><span class="n">tail</span><span class="p">;</span>
+    <span class="kt">void</span> <span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="n">dup</span><span class="p">)(</span><span class="kt">void</span> <span class="o">*</span><span class="n">ptr</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">free</span><span class="p">)(</span><span class="kt">void</span> <span class="o">*</span><span class="n">ptr</span><span class="p">);</span>
+    <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">match</span><span class="p">)(</span><span class="kt">void</span> <span class="o">*</span><span class="n">ptr</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">key</span><span class="p">);</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">len</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">list</span><span class="p">;</span>
+
+<span class="cm">/* Functions implemented as macros */</span>
+<span class="cp">#define listLength(l) ((l)-&gt;len)
+</span><span class="cp">#define listFirst(l) ((l)-&gt;head)
+</span><span class="cp">#define listLast(l) ((l)-&gt;tail)
+</span><span class="cp">#define listPrevNode(n) ((n)-&gt;prev)
+</span><span class="cp">#define listNextNode(n) ((n)-&gt;next)
+</span><span class="cp">#define listNodeValue(n) ((n)-&gt;value)
+</span><span class="cp"></span>
+<span class="cp">#define listSetDupMethod(l,m) ((l)-&gt;dup = (m))
+</span><span class="cp">#define listSetFreeMethod(l,m) ((l)-&gt;free = (m))
+</span><span class="cp">#define listSetMatchMethod(l,m) ((l)-&gt;match = (m))
+</span><span class="cp"></span>
+<span class="cp">#define listGetDupMethod(l) ((l)-&gt;dup)
+</span><span class="cp">#define listGetFreeMethod(l) ((l)-&gt;free)
+</span><span class="cp">#define listGetMatchMethod(l) ((l)-&gt;match)
+</span><span class="cp"></span>
+<span class="cm">/* Prototypes */</span>
+<span class="n">list</span> <span class="o">*</span><span class="nf">listCreate</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">listRelease</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">list</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">listEmpty</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">list</span><span class="p">);</span>
+<span class="n">list</span> <span class="o">*</span><span class="nf">listAddNodeHead</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">list</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">value</span><span class="p">);</span>
+<span class="n">list</span> <span class="o">*</span><span class="nf">listAddNodeTail</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">list</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">value</span><span class="p">);</span>
+<span class="n">list</span> <span class="o">*</span><span class="nf">listInsertNode</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">list</span><span class="p">,</span> <span class="n">listNode</span> <span class="o">*</span><span class="n">old_node</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">value</span><span class="p">,</span> <span class="kt">int</span> <span class="n">after</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">listDelNode</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">list</span><span class="p">,</span> <span class="n">listNode</span> <span class="o">*</span><span class="n">node</span><span class="p">);</span>
+<span class="n">listIter</span> <span class="o">*</span><span class="nf">listGetIterator</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">list</span><span class="p">,</span> <span class="kt">int</span> <span class="n">direction</span><span class="p">);</span>
+<span class="n">listNode</span> <span class="o">*</span><span class="nf">listNext</span><span class="p">(</span><span class="n">listIter</span> <span class="o">*</span><span class="n">iter</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">listReleaseIterator</span><span class="p">(</span><span class="n">listIter</span> <span class="o">*</span><span class="n">iter</span><span class="p">);</span>
+<span class="n">list</span> <span class="o">*</span><span class="nf">listDup</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">orig</span><span class="p">);</span>
+<span class="n">listNode</span> <span class="o">*</span><span class="nf">listSearchKey</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">list</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">key</span><span class="p">);</span>
+<span class="n">listNode</span> <span class="o">*</span><span class="nf">listIndex</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">list</span><span class="p">,</span> <span class="kt">long</span> <span class="n">index</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">listRewind</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">list</span><span class="p">,</span> <span class="n">listIter</span> <span class="o">*</span><span class="n">li</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">listRewindTail</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">list</span><span class="p">,</span> <span class="n">listIter</span> <span class="o">*</span><span class="n">li</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">listRotateTailToHead</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">list</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">listRotateHeadToTail</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">list</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">listJoin</span><span class="p">(</span><span class="n">list</span> <span class="o">*</span><span class="n">l</span><span class="p">,</span> <span class="n">list</span> <span class="o">*</span><span class="n">o</span><span class="p">);</span>
+
+<span class="cm">/* Directions for iterators */</span>
+<span class="cm">/* 0：从头遍历  1：从尾遍历 */</span>
+<span class="cp">#define AL_START_HEAD 0
+</span><span class="cp">#define AL_START_TAIL 1
+</span><span class="cp"></span>
+<span class="cp">#endif </span><span class="cm">/* __ADLIST_H__ */</span><span class="cp">
+</span><span class="cp"></span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="redis-geo-hash算法原理">redis geo hash算法原理</h2>
+<p><a href="https://blog.csdn.net/qq_31821675/article/details/107249646">https://blog.csdn.net/qq_31821675/article/details/107249646</a></p>
+<p><a href="http://geohash.gofreerange.com/">相关的 geohash网站</a></p>
+<p>麦叔饭后思考地图后台如何根据自己所在位置查询来查询附近餐馆的呢？苦思冥想了半天，小麦想出了个方法：计算所在位置P与北京所有餐馆的距离，然后返回距离&lt;=1000米的餐馆。小得意了一会儿，小麦发现北京的餐馆何其多啊，这样计算不得了，于是想了，既然知道经纬度了，那它应该知道自己在西城区，那应该计算所在位置P与西城区所有餐馆的距离啊，机机运用了递归的思想，想到了西城区也很多餐馆啊，应该计算所在位置P与所在街道所有餐馆的距离，这样计算量又小了，效率也提升了。</p>
+<p>小麦的计算思想很朴素，就是通过过滤的方法来减小参与计算的餐馆数目，从某种角度上讲，机机在使用索引技术。</p>
+<p>一提到索引，大家脑子里马上浮现出B树索引，因为大量的数据库（如MySQL、oracle、PostgreSQL等）都在使用B树。B树索引本质上是对索引字段进行排序，然后通过类似二分查找的方法进行快速查找，即它要求索引的字段是可排序的，一般而言，可排序的是一维字段，比如时间、年龄、薪水等等。但是对于空间上的一个点（二维，包括经度和纬度），如何排序呢？又如何索引呢？解决的方法很多，下文介绍一种方法来解决这一问题。</p>
+<p>思想：如果能通过某种方法将二维的点数据转换成一维的数据，那样不就可以继续使用B树索引了嘛。那这种方法真的存在嘛，答案是肯定的。目前很火的GeoHash算法就是运用了上述思想。</p>
+<p>把  $ (x,y) $ 转化为  u , 二维的数变成了一个 一维的数 u, 然后 这些 数据 u 就可以通过 类似 建立索引的方式进行快速查找了。</p>
+<p><strong>GeoHash 算法将二维的经纬度数据映射到一维的整数，这样所有的元素都将在挂载到一条线上，距离靠近的二维坐标映射到一维后的点之间距离也会很接近。当我们想要计算「附近的人时」，首先将目标位置映射到这条线上，然后在这个一维的线上获取附近的点就行了。</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="kt">int</span> <span class="nf">geohashEncode</span><span class="p">(</span><span class="k">const</span> <span class="n">GeoHashRange</span> <span class="o">*</span><span class="n">long_range</span><span class="p">,</span> <span class="k">const</span> <span class="n">GeoHashRange</span> <span class="o">*</span><span class="n">lat_range</span><span class="p">,</span>
+                  <span class="kt">double</span> <span class="n">longitude</span><span class="p">,</span> <span class="kt">double</span> <span class="n">latitude</span><span class="p">,</span> <span class="kt">uint8_t</span> <span class="n">step</span><span class="p">,</span>
+                  <span class="n">GeoHashBits</span> <span class="o">*</span><span class="n">hash</span><span class="p">)</span> <span class="p">{</span>
+    <span class="cm">/* Check basic arguments sanity. */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">hash</span> <span class="o">==</span> <span class="nb">NULL</span> <span class="o">||</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">32</span> <span class="o">||</span> <span class="n">step</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span>
+        <span class="n">RANGEPISZERO</span><span class="p">(</span><span class="n">lat_range</span><span class="p">)</span> <span class="o">||</span> <span class="n">RANGEPISZERO</span><span class="p">(</span><span class="n">long_range</span><span class="p">))</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="cm">/* Return an error when trying to index outside the supported
+</span><span class="cm">     * constraints. */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">longitude</span> <span class="o">&gt;</span> <span class="n">GEO_LONG_MAX</span> <span class="o">||</span> <span class="n">longitude</span> <span class="o">&lt;</span> <span class="n">GEO_LONG_MIN</span> <span class="o">||</span>
+        <span class="n">latitude</span> <span class="o">&gt;</span> <span class="n">GEO_LAT_MAX</span> <span class="o">||</span> <span class="n">latitude</span> <span class="o">&lt;</span> <span class="n">GEO_LAT_MIN</span><span class="p">)</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="n">hash</span><span class="o">-&gt;</span><span class="n">bits</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">hash</span><span class="o">-&gt;</span><span class="n">step</span> <span class="o">=</span> <span class="n">step</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">latitude</span> <span class="o">&lt;</span> <span class="n">lat_range</span><span class="o">-&gt;</span><span class="n">min</span> <span class="o">||</span> <span class="n">latitude</span> <span class="o">&gt;</span> <span class="n">lat_range</span><span class="o">-&gt;</span><span class="n">max</span> <span class="o">||</span>
+        <span class="n">longitude</span> <span class="o">&lt;</span> <span class="n">long_range</span><span class="o">-&gt;</span><span class="n">min</span> <span class="o">||</span> <span class="n">longitude</span> <span class="o">&gt;</span> <span class="n">long_range</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kt">double</span> <span class="n">lat_offset</span> <span class="o">=</span>
+        <span class="p">(</span><span class="n">latitude</span> <span class="o">-</span> <span class="n">lat_range</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">lat_range</span><span class="o">-&gt;</span><span class="n">max</span> <span class="o">-</span> <span class="n">lat_range</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">);</span>
+    <span class="kt">double</span> <span class="n">long_offset</span> <span class="o">=</span>
+        <span class="p">(</span><span class="n">longitude</span> <span class="o">-</span> <span class="n">long_range</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">long_range</span><span class="o">-&gt;</span><span class="n">max</span> <span class="o">-</span> <span class="n">long_range</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">);</span>
+
+    <span class="cm">/* convert to fixed point based on the step size */</span>
+     <span class="cm">/* 根据设置的step大小, 转换为一个固定的值 */</span>
+    <span class="n">lat_offset</span> <span class="o">*=</span> <span class="p">(</span><span class="mi">1ULL</span> <span class="o">&lt;&lt;</span> <span class="n">step</span><span class="p">);</span>
+    <span class="n">long_offset</span> <span class="o">*=</span> <span class="p">(</span><span class="mi">1ULL</span> <span class="o">&lt;&lt;</span> <span class="n">step</span><span class="p">);</span>
+    <span class="n">hash</span><span class="o">-&gt;</span><span class="n">bits</span> <span class="o">=</span> <span class="n">interleave64</span><span class="p">(</span><span class="n">lat_offset</span><span class="p">,</span> <span class="n">long_offset</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="redis-crc-循环冗余校验算法">redis CRC 循环冗余校验算法</h2>
+<pre><code>CRC即循环冗余校验码，是信息系统中一种常见的检错码。大学课程中的“计算机网络”、“计算机组成”等课程中都有提及。我们可能都了解它的数学原理，在试卷上手工计算一个CRC校验码，并不是难事。但是计算机不是人，现实世界中的数学原理需要转化为计算机算法才能实现目的。实际上作为计算机专业背景人并不会经常使用或接触到CRC的计算机算法实现的原理，通常是电子学科背景的人士会接触的比较多点。计算机当然是可以直接模拟出CRC的原始算法的（我们手工计算的算法），但是效率肯定不高。那我们来看一下计算机是如何实现CRC校验码算法的吧！
+</code></pre>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cp">#include</span> <span class="cpf">&#34;server.h&#34;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cm">/*
+</span><span class="cm"> * Copyright 2001-2010 Georges Menie (www.menie.org)
+</span><span class="cm"> * Copyright 2010-2012 Salvatore Sanfilippo (adapted to Redis coding style)
+</span><span class="cm"> * All rights reserved.
+</span><span class="cm"> *
+</span><span class="cm"> * Redistribution and use in source and binary forms, with or without
+</span><span class="cm"> * modification, are permitted provided that the following conditions are met:
+</span><span class="cm"> *
+</span><span class="cm"> *     * Redistributions of source code must retain the above copyright
+</span><span class="cm"> *       notice, this list of conditions and the following disclaimer.
+</span><span class="cm"> *     * Redistributions in binary form must reproduce the above copyright
+</span><span class="cm"> *       notice, this list of conditions and the following disclaimer in the
+</span><span class="cm"> *       documentation and/or other materials provided with the distribution.
+</span><span class="cm"> *     * Neither the name of the University of California, Berkeley nor the
+</span><span class="cm"> *       names of its contributors may be used to endorse or promote products
+</span><span class="cm"> *       derived from this software without specific prior written permission.
+</span><span class="cm"> *
+</span><span class="cm"> * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS&#39;&#39; AND ANY
+</span><span class="cm"> * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+</span><span class="cm"> * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+</span><span class="cm"> * DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
+</span><span class="cm"> * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+</span><span class="cm"> * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+</span><span class="cm"> * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+</span><span class="cm"> * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+</span><span class="cm"> * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+</span><span class="cm"> * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+</span><span class="cm"> */</span>
+
+<span class="cm">/* CRC16 implementation according to CCITT standards.
+</span><span class="cm"> *
+</span><span class="cm"> * Note by @antirez: this is actually the XMODEM CRC 16 algorithm, using the
+</span><span class="cm"> * following parameters:
+</span><span class="cm"> *
+</span><span class="cm"> * Name                       : &#34;XMODEM&#34;, also known as &#34;ZMODEM&#34;, &#34;CRC-16/ACORN&#34;
+</span><span class="cm"> * Width                      : 16 bit
+</span><span class="cm"> * Poly                       : 1021 (That is actually x^16 + x^12 + x^5 + 1)
+</span><span class="cm"> * Initialization             : 0000
+</span><span class="cm"> * Reflect Input byte         : False
+</span><span class="cm"> * Reflect Output CRC         : False
+</span><span class="cm"> * Xor constant to output CRC : 0000
+</span><span class="cm"> * Output for &#34;123456789&#34;     : 31C3
+</span><span class="cm"> */</span>
+
+<span class="k">static</span> <span class="k">const</span> <span class="kt">uint16_t</span> <span class="n">crc16tab</span><span class="p">[</span><span class="mi">256</span><span class="p">]</span><span class="o">=</span> <span class="p">{</span>
+    <span class="mh">0x0000</span><span class="p">,</span><span class="mh">0x1021</span><span class="p">,</span><span class="mh">0x2042</span><span class="p">,</span><span class="mh">0x3063</span><span class="p">,</span><span class="mh">0x4084</span><span class="p">,</span><span class="mh">0x50a5</span><span class="p">,</span><span class="mh">0x60c6</span><span class="p">,</span><span class="mh">0x70e7</span><span class="p">,</span>
+    <span class="mh">0x8108</span><span class="p">,</span><span class="mh">0x9129</span><span class="p">,</span><span class="mh">0xa14a</span><span class="p">,</span><span class="mh">0xb16b</span><span class="p">,</span><span class="mh">0xc18c</span><span class="p">,</span><span class="mh">0xd1ad</span><span class="p">,</span><span class="mh">0xe1ce</span><span class="p">,</span><span class="mh">0xf1ef</span><span class="p">,</span>
+    <span class="mh">0x1231</span><span class="p">,</span><span class="mh">0x0210</span><span class="p">,</span><span class="mh">0x3273</span><span class="p">,</span><span class="mh">0x2252</span><span class="p">,</span><span class="mh">0x52b5</span><span class="p">,</span><span class="mh">0x4294</span><span class="p">,</span><span class="mh">0x72f7</span><span class="p">,</span><span class="mh">0x62d6</span><span class="p">,</span>
+    <span class="mh">0x9339</span><span class="p">,</span><span class="mh">0x8318</span><span class="p">,</span><span class="mh">0xb37b</span><span class="p">,</span><span class="mh">0xa35a</span><span class="p">,</span><span class="mh">0xd3bd</span><span class="p">,</span><span class="mh">0xc39c</span><span class="p">,</span><span class="mh">0xf3ff</span><span class="p">,</span><span class="mh">0xe3de</span><span class="p">,</span>
+    <span class="mh">0x2462</span><span class="p">,</span><span class="mh">0x3443</span><span class="p">,</span><span class="mh">0x0420</span><span class="p">,</span><span class="mh">0x1401</span><span class="p">,</span><span class="mh">0x64e6</span><span class="p">,</span><span class="mh">0x74c7</span><span class="p">,</span><span class="mh">0x44a4</span><span class="p">,</span><span class="mh">0x5485</span><span class="p">,</span>
+    <span class="mh">0xa56a</span><span class="p">,</span><span class="mh">0xb54b</span><span class="p">,</span><span class="mh">0x8528</span><span class="p">,</span><span class="mh">0x9509</span><span class="p">,</span><span class="mh">0xe5ee</span><span class="p">,</span><span class="mh">0xf5cf</span><span class="p">,</span><span class="mh">0xc5ac</span><span class="p">,</span><span class="mh">0xd58d</span><span class="p">,</span>
+    <span class="mh">0x3653</span><span class="p">,</span><span class="mh">0x2672</span><span class="p">,</span><span class="mh">0x1611</span><span class="p">,</span><span class="mh">0x0630</span><span class="p">,</span><span class="mh">0x76d7</span><span class="p">,</span><span class="mh">0x66f6</span><span class="p">,</span><span class="mh">0x5695</span><span class="p">,</span><span class="mh">0x46b4</span><span class="p">,</span>
+    <span class="mh">0xb75b</span><span class="p">,</span><span class="mh">0xa77a</span><span class="p">,</span><span class="mh">0x9719</span><span class="p">,</span><span class="mh">0x8738</span><span class="p">,</span><span class="mh">0xf7df</span><span class="p">,</span><span class="mh">0xe7fe</span><span class="p">,</span><span class="mh">0xd79d</span><span class="p">,</span><span class="mh">0xc7bc</span><span class="p">,</span>
+    <span class="mh">0x48c4</span><span class="p">,</span><span class="mh">0x58e5</span><span class="p">,</span><span class="mh">0x6886</span><span class="p">,</span><span class="mh">0x78a7</span><span class="p">,</span><span class="mh">0x0840</span><span class="p">,</span><span class="mh">0x1861</span><span class="p">,</span><span class="mh">0x2802</span><span class="p">,</span><span class="mh">0x3823</span><span class="p">,</span>
+    <span class="mh">0xc9cc</span><span class="p">,</span><span class="mh">0xd9ed</span><span class="p">,</span><span class="mh">0xe98e</span><span class="p">,</span><span class="mh">0xf9af</span><span class="p">,</span><span class="mh">0x8948</span><span class="p">,</span><span class="mh">0x9969</span><span class="p">,</span><span class="mh">0xa90a</span><span class="p">,</span><span class="mh">0xb92b</span><span class="p">,</span>
+    <span class="mh">0x5af5</span><span class="p">,</span><span class="mh">0x4ad4</span><span class="p">,</span><span class="mh">0x7ab7</span><span class="p">,</span><span class="mh">0x6a96</span><span class="p">,</span><span class="mh">0x1a71</span><span class="p">,</span><span class="mh">0x0a50</span><span class="p">,</span><span class="mh">0x3a33</span><span class="p">,</span><span class="mh">0x2a12</span><span class="p">,</span>
+    <span class="mh">0xdbfd</span><span class="p">,</span><span class="mh">0xcbdc</span><span class="p">,</span><span class="mh">0xfbbf</span><span class="p">,</span><span class="mh">0xeb9e</span><span class="p">,</span><span class="mh">0x9b79</span><span class="p">,</span><span class="mh">0x8b58</span><span class="p">,</span><span class="mh">0xbb3b</span><span class="p">,</span><span class="mh">0xab1a</span><span class="p">,</span>
+    <span class="mh">0x6ca6</span><span class="p">,</span><span class="mh">0x7c87</span><span class="p">,</span><span class="mh">0x4ce4</span><span class="p">,</span><span class="mh">0x5cc5</span><span class="p">,</span><span class="mh">0x2c22</span><span class="p">,</span><span class="mh">0x3c03</span><span class="p">,</span><span class="mh">0x0c60</span><span class="p">,</span><span class="mh">0x1c41</span><span class="p">,</span>
+    <span class="mh">0xedae</span><span class="p">,</span><span class="mh">0xfd8f</span><span class="p">,</span><span class="mh">0xcdec</span><span class="p">,</span><span class="mh">0xddcd</span><span class="p">,</span><span class="mh">0xad2a</span><span class="p">,</span><span class="mh">0xbd0b</span><span class="p">,</span><span class="mh">0x8d68</span><span class="p">,</span><span class="mh">0x9d49</span><span class="p">,</span>
+    <span class="mh">0x7e97</span><span class="p">,</span><span class="mh">0x6eb6</span><span class="p">,</span><span class="mh">0x5ed5</span><span class="p">,</span><span class="mh">0x4ef4</span><span class="p">,</span><span class="mh">0x3e13</span><span class="p">,</span><span class="mh">0x2e32</span><span class="p">,</span><span class="mh">0x1e51</span><span class="p">,</span><span class="mh">0x0e70</span><span class="p">,</span>
+    <span class="mh">0xff9f</span><span class="p">,</span><span class="mh">0xefbe</span><span class="p">,</span><span class="mh">0xdfdd</span><span class="p">,</span><span class="mh">0xcffc</span><span class="p">,</span><span class="mh">0xbf1b</span><span class="p">,</span><span class="mh">0xaf3a</span><span class="p">,</span><span class="mh">0x9f59</span><span class="p">,</span><span class="mh">0x8f78</span><span class="p">,</span>
+    <span class="mh">0x9188</span><span class="p">,</span><span class="mh">0x81a9</span><span class="p">,</span><span class="mh">0xb1ca</span><span class="p">,</span><span class="mh">0xa1eb</span><span class="p">,</span><span class="mh">0xd10c</span><span class="p">,</span><span class="mh">0xc12d</span><span class="p">,</span><span class="mh">0xf14e</span><span class="p">,</span><span class="mh">0xe16f</span><span class="p">,</span>
+    <span class="mh">0x1080</span><span class="p">,</span><span class="mh">0x00a1</span><span class="p">,</span><span class="mh">0x30c2</span><span class="p">,</span><span class="mh">0x20e3</span><span class="p">,</span><span class="mh">0x5004</span><span class="p">,</span><span class="mh">0x4025</span><span class="p">,</span><span class="mh">0x7046</span><span class="p">,</span><span class="mh">0x6067</span><span class="p">,</span>
+    <span class="mh">0x83b9</span><span class="p">,</span><span class="mh">0x9398</span><span class="p">,</span><span class="mh">0xa3fb</span><span class="p">,</span><span class="mh">0xb3da</span><span class="p">,</span><span class="mh">0xc33d</span><span class="p">,</span><span class="mh">0xd31c</span><span class="p">,</span><span class="mh">0xe37f</span><span class="p">,</span><span class="mh">0xf35e</span><span class="p">,</span>
+    <span class="mh">0x02b1</span><span class="p">,</span><span class="mh">0x1290</span><span class="p">,</span><span class="mh">0x22f3</span><span class="p">,</span><span class="mh">0x32d2</span><span class="p">,</span><span class="mh">0x4235</span><span class="p">,</span><span class="mh">0x5214</span><span class="p">,</span><span class="mh">0x6277</span><span class="p">,</span><span class="mh">0x7256</span><span class="p">,</span>
+    <span class="mh">0xb5ea</span><span class="p">,</span><span class="mh">0xa5cb</span><span class="p">,</span><span class="mh">0x95a8</span><span class="p">,</span><span class="mh">0x8589</span><span class="p">,</span><span class="mh">0xf56e</span><span class="p">,</span><span class="mh">0xe54f</span><span class="p">,</span><span class="mh">0xd52c</span><span class="p">,</span><span class="mh">0xc50d</span><span class="p">,</span>
+    <span class="mh">0x34e2</span><span class="p">,</span><span class="mh">0x24c3</span><span class="p">,</span><span class="mh">0x14a0</span><span class="p">,</span><span class="mh">0x0481</span><span class="p">,</span><span class="mh">0x7466</span><span class="p">,</span><span class="mh">0x6447</span><span class="p">,</span><span class="mh">0x5424</span><span class="p">,</span><span class="mh">0x4405</span><span class="p">,</span>
+    <span class="mh">0xa7db</span><span class="p">,</span><span class="mh">0xb7fa</span><span class="p">,</span><span class="mh">0x8799</span><span class="p">,</span><span class="mh">0x97b8</span><span class="p">,</span><span class="mh">0xe75f</span><span class="p">,</span><span class="mh">0xf77e</span><span class="p">,</span><span class="mh">0xc71d</span><span class="p">,</span><span class="mh">0xd73c</span><span class="p">,</span>
+    <span class="mh">0x26d3</span><span class="p">,</span><span class="mh">0x36f2</span><span class="p">,</span><span class="mh">0x0691</span><span class="p">,</span><span class="mh">0x16b0</span><span class="p">,</span><span class="mh">0x6657</span><span class="p">,</span><span class="mh">0x7676</span><span class="p">,</span><span class="mh">0x4615</span><span class="p">,</span><span class="mh">0x5634</span><span class="p">,</span>
+    <span class="mh">0xd94c</span><span class="p">,</span><span class="mh">0xc96d</span><span class="p">,</span><span class="mh">0xf90e</span><span class="p">,</span><span class="mh">0xe92f</span><span class="p">,</span><span class="mh">0x99c8</span><span class="p">,</span><span class="mh">0x89e9</span><span class="p">,</span><span class="mh">0xb98a</span><span class="p">,</span><span class="mh">0xa9ab</span><span class="p">,</span>
+    <span class="mh">0x5844</span><span class="p">,</span><span class="mh">0x4865</span><span class="p">,</span><span class="mh">0x7806</span><span class="p">,</span><span class="mh">0x6827</span><span class="p">,</span><span class="mh">0x18c0</span><span class="p">,</span><span class="mh">0x08e1</span><span class="p">,</span><span class="mh">0x3882</span><span class="p">,</span><span class="mh">0x28a3</span><span class="p">,</span>
+    <span class="mh">0xcb7d</span><span class="p">,</span><span class="mh">0xdb5c</span><span class="p">,</span><span class="mh">0xeb3f</span><span class="p">,</span><span class="mh">0xfb1e</span><span class="p">,</span><span class="mh">0x8bf9</span><span class="p">,</span><span class="mh">0x9bd8</span><span class="p">,</span><span class="mh">0xabbb</span><span class="p">,</span><span class="mh">0xbb9a</span><span class="p">,</span>
+    <span class="mh">0x4a75</span><span class="p">,</span><span class="mh">0x5a54</span><span class="p">,</span><span class="mh">0x6a37</span><span class="p">,</span><span class="mh">0x7a16</span><span class="p">,</span><span class="mh">0x0af1</span><span class="p">,</span><span class="mh">0x1ad0</span><span class="p">,</span><span class="mh">0x2ab3</span><span class="p">,</span><span class="mh">0x3a92</span><span class="p">,</span>
+    <span class="mh">0xfd2e</span><span class="p">,</span><span class="mh">0xed0f</span><span class="p">,</span><span class="mh">0xdd6c</span><span class="p">,</span><span class="mh">0xcd4d</span><span class="p">,</span><span class="mh">0xbdaa</span><span class="p">,</span><span class="mh">0xad8b</span><span class="p">,</span><span class="mh">0x9de8</span><span class="p">,</span><span class="mh">0x8dc9</span><span class="p">,</span>
+    <span class="mh">0x7c26</span><span class="p">,</span><span class="mh">0x6c07</span><span class="p">,</span><span class="mh">0x5c64</span><span class="p">,</span><span class="mh">0x4c45</span><span class="p">,</span><span class="mh">0x3ca2</span><span class="p">,</span><span class="mh">0x2c83</span><span class="p">,</span><span class="mh">0x1ce0</span><span class="p">,</span><span class="mh">0x0cc1</span><span class="p">,</span>
+    <span class="mh">0xef1f</span><span class="p">,</span><span class="mh">0xff3e</span><span class="p">,</span><span class="mh">0xcf5d</span><span class="p">,</span><span class="mh">0xdf7c</span><span class="p">,</span><span class="mh">0xaf9b</span><span class="p">,</span><span class="mh">0xbfba</span><span class="p">,</span><span class="mh">0x8fd9</span><span class="p">,</span><span class="mh">0x9ff8</span><span class="p">,</span>
+    <span class="mh">0x6e17</span><span class="p">,</span><span class="mh">0x7e36</span><span class="p">,</span><span class="mh">0x4e55</span><span class="p">,</span><span class="mh">0x5e74</span><span class="p">,</span><span class="mh">0x2e93</span><span class="p">,</span><span class="mh">0x3eb2</span><span class="p">,</span><span class="mh">0x0ed1</span><span class="p">,</span><span class="mh">0x1ef0</span>
+<span class="p">};</span>
+
+<span class="kt">uint16_t</span> <span class="nf">crc16</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">counter</span><span class="p">;</span>
+    <span class="kt">uint16_t</span> <span class="n">crc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="n">len</span><span class="p">;</span> <span class="n">counter</span><span class="o">++</span><span class="p">)</span>
+            <span class="n">crc</span> <span class="o">=</span> <span class="p">(</span><span class="n">crc</span><span class="o">&lt;&lt;</span><span class="mi">8</span><span class="p">)</span> <span class="o">^</span> <span class="n">crc16tab</span><span class="p">[((</span><span class="n">crc</span><span class="o">&gt;&gt;</span><span class="mi">8</span><span class="p">)</span> <span class="o">^</span> <span class="o">*</span><span class="n">buf</span><span class="o">++</span><span class="p">)</span><span class="o">&amp;</span><span class="mh">0x00FF</span><span class="p">];</span>
+    <span class="k">return</span> <span class="n">crc</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="redis-内存回收机制">redis 内存回收机制</h2>
+<p>因为 C 语言并不具备自动的内存回收功能，所以 Redis 在自己的对象系统中构建了一个引用计数（<a href="http://en.wikipedia.org/wiki/Reference_counting">reference counting</a>）技术实现的内存回收机制，通过这一机制，程序可以通过跟踪对象的引用计数信息，在适当的时候自动释放对象并进行内存回收。</p>
+<p>每个对象的引用计数信息由 <code>redisObject</code> 结构的 <code>refcount</code> 属性记录：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="k">typedef</span> <span class="k">struct</span> <span class="nc">redisObject</span> <span class="p">{</span>
+ 
+    <span class="c1">// ...
+</span><span class="c1"></span> 
+    <span class="c1">// 引用计数
+</span><span class="c1"></span>    <span class="kt">int</span> <span class="n">refcount</span><span class="p">;</span>
+ 
+    <span class="c1">// ...
+</span><span class="c1"></span> 
+<span class="p">}</span> <span class="n">robj</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/mysql%E7%9B%B8%E5%85%B3/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">mysql相关</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84/">
+            <span class="next-text nav-default">微服务架构</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+
+
+</body>
+</html>

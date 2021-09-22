@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>拦截器模块单元测试 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="HuangYi" /><meta name="description" content="拦截器模块单元测试 拦截器是 ts-axios 库一个非常实用的功能，接下来我们来编写它的测试代码。 测试代码编写 test/interceptor.spec.ts" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/09.%E5%89%8D%E7%AB%AF/11.typescript%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/11.ts-axios-%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/07.%E6%8B%A6%E6%88%AA%E5%99%A8%E6%A8%A1%E5%9D%97%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="拦截器模块单元测试" />
+<meta property="og:description" content="拦截器模块单元测试 拦截器是 ts-axios 库一个非常实用的功能，接下来我们来编写它的测试代码。 测试代码编写 test/interceptor.spec.ts" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/09.%E5%89%8D%E7%AB%AF/11.typescript%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/11.ts-axios-%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/07.%E6%8B%A6%E6%88%AA%E5%99%A8%E6%A8%A1%E5%9D%97%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/" />
+<meta property="article:published_time" content="2020-01-05T10:56:02+00:00" />
+<meta property="article:modified_time" content="2020-01-05T10:56:02+00:00" />
+<meta itemprop="name" content="拦截器模块单元测试">
+<meta itemprop="description" content="拦截器模块单元测试 拦截器是 ts-axios 库一个非常实用的功能，接下来我们来编写它的测试代码。 测试代码编写 test/interceptor.spec.ts">
+<meta itemprop="datePublished" content="2020-01-05T10:56:02&#43;00:00" />
+<meta itemprop="dateModified" content="2020-01-05T10:56:02&#43;00:00" />
+<meta itemprop="wordCount" content="1088">
+
+
+
+<meta itemprop="keywords" content="TypeScript," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="拦截器模块单元测试"/>
+<meta name="twitter:description" content="拦截器模块单元测试 拦截器是 ts-axios 库一个非常实用的功能，接下来我们来编写它的测试代码。 测试代码编写 test/interceptor.spec.ts"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">拦截器模块单元测试</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2020-01-05 </span>
+        <div class="post-category">
+            <a href="/categories/typescript-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/"> 《TypeScript 从零实现 axios》 </a>
+            <a href="/categories/ts-axios-%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/"> ts-axios 单元测试 </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#拦截器模块单元测试">拦截器模块单元测试</a>
+      <ul>
+        <li><a href="#测试代码编写">测试代码编写</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h1 id="拦截器模块单元测试">拦截器模块单元测试</h1>
+<p>拦截器是 <code>ts-axios</code> 库一个非常实用的功能，接下来我们来编写它的测试代码。</p>
+<h2 id="测试代码编写">测试代码编写</h2>
+<p><code>test/interceptor.spec.ts</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span><span class="lnt">166
+</span><span class="lnt">167
+</span><span class="lnt">168
+</span><span class="lnt">169
+</span><span class="lnt">170
+</span><span class="lnt">171
+</span><span class="lnt">172
+</span><span class="lnt">173
+</span><span class="lnt">174
+</span><span class="lnt">175
+</span><span class="lnt">176
+</span><span class="lnt">177
+</span><span class="lnt">178
+</span><span class="lnt">179
+</span><span class="lnt">180
+</span><span class="lnt">181
+</span><span class="lnt">182
+</span><span class="lnt">183
+</span><span class="lnt">184
+</span><span class="lnt">185
+</span><span class="lnt">186
+</span><span class="lnt">187
+</span><span class="lnt">188
+</span><span class="lnt">189
+</span><span class="lnt">190
+</span><span class="lnt">191
+</span><span class="lnt">192
+</span><span class="lnt">193
+</span><span class="lnt">194
+</span><span class="lnt">195
+</span><span class="lnt">196
+</span><span class="lnt">197
+</span><span class="lnt">198
+</span><span class="lnt">199
+</span><span class="lnt">200
+</span><span class="lnt">201
+</span><span class="lnt">202
+</span><span class="lnt">203
+</span><span class="lnt">204
+</span><span class="lnt">205
+</span><span class="lnt">206
+</span><span class="lnt">207
+</span><span class="lnt">208
+</span><span class="lnt">209
+</span><span class="lnt">210
+</span><span class="lnt">211
+</span><span class="lnt">212
+</span><span class="lnt">213
+</span><span class="lnt">214
+</span><span class="lnt">215
+</span><span class="lnt">216
+</span><span class="lnt">217
+</span><span class="lnt">218
+</span><span class="lnt">219
+</span><span class="lnt">220
+</span><span class="lnt">221
+</span><span class="lnt">222
+</span><span class="lnt">223
+</span><span class="lnt">224
+</span><span class="lnt">225
+</span><span class="lnt">226
+</span><span class="lnt">227
+</span><span class="lnt">228
+</span><span class="lnt">229
+</span><span class="lnt">230
+</span><span class="lnt">231
+</span><span class="lnt">232
+</span><span class="lnt">233
+</span><span class="lnt">234
+</span><span class="lnt">235
+</span><span class="lnt">236
+</span><span class="lnt">237
+</span><span class="lnt">238
+</span><span class="lnt">239
+</span><span class="lnt">240
+</span><span class="lnt">241
+</span><span class="lnt">242
+</span><span class="lnt">243
+</span><span class="lnt">244
+</span><span class="lnt">245
+</span><span class="lnt">246
+</span><span class="lnt">247
+</span><span class="lnt">248
+</span><span class="lnt">249
+</span><span class="lnt">250
+</span><span class="lnt">251
+</span><span class="lnt">252
+</span><span class="lnt">253
+</span><span class="lnt">254
+</span><span class="lnt">255
+</span><span class="lnt">256
+</span><span class="lnt">257
+</span><span class="lnt">258
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="nx">axios</span><span class="p">,</span> <span class="p">{</span> <span class="nx">AxiosRequestConfig</span><span class="p">,</span> <span class="nx">AxiosResponse</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;../src/index&#39;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">getAjaxRequest</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;./helper&#39;</span>
+
+<span class="nx">describe</span><span class="p">(</span><span class="s1">&#39;interceptors&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">beforeEach</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">jasmine</span><span class="p">.</span><span class="nx">Ajax</span><span class="p">.</span><span class="nx">install</span><span class="p">()</span>
+  <span class="p">})</span>
+
+  <span class="nx">afterEach</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">jasmine</span><span class="p">.</span><span class="nx">Ajax</span><span class="p">.</span><span class="nx">uninstall</span><span class="p">()</span>
+  <span class="p">})</span>
+
+  <span class="nx">test</span><span class="p">(</span><span class="s1">&#39;should add a request interceptor&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">create</span><span class="p">()</span>
+
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">((</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">test</span> <span class="o">=</span> <span class="s1">&#39;added by interceptor&#39;</span>
+      <span class="k">return</span> <span class="nx">config</span>
+    <span class="p">})</span>
+
+    <span class="nx">instance</span><span class="p">(</span><span class="s1">&#39;/foo&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nx">getAjaxRequest</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">request</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">expect</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">requestHeaders</span><span class="p">.</span><span class="nx">test</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;added by interceptor&#39;</span><span class="p">)</span>
+    <span class="p">})</span>
+  <span class="p">})</span>
+
+  <span class="nx">test</span><span class="p">(</span><span class="s1">&#39;should add a request interceptor that returns a new config object&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">create</span><span class="p">()</span>
+
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="p">{</span>
+        <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;/bar&#39;</span><span class="p">,</span>
+        <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span>
+      <span class="p">}</span>
+    <span class="p">})</span>
+
+    <span class="nx">instance</span><span class="p">(</span><span class="s1">&#39;/foo&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nx">getAjaxRequest</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">request</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">expect</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">method</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">)</span>
+      <span class="nx">expect</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">url</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;/bar&#39;</span><span class="p">)</span>
+    <span class="p">})</span>
+  <span class="p">})</span>
+
+  <span class="nx">test</span><span class="p">(</span><span class="s1">&#39;should add a request interceptor that returns a promise&#39;</span><span class="p">,</span> <span class="nx">done</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">create</span><span class="p">()</span>
+
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">((</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">(</span><span class="nx">resolve</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">setTimeout</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">async</span> <span class="o">=</span> <span class="s1">&#39;promise&#39;</span>
+          <span class="nx">resolve</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span>
+        <span class="p">},</span> <span class="mi">10</span><span class="p">)</span>
+      <span class="p">})</span>
+    <span class="p">})</span>
+
+    <span class="nx">instance</span><span class="p">(</span><span class="s1">&#39;/foo&#39;</span><span class="p">)</span>
+
+    <span class="nx">setTimeout</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">getAjaxRequest</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">request</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">requestHeaders</span><span class="p">.</span><span class="nx">async</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;promise&#39;</span><span class="p">)</span>
+        <span class="nx">done</span><span class="p">()</span>
+      <span class="p">})</span>
+    <span class="p">},</span> <span class="mi">100</span><span class="p">)</span>
+  <span class="p">})</span>
+
+  <span class="nx">test</span><span class="p">(</span><span class="s1">&#39;should add multiple request interceptors&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">create</span><span class="p">()</span>
+
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">config</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">test1</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span>
+      <span class="k">return</span> <span class="nx">config</span>
+    <span class="p">})</span>
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">config</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">test2</span> <span class="o">=</span> <span class="s1">&#39;2&#39;</span>
+      <span class="k">return</span> <span class="nx">config</span>
+    <span class="p">})</span>
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">config</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">test3</span> <span class="o">=</span> <span class="s1">&#39;3&#39;</span>
+      <span class="k">return</span> <span class="nx">config</span>
+    <span class="p">})</span>
+
+    <span class="nx">instance</span><span class="p">(</span><span class="s1">&#39;/foo&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nx">getAjaxRequest</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">request</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">expect</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">requestHeaders</span><span class="p">.</span><span class="nx">test1</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">)</span>
+      <span class="nx">expect</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">requestHeaders</span><span class="p">.</span><span class="nx">test2</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;2&#39;</span><span class="p">)</span>
+      <span class="nx">expect</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">requestHeaders</span><span class="p">.</span><span class="nx">test3</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;3&#39;</span><span class="p">)</span>
+    <span class="p">})</span>
+  <span class="p">})</span>
+
+  <span class="nx">test</span><span class="p">(</span><span class="s1">&#39;should add a response interceptor&#39;</span><span class="p">,</span> <span class="nx">done</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">response</span>: <span class="kt">AxiosResponse</span>
+    <span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">create</span><span class="p">()</span>
+
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">data</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">+</span> <span class="s1">&#39; - modified by interceptor&#39;</span>
+      <span class="k">return</span> <span class="nx">data</span>
+    <span class="p">})</span>
+
+    <span class="nx">instance</span><span class="p">(</span><span class="s1">&#39;/foo&#39;</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">data</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">response</span> <span class="o">=</span> <span class="nx">data</span>
+    <span class="p">})</span>
+
+    <span class="nx">getAjaxRequest</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">request</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">respondWith</span><span class="p">({</span>
+        <span class="nx">status</span>: <span class="kt">200</span><span class="p">,</span>
+        <span class="nx">responseText</span><span class="o">:</span> <span class="s1">&#39;OK&#39;</span>
+      <span class="p">})</span>
+
+      <span class="nx">setTimeout</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;OK - modified by interceptor&#39;</span><span class="p">)</span>
+        <span class="nx">done</span><span class="p">()</span>
+      <span class="p">},</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="p">})</span>
+  <span class="p">})</span>
+
+  <span class="nx">test</span><span class="p">(</span><span class="s1">&#39;should add a response interceptor that returns a new data object&#39;</span><span class="p">,</span> <span class="nx">done</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">response</span>: <span class="kt">AxiosResponse</span>
+    <span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">create</span><span class="p">()</span>
+
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="p">{</span>
+        <span class="nx">data</span><span class="o">:</span> <span class="s1">&#39;stuff&#39;</span><span class="p">,</span>
+        <span class="nx">headers</span>: <span class="kt">null</span><span class="p">,</span>
+        <span class="nx">status</span>: <span class="kt">500</span><span class="p">,</span>
+        <span class="nx">statusText</span><span class="o">:</span> <span class="s1">&#39;ERR&#39;</span><span class="p">,</span>
+        <span class="nx">request</span>: <span class="kt">null</span><span class="p">,</span>
+        <span class="nx">config</span><span class="o">:</span> <span class="p">{}</span>
+      <span class="p">}</span>
+    <span class="p">})</span>
+
+    <span class="nx">instance</span><span class="p">(</span><span class="s1">&#39;/foo&#39;</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">res</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">response</span> <span class="o">=</span> <span class="nx">res</span>
+    <span class="p">})</span>
+
+    <span class="nx">getAjaxRequest</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">request</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">respondWith</span><span class="p">({</span>
+        <span class="nx">status</span>: <span class="kt">200</span><span class="p">,</span>
+        <span class="nx">responseText</span><span class="o">:</span> <span class="s1">&#39;OK&#39;</span>
+      <span class="p">})</span>
+
+      <span class="nx">setTimeout</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;stuff&#39;</span><span class="p">)</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">headers</span><span class="p">).</span><span class="nx">toBeNull</span><span class="p">()</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">statusText</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;ERR&#39;</span><span class="p">)</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">request</span><span class="p">).</span><span class="nx">toBeNull</span><span class="p">()</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">config</span><span class="p">).</span><span class="nx">toEqual</span><span class="p">({})</span>
+        <span class="nx">done</span><span class="p">()</span>
+      <span class="p">},</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="p">})</span>
+  <span class="p">})</span>
+
+  <span class="nx">test</span><span class="p">(</span><span class="s1">&#39;should add a response interceptor that returns a promise&#39;</span><span class="p">,</span> <span class="nx">done</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">response</span>: <span class="kt">AxiosResponse</span>
+    <span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">create</span><span class="p">()</span>
+
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">data</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">(</span><span class="nx">resolve</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="c1">// do something async
+</span><span class="c1"></span>        <span class="nx">setTimeout</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">=</span> <span class="s1">&#39;you have been promised!&#39;</span>
+          <span class="nx">resolve</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span>
+        <span class="p">},</span> <span class="mi">10</span><span class="p">)</span>
+      <span class="p">})</span>
+    <span class="p">})</span>
+
+    <span class="nx">instance</span><span class="p">(</span><span class="s1">&#39;/foo&#39;</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">res</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">response</span> <span class="o">=</span> <span class="nx">res</span>
+    <span class="p">})</span>
+
+    <span class="nx">getAjaxRequest</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">request</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">respondWith</span><span class="p">({</span>
+        <span class="nx">status</span>: <span class="kt">200</span><span class="p">,</span>
+        <span class="nx">responseText</span><span class="o">:</span> <span class="s1">&#39;OK&#39;</span>
+      <span class="p">})</span>
+
+      <span class="nx">setTimeout</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;you have been promised!&#39;</span><span class="p">)</span>
+        <span class="nx">done</span><span class="p">()</span>
+      <span class="p">},</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="p">})</span>
+  <span class="p">})</span>
+
+  <span class="nx">test</span><span class="p">(</span><span class="s1">&#39;should add multiple response interceptors&#39;</span><span class="p">,</span> <span class="nx">done</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">response</span>: <span class="kt">AxiosResponse</span>
+    <span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">create</span><span class="p">()</span>
+
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">data</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">+</span> <span class="s1">&#39;1&#39;</span>
+      <span class="k">return</span> <span class="nx">data</span>
+    <span class="p">})</span>
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">data</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">+</span> <span class="s1">&#39;2&#39;</span>
+      <span class="k">return</span> <span class="nx">data</span>
+    <span class="p">})</span>
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">data</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">+</span> <span class="s1">&#39;3&#39;</span>
+      <span class="k">return</span> <span class="nx">data</span>
+    <span class="p">})</span>
+
+    <span class="nx">instance</span><span class="p">(</span><span class="s1">&#39;/foo&#39;</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">data</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">response</span> <span class="o">=</span> <span class="nx">data</span>
+    <span class="p">})</span>
+
+    <span class="nx">getAjaxRequest</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">request</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">respondWith</span><span class="p">({</span>
+        <span class="nx">status</span>: <span class="kt">200</span><span class="p">,</span>
+        <span class="nx">responseText</span><span class="o">:</span> <span class="s1">&#39;OK&#39;</span>
+      <span class="p">})</span>
+
+      <span class="nx">setTimeout</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;OK123&#39;</span><span class="p">)</span>
+        <span class="nx">done</span><span class="p">()</span>
+      <span class="p">},</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="p">})</span>
+  <span class="p">})</span>
+
+  <span class="nx">test</span><span class="p">(</span><span class="s1">&#39;should allow removing interceptors&#39;</span><span class="p">,</span> <span class="nx">done</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">response</span>: <span class="kt">AxiosResponse</span>
+    <span class="kd">let</span> <span class="nx">intercept</span>
+    <span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">create</span><span class="p">()</span>
+
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">data</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">+</span> <span class="s1">&#39;1&#39;</span>
+      <span class="k">return</span> <span class="nx">data</span>
+    <span class="p">})</span>
+    <span class="nx">intercept</span> <span class="o">=</span> <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">data</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">+</span> <span class="s1">&#39;2&#39;</span>
+      <span class="k">return</span> <span class="nx">data</span>
+    <span class="p">})</span>
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">data</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">data</span> <span class="o">+</span> <span class="s1">&#39;3&#39;</span>
+      <span class="k">return</span> <span class="nx">data</span>
+    <span class="p">})</span>
+
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">eject</span><span class="p">(</span><span class="nx">intercept</span><span class="p">)</span>
+    <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">eject</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="nx">instance</span><span class="p">(</span><span class="s1">&#39;/foo&#39;</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">data</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">response</span> <span class="o">=</span> <span class="nx">data</span>
+    <span class="p">})</span>
+
+    <span class="nx">getAjaxRequest</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">request</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">respondWith</span><span class="p">({</span>
+        <span class="nx">status</span>: <span class="kt">200</span><span class="p">,</span>
+        <span class="nx">responseText</span><span class="o">:</span> <span class="s1">&#39;OK&#39;</span>
+      <span class="p">})</span>
+
+      <span class="nx">setTimeout</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">expect</span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">).</span><span class="nx">toBe</span><span class="p">(</span><span class="s1">&#39;OK13&#39;</span><span class="p">)</span>
+        <span class="nx">done</span><span class="p">()</span>
+      <span class="p">},</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="p">})</span>
+  <span class="p">})</span>
+<span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>运行测试后我们发现在测试用例 <code>should add a request interceptor that returns a new config object</code> 报错了，是代码运行的报错，而不是测试期望结果的报错，顺着报错信息，我们可以找到报错原因。</p>
+<p>在 <code>core/xhr.ts</code> 中，执行到 <code>processHeaders</code> 中的 <code>Object.keys(headers).forEach</code> 代码报错，因为我们在拦截器对请求配置做了修改，导致 <code>headers</code> 为空，所以报错。</p>
+<p>于是我们在解构赋值 <code>headers</code> 的时候，给它添加默认值即可。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">const</span> <span class="p">{</span>
+  <span class="c1">// ...
+</span><span class="c1"></span>  <span class="nx">headers</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="p">}</span> <span class="o">=</span> <span class="nx">config</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>再次运行测试，发现全部测试通过。</p>
+<p>至此，我们完成了 <code>ts-axios</code> 库对拦截器模块的单元测试，下节课我们来测试 <code>mergeConfig</code> 模块的业务逻辑。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">HuangYi</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2020-01-05
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/typescript/">TypeScript</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/09.%E5%89%8D%E7%AB%AF/11.typescript%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/11.ts-axios-%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/10.%E5%89%A9%E4%BD%99%E6%A8%A1%E5%9D%97%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">剩余模块单元测试</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/09.%E5%89%8D%E7%AB%AF/11.typescript%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/11.ts-axios-%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/09.%E8%AF%B7%E6%B1%82%E5%8F%96%E6%B6%88%E6%A8%A1%E5%9D%97%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/">
+            <span class="next-text nav-default">请求取消模块单元测试</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+
+
+</body>
+</html>

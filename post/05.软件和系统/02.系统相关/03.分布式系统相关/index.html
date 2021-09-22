@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>分布式系统相关 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="一致性哈希 传统哈希 当数据太大而无法存储在一个节点或机器上时，我们就需要把数据放在多台服务器上，这个时候我们就可以简单使用取模运算来实现简单的" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/05.%E8%BD%AF%E4%BB%B6%E5%92%8C%E7%B3%BB%E7%BB%9F/02.%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3/03.%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="分布式系统相关" />
+<meta property="og:description" content="一致性哈希 传统哈希 当数据太大而无法存储在一个节点或机器上时，我们就需要把数据放在多台服务器上，这个时候我们就可以简单使用取模运算来实现简单的" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/05.%E8%BD%AF%E4%BB%B6%E5%92%8C%E7%B3%BB%E7%BB%9F/02.%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3/03.%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3/" />
+<meta property="article:published_time" content="2021-04-11T18:42:35+00:00" />
+<meta property="article:modified_time" content="2021-04-11T18:42:35+00:00" />
+<meta itemprop="name" content="分布式系统相关">
+<meta itemprop="description" content="一致性哈希 传统哈希 当数据太大而无法存储在一个节点或机器上时，我们就需要把数据放在多台服务器上，这个时候我们就可以简单使用取模运算来实现简单的">
+<meta itemprop="datePublished" content="2021-04-11T18:42:35&#43;00:00" />
+<meta itemprop="dateModified" content="2021-04-11T18:42:35&#43;00:00" />
+<meta itemprop="wordCount" content="1584">
+
+
+
+<meta itemprop="keywords" content="," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="分布式系统相关"/>
+<meta name="twitter:description" content="一致性哈希 传统哈希 当数据太大而无法存储在一个节点或机器上时，我们就需要把数据放在多台服务器上，这个时候我们就可以简单使用取模运算来实现简单的"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">分布式系统相关</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-04-11 </span>
+        <div class="post-category">
+            <a href="/categories/%E8%BD%AF%E4%BB%B6%E5%92%8C%E7%B3%BB%E7%BB%9F/"> 软件和系统 </a>
+            <a href="/categories/%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3/"> 系统相关 </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#一致性哈希">一致性哈希</a>
+          <ul>
+            <li><a href="#传统哈希">传统哈希</a></li>
+            <li><a href="#一致性哈希算法">一致性哈希算法</a></li>
+            <li><a href="#算法原理">算法原理</a></li>
+            <li><a href="#虚拟节点">虚拟节点</a></li>
+          </ul>
+        </li>
+        <li><a href="#其他">其他</a>
+          <ul>
+            <li><a href="#多台web服务器上共享session">多台Web服务器上共享Session</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="一致性哈希">一致性哈希</h2>
+<h3 id="传统哈希">传统哈希</h3>
+<p>当数据太大而无法存储在一个节点或机器上时，我们就需要把数据放在多台服务器上，这个时候我们就可以简单使用取模运算来实现简单的负载均衡</p>
+<p><img src="https://img.xiaoyou66.com/2021/04/11/fac7d744e0008.png" alt="image.png"></p>
+<p>但是这样有一个问题，当我们节点增加或者减少时怎么办？这样就会导致映射关系发生变化，导致我们需要重新计算，会造成缓存雪崩的后果，基于此，我们提出了一致性哈希算法</p>
+<h3 id="一致性哈希算法">一致性哈希算法</h3>
+<p>一致性哈希算法在 1997 年由麻省理工学院提出，是一种特殊的哈希算法，在移除或者添加一个服务器时，能够尽可能小地改变已存在的服务请求与处理请求服务器之间的映射关系。一致性哈希解决了简单哈希算法在分布式<a href="https://baike.baidu.com/item/%E5%93%88%E5%B8%8C%E8%A1%A8/5981869">哈希表</a>（Distributed Hash Table，DHT）中存在的动态伸缩等问题 。</p>
+<p><strong>一致性哈希算法有下面几个优点</strong></p>
+<ul>
+<li>
+<p>可扩展性。一致性哈希算法保证了增加或减少服务器时，数据存储的改变最少，相比传统哈希算法大大节省了数据移动的开销 。</p>
+</li>
+<li>
+<p>更好地适应数据的快速增长。采用一致性哈希算法分布数据，当数据不断增长时，部分虚拟节点中可能包含很多数据、造成数据在虚拟节点上分布不均衡，此时可以将包含数据多的虚拟节点分裂，这种分裂仅仅是将原有的虚拟节点一分为二、不需要对全部的数据进行重新哈希和划分。</p>
+<p>虚拟节点分裂后，如果物理服务器的负载仍然不均衡，只需在服务器之间调整部分虚拟节点的存储分布。这样可以随数据的增长而动态的扩展物理服务器的数量，且代价远比传统哈希算法重新分布所有数据要小很多。</p>
+</li>
+</ul>
+<p><strong>一致性哈希算法与哈希算法的关系</strong></p>
+<p>一致性哈希算法是在哈希算法基础上提出的，在动态变化的分布式环境中，哈希算法应该满足的几个条件：平衡性、单调性和分散性。</p>
+<ul>
+<li>平衡性：是指 hash 的结果应该平均分配到各个节点，这样从算法上解决了负载均衡问题。</li>
+<li>单调性：是指在新增或者删减节点时，不影响系统正常运行。</li>
+<li>分散性：是指数据应该分散地存放在分布式集群中的各个节点（节点自己可以有备份），不必每个节点都存储所有的数据。</li>
+</ul>
+<h3 id="算法原理">算法原理</h3>
+<p>首先我们有一个叫一致性哈希环的数据结构，这个环的起点是 0，终点是 2^32 - 1，并且起点与终点连接，故这个环的整数分布范围是 [0, 2^32-1]</p>
+<p><img src="https://img.xiaoyou66.com/2021/04/11/87cff29755e60.png" alt="image.png"></p>
+<p>当我们有数据的时候，会经过哈希运算，结果会在这分布范围内。然后我们还需要放服务器，我们可以对服务器IP或者主机名进行哈希运算，确定在哈希环上的位置，比如我们这样排布：</p>
+<p><img src="https://img.xiaoyou66.com/2021/04/11/27892c88c8999.png" alt="image.png"></p>
+<p><strong>将对象和服务器都放置到同一个哈希环后，在哈希环上顺时针查找距离这个对象的 hash 值最近的机器，即是这个对象所属的机器。</strong></p>
+<p><img src="https://img.xiaoyou66.com/2021/04/11/66f41c12646cf.png" alt="image.png"></p>
+<p>当我们增加服务器时，比如下面这样</p>
+<p><img src="https://img.xiaoyou66.com/2021/04/11/96f6f51694419.png" alt="image.png"></p>
+<p>对于上述的情况，只有 t1 和 t2 服务器之间的对象需要重新分配。在以上示例中只有 o3 对象需要重新分配，即它被重新到 cs4 服务器。在前面我们已经分析过，如果使用简单的取模方法，当新添加服务器时可能会导致大部分缓存失效，而使用一致性哈希算法后，这种情况得到了较大的改善，因为只有少部分对象需要重新分配。</p>
+<p>当我们减少服务器时，比如下面这样</p>
+<p><img src="https://img.xiaoyou66.com/2021/04/11/6679502904974.png" alt="image.png"></p>
+<h3 id="虚拟节点">虚拟节点</h3>
+<p>到这里一致性哈希的基本原理已经介绍完了，但对于新增服务器的情况还存在一些问题。新增的服务器 cs4 只分担了 cs1 服务器的负载，服务器 cs2 和 cs3 并没有因为 cs4 服务器的加入而减少负载压力。如果 cs4 服务器的性能与原有服务器的性能一致甚至可能更高，那么这种结果并不是我们所期望的。</p>
+<p><strong>针对这个问题，我们可以通过引入虚拟节点来解决负载不均衡的问题。即将每台物理服务器虚拟为一组虚拟服务器，将虚拟服务器放置到哈希环上，如果要确定对象的服务器，需先确定对象的虚拟服务器，再由虚拟服务器确定物理服务器。</strong></p>
+<p><img src="https://img.xiaoyou66.com/2021/04/12/1a7a6128638bd.png" alt="image.png"></p>
+<p>图中 o1 和 o2 表示对象，v1 ~ v6 表示虚拟服务器，s1 ~ s3 表示物理服务器。</p>
+<p>参考：</p>
+<p><a href="https://segmentfault.com/a/1190000021199728">图解一致性哈希算法 - SegmentFault 思否</a></p>
+<h2 id="其他">其他</h2>
+<h3 id="多台web服务器上共享session">多台Web服务器上共享Session</h3>
+<ul>
+<li>通过数据库mysql共享session</li>
+<li>通过cookie共享session</li>
+<li>通过服务器之间的数据同步session</li>
+<li>通过NFS共享Session</li>
+<li>通过memcache同步session</li>
+<li>通过redis共享session</li>
+</ul>
+<p><a href="https://www.jianshu.com/p/6098018f406f">多台服务器共享session问题 - 简书 (jianshu.com)</a></p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-04-11
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags//"></a>
+          </div>
+      <nav class="post-nav">
+        
+        <a class="next" href="/post/05.%E8%BD%AF%E4%BB%B6%E5%92%8C%E7%B3%BB%E7%BB%9F/02.%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3/02.linux%E9%9D%A2%E8%AF%95/">
+            <span class="next-text nav-default">Linux面试</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+
+
+</body>
+</html>

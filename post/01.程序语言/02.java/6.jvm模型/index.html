@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>JVM模型 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="JVM内存模型 这里主要还是会问一些Java的内存模型，1.8之前和之后的内存模型是不一样的 简单说一下每个部分是干嘛的吧 程序计数器 用于记录程序" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/01.%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/02.java/6.jvm%E6%A8%A1%E5%9E%8B/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="JVM模型" />
+<meta property="og:description" content="JVM内存模型 这里主要还是会问一些Java的内存模型，1.8之前和之后的内存模型是不一样的 简单说一下每个部分是干嘛的吧 程序计数器 用于记录程序" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/01.%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/02.java/6.jvm%E6%A8%A1%E5%9E%8B/" />
+<meta property="article:published_time" content="2021-03-20T15:46:19+00:00" />
+<meta property="article:modified_time" content="2021-03-20T15:46:19+00:00" />
+<meta itemprop="name" content="JVM模型">
+<meta itemprop="description" content="JVM内存模型 这里主要还是会问一些Java的内存模型，1.8之前和之后的内存模型是不一样的 简单说一下每个部分是干嘛的吧 程序计数器 用于记录程序">
+<meta itemprop="datePublished" content="2021-03-20T15:46:19&#43;00:00" />
+<meta itemprop="dateModified" content="2021-03-20T15:46:19&#43;00:00" />
+<meta itemprop="wordCount" content="973">
+
+
+
+<meta itemprop="keywords" content="," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="JVM模型"/>
+<meta name="twitter:description" content="JVM内存模型 这里主要还是会问一些Java的内存模型，1.8之前和之后的内存模型是不一样的 简单说一下每个部分是干嘛的吧 程序计数器 用于记录程序"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">JVM模型</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-03-20 </span>
+        <div class="post-category">
+            <a href="/categories/%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/"> 程序语言 </a>
+            <a href="/categories/java/"> JAVA </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#jvm内存模型">JVM内存模型</a>
+          <ul>
+            <li><a href="#happens-before是啥">happens-before是啥</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="jvm内存模型">JVM内存模型</h2>
+<p>这里主要还是会问一些Java的内存模型，1.8之前和之后的内存模型是不一样的</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/23/3c6944d4abc54.png" alt="在这里插入图片描述" style="zoom:50%;" /></p>
+<p><img src="https://img.xiaoyou66.com/2021/03/23/0a4fc0f52a05b.png" alt="在这里插入图片描述" style="zoom:50%;" /></p>
+<p>简单说一下每个部分是干嘛的吧</p>
+<ul>
+<li><strong>程序计数器</strong>  用于记录程序执行的位置（字节码解释器可以改变这个来选取下一条执行的指令）</li>
+<li><strong>虚拟机栈</strong>  描述的是java方法执行的内存模型，每个方法执行都会创建一个<strong>栈帧</strong>，栈帧包含局部变量表、操作数栈、动态连接、方法出口等。</li>
+<li><strong>本地方法栈</strong>  本地方法栈则为虚拟机使用到的 Native 方法服务。 在 HotSpot 虚拟机中和 Java 虚拟机栈合二为一，本地方法被执行的时候，在本地方法栈也会创建一个栈帧，用于存放该本地方法的局部变量表、操作数栈、动态链接、出口信息。方法执行完毕后相应的栈帧也会出栈并释放内存空间，也会出现StackOverFlowError 和 OutOfMemoryError 两种错误。</li>
+<li><strong>堆</strong>  Java 虚拟机所管理的内存中最大的一块，Java 堆是所有线程共享的一块内存区域，在虚拟机启动时创建。<strong>此内存区域的唯一目的就是存放对象实例，几乎所有的对象实例以及数组都在这里分配内存。</strong></li>
+<li><strong>方法区</strong>   与 Java 堆一样，是各个线程共享的内存区域，它用于存储已被虚拟机加载的类信息、常量、静态变量、即时编译器编译后的代码等数据。</li>
+<li><strong>元空间</strong>  jdk1.8之后，就把方法区放到元空间了，元空间直接放到本地内存了（这样我们就不用担心之前永久代内存溢出的问题，只要本地内存足够，就不会出现java.lang.OutOfMemoryError: PermGen space的错误）</li>
+</ul>
+<p>还有一个更加详细的</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/30/ee57504a3b1e1.jpg" alt="img"></p>
+<p>参考：</p>
+<ol>
+<li><a href="https://blog.csdn.net/weixin_44777669/article/details/114745089?spm=1001.2014.3001.5502">JVM基础知识和调优_冷雨清的博客-CSDN博客_jvm调优</a></li>
+<li><a href="https://juejin.cn/post/6844903983400632327">JVM之虚拟机栈详解 (juejin.cn)</a></li>
+</ol>
+<h3 id="happens-before是啥">happens-before是啥</h3>
+<p>这个东西主要是为了解决并发编程中多线程的可见性。</p>
+<p>为了方便程序员开发，将底层的烦琐细节屏蔽掉，JMM定义了Happens-Before原则。只要我们理解了Happens-Before原则，无需了解JVM底层的内存操作，就可以解决在并发编程中遇到的变量可见性问题。</p>
+<p>JVM定义的Happens-Before原则是一组偏序关系：<strong>对于两个操作A和B，这两个操作可以在不同的线程中执行。如果A Happens-Before B，那么可以保证，当A操作执行完后，A操作的执行结果对B操作是可见的。</strong></p>
+<p>Happens-Before的规则包括：</p>
+<ol>
+<li>程序顺序规则</li>
+<li>锁定规则</li>
+<li>volatile变量规则</li>
+<li>线程启动规则</li>
+<li>线程结束规则</li>
+<li>中断规则</li>
+<li>终结器规则</li>
+<li>传递性规则</li>
+</ol>
+<p>参考</p>
+<ol>
+<li><a href="https://segmentfault.com/a/1190000011458941">从Java多线程可见性谈Happens-Before原则 - SegmentFault 思否</a></li>
+</ol>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-03-20
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags//"></a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/01.%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/02.java/1.java%E5%9F%BA%E7%A1%80/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">java基础</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/01.%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/02.java/9.%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98/">
+            <span class="next-text nav-default">参数调优</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+
+
+</body>
+</html>

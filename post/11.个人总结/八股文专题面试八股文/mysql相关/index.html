@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>mysql相关 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="mysql慢查询怎么优化 检查是否走了索引，如果没有，优化 SQL 利用索引 检查 利用的索引是否是最优索引，没有的话，尽量用最优索引 检查所查字段是否是必" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/mysql%E7%9B%B8%E5%85%B3/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="mysql相关" />
+<meta property="og:description" content="mysql慢查询怎么优化 检查是否走了索引，如果没有，优化 SQL 利用索引 检查 利用的索引是否是最优索引，没有的话，尽量用最优索引 检查所查字段是否是必" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/mysql%E7%9B%B8%E5%85%B3/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="mysql相关">
+<meta itemprop="description" content="mysql慢查询怎么优化 检查是否走了索引，如果没有，优化 SQL 利用索引 检查 利用的索引是否是最优索引，没有的话，尽量用最优索引 检查所查字段是否是必">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="2642">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="mysql相关"/>
+<meta name="twitter:description" content="mysql慢查询怎么优化 检查是否走了索引，如果没有，优化 SQL 利用索引 检查 利用的索引是否是最优索引，没有的话，尽量用最优索引 检查所查字段是否是必"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">mysql相关</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#mysql慢查询怎么优化">mysql慢查询怎么优化</a></li>
+        <li><a href="#索引的本质">索引的本质</a></li>
+        <li><a href="#聚集索引和非聚集索引">聚集索引和非聚集索引</a></li>
+        <li><a href="#回表和覆盖索引">回表和覆盖索引</a></li>
+        <li><a href="#慢sql优化-会考虑哪些">慢sql优化 会考虑哪些</a></li>
+        <li><a href="#锁">锁</a>
+          <ul>
+            <li><a href="#间隙锁-mvcc-rr--解决幻读原理">间隙锁【 MVCC RR ， 解决幻读原理】</a></li>
+          </ul>
+        </li>
+        <li><a href="#缓存篇">缓存篇</a>
+          <ul>
+            <li></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="mysql慢查询怎么优化">mysql慢查询怎么优化</h2>
+<ol>
+<li>检查是否走了索引，如果没有，优化 SQL 利用索引</li>
+<li>检查 利用的索引是否是最优索引，没有的话，尽量用最优索引</li>
+<li>检查所查字段是否是必须的，是否有多余数据【不要查多余数据】</li>
+<li>表中数据是否过多，是否分库分表</li>
+<li>检查数据库实例所在的机器性能配置，是否太低，是否应该适当增加资源</li>
+</ol>
+<p><a href="https://www.bilibili.com/video/BV1zL4y1e7YN?p=2&amp;spm_id_from=pageDriver">https://www.bilibili.com/video/BV1zL4y1e7YN?p=2&amp;spm_id_from=pageDriver</a></p>
+<h2 id="索引的本质">索引的本质</h2>
+<p>索引是帮助 MYSQL 获取数据的排好序的数据结果【内部已经是有序了，最左前缀匹配原则 就是 索引分布的顺序】</p>
+<h2 id="聚集索引和非聚集索引">聚集索引和非聚集索引</h2>
+<p>聚集索引是 数据放在 索引的叶子节点， 非聚集索引 是 索引和数据分离，索引有指针 指向那个数据</p>
+<p>作者：路人zhang
+链接：https://www.nowcoder.com/discuss/744436?channel=-1&amp;source_id=profile_follow_post_nctrack
+来源：牛客网</p>
+<p>聚簇索引和非聚簇索引最主要的区别是<strong>数据和索引是否分开存储</strong>。</p>
+<ul>
+<li>聚簇索引：将数据和索引放到一起存储，索引结构的叶子节点保留了数据行。</li>
+<li>非聚簇索引：将数据进和索引分开存储，索引叶子节点存储的是指向数据行的地址。</li>
+</ul>
+<p>在InnoDB存储引擎中，默认的索引为B+树索引，利用主键创建的索引为主索引，也是聚簇索引，在主索引之上创建的索引为辅助索引，也是非聚簇索引。为什么说辅助索引是在主索引之上创建的呢，因为辅助索引中的叶子节点存储的是主键。</p>
+<p>在MyISAM存储引擎中，默认的索引也是B+树索引，但主索引和辅助索引都是非聚簇索引，也就是说索引结构的叶子节点存储的都是一个指向数据行的地址。并且使用辅助索引检索无需访问主键的索引。</p>
+<p>可以从非常经典的两张图看看它们的区别(图片来源于网络)：</p>
+<p><img src="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663662791/E8B5126C6C720C4643F2543CB83781CB" alt="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663662791/E8B5126C6C720C4643F2543CB83781CB"></p>
+<p><img src="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663675751/70BCE6DF348B8AAF62246C6079F56E09" alt="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663675751/70BCE6DF348B8AAF62246C6079F56E09"></p>
+<h2 id="回表和覆盖索引">回表和覆盖索引</h2>
+<p>覆盖索引意思是 ，查询的字段是索引的一部分，并且 sql 查询的时候 是利用的这个索引，那么 可以将数据之间从索引中取出【速度快】， 回表的话就是 有一部分数据是索引中没有存的，那么就要 利用这个索引 去定位到对应的数据表中，</p>
+<h2 id="慢sql优化-会考虑哪些">慢sql优化 会考虑哪些</h2>
+<p>作者：路人zhang
+链接：https://www.nowcoder.com/discuss/744436?channel=-1&amp;source_id=profile_follow_post_nctrack
+来源：牛客网</p>
+<p>慢查询一般用于记录执行时间超过某个临界值的SQL语句的日志。</p>
+<p>相关参数：</p>
+<ul>
+<li>slow_query_log：是否开启慢日志查询，1表示开启，0表示关闭。</li>
+<li>slow_query_log_file：MySQL数据库慢查询日志存储路径。</li>
+<li>long_query_time：慢查询阈值，当SQL语句查询时间大于阈值，会被记录在日志上。</li>
+<li>log_queries_not_using_indexes：未使用索引的查询会被记录到慢查询日志中。</li>
+<li>log_output：日志存储方式。“FILE”表示将日志存入文件。“TABLE”表示将日志存入数据库。</li>
+</ul>
+<p>如何对慢查询进行优化？</p>
+<ul>
+<li>分析语句的执行计划，<strong>查看SQL语句的索引是否命中</strong></li>
+<li>优化数据库的结构，<strong>将字段很多的表分解成多个表，或者考虑建立中间表</strong>。</li>
+<li><strong>优化LIMIT分页。</strong></li>
+</ul>
+<h2 id="锁">锁</h2>
+<h3 id="间隙锁-mvcc-rr--解决幻读原理">间隙锁【 MVCC RR ， 解决幻读原理】</h3>
+<p>mysql 的 mvcc  RR 解决了幻读，默认开启了间隙锁解决了这个问题</p>
+<p><strong>行锁（Record Lock）</strong>：锁直接加在索引记录上面。
+<strong>间隙锁（Gap Lock）</strong>：锁加在不存在的空闲空间，可以是两个索引记录之间，也可能是第一个索引记录之前或最后一个索引之后的空间。
+<strong>Next-Key Lock</strong>：行锁与间隙锁组合起来用就叫做Next-Key Lock。</p>
+<p><strong>什么是间隙锁？</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1885839/202101/1885839-20210128112714117-529285989.png" alt="https://img2020.cnblogs.com/blog/1885839/202101/1885839-20210128112714117-529285989.png"></p>
+<p>正常等值条件 并且值存在的情况下加的是行锁</p>
+<p>如果等值条件 值不存在的情况下加的是间隙锁，或者范围查询，加的也是间隙锁</p>
+<p>举个例子：</p>
+<p>根据主键id，不只是有五个行锁，还会有六个间隙锁，<em>左开右闭原则</em>，（-∞，5]（5，10]（10，15]（15，20]（20，25]（25，+supernum]</p>
+<p>例如 select * from table where id = 10 for update;  等值条件，id是存在的，加行锁就可以了</p>
+<p>select * from table where id = 7 for update; 等值条件，id不存在，加（5，10] 间隙锁，这范围间不允许插入数据，直到这个事务提交完成释放锁</p>
+<p>select * from table where id &gt; 24; 范围条件，加间隙锁</p>
+<p>通过行锁+间隙锁的机制保证了事务A select之后，<strong>其他事务相应的insert操作会阻塞</strong></p>
+<p><strong>什么是undolog?</strong></p>
+<p>undolog存放不同事务版本下的不同数据，</p>
+<p>用于 1.历史恢复 通过undolog恢复之前版本的数据  2. 读老版本 根据条件读旧版本的数据</p>
+<p>每次数据变更都会产生undolog记录，undolog记录分为 insert undo_log 和 update undo_log</p>
+<p>insert操作属于insert undo_log，只针对当前事务，在insert操作后产生undo_log记录，在事务提交后删除undo_log记录，说白了就是给当前事务自己看的.</p>
+<p>update 和 delete操作属于update undo_log，会根据隔离级别不同事务版本的数据可见性不同</p>
+<p><strong>什么是readView?</strong></p>
+<p>快照  存放了当前活跃的一些事务版本号，以及上一个版本的地址.   用来做可见性判断</p>
+<p>readview根据生成时间不同，产生了RC,RR两种可见性</p>
+<p>RC：每条select创建一个新的readview ，所以导致读提交 读到的都是最新提交的！</p>
+<p>RR：事务开始的时候创建一个readview, 一直到事务结束都用的这个readview，也就避免了不可重复读</p>
+<p><strong>当前读与快照读</strong></p>
+<p>单条普通的select语句属于快照读</p>
+<p>select for update , insert, update, delete 属于当前读</p>
+<p>快照读由mvcc+undolog实现</p>
+<p>当前读由行锁+间隙锁实现</p>
+<h2 id="缓存篇">缓存篇</h2>
+<h4 id="缓存的常见问题">缓存的常见问题</h4>
+<p>作者：路人zhang
+链接：https://www.nowcoder.com/discuss/744436?channel=-1&amp;source_id=profile_follow_post_nctrack
+来源：牛客网</p>
+<p>缓存穿透：指缓存和数据库中都没有的数据，所有请求都打在数据库上，造成数据库短时间承受大量请求而挂掉</p>
+<p>解决方法：</p>
+<ul>
+<li>增加接口校验，过滤一些不合法请求，比如大量订单号为-1的数据</li>
+<li>从缓存和数据库都不能获取到的数据，可以先对空的结果进行缓存，比如key-null，缓存有效期要设置的短一些</li>
+<li>采用布隆过滤器，过滤掉一定不存在的数据</li>
+</ul>
+<p>缓存击穿：指缓存中没有但数据库中有的数据，一般是在高并发的情况下，某些热门key突然过期，导致所有请求直接打到数据库上</p>
+<p>解决方法：：</p>
+<ul>
+<li>设置热点数据永不过期</li>
+<li>加互斥锁</li>
+</ul>
+<p>缓存雪崩：大量缓存在一段时间内集中过期，导致查询的数据都打在数据库上，和缓存击穿的区别是缓存过期的数量</p>
+<p>解决方法：</p>
+<ul>
+<li>将缓存的过期时间设置随机，避免大量缓存同时过期</li>
+<li>服务降级或熔断</li>
+</ul>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/maven%E7%9B%B8%E5%85%B3/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">maven传递依赖</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/redis%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">
+            <span class="next-text nav-default">redis数据结构</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+
+
+</body>
+</html>
