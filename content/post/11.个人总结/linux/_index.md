@@ -5,6 +5,9 @@ draft: false
 author: LYR
 categories:
   - linux
+tags:
+  - linux
+
 
 ---
 
