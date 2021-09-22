@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>计算机网络八股文 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="TCP 相关 TCP 流量控制 学习教程 建立连接 会有 syn &#43; ack 机制， 表示 建立连接和 接收成功 发送数据会有 seq&#43; ACK 机制， 表示发送数据包的序列化 还有对应的应答 公式： $ TC" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.86.0 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%85%AB%E8%82%A1%E6%96%87/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="计算机网络八股文" />
+<meta property="og:description" content="TCP 相关 TCP 流量控制 学习教程 建立连接 会有 syn &#43; ack 机制， 表示 建立连接和 接收成功 发送数据会有 seq&#43; ACK 机制， 表示发送数据包的序列化 还有对应的应答 公式： $ TC" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%85%AB%E8%82%A1%E6%96%87/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+
+<meta itemprop="name" content="计算机网络八股文">
+<meta itemprop="description" content="TCP 相关 TCP 流量控制 学习教程 建立连接 会有 syn &#43; ack 机制， 表示 建立连接和 接收成功 发送数据会有 seq&#43; ACK 机制， 表示发送数据包的序列化 还有对应的应答 公式： $ TC"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="wordCount" content="3334">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="计算机网络八股文"/>
+<meta name="twitter:description" content="TCP 相关 TCP 流量控制 学习教程 建立连接 会有 syn &#43; ack 机制， 表示 建立连接和 接收成功 发送数据会有 seq&#43; ACK 机制， 表示发送数据包的序列化 还有对应的应答 公式： $ TC"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">计算机网络八股文</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#tcp-相关">TCP 相关</a>
+          <ul>
+            <li><a href="#tcp-流量控制">TCP 流量控制</a></li>
+          </ul>
+        </li>
+        <li><a href="#tcp拥塞控制">TCP拥塞控制</a>
+          <ul>
+            <li><a href="#tcp-超时重传的问题">TCP 超时重传的问题</a></li>
+            <li><a href="#tcp-首部字段">TCP 首部字段</a></li>
+            <li><a href="#最长前缀匹配原则">最长前缀匹配原则：</a></li>
+            <li><a href="#动态路由选择">动态路由选择</a></li>
+          </ul>
+        </li>
+        <li><a href="#udp-广播的过程">UDP 广播的过程</a>
+          <ul>
+            <li><a href="#udp-socket的使用过程">UDP Socket的使用过程：</a></li>
+            <li><a href="#广播数据包的原理">广播数据包的原理：</a></li>
+          </ul>
+        </li>
+        <li><a href="#dns-的过程">DNS 的过程</a></li>
+        <li><a href="#需要记忆的-tcp-流程图">需要记忆的 TCP 流程图</a></li>
+        <li><a href="#tcp-可靠传输原理">TCP 可靠传输原理</a>
+          <ul>
+            <li><a href="#校验和">校验和</a></li>
+            <li><a href="#crc-循环冗余校验原理">CRC 循环冗余校验原理</a></li>
+            <li><a href="#回退n步协议">回退N步协议</a></li>
+          </ul>
+        </li>
+        <li><a href="#http-拆包问题的解决方法">HTTP 拆包问题的解决方法</a>
+          <ul>
+            <li><a href="#http协议采用的策略">http协议采用的策略</a></li>
+            <li><a href="#常见-http状态码">常见 http状态码</a></li>
+          </ul>
+        </li>
+        <li><a href="#tcp-定时器有几种">TCP 定时器有几种</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="tcp-相关">TCP 相关</h2>
+<h3 id="tcp-流量控制">TCP 流量控制</h3>
+<p><a href="https://www.bilibili.com/video/BV1c4411d7jb?p=60">学习教程</a></p>
+<p>建立连接 会有 syn  + ack 机制， 表示 建立连接和 接收成功</p>
+<p>发送数据会有  seq+ ACK 机制， 表示发送数据包的序列化 还有对应的应答</p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_09_09_00_36_36image-20210909003634026.png" alt="image-20210909003634026"></p>
+<p>公式：</p>
+<p>$ TCP发送窗口= min{自身拥塞窗口，TCP接收方的接受窗口} $</p>
+<h2 id="tcp拥塞控制">TCP拥塞控制</h2>
+<p><strong>拥塞控制和流量控制的区别</strong></p>
+<ol>
+<li>拥塞控制 是 对于路由器而言的 【路由器资源不足，就会丢包】</li>
+<li>流量控制是对于那个接收方而言的 【接收方资源不足】</li>
+</ol>
+<p>实际上，拥塞控制主要有这几种常用算法</p>
+<ul>
+<li>慢启动</li>
+<li>拥塞避免</li>
+<li>拥塞发生</li>
+<li>快速恢复</li>
+</ul>
+<p><a href="https://www.bilibili.com/video/BV1c4411d7jb?p=61">学习视频</a></p>
+<p>相关概念： 拥塞窗口 $cwnd$</p>
+<ul>
+<li>
+<p>拥塞窗口$cwnd$ 维护原则： 网络没有拥塞 ,拥塞窗口就加大一点，出现拥塞，窗口就减少一点</p>
+</li>
+<li>
+<p>判断网络拥塞的方法：</p>
+<ul>
+<li>没有按时收到应当到达的确认报文（发生了超时重传）</li>
+<li>3次重复确认</li>
+</ul>
+</li>
+<li>
+<p>发送方将拥塞窗口作为发送窗口 swnd,即 $swnd = cwnd$</p>
+</li>
+<li>
+<p>维护一个慢开始门限 $ssthresh$ 状态变量</p>
+<ul>
+<li>当 $cwnd &lt; ssthresh $ 时，使用慢开始算法 【二次方增长】</li>
+<li>当 $cwnd &gt; ssthresh $ 时，停止使用慢开始，改用拥塞避免算法 【直线上升】</li>
+<li>当 $ cwnd = ssthresh $， 可以用慢开始 或者 拥塞避免 多种算法</li>
+</ul>
+</li>
+<li>
+<p>TCP Reno版本：</p>
+<ul>
+<li>快重传，快恢复实现原理
+<ul>
+<li>个别报文段在网络丢失，但是不一定是因为拥塞</li>
+<li>发送方误认为拥塞，使用了慢开始，效率太低了
+<ul>
+<li>判断方法：
+<ul>
+<li>接收方收不到发送方的正确数据，会返回上一个收到的 ACK 序号 来确认</li>
+<li>发送方收到连续3次重复确认，才是真正的r认为是发生了拥塞</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="tcp-超时重传的问题">TCP 超时重传的问题</h3>
+<ol>
+<li>
+<p>往返时间 $RTT $ 如何进行考虑呢？<a href="https://www.bilibili.com/video/BV1c4411d7jb?p=62">学习视频</a></p>
+</li>
+<li>
+<p>rfc6298 建议的超时重传时间RTO:</p>
+<ol>
+<li>$RTO = RTT_s + 4*RTT_D$</li>
+</ol>
+</li>
+<li>
+<p>其他问题： 无法正确策略RTT 的时间，因为无法区分是重传报文段 还是 原报文段的响应</p>
+</li>
+<li>
+<p>karn 算法解决思路： 遇到重传，就不计入 RTT 样本</p>
+</li>
+<li>
+<p>对 karn 算法的修正： 报文段每重传一次，就把超时重传时间RTO 加大一点，典型做法是 $RTO_新 = RTO_旧 * 2$</p>
+</li>
+</ol>
+<h3 id="tcp-首部字段">TCP 首部字段</h3>
+<ul>
+<li>tcp报文由首部和数据载荷两部分构成</li>
+<li>TCP的全部功能都体现在它首部中各字段的作用</li>
+</ul>
+<p><a href="https://www.bilibili.com/video/BV1c4411d7jb?p=66">学习视频</a></p>
+<p>常见标志位：</p>
+<ol>
+<li>
+<p>RST ， 表示tcp异常，必须释放连接， 取值0 or 1</p>
+</li>
+<li>
+<p>ACK ， 报文确认 取值 0 or 1</p>
+</li>
+<li>
+<p>PSH， 推送操作，取值为 1 会尽快交给上层应用，不必等待接收缓存都满了再 向上交付</p>
+</li>
+<li>
+<p>FIN, 表示断开连接</p>
+</li>
+<li>
+<p>URG, 紧急指针</p>
+</li>
+<li>
+<p>选项（长度可变）</p>
+<ol>
+<li>最大报文长度$MSS$ 选项： TCP 报文段数据载荷部分最大长度</li>
+<li>窗口扩大选项： 为扩大窗口（提高吞吐率）</li>
+<li>时间戳选项：
+<ol>
+<li>计算往返时间 $RTT $</li>
+<li>用于处理序号超范围情况，称为防止序号绕回 $PAWS $</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<h3 id="最长前缀匹配原则">最长前缀匹配原则：</h3>
+<p>IP 匹配转发 使用最长前缀匹配原则，转发数据包</p>
+<h3 id="动态路由选择">动态路由选择</h3>
+<p>路由器通过路由选择协议，自动获取路由</p>
+<ul>
+<li>静态路由选择： 人工配置简单，开销小，不能及时适应网络 流量 拓扑变化</li>
+<li>动态： 开销大，复杂，较好的适应网络状态变化</li>
+</ul>
+<ol>
+<li>
+<p>路由选择协议：</p>
+<ol>
+<li>
+<p>内部网络协议 IGP</p>
+<ol>
+<li>路由信息 RIP</li>
+<li>内部网络路由 IGRP</li>
+<li>开放式最短路径优先 OSPF</li>
+</ol>
+</li>
+<li>
+<p>外部网关协议 EGP</p>
+<ol>
+<li>边界网关协议 BGP</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<p>随机接入协议 CSMA/CA</p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_09_09_12_03_56image-20210909120353757.png" alt="image-20210909120353757"></p>
+<h2 id="udp-广播的过程">UDP 广播的过程</h2>
+<h3 id="udp-socket的使用过程">UDP Socket的使用过程：</h3>
+<ol>
+<li>初始化网络库</li>
+<li>创建SOCK_DGRAM类型的Socket。</li>
+<li>绑定套接字。</li>
+<li>发送、接收数据。</li>
+<li>销毁套接字。</li>
+<li>释放网络库。</li>
+</ol>
+<h3 id="广播数据包的原理">广播数据包的原理：</h3>
+<p>专门用于同时向网络中所有工作站进行发送的一个地址叫做广播地址。在使用TCP/IP 协议的网络中，主机标识段host ID 为全1 的IP 地址为广播地址。如果你的IP为：192.168.1.39，子网掩码为：255.255.255.0，则广播地址为：192.168.1.255；如果IP为192.168.1.39，子网掩码为：255.255.255.192，则广播地址为：192.168.1.63。</p>
+<p>如果只想在<strong>本网络内广播数据，只要向广播地址发送数据包即可</strong>，这种数据包可以被路由，<strong>它会经由<a href="http://www.2cto.com/net/router/">路由器</a>到达本网段内的所有主机</strong>，此种广播也叫直接广播；如果想在整个网络中广播数据，要向255.255.255.255发送数据包，<strong>这种数据包不会被路由，它只能到达本物理网络中的所有主机，此种广播叫有限广播。</strong></p>
+<p>使用UDP协议发送、接收广播包的过程。</p>
+<p>假如我们要向192.168.0.X，子网掩码为：255.255.255.0的子网中发送广播包。</p>
+<h2 id="dns-的过程">DNS 的过程</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/55240680">https://zhuanlan.zhihu.com/p/55240680</a></p>
+<h2 id="需要记忆的-tcp-流程图">需要记忆的 TCP 流程图</h2>
+<p><img src="https://pic1.zhimg.com/v2-245b7a106bae594ff2a84d1a305a3764_b.jpg" alt="https://pic1.zhimg.com/v2-245b7a106bae594ff2a84d1a305a3764_b.jpg"></p>
+<p>开始客户端和服务器都处于CLOSED状态，然后服务端开始监听某个端口，进入LISTEN状态</p>
+<ul>
+<li>第一次握手(SYN=1, seq=x)，发送完毕后，客户端进入 SYN_SEND 状态</li>
+<li>第二次握手(SYN=1, ACK=1, seq=y, ACKnum=x+1)， 发送完毕后，服务器端进入 SYN_RCVD 状态。</li>
+<li>第三次握手(ACK=1，ACKnum=y+1)，发送完毕后，客户端进入 ESTABLISHED 状态，当服务器端接收到这个包时,也进入 ESTABLISHED 状态，TCP 握手，即可以开始数据传输。</li>
+</ul>
+<p><img src="https://pic2.zhimg.com/v2-5ab61a8e3d4b30c5f7fb661b3daead71_b.jpg" alt="https://pic2.zhimg.com/v2-5ab61a8e3d4b30c5f7fb661b3daead71_b.jpg"></p>
+<p>第一次挥手(FIN=1，seq=u)，发送完毕后，客户端进入FIN_WAIT_1 状态</p>
+<p>第二次挥手(ACK=1，ack=u+1,seq =v)，发送完毕后，服务器端进入CLOSE_WAIT 状态，客户端接收到这个确认包之后，进入 FIN_WAIT_2 状态</p>
+<p>第三次挥手(FIN=1，ACK1,seq=w,ack=u+1)，发送完毕后，服务器端进入LAST_ACK 状态，等待来自客户端的最后一个ACK。</p>
+<p>第四次挥手(ACK=1，seq=u+1,ack=w+1)，客户端接收到来自服务器端的关闭请求，发送一个确认包，并进入 TIME_WAIT状态，<strong>等待了某个固定时间（两个最大段生命周期，2MSL，2 Maximum Segment Lifetime）之后</strong>，没有收到服务器端的 ACK ，认为服务器端已经正常关闭连接，于是自己也关闭连接，进入 CLOSED 状态。服务器端接收到这个确认包之后，关闭连接，进入 CLOSED 状态。</p>
+<h2 id="tcp-可靠传输原理">TCP 可靠传输原理</h2>
+<h3 id="校验和">校验和</h3>
+<p><strong>三者检验和的异同</strong></p>
+<p>​    TCP和UDP检验和是一个端到端的检验和，由发送端计算，然后由接收端验证。</p>
+<p>​    TCP和UDP检验和覆盖首部和数据，而IP首部中的检验和只覆盖IP的首部，不覆盖IP数据报中的任何数据。</p>
+<p>​    TCP的检验和是必需的，而UDP的检验和是可选的。</p>
+<p>​    TCP和UDP计算检验和时，都要加上一个12字节的伪首部。</p>
+<h4 id="奇偶校验">奇偶校验</h4>
+<p>在发送的数据后面添加1位奇偶校验位，使整个数据中<code>1的个数</code>位奇数（奇校验）或偶数（偶校验）。</p>
+<p><img src="https://pic3.zhimg.com/80/v2-cc872a051205cdf5b086aedd023c7de2_720w.jpg" alt="https://pic3.zhimg.com/80/v2-cc872a051205cdf5b086aedd023c7de2_720w.jpg"></p>
+<p><a href="https://zhuanlan.zhihu.com/p/26509678">参考博客_知乎的网友</a></p>
+<ol>
+<li>
+<p>原理： 最后一位 bit 放 1 或者 0 ，表示数据中有奇数个 1 ，偶数个0</p>
+</li>
+<li>
+<p>然后接收方这边去数，是不是有偶数个1 【出现偶数个1 就出错】</p>
+<ol>
+<li>
+<p>例如还是ASCII码 大写字母 A</p>
+<blockquote>
+<p>奇校验 正确码流 11000001</p>
+<p><strong>错1位</strong> 11000011 变成了偶数个1，能检测出错误</p>
+<p>错2位 11000010 变成了奇数个1，检测不出错误</p>
+<p><strong>错3位</strong> 11001010 变成了偶数个1，能检测出错误</p>
+</blockquote>
+</li>
+</ol>
+</li>
+</ol>
+<h3 id="crc-循环冗余校验原理">CRC 循环冗余校验原理</h3>
+<h3 id="回退n步协议">回退N步协议</h3>
+<p>发送方将0-4号分组，依次连续发送出去，经过互联网的传输，正确到达了接收方，在没有出现乱序和误码，接收方按序接收他们，每接收1个，接收方就向前滑动一个位置，并给发送方发送针对所接收分组的确认分组，0-4号确认分组经互联网的传输正确达到了发送方，发送方每接收一个接收，就向前滑动一个位置，随后，发送方将收到确认的数据分组从缓存中删除了，接收方将确认的数据交给上层。</p>
+<p><strong>「累积确认」</strong></p>
+<p>接收方不一定要对收到的数据分组逐个发送确认，而是收到几个数据分组后，对按序到达的最后一个数据分组发送确认，$ACK_n$表示序号为n及以前的所有数据分组都已正确接收。</p>
+<p><strong>「优点」</strong></p>
+<ul>
+<li>即使确认部分分组丢失，发送方也可不必重传！</li>
+<li>减少接收方的开销。</li>
+</ul>
+<p><strong>「缺点」</strong></p>
+<ul>
+<li>不能向发送方及时反映出接收方已正确接收的数据分组信息。</li>
+</ul>
+<p><strong>「出差错情况」</strong></p>
+<p><img src="https://pic4.zhimg.com/80/v2-dd9d3979bbfe5915da8318e05c6f2563_720w.jpg" alt="img"></p>
+<p>在本例中尽管序号为1076的数据分组正确到达接收方，由于5号分组出现了误码不被接收，他们也会受到牵连不被接收，发送方还要重传这些数据分组，这就是回退n帧（Go-back-N）。</p>
+<p>在本例中，当发送方窗口尺寸超过7时也会出现问题（接收方无法分辨新旧分组），在此不做解释！</p>
+<h2 id="http-拆包问题的解决方法">HTTP 拆包问题的解决方法</h2>
+<p><a href="https://blog.csdn.net/TNT_wang/article/details/86241745?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_baidulandingword~default-0.no_search_link&amp;spm=1001.2101.3001.4242">http拆包问题的解决方法</a></p>
+<ol>
+<li>消息定长</li>
+<li>消息之间添加特定分隔符</li>
+<li>显式长度，比如先发送4个字节表示消息的长度，紧接着发送消息</li>
+<li>结合上面各种策略</li>
+</ol>
+<h3 id="http协议采用的策略">http协议采用的策略</h3>
+<ol>
+<li>请求头以特定的符号（&quot;\r\n&quot;）结束,符合策略2，如果有请求体，则请求头中会有表示请求体的长度，符合策略3</li>
+</ol>
+<h3 id="常见-http状态码">常见 http状态码</h3>
+<ol>
+<li>301 表示 永久重定向</li>
+<li>302 表示临时重定向</li>
+</ol>
+<h2 id="tcp-定时器有几种">TCP 定时器有几种</h2>
+<p>1.建立连接定时器(connection-establishment timer)
+2.重传定时器(retransmission timer)
+3.延迟应答定时器(delayed ACK timer)
+4.坚持定时器(persist timer)
+5.保活定时器(keepalive timer)
+6.FIN_WAIT_2定时器(FIN_WAIT_2 timer)
+7.TIME_WAIT定时器 (TIME_WAIT timer, 也叫 2MSL timer)</p>
+<p><a href="https://blog.csdn.net/qq_36532097/article/details/76576789">参考文章</a></p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C_tcp%E4%B8%93%E9%A2%98/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">计算机网络_TCP专题</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c99b103c33d1539acf3025e1913697534542c4a5aa5af0ccc20475ed2863603b.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+
+
+</body>
+</html>
