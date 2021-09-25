@@ -1,0 +1,106 @@
+<!--
+ * @Author: army liu
+ * @Date: 2020-11-28 11:10:46
+ * @LastEditors: army liu
+ * @LastEditTime: 2020-11-28 12:50:12
+ * @FilePath: \undefinede:\刘家旻\面试\手撕代码\深拷贝.html
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深拷贝</title>
+</head>
+
+<body>
+    <script>
+        window.onload = () => {
+            // 方式一：JSON.stringify
+            // 缺点：无法转化function
+            // 优点：简单
+            (() => {
+                let obj = {
+                    name: 'ljm',
+                    age: 18,
+                    hobby: ['play', 'sleep'],
+                    skills: {
+                        front: ['html', 'css', 'js'],
+                        behind: ['node']
+                    }
+                }
+                let newObj = JSON.parse(JSON.stringify(obj));
+                newObj.hobby[0] = 'study';
+                console.log(obj);
+                console.log(newObj)
+            })();
+            (() => {
+                function deepCopy(obj) {
+                    // let  obj = {};
+
+                    if(obj instanceof Date){
+                        return new Date(obj);
+                    }else if(obj instanceof Error){
+                        return new Error(obj)
+                    }else if(obj instanceof RegExp){
+                        return new RegExp(obj);
+                    }
+                    else if(obj instanceof Array){
+                        let temp = [];
+                        for(let val of obj){
+                            temp.push(deepCopy(val));
+                            return temp;
+                        }
+                    }else if(obj instanceof Function){
+                        return obj.toString();
+                    }else if (obj instanceof Object) { //当拷贝的是对象时
+                        let tmp = {}
+                        // 递归遍历每一个key值
+                        for (let key in obj) {
+                            let prop = obj[key];
+                            if(prop === obj){ 
+                                return obj; //解决循环引用
+                            }
+                            tmp[key] = deepCopy(obj[key])
+                        }
+                        return tmp
+                    }
+                    else{
+                        return obj
+                    }
+                }
+                let obj = {
+                    name: 'ljm',
+                    age: 18,
+                    hobby: ['play', 'sleep'],
+                    skills: {
+                        front: ['html', 'css', 'js'],
+                        behind: ['node'],
+                    },
+                    sayHi:function(){
+                        console.log("hello")
+                    },
+                    time: new Date(),
+                    error: new Error(),
+                    reg: new RegExp(/^[0-9]$/),
+                    lover: undefined,
+                    newSkills:{
+                        newSkills:['test']
+                    }
+                }
+                
+                obj.a = obj;
+                let newObj = deepCopy(obj);
+                newObj.hobby[0] = 'study';
+                newObj.sayHi = function(){
+                    console.log("newHi")
+                }
+                console.log(obj);
+                console.log(newObj)
+            })()
+        }
+    </script>
+</body>
+
+</html>

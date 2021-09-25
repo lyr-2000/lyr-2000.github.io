@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>mysql开发注意事项 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="MySQL 数据库开发的三十六条军规 一、核心军规(5) 1.1 尽量不在数据库做运算 别让脚趾头想事情，那是脑瓜子的职责 让数据库多做她擅长的事: 尽量不在数据库做" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/mysql/mysql%E5%BC%80%E5%8F%91%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="mysql开发注意事项" />
+<meta property="og:description" content="MySQL 数据库开发的三十六条军规 一、核心军规(5) 1.1 尽量不在数据库做运算 别让脚趾头想事情，那是脑瓜子的职责 让数据库多做她擅长的事: 尽量不在数据库做" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/mysql/mysql%E5%BC%80%E5%8F%91%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="mysql开发注意事项">
+<meta itemprop="description" content="MySQL 数据库开发的三十六条军规 一、核心军规(5) 1.1 尽量不在数据库做运算 别让脚趾头想事情，那是脑瓜子的职责 让数据库多做她擅长的事: 尽量不在数据库做">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="3999">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="mysql开发注意事项"/>
+<meta name="twitter:description" content="MySQL 数据库开发的三十六条军规 一、核心军规(5) 1.1 尽量不在数据库做运算 别让脚趾头想事情，那是脑瓜子的职责 让数据库多做她擅长的事: 尽量不在数据库做"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">mysql开发注意事项</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#mysql-数据库开发的三十六条军规">MySQL 数据库开发的三十六条军规</a>
+      <ul>
+        <li><a href="#一核心军规5">一、核心军规(5)</a>
+          <ul>
+            <li><a href="#11-尽量不在数据库做运算">1.1 尽量不在数据库做运算</a></li>
+            <li><a href="#12-控制单表数据量">1.2 控制单表数据量</a></li>
+            <li><a href="#13-保持表身段苗条">1.3 保持表身段苗条</a></li>
+            <li><a href="#14-平衡范式不冗余">1.4 平衡范式不冗余</a></li>
+            <li><a href="#15-拒绝-3b">1.5 拒绝 3B</a></li>
+            <li><a href="#16-核心军规小结">1.6 核心军规小结</a></li>
+          </ul>
+        </li>
+        <li><a href="#二字段类军规6">二、字段类军规(6)</a>
+          <ul>
+            <li><a href="#21-用好数值字段类型">2.1 用好数值字段类型</a></li>
+            <li><a href="#22-将字符转化为数字">2.2 将字符转化为数字</a></li>
+            <li><a href="#23-优先使用-enum-或-set">2.3 优先使用 ENUM 或 SET</a></li>
+            <li><a href="#24-避免使用-null-字段">2.4 避免使用 NULL 字段</a></li>
+            <li><a href="#25-少用并拆分-textblob">2.5 少用并拆分 TEXT/BLOB</a></li>
+            <li><a href="#26-不在数据库里存图片">2.6 不在数据库里存图片</a></li>
+            <li><a href="#27-字段类军规小结">2.7 字段类军规小结</a></li>
+          </ul>
+        </li>
+        <li><a href="#三索引类军规5">三、索引类军规(5)</a>
+          <ul>
+            <li><a href="#31-谨慎合理添加索引">3.1 谨慎合理添加索引</a></li>
+            <li><a href="#32-字符字段必须建前缀索引">3.2 字符字段必须建前缀索引</a></li>
+            <li><a href="#33-不在索引列做运算">3.3 不在索引列做运算</a></li>
+            <li><a href="#34-自增列或全局-id-做-innodb-主键">3.4 自增列或全局 ID 做 INNODB 主键</a></li>
+            <li><a href="#35-尽量不用外键">3.5 尽量不用外键</a></li>
+            <li><a href="#36-索引类军规小结">3.6 索引类军规小结</a></li>
+          </ul>
+        </li>
+        <li><a href="#四sql-类军规15">四、SQL 类军规(15)</a>
+          <ul>
+            <li><a href="#41-sql-语句尽可能简单">4.1 SQL 语句尽可能简单</a></li>
+            <li><a href="#42-保持事务连接短小">4.2 保持事务(连接)短小</a></li>
+            <li><a href="#43-尽可能避免使用-sptrigfunc">4.3 尽可能避免使用 SP/TRIG/FUNC</a></li>
+            <li><a href="#44-尽量不用-select">4.4 尽量不用 SELECT</a></li>
+            <li><a href="#45-改写-or-为-in">4.5 改写 OR 为 IN()</a></li>
+            <li><a href="#46-改写-or-为-union">4.6 改写 OR 为 UNION</a></li>
+            <li><a href="#47-避免负向查询和-前缀模糊查询">4.7 避免负向查询和% 前缀模糊查询</a></li>
+            <li><a href="#48-count的几个例子">4.8 COUNT(*)的几个例子</a></li>
+            <li><a href="#49-减少-count">4.9 减少 COUNT(*)</a></li>
+            <li><a href="#410-limit-高效分页">4.10 LIMIT 高效分页</a></li>
+            <li><a href="#411-用-union-all-而非-union">4.11 用 UNION ALL 而非 UNION</a></li>
+            <li><a href="#412-分解联接保证高并发">4.12 分解联接保证高并发</a></li>
+            <li><a href="#413-group-by-去除排序">4.13 GROUP BY 去除排序</a></li>
+            <li><a href="#414-同数据类型的列值比较">4.14 同数据类型的列值比较</a></li>
+            <li><a href="#415-load-data-导数据">4.15 Load data 导数据</a></li>
+            <li><a href="#416-打散大批量更新">4.16 打散大批量更新</a></li>
+            <li><a href="#417-know-every-sql">4.17 Know Every SQL</a></li>
+            <li><a href="#418-sql-类军规小结">4.18 SQL 类军规小结</a></li>
+          </ul>
+        </li>
+        <li><a href="#五约定类军规5">五、约定类军规(5)</a>
+          <ul>
+            <li><a href="#51-隔离线上线下">5.1 隔离线上线下</a></li>
+            <li><a href="#52-禁止未经-dba-确认的子查询">5.2 禁止未经 DBA 确认的子查询</a></li>
+            <li><a href="#53-永远不在程序端显式加锁">5.3 永远不在程序端显式加锁</a></li>
+            <li><a href="#54-统一字符集为-utf8">5.4 统一字符集为 UTF8</a></li>
+            <li><a href="#55-统一命名规范">5.5 统一命名规范</a></li>
+            <li><a href="#56-注意避免用保留字命名">5.6 注意避免用保留字命名</a></li>
+            <li><a href="#57-约定类军规小结">5.7 约定类军规小结</a></li>
+          </ul>
+        </li>
+        <li><a href="#六原文链接">六、原文链接</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h1 id="mysql-数据库开发的三十六条军规">MySQL 数据库开发的三十六条军规</h1>
+<h2 id="一核心军规5">一、核心军规(5)</h2>
+<h3 id="11-尽量不在数据库做运算">1.1 尽量不在数据库做运算</h3>
+<ul>
+<li>别让脚趾头想事情，那是脑瓜子的职责</li>
+<li>让数据库多做她擅长的事:
+<ul>
+<li>尽量不在数据库做运算</li>
+<li>复杂运算秱到程序端 CPU</li>
+<li>尽可能简单应用 MySQL</li>
+</ul>
+</li>
+<li>举例: md5() / Order by Rand()</li>
+</ul>
+<h3 id="12-控制单表数据量">1.2 控制单表数据量</h3>
+<ul>
+<li>一年内的单表数据量预估
+<ul>
+<li>纯 INT 不超 1000W</li>
+<li>含 CHAR 不超 500W</li>
+</ul>
+</li>
+<li>合理分表不超载
+<ul>
+<li>USERID</li>
+<li>DATE</li>
+<li>AREA</li>
+<li>……</li>
+</ul>
+</li>
+<li>建议单库不超过 300-400 个表</li>
+</ul>
+<h3 id="13-保持表身段苗条">1.3 保持表身段苗条</h3>
+<ul>
+<li>表字段数少而精
+<ul>
+<li>IO 高效</li>
+<li>全表遍历</li>
+<li>表修复快</li>
+<li>提高幵发</li>
+<li>alter table 快</li>
+</ul>
+</li>
+<li>单表多少字段合适?</li>
+<li>单表 1G 体积 500W 行评估
+<ul>
+<li>顺序读 1G 文件需 N 秒</li>
+<li>单行不超过 200Byte</li>
+<li>单表不超过 50 个纯 INT 字段</li>
+<li>单表不超过 20 个 CHAR(10)字段</li>
+</ul>
+</li>
+<li>单表字段数上限控制在 20~50 个</li>
+</ul>
+<h3 id="14-平衡范式不冗余">1.4 平衡范式不冗余</h3>
+<ul>
+<li>严格遵循三大范式?</li>
+<li>效率优先、提升性能</li>
+<li>没有绝对的对不错</li>
+<li>适当时牺牲范式、加入冗余</li>
+<li>但会增加代码复杂度</li>
+</ul>
+<h3 id="15-拒绝-3b">1.5 拒绝 3B</h3>
+<ul>
+<li>数据库幵发像城市交通
+<ul>
+<li>非线性增长</li>
+</ul>
+</li>
+<li>拒绝 3B
+<ul>
+<li>大 SQL (BIG SQL)</li>
+<li>大事务 (BIG Transaction)</li>
+<li>大批量 (BIG Batch)</li>
+</ul>
+</li>
+<li>详细解析见后</li>
+</ul>
+<h3 id="16-核心军规小结">1.6 核心军规小结</h3>
+<ul>
+<li>尽量不在数据库做运算</li>
+<li>控制单表数据量</li>
+<li>保持表身段苗条</li>
+<li>平衡范式不冗余</li>
+<li>拒绝 3B</li>
+</ul>
+<h2 id="二字段类军规6">二、字段类军规(6)</h2>
+<h3 id="21-用好数值字段类型">2.1 用好数值字段类型</h3>
+<ul>
+<li>三类数值类型:
+<ul>
+<li>TINYINT(1Byte)</li>
+<li>SMALLINT(2B)</li>
+<li>MEDIUMINT(3B)</li>
+<li>INT(4B)、BIGINT(8B)</li>
+<li>FLOAT(4B)、DOUBLE(8B)</li>
+<li>DECIMAL(M,D)</li>
+</ul>
+</li>
+<li>BAD CASE:
+<ul>
+<li>INT(1) VS INT(11)</li>
+<li>BIGINT AUTO_INCREMENT</li>
+<li>DECIMAL(18,0)</li>
+</ul>
+</li>
+</ul>
+<h3 id="22-将字符转化为数字">2.2 将字符转化为数字</h3>
+<ul>
+<li>数字型 VS 字符串型索引
+<ul>
+<li>更高效</li>
+<li>查询更快</li>
+<li>占用空间更小</li>
+</ul>
+</li>
+<li>举例:用无符号 INT 存储 IP，而非 CHAR(15)
+<ul>
+<li>INT UNSIGNED</li>
+<li>INET_ATON()</li>
+<li>INET_NTOA()</li>
+</ul>
+</li>
+</ul>
+<h3 id="23-优先使用-enum-或-set">2.3 优先使用 ENUM 或 SET</h3>
+<ul>
+<li>优先使用 ENUM 或 SET
+<ul>
+<li>字符串</li>
+<li>可能值已知且有限</li>
+</ul>
+</li>
+<li>存储
+<ul>
+<li>ENUM 占用 1 字节，转为数值运算</li>
+<li>SET 视节点定，最多占用 8 字节</li>
+<li>比较时需要加&rsquo; 单引号(即使是数值)</li>
+</ul>
+</li>
+<li>举例
+<ul>
+<li><code>sex</code> enum(&lsquo;F&rsquo;,&lsquo;M&rsquo;) COMMENT &lsquo;性别&rsquo;</li>
+<li><code>c1</code> enum(&lsquo;0&rsquo;,&lsquo;1&rsquo;,&lsquo;2&rsquo;,&lsquo;3&rsquo;) COMMENT &lsquo;职介审核&rsquo;</li>
+</ul>
+</li>
+</ul>
+<h3 id="24-避免使用-null-字段">2.4 避免使用 NULL 字段</h3>
+<ul>
+<li>避免使用 NULL 字段
+<ul>
+<li>很难进行查询优化</li>
+<li>NULL 列加索引，需要额外空间</li>
+<li>含 NULL 复合索引无效</li>
+</ul>
+</li>
+<li>举例
+<ul>
+<li><code>a</code> char(32) DEFAULT NULL</li>
+<li><code>b</code> int(10) NOT NULL</li>
+<li><code>c</code> int(10) NOT NULL DEFAULT 0</li>
+</ul>
+</li>
+</ul>
+<h3 id="25-少用并拆分-textblob">2.5 少用并拆分 TEXT/BLOB</h3>
+<ul>
+<li>TEXT 类型处理性能远低亍 VARCHAR
+<ul>
+<li>强制生成硬盘临时表</li>
+<li>浪费更多空间</li>
+<li>VARCHAR(65535)==&gt;64K (注意 UTF-8)</li>
+</ul>
+</li>
+<li>尽量不用 TEXT/BLOB 数据类型</li>
+<li>若必须使用则拆分到单独的表</li>
+<li>举例:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">t1</span> <span class="p">(</span>
+<span class="n">id</span> <span class="nb">INT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span> <span class="k">data</span> <span class="nb">text</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+<span class="err">‏</span><span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="n">id</span>
+<span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="26-不在数据库里存图片">2.6 不在数据库里存图片</h3>
+<h3 id="27-字段类军规小结">2.7 字段类军规小结</h3>
+<ul>
+<li>用好数值字段类型</li>
+<li>将字符转化为数字</li>
+<li>优先使用枚举 ENUM/SET</li>
+<li>避免使用 NULL 字段</li>
+<li>少用幵拆分 TEXT/BLOB</li>
+<li>不在数据库里存图片</li>
+</ul>
+<h2 id="三索引类军规5">三、索引类军规(5)</h2>
+<h3 id="31-谨慎合理添加索引">3.1 谨慎合理添加索引</h3>
+<ul>
+<li>谨慎合理添加索引
+<ul>
+<li>改善查询</li>
+<li>减慢更新</li>
+<li>索引不是赹多赹好</li>
+</ul>
+</li>
+<li>能不加的索引尽量不加
+<ul>
+<li>综合评估数据密度和数据分布</li>
+<li>最好不赸过字段数 20%</li>
+</ul>
+</li>
+<li>结合核心 SQL 优先考虑覆盖索引</li>
+<li>举例
+<ul>
+<li>不要给“性别”列创建索引</li>
+</ul>
+</li>
+</ul>
+<h3 id="32-字符字段必须建前缀索引">3.2 字符字段必须建前缀索引</h3>
+<ul>
+<li>区分度
+<ul>
+<li>单字母区分度:26</li>
+<li>4 字母区分度:26<em>26</em>26*26=456,976</li>
+<li>5 字母区分度:26<em>26</em>26<em>26</em>26=11,881,376</li>
+<li>6 字母区分度:26<em>26</em>26<em>26</em>26*26=308,915,776</li>
+</ul>
+</li>
+<li>字符字段必须建前缀索引:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="p">(</span>
+<span class="o">`</span><span class="n">pinyin</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span> <span class="k">COMMENT</span> <span class="s1">&#39;小区拼音&#39;</span><span class="p">,</span> <span class="k">KEY</span> <span class="o">`</span><span class="n">idx_pinyin</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="n">pinyin</span><span class="o">`</span><span class="p">(</span><span class="mi">8</span><span class="p">)),</span>
+<span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="33-不在索引列做运算">3.3 不在索引列做运算</h3>
+<ul>
+<li>不在索引列进行数学运算或凼数运算
+<ul>
+<li>无法使用索引</li>
+<li>导致全表扫描</li>
+</ul>
+</li>
+<li>举例:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="n">BAD</span><span class="p">:</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="k">table</span> <span class="k">WHERE</span> <span class="n">to_days</span><span class="p">(</span><span class="k">current_date</span><span class="p">)</span> <span class="err">–</span> <span class="n">to_days</span><span class="p">(</span><span class="n">date_col</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">10</span>
+<span class="n">GOOD</span><span class="p">:</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="k">table</span> <span class="k">WHERE</span> <span class="n">date_col</span> <span class="o">&gt;=</span> <span class="n">DATE_SUB</span><span class="p">(</span><span class="s1">&#39;2011-10- 22&#39;</span><span class="p">,</span><span class="nb">INTERVAL</span> <span class="mi">10</span> <span class="k">DAY</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="34-自增列或全局-id-做-innodb-主键">3.4 自增列或全局 ID 做 INNODB 主键</h3>
+<ul>
+<li>对主键建立聚簇索引</li>
+<li>二级索引存储主键值</li>
+<li>主键不应更新修改</li>
+<li>按自增顺序揑入值</li>
+<li>忌用字符串做主键</li>
+<li>聚簇索引分裂</li>
+<li>推荐用独立亍业务的 AUTO_INCREMENT 列或全局 ID 生成 器做代理主键</li>
+<li>若不指定主键，InnoDB 会用唯一且非空值索引代替</li>
+</ul>
+<h3 id="35-尽量不用外键">3.5 尽量不用外键</h3>
+<ul>
+<li>线上 OLTP 系统(线下系统另论)
+<ul>
+<li>外键可节省开发量</li>
+<li>有额外开销</li>
+<li>逐行操作</li>
+<li>可&rsquo;到达&rsquo;其它表，意味着锁</li>
+<li>高并发时容易死锁</li>
+</ul>
+</li>
+<li>由程序保证约束</li>
+</ul>
+<h3 id="36-索引类军规小结">3.6 索引类军规小结</h3>
+<ul>
+<li>谨慎合理添加索引</li>
+<li>字符字段必须建前缀索引</li>
+<li>不在索引列做运算</li>
+<li>自增列或全局 ID 做 INNODB 主键</li>
+<li>尽量不用外键</li>
+</ul>
+<h2 id="四sql-类军规15">四、SQL 类军规(15)</h2>
+<h3 id="41-sql-语句尽可能简单">4.1 SQL 语句尽可能简单</h3>
+<ul>
+<li>大 SQL VS 多个简单 SQL
+<ul>
+<li>传统设计思想</li>
+<li>BUT MySQL NOT</li>
+<li>一条 SQL 叧能在一个 CPU 运算</li>
+<li>5000+ QPS 的高幵发中，1 秒大 SQL 意味着?</li>
+<li>可能一条大 SQL 就把整个数据库堵死</li>
+</ul>
+</li>
+<li>拒绝大 SQL，拆解成多条简单 SQL
+<ul>
+<li>简单 SQL 缓存命中率更高</li>
+<li>减少锁表时间，特别是 MyISAM</li>
+<li>用上多 CPU</li>
+</ul>
+</li>
+</ul>
+<h3 id="42-保持事务连接短小">4.2 保持事务(连接)短小</h3>
+<ul>
+<li>保持事务/DB 连接短小精悍
+<ul>
+<li>事务/连接使用原则:即开即用，用完即关</li>
+<li>与事务无关操作放到事务外面, 减少锁资源的占用</li>
+<li>不破坏一致性前提下，使用多个短事务代替长事务</li>
+</ul>
+</li>
+<li>举例
+<ul>
+<li>发贴时的图片上传等待</li>
+<li>大量的 sleep 连接</li>
+</ul>
+</li>
+</ul>
+<h3 id="43-尽可能避免使用-sptrigfunc">4.3 尽可能避免使用 SP/TRIG/FUNC</h3>
+<ul>
+<li>线上 OLTP 系统(线下库另论)
+<ul>
+<li>尽可能少用存储过程</li>
+<li>尽可能少用触发器</li>
+<li>减用使用 MySQL 凼数对结果进行处理</li>
+</ul>
+</li>
+<li>由客户端程序负责</li>
+</ul>
+<h3 id="44-尽量不用-select">4.4 尽量不用 SELECT</h3>
+<ul>
+<li>用 SELECT * 时</li>
+<li>更多消耗 CPU、内存、IO、网络带宽</li>
+<li>先向数据库请求所有列，然后丢掉不需要列?</li>
+<li>尽量不用 SELECT * ，叧取需要数据列 • 更安全的设计:减少表变化带来的影响</li>
+<li>为使用 covering index 提供可能性</li>
+<li>SELECT/JOIN 减少硬盘临时表生成，特别是有 TEXT/BLOB 时</li>
+<li>举例:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">tag</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="o">=</span> <span class="mi">999184</span><span class="p">;</span>
+<span class="k">SELECT</span> <span class="n">keyword</span> <span class="k">FROM</span> <span class="n">tag</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="o">=</span> <span class="mi">999184</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="45-改写-or-为-in">4.5 改写 OR 为 IN()</h3>
+<ul>
+<li>同一字段，将 or 改写为 in()</li>
+<li>OR 效率:O(n)</li>
+<li>IN 效率:O(Log n)</li>
+<li>当 n 很大时，OR 会慢很多</li>
+<li>注意控制 IN 的个数，建议 n 小亍 200</li>
+<li>举例:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">opp</span> <span class="k">WHERE</span> <span class="n">phone</span><span class="o">=</span><span class="s1">&#39;12347856&#39;</span> <span class="k">or</span> <span class="n">phone</span><span class="o">=</span><span class="s1">&#39;42242233&#39;</span> <span class="err">\</span><span class="k">G</span><span class="p">;</span>
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">opp</span> <span class="k">WHERE</span> <span class="n">phone</span> <span class="k">in</span> <span class="p">(</span><span class="s1">&#39;12347856&#39;</span> <span class="p">,</span> <span class="s1">&#39;42242233&#39;</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="46-改写-or-为-union">4.6 改写 OR 为 UNION</h3>
+<ul>
+<li>不同字段，将 or 改为 union</li>
+<li>减少对不同字段进行 &ldquo;or&rdquo; 查询</li>
+<li>Merge index 往往很弱智</li>
+<li>如果有足够信心:set global optimizer_switch='index_merge=off&rsquo;;</li>
+<li>举例:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">opp</span> <span class="k">WHERE</span> <span class="n">phone</span><span class="o">=</span><span class="s1">&#39;010-88886666&#39;</span> <span class="k">or</span> <span class="n">cellPhone</span><span class="o">=</span><span class="s1">&#39;13800138000&#39;</span><span class="p">;</span>
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">opp</span> <span class="k">WHERE</span> <span class="n">phone</span><span class="o">=</span><span class="s1">&#39;010-88886666&#39;</span> <span class="k">union</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">opp</span> <span class="k">WHERE</span> <span class="n">cellPhone</span><span class="o">=</span><span class="s1">&#39;13800138000&#39;</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="47-避免负向查询和-前缀模糊查询">4.7 避免负向查询和% 前缀模糊查询</h3>
+<ul>
+<li>避免负向查询
+<ul>
+<li>NOT、!=、&lt;&gt;、!&lt;、!&gt;、NOT EXISTS、NOT IN、 NOT LIKE 等</li>
+</ul>
+</li>
+<li>避免 % 前缀模糊查询
+<ul>
+<li>B+ Tree</li>
+<li>使用不了索引</li>
+<li>导致全表扫描</li>
+</ul>
+</li>
+<li>举例:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">post</span> <span class="k">WHERE</span> <span class="n">title</span> <span class="k">like</span> <span class="s1">&#39;北京%&#39;</span><span class="p">;</span> <span class="c1">-- 298 rows in set (0.01 sec)
+</span><span class="c1"></span><span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">post</span> <span class="k">WHERE</span> <span class="n">title</span> <span class="k">like</span> <span class="s1">&#39;%北京%&#39;</span><span class="p">;</span> <span class="c1">-- 572 rows in set (3.27 sec)
+</span></code></pre></td></tr></table>
+</div>
+</div><h3 id="48-count的几个例子">4.8 COUNT(*)的几个例子</h3>
+<ul>
+<li>几个有趣的例子:
+<ul>
+<li>COUNT(COL) VS COUNT(*)</li>
+<li>COUNT(*) VS COUNT(1)</li>
+<li>COUNT(1) VS COUNT(0) VS COUNT(100)</li>
+</ul>
+</li>
+<li>示例:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="o">`</span><span class="n">id</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="n">AUTO_INCREMENT</span> <span class="k">COMMENT</span> <span class="s1">&#39;公司的id&#39;</span><span class="p">,</span> <span class="o">`</span><span class="n">sale_id</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="n">unsigned</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>结论
+<ul>
+<li>COUNT(*)=count(1)
+*COUNT(0)=count(1)</li>
+<li>COUNT(1)=count(100)</li>
+<li>COUNT(*)!=count(col)</li>
+<li>WHY?</li>
+</ul>
+</li>
+</ul>
+<h3 id="49-减少-count">4.9 减少 COUNT(*)</h3>
+<ul>
+<li>MyISAM VS INNODB
+<ul>
+<li>不带 WHERE COUNT()</li>
+<li>带 WHERE COUNT()</li>
+</ul>
+</li>
+<li>COUNT(*)的资源开销大，尽量不用少用</li>
+<li>计数统计
+<ul>
+<li>实时统计:用 memcache，双向更新，凌晨 跑基准</li>
+<li>非实时统计:尽量用单独统计表，定期重算</li>
+</ul>
+</li>
+</ul>
+<h3 id="410-limit-高效分页">4.10 LIMIT 高效分页</h3>
+<ul>
+<li>传统分页:
+<ul>
+<li>SELECT * from table limit 10000,10;</li>
+</ul>
+</li>
+<li>LIMIT 原理:
+<ul>
+<li>Limit 10000,10  偏秱量赹大则赹慢</li>
+</ul>
+</li>
+<li>推荐分页:
+<ul>
+<li>SELECT * from table WHERE id&gt;=23423 limit 11;
+*SELECT * from table WHERE id&gt;=23434 limit 11;</li>
+</ul>
+</li>
+<li>分页方式二:
+<ul>
+<li>SELECT * from table WHERE id &gt;= ( SELECT id from table limit 10000,1 ) limit 10;</li>
+</ul>
+</li>
+<li>分页方式三:
+<ul>
+<li>SELECT * FROM table INNER JOIN (SELECT id FROM table LIMIT 10000,10) USING (id);</li>
+</ul>
+</li>
+<li>分页方式四:
+<ul>
+<li>程序取 ID:SELECT id from table limit 10000,10;</li>
+<li>SELECT * from table WHERE id in (123,456&hellip;);</li>
+</ul>
+</li>
+<li>可能需按场景分析幵重组索引</li>
+<li>示例:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="n">MySQL</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">sql_no_cache</span> <span class="o">*</span> <span class="k">from</span> <span class="n">post</span> <span class="k">limit</span> <span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">;</span> <span class="mi">10</span> <span class="k">row</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span> <span class="n">sec</span><span class="p">)</span>
+<span class="n">MySQL</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">sql_no_cache</span> <span class="o">*</span> <span class="k">from</span> <span class="n">post</span> <span class="k">limit</span> <span class="mi">20000</span><span class="p">,</span><span class="mi">10</span><span class="p">;</span> <span class="mi">10</span> <span class="k">row</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">13</span> <span class="n">sec</span><span class="p">)</span>
+<span class="n">MySQL</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">sql_no_cache</span> <span class="o">*</span> <span class="k">from</span> <span class="n">post</span> <span class="k">limit</span> <span class="mi">80000</span><span class="p">,</span><span class="mi">10</span><span class="p">;</span> <span class="mi">10</span> <span class="k">rows</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">58</span> <span class="n">sec</span><span class="p">)</span>
+<span class="n">MySQL</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">sql_no_cache</span> <span class="n">id</span> <span class="k">from</span> <span class="n">post</span> <span class="k">limit</span> <span class="mi">80000</span><span class="p">,</span><span class="mi">10</span><span class="p">;</span> <span class="mi">10</span> <span class="k">rows</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">02</span> <span class="n">sec</span><span class="p">)</span>
+<span class="n">MySQL</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">sql_no_cache</span> <span class="o">*</span> <span class="k">from</span> <span class="n">post</span> <span class="k">WHERE</span> <span class="n">id</span><span class="o">&gt;=</span><span class="mi">323423</span> <span class="k">limit</span> <span class="mi">10</span><span class="p">;</span> <span class="mi">10</span> <span class="k">rows</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">01</span> <span class="n">sec</span><span class="p">)</span>
+<span class="n">MySQL</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">post</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="o">&gt;=</span> <span class="p">(</span> <span class="k">SELECT</span> <span class="n">sql_no_cache</span> <span class="n">id</span> <span class="k">from</span> <span class="n">post</span> <span class="k">limit</span> <span class="mi">80000</span><span class="p">,</span><span class="mi">1</span> <span class="p">)</span> <span class="k">limit</span> <span class="mi">10</span><span class="p">;</span> <span class="mi">10</span> <span class="k">rows</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">02</span> <span class="n">sec</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="411-用-union-all-而非-union">4.11 用 UNION ALL 而非 UNION</h3>
+<ul>
+<li>若无需对结果进行去重，则用 UNION ALL
+<ul>
+<li>UNION 有去重开销</li>
+</ul>
+</li>
+<li>举例:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">detail20091128</span> <span class="k">UNION</span> <span class="k">ALL</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">detail20110427</span> <span class="k">UNION</span> <span class="k">ALL</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">detail20110426</span> <span class="k">UNION</span> <span class="k">ALL</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">detail20110425</span> <span class="k">UNION</span> <span class="k">ALL</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">detail20110424</span> <span class="k">UNION</span> <span class="k">ALL</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">detail20110423</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="412-分解联接保证高并发">4.12 分解联接保证高并发</h3>
+<ul>
+<li>高幵发 DB 不建议进行两个表以上的 JOIN</li>
+<li>适当分解联接保证高幵发
+<ul>
+<li>可缓存大量早期数据</li>
+<li>使用了多个 MyISAM 表</li>
+<li>对大表的小 ID IN()</li>
+<li>联接引用同一个表多次</li>
+<li>举例:</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="n">MySQL</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">tag</span> <span class="k">JOIN</span> <span class="n">post</span> <span class="k">on</span> <span class="n">tag_post</span><span class="p">.</span><span class="n">post_id</span><span class="o">=</span><span class="n">post</span><span class="p">.</span><span class="n">id</span> <span class="k">WHERE</span> <span class="n">tag</span><span class="p">.</span><span class="n">tag</span><span class="o">=</span><span class="s1">&#39;二手玩具&#39;</span><span class="p">;</span>
+
+<span class="n">MySQL</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">tag</span> <span class="k">WHERE</span> <span class="n">tag</span><span class="o">=</span><span class="s1">&#39;二手玩具&#39;</span><span class="p">;</span>
+<span class="n">MySQL</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">tag_post</span> <span class="k">WHERE</span> <span class="n">tag_id</span><span class="o">=</span><span class="mi">1321</span><span class="p">;</span>
+<span class="n">MySQL</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">post</span> <span class="k">WHERE</span> <span class="n">post</span><span class="p">.</span><span class="n">id</span> <span class="k">in</span> <span class="p">(</span><span class="mi">123</span><span class="p">,</span><span class="mi">456</span><span class="p">,</span><span class="mi">314</span><span class="p">,</span><span class="mi">141</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="413-group-by-去除排序">4.13 GROUP BY 去除排序</h3>
+<ul>
+<li>GROUP BY 实现
+<ul>
+<li>分组</li>
+<li>自劢排序</li>
+</ul>
+</li>
+<li>无需排序:Order by NULL</li>
+<li>特定排序:Group by DESC/ASC</li>
+<li>举例:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="n">MySQL</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">phone</span><span class="p">,</span><span class="k">count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="k">from</span> <span class="n">post</span> <span class="k">group</span> <span class="k">by</span> <span class="n">phone</span> <span class="k">limit</span> <span class="mi">1</span> <span class="p">;</span> <span class="mi">1</span> <span class="k">row</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">2</span><span class="p">.</span><span class="mi">19</span> <span class="n">sec</span><span class="p">)</span>
+<span class="n">MySQL</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">phone</span><span class="p">,</span><span class="k">count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="k">from</span> <span class="n">post</span> <span class="k">group</span> <span class="k">by</span> <span class="n">phone</span> <span class="k">order</span> <span class="k">by</span> <span class="k">null</span> <span class="k">limit</span> <span class="mi">1</span><span class="p">;</span> <span class="mi">1</span> <span class="k">row</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">2</span><span class="p">.</span><span class="mi">02</span> <span class="n">sec</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="414-同数据类型的列值比较">4.14 同数据类型的列值比较</h3>
+<ul>
+<li>原则:数字对数字，字符对字符</li>
+<li>数值列不字符类型比较
+<ul>
+<li>同时转换为双精度</li>
+<li>进行比对</li>
+</ul>
+</li>
+<li>字符列不数值类型比较
+<ul>
+<li>字符列整列转数值</li>
+<li>不会使用索引查询</li>
+</ul>
+</li>
+<li>举例:字符列不数值类型比较</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="err">字段</span><span class="p">:</span><span class="o">`</span><span class="n">remark</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">COMMENT</span> <span class="s1">&#39;备注, 默认为空&#39;</span><span class="p">,</span>
+
+<span class="n">MySQL</span><span class="o">&gt;</span><span class="k">SELECT</span> <span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">,</span> <span class="o">`</span><span class="n">gift_code</span><span class="o">`</span> <span class="k">FROM</span> <span class="n">gift</span> <span class="k">WHERE</span> <span class="o">`</span><span class="n">deal_id</span><span class="o">`</span> <span class="o">=</span> <span class="mi">640</span> <span class="k">AND</span> <span class="n">remark</span><span class="o">=</span><span class="mi">115127</span><span class="p">;</span> <span class="mi">1</span> <span class="k">row</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">14</span> <span class="n">sec</span><span class="p">)</span>
+<span class="n">MySQL</span><span class="o">&gt;</span><span class="k">SELECT</span> <span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">,</span> <span class="o">`</span><span class="n">gift_code</span><span class="o">`</span> <span class="k">FROM</span> <span class="n">pool_gift</span> <span class="k">WHERE</span> <span class="o">`</span><span class="n">deal_id</span><span class="o">`</span> <span class="o">=</span> <span class="mi">640</span> <span class="k">AND</span> <span class="n">remark</span><span class="o">=</span><span class="s1">&#39;115127&#39;</span><span class="p">;</span> <span class="mi">1</span> <span class="k">row</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">005</span> <span class="n">sec</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="415-load-data-导数据">4.15 Load data 导数据</h3>
+<ul>
+<li>批量数据快导入:
+<ul>
+<li>成批装载比单行装载更快，不需要每次刷新缓存</li>
+<li>无索引时装载比索引装载更快</li>
+<li>Insert values ,values，values 减少索引刷新</li>
+<li>Load data 比 insert 快约 20 倍</li>
+</ul>
+</li>
+<li>尽量不用 INSERT &hellip; SELECT
+<ul>
+<li>延迟</li>
+<li>同步出错</li>
+</ul>
+</li>
+</ul>
+<h3 id="416-打散大批量更新">4.16 打散大批量更新</h3>
+<ul>
+<li>大批量更新凌晨操作，避开高峰</li>
+<li>凌晨不限制</li>
+<li>白天上限默认为 100 条/秒(特殊再议)</li>
+<li>举例:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">update</span> <span class="n">post</span> <span class="k">set</span> <span class="n">tag</span><span class="o">=</span><span class="mi">1</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="k">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">);</span> <span class="n">sleep</span> <span class="mi">0</span><span class="p">.</span><span class="mi">01</span><span class="p">;</span>
+<span class="k">update</span> <span class="n">post</span> <span class="k">set</span> <span class="n">tag</span><span class="o">=</span><span class="mi">1</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="k">in</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">);</span> <span class="n">sleep</span> <span class="mi">0</span><span class="p">.</span><span class="mi">01</span><span class="p">;</span>
+<span class="p">......</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="417-know-every-sql">4.17 Know Every SQL</h3>
+<ul>
+<li>SHOW PROFILE</li>
+<li>MySQLdumpslow</li>
+<li>EXPLAIN</li>
+<li>Show Slow Log</li>
+<li>SHOW QUERY_RESPONSE_TIME(Percona)</li>
+<li>MySQLsla</li>
+<li>Show Processlist</li>
+</ul>
+<h3 id="418-sql-类军规小结">4.18 SQL 类军规小结</h3>
+<ul>
+<li>SQL 语句尽可能简单</li>
+<li>保持事务(连接)短小</li>
+<li>尽可能避免使用 SP/TRIG/FUNC</li>
+<li>尽量不用 SELECT *</li>
+<li>改写 OR 语句</li>
+<li>避免负向查询和% 前缀模糊查询</li>
+<li>减少 COUNT(*)</li>
+<li>LIMIT 的高效分页</li>
+<li>用 UNION ALL 而非 UNION</li>
+<li>分解联接保证高幵发</li>
+<li>GROUP BY 去除排序</li>
+<li>同数据类型的列值比较</li>
+<li>Load data 导数据</li>
+<li>打散大批量更新</li>
+<li>Know Every SQL!</li>
+</ul>
+<h2 id="五约定类军规5">五、约定类军规(5)</h2>
+<h3 id="51-隔离线上线下">5.1 隔离线上线下</h3>
+<ul>
+<li>构建数据库的生态环境</li>
+<li>开发无线上库操作权限</li>
+<li>原则:线上连线上，线下连线下
+<ul>
+<li>实时数据用 real 库</li>
+<li>模拟环境用 sim 库</li>
+<li>测试用 qa 库</li>
+<li>开发用 dev 库</li>
+</ul>
+</li>
+</ul>
+<h3 id="52-禁止未经-dba-确认的子查询">5.2 禁止未经 DBA 确认的子查询</h3>
+<ul>
+<li>MySQL 子查询
+<ul>
+<li>大部分情况优化较差</li>
+<li>特别 WHERE 中使用 IN id 的子查询  一般可用 JOIN 改写</li>
+</ul>
+</li>
+<li>举例:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">table1</span> <span class="k">where</span> <span class="n">id</span> <span class="n">id</span> <span class="k">from</span> <span class="n">table2</span><span class="p">)</span> <span class="k">in</span> <span class="p">(</span><span class="k">SELECT</span> <span class="k">insert</span> <span class="k">into</span> <span class="n">table1</span> <span class="p">(</span><span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">table2</span><span class="p">);</span> <span class="c1">-- 可能导致复制异常
+</span></code></pre></td></tr></table>
+</div>
+</div><h3 id="53-永远不在程序端显式加锁">5.3 永远不在程序端显式加锁</h3>
+<ul>
+<li>永远不在程序端对数据库显式加锁
+<ul>
+<li>外部锁对数据库不可控</li>
+<li>高并发发时是灾难</li>
+<li>极难调试和排查</li>
+</ul>
+</li>
+<li>并发扣款等一致性问题
+<ul>
+<li>采用事务</li>
+<li>相对值修改</li>
+<li>Commit 前二次较验冲突</li>
+</ul>
+</li>
+</ul>
+<h3 id="54-统一字符集为-utf8">5.4 统一字符集为 UTF8</h3>
+<ul>
+<li>字符集:
+<ul>
+<li>MySQL 4.1 以前叧有 latin1</li>
+<li>为多语言支持增加多字符集</li>
+<li>也带来了 N 多问题</li>
+<li>保持简单</li>
+</ul>
+</li>
+<li>统一字符集:UTF8</li>
+<li>校对规则:utf8_general_ci</li>
+<li>乱码:SET NAMES UTF8</li>
+</ul>
+<h3 id="55-统一命名规范">5.5 统一命名规范</h3>
+<ul>
+<li>库表等名称统一用小写
+<ul>
+<li>Linux VS Windows</li>
+<li>MySQL 库表大小写敏感</li>
+<li>字段名的大小写不敏感</li>
+</ul>
+</li>
+<li>索引命名默认为“idx_字段名”</li>
+<li>库名用缩写，尽量在 2~7 个字母
+<ul>
+<li>DataSharing ==&gt; ds</li>
+</ul>
+</li>
+<li>注意避免用保留字命名</li>
+<li>……</li>
+</ul>
+<h3 id="56-注意避免用保留字命名">5.6 注意避免用保留字命名</h3>
+<ul>
+<li>举例:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="k">return</span><span class="p">;</span>
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="o">`</span><span class="k">return</span><span class="o">`</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><details>
+<summary><b>MySQL系统关键字</b></summary>
+<ul>
+<li>ADD</li>
+<li>ALL</li>
+<li>ALTER GOTO</li>
+<li>GRANT</li>
+<li>GROUP</li>
+<li>PURGE</li>
+<li>RAID0</li>
+<li>RANGE</li>
+<li>ANALYZE</li>
+<li>AND</li>
+<li>AS HAVING</li>
+<li>HIGH_PRIORIT Y</li>
+<li>HOUR_MICROSEC OND</li>
+<li>READ</li>
+<li>READS</li>
+<li>REAL</li>
+<li>ASC</li>
+<li>ASENSITIVE</li>
+<li>BEFORE HOUR_MINUTE</li>
+<li>HOUR_SECON D</li>
+<li>IF</li>
+<li>REFERENCES</li>
+<li>REGEXP</li>
+<li>RELEASE</li>
+<li>BETWEEN</li>
+<li>BIGINT</li>
+<li>BINARY IGNORE</li>
+<li>IN</li>
+<li>INDEX</li>
+<li>RENAME</li>
+<li>REPEAT</li>
+<li>REPLACE</li>
+<li>BLOB</li>
+<li>BOTH</li>
+<li>BY INFILE</li>
+<li>INNER</li>
+<li>INOUT</li>
+<li>REQUIRE</li>
+<li>RESTRICT</li>
+<li>RETURN</li>
+<li>CALL</li>
+<li>CASCADE</li>
+<li>CASE INSENSITIVE</li>
+<li>INSERT</li>
+<li>INT</li>
+<li>REVOKE</li>
+<li>RIGHT</li>
+<li>RLIKE</li>
+<li>CHANGE</li>
+<li>CHAR</li>
+<li>CHARACTER INT1</li>
+<li>INT2</li>
+<li>INT3</li>
+<li>SCHEMA</li>
+<li>SCHEMAS</li>
+<li>SECOND_MICROSEC OND</li>
+<li>CHECK</li>
+<li>COLLATE</li>
+<li>COLUMN INT4</li>
+<li>INT8</li>
+<li>INTEGER</li>
+<li>SELECT</li>
+<li>SENSITIVE</li>
+<li>SEPARATOR</li>
+<li>CONDITION</li>
+<li>CONNECTION</li>
+<li>CONSTRAINT INTERVAL</li>
+<li>INTO</li>
+<li>IS</li>
+<li>SET</li>
+<li>SHOW</li>
+<li>SMALLINT</li>
+<li>CONTINUE</li>
+<li>CONVERT</li>
+<li>CREATE ITERATE</li>
+<li>JOIN</li>
+<li>KEY</li>
+<li>SPATIAL</li>
+<li>SPECIFIC</li>
+<li>SQL</li>
+<li>CROSS</li>
+<li>CURRENT_DA TE</li>
+<li>CURRENT_TIM KEYS E</li>
+<li>KILL</li>
+<li>LABEL</li>
+<li>SQLEXCEPTION</li>
+<li>SQLSTATE</li>
+<li>SQLWARNING</li>
+<li>CURRENT_TIMESTA MP</li>
+<li>CURRENT_US ER</li>
+<li>CURSOR LEADING</li>
+<li>LEAVE</li>
+<li>LEFT</li>
+<li>SQL_BIG_RESUL T</li>
+<li>SQL_CALC_FOUND_R OWS</li>
+<li>SQL_SMALL_RESULT</li>
+<li>DATABASE</li>
+<li>DATABASES</li>
+<li>DAY_HOUR LIKE</li>
+<li>LIMIT</li>
+<li>LINEAR</li>
+<li>SSL</li>
+<li>STARTING</li>
+<li>STRAIGHT_JOIN</li>
+<li>DAY_MICROSECON D</li>
+<li>DAY_MINUTE</li>
+<li>DAY_SECOND LINES</li>
+<li>LOAD</li>
+<li>LOCALTIME</li>
+<li>TABLE</li>
+<li>TERMINATED</li>
+<li>THEN</li>
+<li>DEC</li>
+<li>DECIMAL</li>
+<li>DECLARE LOCALTIMESTAMP</li>
+<li>LOCK</li>
+<li>LONG</li>
+<li>TINYBLOB</li>
+<li>TINYINT</li>
+<li>TINYTEXT</li>
+<li>DEFAULT</li>
+<li>DELAYED</li>
+<li>DELETE LONGBLOB</li>
+<li>LONGTEXT</li>
+<li>LOOP</li>
+<li>TO</li>
+<li>TRAILING</li>
+<li>TRIGGER</li>
+<li>DESC</li>
+<li>DESCRIBE</li>
+<li>DETERMINISTI LOW_PRIORITY C</li>
+<li>MATCH</li>
+<li>MEDIUMBLOB</li>
+<li>TRUE</li>
+<li>UNDO</li>
+<li>UNION</li>
+<li>DISTINCT</li>
+<li>DISTINCTROW</li>
+<li>DIV MEDIUMINT</li>
+<li>MEDIUMTEXT</li>
+<li>MIDDLEINT</li>
+<li>UNIQUE</li>
+<li>UNLOCK</li>
+<li>UNSIGNED</li>
+<li>DOUBLE</li>
+<li>DROP</li>
+<li>DUAL</li>
+<li>MINUTE_MICROSECO ND</li>
+<li>MINUTE_SECO ND</li>
+<li>MOD</li>
+<li>UPDATE</li>
+<li>USAGE</li>
+<li>USE</li>
+<li>EACH</li>
+<li>ELSE</li>
+<li>ELSEIF MODIFIES</li>
+<li>NATURAL</li>
+<li>NOT</li>
+<li>USING</li>
+<li>UTC_DATE</li>
+<li>UTC_TIME</li>
+<li>ENCLOSED</li>
+<li>ESCAPED</li>
+<li>EXISTS</li>
+<li>NO_WRITE_TO_BINL OG</li>
+<li>NULL</li>
+<li>NUMERIC</li>
+<li>UTC_TIMESTAM P</li>
+<li>VALUES</li>
+<li>VARBINARY</li>
+<li>EXIT</li>
+<li>EXPLAIN</li>
+<li>FALSE ON</li>
+<li>OPTIMIZE</li>
+<li>OPTION</li>
+<li>VARCHAR</li>
+<li>VARCHARACTER</li>
+<li>VARYING</li>
+<li>FETCH</li>
+<li>FLOAT</li>
+<li>FLOAT4 OPTIONALLY</li>
+<li>OR</li>
+<li>ORDER</li>
+<li>WHEN</li>
+<li>WHERE</li>
+<li>WHILE</li>
+<li>FLOAT8</li>
+<li>FOR</li>
+<li>FORCE OUT</li>
+<li>OUTER</li>
+<li>OUTFILE</li>
+<li>WITH</li>
+<li>WRITE</li>
+<li>X509</li>
+<li>FOREIGN</li>
+<li>FROM</li>
+<li>FULLTEXT PRECISION</li>
+<li>PRIMARY</li>
+<li>PROCEDURE</li>
+<li>XOR</li>
+<li>YEAR_MONTH</li>
+<li>ZEROFILL</li>
+</ul>
+</details>
+<h3 id="57-约定类军规小结">5.7 约定类军规小结</h3>
+<ul>
+<li>隔离线上线下</li>
+<li>禁止未经 DBA 确认的子查询上线</li>
+<li>永远不在程序端显式加锁</li>
+<li>统一字符集为 UTF8</li>
+<li>统一命名规范</li>
+</ul>
+<h2 id="六原文链接">六、原文链接</h2>
+<ul>
+<li><a href="http://weibo.com/wushizhan">http://weibo.com/wushizhan</a></li>
+</ul>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/mysql/mysql-%E7%B4%A2%E5%BC%95/">
+            <span class="next-text nav-default">mysql索引原理</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+
+
+</body>
+</html>

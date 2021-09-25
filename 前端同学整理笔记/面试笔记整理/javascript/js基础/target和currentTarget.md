@@ -1,0 +1,2 @@
+- event.currentTarget- 监听事件绑定的元素
+- event.target- 触发事件的元素。事件可能冒泡到父元素，随意触发事件的可能是父元素。

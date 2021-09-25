@@ -49,7 +49,7 @@
 <meta itemprop="description" content="mysql 索引原理 什么是回表 回表的概念，去根据索引搜索到 数据，但是索引中没有要查找的数据，就要去定位到那个行，去把数据行中的数据搜索出来【这个就是回">
 <meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="744">
+<meta itemprop="wordCount" content="1836">
 
 
 
@@ -160,6 +160,18 @@
             <li><a href="#b-树">B+ 树</a></li>
             <li><a href="#聚集索引">聚集索引</a></li>
             <li><a href="#非聚集索引">非聚集索引</a></li>
+            <li><a href="#对于面试的总结">对于面试的总结</a></li>
+          </ul>
+        </li>
+        <li><a href="#索引和数据存储位置">索引和数据存储位置</a></li>
+      </ul>
+    </li>
+    <li><a href="#6操作系统基础知识">6、操作系统基础知识</a>
+      <ul>
+        <li><a href="#61局部性原理">6.1、局部性原理</a>
+          <ul>
+            <li><a href="#最左匹配原则">最左匹配原则</a></li>
+            <li><a href="#mysql执行流程">mysql执行流程</a></li>
           </ul>
         </li>
       </ul>
@@ -172,6 +184,19 @@
       <h3 id="mysql-索引原理">mysql 索引原理</h3>
 <h3 id="什么是回表">什么是回表</h3>
 <p>回表的概念，去根据索引搜索到 数据，但是索引中没有要查找的数据，就要去定位到那个行，去把数据行中的数据搜索出来【这个就是回表】</p>
+<ul>
+<li>回表触发的条件【什么时候会回表】
+<ul>
+<li>查询普通索引【辅助索引 B+ 树存的是主键，再去通过主键去查询】</li>
+<li>没有使用覆盖索引的时候，就会触发回表
+<ul>
+<li>数据如果能直接从索引中查询出来，就会走覆盖索引，不需要回表</li>
+<li>如果没法覆盖索引，就会走普通索引的回表</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 <h3 id="什么是覆盖索引">什么是覆盖索引</h3>
 <p>数据之间在索引里面，之间把数据从索引里面读取出来即可，这个就是覆盖索引。</p>
 <p><a href="https://www.bilibili.com/video/BV1Xg411j7rQ?from=search&amp;seid=5325859591478492772">学习视频</a></p>
@@ -189,6 +214,167 @@
 <p>辅助索引也叫非聚簇索引、非聚集索引、二级索引等。辅助索引跟聚簇索引的区别在于，聚簇索引叶子节点中保存了完整的行数据，而辅助索引叶子节点中保存的是聚簇索引中的索引键值。
   辅助索引的存在不影响数据在聚簇索引中的组织，因此每张表中可以有多个辅助索引。</p>
 <p><img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9pbWcyMDE4LmNuYmxvZ3MuY29tL2Jsb2cvODQyNTE0LzIwMTkwNy84NDI1MTQtMjAxOTA3MjYyMTA3MjU4NjctMTEzMDQ5NTA0NS5wbmc?x-oss-process=image/format,png" alt="img"></p>
+<h3 id="对于面试的总结">对于面试的总结</h3>
+<h4 id="局部性原理">局部性原理</h4>
+<p>磁盘预读：（预读的长度一般为页 (page)  的整数倍）</p>
+<p>页是存储器的逻辑块， 操作系统往往将主存和磁盘存储区分割为连续的大小相等的块， 每个存储块称为一页 （许多操作系统中，页的大小通常为 4k) ,主存和磁盘以页为单位交换数据。</p>
+<p>主存和磁盘是以页为单位的。  磁盘预读的长度一般为页的整数倍。</p>
+<p><img src="https://img2020.cnblogs.com/blog/2429409/202108/2429409-20210817193651064-186360650.png" alt="https://img2020.cnblogs.com/blog/2429409/202108/2429409-20210817193651064-186360650.png"></p>
+<p><img src="https://img2020.cnblogs.com/blog/2429409/202108/2429409-20210817193857738-595104758.png" alt="https://img2020.cnblogs.com/blog/2429409/202108/2429409-20210817193857738-595104758.png"></p>
+<ul>
+<li>Innodb是通过B+Tree结构对主键创建索引，然后<strong>叶子节点中存储记录</strong>，如果没有主键，选择唯一键，如果没有唯一键，选择6字节的row_id来进行存储</li>
+<li>如果创建的索引是其它字段(不是主键)，那么在叶子节点中存储的是<strong>该记录的主键(不是数据)</strong>  ，主键有个指针，指向数据行，然后再通过主键索引查找对应的记录</li>
+</ul>
+<ol>
+<li>普通索引和 主键索引的区别
+<ol>
+<li>普通索引 的是 B+ 树， 叶子节点存的是 主键，主键有个指针指向那个 行， 和 主键索引的区别就是， 会查询2次，这个叫做回表</li>
+</ol>
+</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">
+show databases<span class="p">;</span>
+use blog_oj<span class="p">;</span>
+show tables<span class="p">;</span>
+show index from t_user<span class="p">;</span> <span class="c1"># 查看表的索引信息</span>
+ desc t_user<span class="p">;</span> <span class="c1"># 查看表结构</span>
+ 
+ show create table t_user<span class="p">;</span> <span class="c1"># 查看mysql这张表建表信息</span>
+ 
+ 
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 建立索引</span>
+
+altar table t_user add index <span class="sb">`</span>user_name<span class="sb">`</span> <span class="o">(</span>user_name<span class="o">)</span><span class="p">;</span>
+alter table t_user add index index_username <span class="o">(</span><span class="sb">`</span>username<span class="sb">`</span><span class="o">)</span><span class="p">;</span>
+
+alter table t_user drop index index_username<span class="p">;</span>
+
+create index index_username on t_user <span class="o">(</span>username<span class="o">)</span><span class="p">;</span>
+alter table t_user drop index index_username<span class="p">;</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="索引和数据存储位置">索引和数据存储位置</h2>
+<blockquote>
+<p>对于InnoDB</p>
+<p>索引和实际的数据都是存储在磁盘上的，只不过在进行数据读取的时候会优先把索引加载到内存中</p>
+</blockquote>
+<p>存储引擎：不同的数据文件在磁盘中有不同的组织形式</p>
+<p>MyIsam存储引擎</p>
+<blockquote>
+<p><code>.frm</code> 表结构</p>
+<p><code>.MYD</code> 数据文件</p>
+<p><code>.MYI</code> 索引</p>
+</blockquote>
+<p>InnoDb存储引擎</p>
+<blockquote>
+<p><code>.frm</code> 表结构</p>
+<p><code>.ibd</code> 索引文件+数据文件</p>
+</blockquote>
+<p>索引的分类</p>
+<ul>
+<li>主键索引
+<ul>
+<li>唯一性索引，一个表只有一个主键</li>
+</ul>
+</li>
+<li>唯一索引
+<ul>
+<li>所有值只能出现一次</li>
+</ul>
+</li>
+<li>普通索引
+<ul>
+<li>可以为空，无唯一性现在</li>
+</ul>
+</li>
+<li>全文索引
+<ul>
+<li>full text</li>
+</ul>
+</li>
+<li>组合索引
+<ul>
+<li>多个列值组成一个索引，用于组合搜索</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://img2020.cnblogs.com/blog/2429409/202108/2429409-20210817193520491-1034391751.png" alt="https://img2020.cnblogs.com/blog/2429409/202108/2429409-20210817193520491-1034391751.png"></p>
+<h1 id="6操作系统基础知识">6、操作系统基础知识</h1>
+<h2 id="61局部性原理">6.1、局部性原理</h2>
+<ul>
+<li>
+<p>时间局部性</p>
+<blockquote>
+<p>之前被访问过的数据很有可能再次被访问</p>
+</blockquote>
+</li>
+<li>
+<p>空间局部性</p>
+<blockquote>
+<p>数据和程序都有聚集成群的倾向</p>
+</blockquote>
+</li>
+</ul>
+<p>缓存的应用：网站访问数据的特点大多数呈现在&rdquo;<strong>二八定律</strong>&quot;:80%的业务访问集中在20%的数据上。这时为了减轻数据的压力和提高网站的数据访问速度，则可以使用缓存机制来优化网站。</p>
+<p><img src="https://img2020.cnblogs.com/blog/1401949/202104/1401949-20210426141405564-1085235285.png" alt="https://img2020.cnblogs.com/blog/1401949/202104/1401949-20210426141405564-1085235285.png"></p>
+<h3 id="最左匹配原则">最左匹配原则</h3>
+<p>问怎么理解最左匹配原则；</p>
+<p>我们最重要的一点就是 答 B+ 树的结构：</p>
+<ol>
+<li>B+树存储结构就是从左到右存储</li>
+<li>查询的时候 索引也是从左到右匹配 这样子</li>
+</ol>
+<h3 id="mysql执行流程">mysql执行流程</h3>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_09_24_12_55_05image-20210924125504999.png" alt="image-20210924125504999"></p>
+<p>解决这个面试题的方法：</p>
+<ol start="0">
+<li>
+<p>连接器： 负责 与用户连接</p>
+</li>
+<li>
+<p>从编译原理的角度看问题：</p>
+<ol>
+<li>先进行词法分析，然后语法分析</li>
+</ol>
+</li>
+<li>
+<p>对sql语法进行优化，【有索引就走索引】</p>
+</li>
+<li>
+<p>执行sql ，查询数据</p>
+</li>
+</ol>
 
     </div>
 
@@ -210,7 +396,11 @@
 <footer class="post-footer">
       
       <nav class="post-nav">
-        
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/mysql/mysql%E5%BC%80%E5%8F%91%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">mysql开发注意事项</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         
       </nav>
     </footer>
