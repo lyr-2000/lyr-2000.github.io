@@ -49,7 +49,7 @@
 <meta itemprop="description" content="mysql慢查询怎么优化 检查是否走了索引，如果没有，优化 SQL 利用索引 检查 利用的索引是否是最优索引，没有的话，尽量用最优索引 检查所查字段是否是必">
 <meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="2642">
+<meta itemprop="wordCount" content="4367">
 
 
 
@@ -154,9 +154,25 @@
       <ul>
         <li><a href="#mysql慢查询怎么优化">mysql慢查询怎么优化</a></li>
         <li><a href="#索引的本质">索引的本质</a></li>
-        <li><a href="#聚集索引和非聚集索引">聚集索引和非聚集索引</a></li>
-        <li><a href="#回表和覆盖索引">回表和覆盖索引</a></li>
-        <li><a href="#慢sql优化-会考虑哪些">慢sql优化 会考虑哪些</a></li>
+        <li><a href="#聚集索引和非聚集索引">聚集索引和非聚集索引</a>
+          <ul>
+            <li><a href="#重点">重点</a></li>
+          </ul>
+        </li>
+        <li><a href="#回表和覆盖索引">回表和覆盖索引</a>
+          <ul>
+            <li><a href="#回表重点">回表重点</a></li>
+          </ul>
+        </li>
+        <li><a href="#innodb-如何实现事务">Innodb 如何实现事务</a></li>
+        <li><a href="#索引的种类">索引的种类</a></li>
+        <li><a href="#mysql集群搭建">mysql集群搭建</a></li>
+        <li><a href="#慢sql优化-会考虑哪些">慢sql优化 会考虑哪些</a>
+          <ul>
+            <li><a href="#b-树和-b树区别">B+ 树和 B树区别</a></li>
+            <li><a href="#一般用explain-解析-sql">一般用explain 解析 sql</a></li>
+          </ul>
+        </li>
         <li><a href="#锁">锁</a>
           <ul>
             <li><a href="#间隙锁-mvcc-rr--解决幻读原理">间隙锁【 MVCC RR ， 解决幻读原理】</a></li>
@@ -200,8 +216,72 @@
 <p>可以从非常经典的两张图看看它们的区别(图片来源于网络)：</p>
 <p><img src="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663662791/E8B5126C6C720C4643F2543CB83781CB" alt="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663662791/E8B5126C6C720C4643F2543CB83781CB"></p>
 <p><img src="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663675751/70BCE6DF348B8AAF62246C6079F56E09" alt="https://uploadfiles.nowcoder.com/images/20210915/115285789_1631663675751/70BCE6DF348B8AAF62246C6079F56E09"></p>
+<h3 id="重点">重点</h3>
+<p>一个表只能有一个聚集索引 ， 而非聚集索引可以有很多个，</p>
+<p>InnoDB 会创建一个因此 的 row-id 作为聚集索引 【主键】</p>
+<p>如果表定义了 pk, pk 就是聚集索引，否则用隐藏的 row-id 作为索引</p>
+<p>myisam 使用的是非聚集索引，数的叶子节点上 的 data 不是数据本身， 而是数据存放的地址。 InnoDB 使用的是聚集索引，叶子节点上的data就是数据本身。</p>
+<p>覆盖索引和回表：</p>
+<ol>
+<li>如果只需要在一颗索引树上获取 SQL 所需要的所有列，就不需要再回表查询，  这样查询速度就可以更快。</li>
+<li>实现索引覆盖的最简单简单的方式就是要查询的字段，全部建立到联合索引当中。
+<ol>
+<li>user(PK id, name sex)</li>
+<li>select count (name) from user : -&gt; name 字段简历一个索引</li>
+<li>select id ,name,sex from user -&gt; name 索引升级为 (name,sex )的联合索引。</li>
+<li>索引页不是越多越好，因为数据更新还要去修改索引，索引越多，更新越慢。</li>
+</ol>
+</li>
+</ol>
 <h2 id="回表和覆盖索引">回表和覆盖索引</h2>
 <p>覆盖索引意思是 ，查询的字段是索引的一部分，并且 sql 查询的时候 是利用的这个索引，那么 可以将数据之间从索引中取出【速度快】， 回表的话就是 有一部分数据是索引中没有存的，那么就要 利用这个索引 去定位到对应的数据表中，</p>
+<h3 id="回表重点">回表重点</h3>
+<h4 id="重点-必背">重点 必背</h4>
+<ol>
+<li>普通索引和主键索引的区别【 主键聚餐索引，一次查询， 普通索引存的是主键索引， 用普通索引就会有个回表</li>
+<li>覆盖索引， 如果查询的数据都是索引的数列，并且使用了这个索引，可以直接从索引中读取，就一次查询，就不需要回表操作了。</li>
+</ol>
+<h2 id="innodb-如何实现事务">Innodb 如何实现事务</h2>
+<p>Innodb 通过 Buffer Pool ,LogBuffer , redo log ，undo log 实现事务，以一个 update语句为例</p>
+<ol>
+<li>
+<p>innodb在收到一个 update 语句后，会根据条件找到数据所在的也，并将该也缓存在 buffer pool 中</p>
+</li>
+<li>
+<p>执行 update 语句，修改 buffer pool 也就是内存中的数据</p>
+</li>
+<li>
+<p>针对  update 语句 生成一个 redo log 对象，并存入 logBuffer 中</p>
+</li>
+<li>
+<p>针对update 语句生成 undolog 日志，用于事务回滚</p>
+</li>
+<li>
+<p>如果事务提交，那么则把 redolog 对象进行持久化，后序还有其他机制将 buffer pool 中所修改的数据也持久化到磁盘中</p>
+<ol>
+<li>后续会有个 purge 线程 将 buffer pool 的脏页持久化到磁盘中。</li>
+</ol>
+</li>
+<li>
+<p>如果事务回滚，则用 undolog 日志进行回滚。</p>
+</li>
+</ol>
+<h2 id="索引的种类">索引的种类</h2>
+<ol>
+<li>b+ 树索引</li>
+<li>哈希索引：
+<ol>
+<li>原理：把不固定的输入转为固定的输出。</li>
+</ol>
+</li>
+</ol>
+<p>两种索引的区别： b树索引可以模糊查询， 哈希索引只能等值查询。</p>
+<h2 id="mysql集群搭建">mysql集群搭建</h2>
+<ol>
+<li>主从节点</li>
+<li>主节点 将 binlog 推送给 slave 节点，slave io线程 通过生成 中继日志 relay log ， 由一个线程将 relay log 同步数据。</li>
+</ol>
+<p>mysql 只从 主节点 发送给从节点，由此保证数据的读写分离。</p>
 <h2 id="慢sql优化-会考虑哪些">慢sql优化 会考虑哪些</h2>
 <p>作者：路人zhang
 链接：https://www.nowcoder.com/discuss/744436?channel=-1&amp;source_id=profile_follow_post_nctrack
@@ -221,6 +301,54 @@
 <li>优化数据库的结构，<strong>将字段很多的表分解成多个表，或者考虑建立中间表</strong>。</li>
 <li><strong>优化LIMIT分页。</strong></li>
 </ul>
+<h3 id="b-树和-b树区别">B+ 树和 B树区别</h3>
+<ol>
+<li>B树特点：
+<ol>
+<li>节点排序</li>
+<li>一个节点可以存多个元素，多个元素也是排序的。
+<ul>
+<li>这里注意问：最左前缀匹配原则 怎么理解【被问过2次】</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>B+ 树的特点：
+<ol>
+<li>拥有B树的特点</li>
+<li>叶子节点之间有指针 【数据主要存放在叶子节点】</li>
+<li>非叶子节点中的元素是冗余数据， 也就是叶子节点上存储了所有的元素，并且是排好序的</li>
+</ol>
+</li>
+</ol>
+<p>Mysql 索引使用的是 B+ 树， 因为索引是用来加快查询的， 而B+树通过对数据 进行排序所以是可以提高查询速度， 然后通过节点中可以存储多个元素，从而可以使得B+树的高度不会太高，  在 Mysql 中<strong>一个 Innodb 页就是 一个 B+树节点</strong>， <strong>一个 innodb页面默认 是  16KB</strong>, 所以一般情况下 <strong>一颗两层的 B+树可以存2000万行左右的数据</strong>，然后通过<strong>B+ 树叶子节点中存储了所有的数据并且进行了排序</strong>，并且叶子节点之间有指针，<strong>可以很好的支持全表扫描</strong>，范围查找等SQL语句。</p>
+<h3 id="一般用explain-解析-sql">一般用explain 解析 sql</h3>
+<p>然后 根据 type 字段的反馈 来优化 sql</p>
+<p>反馈字段：</p>
+<ol>
+<li>type: sql优化的重要手段： 判断sql性能和优化程度的重要指标。
+<ul>
+<li>const： 通过索引一次命中， 匹配一行数据</li>
+<li>System： 表中 只有一行记录，相当于系统表。</li>
+<li>eq_ref : 唯一索引，只有一条记录和它匹配</li>
+<li>ref: 非唯一索引扫码，返回匹配某个值的所有。</li>
+<li>range: 范围索引，使用一个索引来匹配行 ，一般用于 between ， <code>&lt;</code> ,<code> &gt;</code></li>
+<li>index; 只遍历索引树 【遍历了整个索引，范围算是及其低了 O(N) 】
+<ul>
+<li>注意： 这种和 ALL 相比也是另一种形式的全表扫描，只不过它是根据索引扫描表，然后回表取数据， 和 all 相比，都是取得全表的数据</li>
+<li>官方说 它比 ALL 快的原因可能是 **按照索引扫描全表的数据是有序的。**这样一来，结果不同，也就没法比效率的问题了。</li>
+</ul>
+</li>
+<li>ALL : 全表扫描，这个类型查询性能最差</li>
+</ul>
+</li>
+<li>一般来说，得保证查询至少达到range级别，最好能达到ref。</li>
+</ol>
+<p>Extra</p>
+<p>如果是Only index，这意味着信息只用索引树中的信息检索出的，这比扫描整个表要快。</p>
+<p>如果是where used，就是使用上了where限制。</p>
+<p>如果是impossible where 表示用不着where，一般就是没查出来啥。</p>
+<p>如果此信息显示Using filesort或者Using temporary的话会很吃力，WHERE和ORDER BY的索引经常无法兼顾，如果按照WHERE来确定索引，那么在ORDER BY时，就必然会引起Using filesort，这就要看是先过滤再排序划算，还是先排序再过滤划算。</p>
 <h2 id="锁">锁</h2>
 <h3 id="间隙锁-mvcc-rr--解决幻读原理">间隙锁【 MVCC RR ， 解决幻读原理】</h3>
 <p>mysql 的 mvcc  RR 解决了幻读，默认开启了间隙锁解决了这个问题</p>

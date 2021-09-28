@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>redis rdb 和 aof机制 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="redis rdb 和 aof 机制 rdb: redis database 在指定时间内将内存中的数据集快照写入磁盘，实际操作过程就是一个 fork 一个子进程，先将数据写入临时文件，写入成功 后再替换之前的文" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/redis/redis_rdb_aof%E6%9C%BA%E5%88%B6/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="redis rdb 和 aof机制" />
+<meta property="og:description" content="redis rdb 和 aof 机制 rdb: redis database 在指定时间内将内存中的数据集快照写入磁盘，实际操作过程就是一个 fork 一个子进程，先将数据写入临时文件，写入成功 后再替换之前的文" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/redis/redis_rdb_aof%E6%9C%BA%E5%88%B6/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="redis rdb 和 aof机制">
+<meta itemprop="description" content="redis rdb 和 aof 机制 rdb: redis database 在指定时间内将内存中的数据集快照写入磁盘，实际操作过程就是一个 fork 一个子进程，先将数据写入临时文件，写入成功 后再替换之前的文">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="1406">
+
+
+
+<meta itemprop="keywords" content="八股文," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="redis rdb 和 aof机制"/>
+<meta name="twitter:description" content="redis rdb 和 aof 机制 rdb: redis database 在指定时间内将内存中的数据集快照写入磁盘，实际操作过程就是一个 fork 一个子进程，先将数据写入临时文件，写入成功 后再替换之前的文"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">redis rdb 和 aof机制</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        <div class="post-category">
+            <a href="/categories/%E5%85%AB%E8%82%A1%E6%96%87/"> 八股文 </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#redis--rdb-和-aof-机制">redis  rdb 和 aof 机制</a></li>
+            <li><a href="#redis-为什么单线程这么快">redis 为什么单线程这么快</a></li>
+          </ul>
+        </li>
+        <li><a href="#redis-过期键删除策略">redis 过期键删除策略</a>
+          <ul>
+            <li><a href="#redis-分布式锁-如何实现">redis 分布式锁 如何实现</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h3 id="redis--rdb-和-aof-机制">redis  rdb 和 aof 机制</h3>
+<p>rdb: redis database</p>
+<p>在指定时间内将内存中的数据集快照写入磁盘，实际操作过程就是一个 fork 一个子进程，先将数据写入临时文件，写入成功 后再替换之前的文件，用二进制压缩存储。</p>
+<h4 id="为什么redis进行rdb持久化数据时新起一个进程而不是在原进程中起一个线程来持久化数据">为什么Redis进行RDB持久化数据时，新起一个进程而不是在原进程中起一个线程来持久化数据</h4>
+<p>答案：主要是出于Redis性能的考虑，(1)Redis RDB<strong>持久化机制会阻塞主进程</strong>，这样主进程就无法响应客户端请求。(2)我们知道Redis对客户端响应请求<strong>的工作模型是单进程和单线程的</strong>，如果在主进程内启动一个线程，这样会造成对数据的竞争条件，为了避免使用锁降低性能。基于以上两点这就是为什么<strong>Redis通过启动一个进程来执行RDB了</strong>。</p>
+<p>优点：</p>
+<ol>
+<li>整个redis 数据库只包含一个文件  dump.rdb, 方便持久化</li>
+<li>容灾性 好，方便备份</li>
+<li>性能最大化，子进程执行 写操作，主进程继续处理，所以 IO最大化，单独使用子进程处理持久化，主进程无IO操作，保证redis 高性能</li>
+<li>数据量比较大 比 AOF 启动效率要更高</li>
+</ol>
+<h5 id="aof-原理">AOF 原理</h5>
+<p>缺点：</p>
+<pre><code>1. AOF 文件比 RDB文件大，恢复速度慢
+2. 数据集大的时候 ，比 rdb启动效率低
+3. 运行效率没RDB 高
+</code></pre>
+<p>优点：</p>
+<ol>
+<li>以文本的方式写入命令，可以打开文件看详细的操作记录</li>
+<li>比较实时，</li>
+<li>策略：
+<ol>
+<li>每秒同步</li>
+<li>每修改同步</li>
+<li>不同步</li>
+</ol>
+</li>
+</ol>
+<p>==子进程只执行保存操作（只保存 开始 到 子进程触发保存时间点的数据），不接受客户端的请求。即：在子进程执行持久化保存数据的时候，来自客户端的新数据子进程不会保存==</p>
+<h3 id="redis-为什么单线程这么快">redis 为什么单线程这么快</h3>
+<p>redis 持久化可以 fork一个多进程来处理 【不一定严格说是单线程】</p>
+<ol>
+<li>redis 纯内存操作</li>
+<li>单线程处理，没有线程上下文切换的代价</li>
+<li>redis 实现了一个队列， 通过一个事件循环，  epoll 监听多个 文件描述符，注册个 回调进去，如果 有IO 事件了，就出发回调 执行。 【reactor模式】
+<ol>
+<li>redis 网络事件处理器 是 一个单线程的， file event handler</li>
+<li></li>
+</ol>
+</li>
+</ol>
+<p><img src="https://gitee.com/workingonescape/typora_images/raw/master/image-20210917160156402.png" alt="https://gitee.com/workingonescape/typora_images/raw/master/image-20210917160156402.png"></p>
+<p>多个 socket 并发产生不同的事件，多路复用程序要监听多个 socket，会先将 socket 放入一个队列，每次从队列有序，同步取出一个 socket 给事件分派器，事件分派器把 socket 给对应的事件处理器。 然后 socket 处理完成后， IO 多路复用 程序才将队列中的下一个 socket 给事件分派器。 文件时间分派器 会根据每个 socket 当前的事件， 来选择对应的事件处理器来处理。</p>
+<p><img src="https://images2018.cnblogs.com/blog/463402/201807/463402-20180730224920013-771808979.png" alt="https://images2018.cnblogs.com/blog/463402/201807/463402-20180730224920013-771808979.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/16056711-d65d7b837511aedf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/876/format/webp" alt="https://upload-images.jianshu.io/upload_images/16056711-d65d7b837511aedf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/876/format/webp"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/16056711-010ea11b5575f352.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/942/format/webp" alt="https://upload-images.jianshu.io/upload_images/16056711-010ea11b5575f352.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/942/format/webp"></p>
+<p>多路复用是指使用一个线程来检查多个文件描述符（Socket）的就绪状态，比如调用select和poll函数，传入多个文件描述符，如果有一个文件描述符就绪，则返回，否则阻塞直到超时。对于文件来讲，就是监听一堆文件，某个文件写满则返回。对于redis来讲，就是用了上述技术去监听多个连接，当连接完成写入的时候，会监听到并返回：）</p>
+<h2 id="redis-过期键删除策略">redis 过期键删除策略</h2>
+<ul>
+<li>惰性删除
+<ul>
+<li>get 的时候再删除</li>
+</ul>
+</li>
+<li>定期删除
+<ul>
+<li>过段时间删除</li>
+</ul>
+</li>
+</ul>
+<p>redis 同时使用2种策略</p>
+<h3 id="redis-分布式锁-如何实现">redis 分布式锁 如何实现</h3>
+<ol>
+<li>redis 高可用</li>
+<li>setnx + lua脚本 ， 如果key 存在就获取不到锁</li>
+<li>利用lua脚本 保证多个 redis 操作的原子性</li>
+<li>考虑锁过期，需要用一个看门狗机制，定时任务定时去监听是否需要续约</li>
+<li>同时还要考虑 redis 节点挂掉之后 是否需要采用红锁的方式， 向 N/2 + 1 个节点申请锁， 都申请到了才证明锁获取从， 这样就算某个redis 节点挂掉，锁也不能被其他客户端获取。</li>
+</ol>
+<p><a href="https://blog.csdn.net/jiangxiulilinux/article/details/107015292">红锁</a></p>
+<p>分布式锁，当我们请求一个分布式锁的时候，成功了，但是这时候slave还没有复制我们的锁，masterDown了，我们的应用继续请求锁的时候，会从继任了master的原slave上申请，也会成功。</p>
+<p>这就会导致，同一个锁被获取了不止一次。</p>
+<ol>
+<li>只有在大多数节点上获取到了锁，而且总的获取时间小于锁的超时时间的情况下，认为锁获取成功了。</li>
+</ol>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/%E5%85%AB%E8%82%A1%E6%96%87/">八股文</a>
+          </div>
+      <nav class="post-nav">
+        
+        
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+
+
+</body>
+</html>
