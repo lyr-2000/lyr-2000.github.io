@@ -49,7 +49,7 @@
 <meta itemprop="description" content="1. 函数定义 函数可以让我们将一个复杂功能划分成若干模块，让程序结构更加清晰，代码重复利用率更高。Shell 也支持函数。Shell 函数必须先定义">
 <meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="948">
+<meta itemprop="wordCount" content="1842">
 
 
 
@@ -153,7 +153,26 @@
     <li><a href="#1-函数定义">1. 函数定义</a></li>
     <li><a href="#2-函数返回值">2. 函数返回值</a></li>
     <li><a href="#3-函数调用">3. 函数调用</a></li>
-    <li><a href="#4-函数参数">4. 函数参数</a></li>
+    <li><a href="#4-函数参数">4. 函数参数</a>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#-的使用方法">$? 的使用方法</a></li>
+            <li><a href="#脚本的使用方法-查看进程信息">脚本的使用方法 查看进程信息</a></li>
+            <li><a href="#使用-echo返回">使用 echo返回</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#函数库的使用方法">函数库的使用方法</a>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#库函数经验">库函数经验</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
   </ul>
 </nav>
   </div>
@@ -268,7 +287,11 @@ $
 </tr>
 <tr>
 <td>$?</td>
-<td>函数的返回值。</td>
+<td>函数的返回值。 【可以用反引号 ` 围住命令调用，然后赋值给一个变量】</td>
+</tr>
+<tr>
+<td>$$</td>
+<td>本脚本进程的 PID</td>
 </tr>
 </tbody>
 </table>
@@ -326,7 +349,392 @@ The string of the parameters is <span class="m">1</span> <span class="m">2</span
 <ul>
 <li><a href="http://c.biancheng.net/cpp/shell/">http://c.biancheng.net/cpp/shell/</a></li>
 </ul>
+<h3 id="-的使用方法">$? 的使用方法</h3>
+<p>返回值的方式</p>
+<table>
+<thead>
+<tr>
+<th align="center">方法一</th>
+<th align="center">return</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">方法二</td>
+<td align="center">echo</td>
+</tr>
+</tbody>
+</table>
+<p><code>$?</code> 可以用来表示 上一个进程是否正确执行，0 表示成功，1 表示失败</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">systemctl start nginx
+ps -ef <span class="p">|</span> grep nginx <span class="p">|</span> grep -v grep
+<span class="nb">echo</span> <span class="nv">$?</span>
 
+systemctl stop nginx
+ps -ef <span class="p">|</span> grep nginx <span class="p">|</span> grep -v grep
+
+<span class="nb">echo</span> <span class="nv">$?</span>
+<span class="c1"># 答案肯定是 1 ，因为 nginx进程已经没有了</span>
+<span class="c1"># 注意，如果写到脚本里面，不要把脚本名字含有 nginx，不然会有bug</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="脚本的使用方法-查看进程信息">脚本的使用方法 查看进程信息</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="cp">#!/bin/bash
+</span><span class="cp"></span><span class="nv">this_pid</span><span class="o">=</span><span class="nv">$$</span>
+<span class="c1"># 自己的pid</span>
+ps -ef <span class="p">|</span> grep nginx <span class="p">|</span> grep -v grep <span class="p">|</span> grep -v <span class="nv">$this_pid</span>
+<span class="nb">echo</span> <span class="nv">$?</span>
+
+
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="另一种写法">另一种写法</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="cp">#!/bin/bash
+</span><span class="cp"></span><span class="c1">#Author:LYR</span>
+<span class="c1">#Time:2021-10-03 17:35:05</span>
+<span class="c1">#Name:app.sh</span>
+
+
+<span class="nv">this_pid</span><span class="o">=</span><span class="nv">$$</span>
+<span class="c1"># 自己的pid</span>
+ps -ef <span class="p">|</span> grep nginx <span class="p">|</span> grep -v grep <span class="p">|</span> grep -v <span class="nv">$this_pid</span>
+
+<span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> -eq <span class="m">0</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+        <span class="nb">echo</span> <span class="s2">&#34;nginx is running&#34;</span>
+<span class="k">else</span>
+        <span class="c1"># systemctl start nginx</span>
+        <span class="nb">echo</span> <span class="s2">&#34;nginx is down ,start it...&#34;</span>
+<span class="k">fi</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="使用-return返回">使用 return返回</h4>
+<ul>
+<li>使用return 返回值，只能返回 1-255 的整数</li>
+<li>函数 使用return 返回值 ，通常只是用来供其他地方获取这台，通常 返回 0 或者1
+<ul>
+<li>0 表示成功，1 表示失败</li>
+</ul>
+</li>
+</ul>
+<h3 id="使用-echo返回">使用 echo返回</h3>
+<ul>
+<li>echo 可以返回任何字符串</li>
+<li>通常用于返回数据，比如 一个字符串或者列表的值</li>
+</ul>
+<h5 id="return-的操作用法">return 的操作用法</h5>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="cp">#!/bin/bash
+</span><span class="cp"></span><span class="c1">#Author:LYR</span>
+<span class="c1">#Time:2021-10-03 17:35:05</span>
+<span class="c1">#Name:app.sh</span>
+
+
+<span class="nv">this_pid</span><span class="o">=</span><span class="nv">$$</span>
+<span class="c1"># 自己的pid</span>
+<span class="k">function</span> is_nginx_running
+<span class="o">{</span>
+
+	ps -ef <span class="p">|</span> grep nginx <span class="p">|</span> grep -v grep <span class="p">|</span> grep -v <span class="nv">$this_pid</span> <span class="p">&amp;</span>&gt; /dev/null
+<span class="c1"># 放入 /dev/null 这样 就不会控制台打印了</span>
+	<span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> -eq <span class="m">0</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+ 		<span class="k">return</span> <span class="m">0</span>
+	<span class="k">else</span> 
+		<span class="k">return</span> <span class="m">1</span>
+
+	<span class="k">fi</span>
+
+
+<span class="o">}</span>
+
+<span class="c1"># shell 三目表达式：  b? a:b</span> 
+is_nginx_running <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&#34;nginx running&#34;</span> <span class="o">||</span> <span class="nb">echo</span> <span class="s2">&#34;nginx is stopped&#34;</span>
+
+
+
+
+</code></pre></td></tr></table>
+</div>
+</div><h5 id="echo-的操作用法">echo 的操作用法</h5>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="cp">#!/bin/bash
+</span><span class="cp"></span><span class="c1">#Author:LYR</span>
+<span class="c1">#Time:2021-10-03 17:35:05</span>
+<span class="c1">#Name:app.sh</span>
+
+<span class="c1"># cat /etc/passwd | cut -d: -f1</span>
+<span class="c1"># 取出第一个字段</span>
+<span class="c1"># 取出所有系统的用户名字</span>
+<span class="k">function</span> get_users
+<span class="o">{</span>
+<span class="c1"># 分隔符是 :</span> 
+	<span class="nb">local</span> <span class="nv">users</span><span class="o">=</span><span class="sb">`</span>cat /etc/passwd <span class="p">|</span> cut -d: -f1<span class="sb">`</span>
+	<span class="c1"># 用 local 声明为 局部变量</span>
+	<span class="nb">echo</span> <span class="nv">$users</span>
+
+<span class="o">}</span>
+
+<span class="nv">user_list</span><span class="o">=</span><span class="sb">`</span>get_users<span class="sb">`</span>
+
+<span class="nv">index</span><span class="o">=</span><span class="m">1</span>
+<span class="k">for</span> u in <span class="nv">$user_list</span>
+<span class="k">do</span>
+	<span class="nb">echo</span> <span class="s2">&#34; the </span><span class="nv">$index</span><span class="s2"> user is :  </span><span class="nv">$u</span><span class="s2"> &#34;</span>
+	<span class="nv">index</span><span class="o">=</span><span class="k">$((</span>$<span class="k">))</span>
+<span class="k">done</span>
+
+
+
+</code></pre></td></tr></table>
+</div>
+</div><h1 id="函数库的使用方法">函数库的使用方法</h1>
+<h3 id="库函数经验">库函数经验</h3>
+<ul>
+<li>
+<p>一般的库文件名字后缀是任意的，但是一般会 使用 .lib 结尾</p>
+</li>
+<li>
+<p>导入方法</p>
+<ul>
+<li>. 引入</li>
+<li><code>source </code> 关键字引入</li>
+</ul>
+</li>
+</ul>
+<h4 id="练习">练习</h4>
+<p>函数库 通常是封装被其他脚本调用的</p>
+<p>实现加减乘除 几个函数的方法</p>
+<h5 id="这个是封装的-appsh">这个是封装的 app.sh</h5>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="cp">#!/bin/bash
+</span><span class="cp"></span><span class="c1">#Author:LYR</span>
+<span class="c1">#Time:2021-10-03 17:35:05</span>
+<span class="c1">#Name:app.sh</span>
+
+<span class="nv">this_pid</span><span class="o">=</span><span class="nv">$$</span>
+<span class="c1"># 自己的pid</span>
+        <span class="c1"># systemctl start nginx</span>
+
+
+<span class="k">function</span> add <span class="o">{</span>
+    <span class="nb">echo</span> <span class="s2">&#34;`expr </span><span class="nv">$1</span><span class="s2"> + </span><span class="nv">$2</span><span class="s2">`&#34;</span>
+<span class="o">}</span>
+
+<span class="k">function</span> reduce
+<span class="o">{</span>
+    <span class="nb">echo</span> <span class="s2">&#34;`expr </span><span class="nv">$1</span><span class="s2"> - </span><span class="nv">$2</span><span class="s2">`&#34;</span>
+
+<span class="o">}</span>
+
+<span class="k">function</span> multiple
+<span class="o">{</span>
+    <span class="nb">echo</span> <span class="s2">&#34;`expr </span><span class="nv">$1</span><span class="s2"> * </span><span class="nv">$2</span><span class="s2">`&#34;</span>
+<span class="o">}</span>
+<span class="k">function</span> divide
+<span class="o">{</span>
+    <span class="nb">echo</span> <span class="s2">&#34;`expr </span><span class="nv">$1</span><span class="s2"> / </span><span class="nv">$2</span><span class="s2">`&#34;</span>
+
+<span class="o">}</span>
+
+
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="用--脚本名字-导入函数">用 . 脚本名字 导入函数</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="cp">#!/bin/bash
+</span><span class="cp"></span><span class="c1">#Author:LYR</span>
+<span class="c1">#Time:2021-10-03 18:13:01</span>
+<span class="c1">#Name:test.sh</span>
+
+. app.sh
+
+add <span class="m">1</span> <span class="m">1</span>
+reduce <span class="m">30</span> <span class="m">10</span>
+
+
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>你也可以在 shell 交互界面这里 引入</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 这里是交互的</span>
+. ./app.sh
+add <span class="m">1</span> <span class="m">1</span>
+
+<span class="c1"># 其实 你还可以用 source 关键字引入</span>
+<span class="nb">source</span> ./app.sh
+add <span class="m">1</span> <span class="m">2</span>
+
+</code></pre></td></tr></table>
+</div>
+</div>
     </div>
 
     <div class="post-copyright">
@@ -355,8 +763,8 @@ The string of the parameters is <span class="m">1</span> <span class="m">2</span
             <span class="prev-text nav-default">shell-echo</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
-        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/linux/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/shell%E5%91%BD%E4%BB%A4%E7%BB%86%E5%88%86/shell-if/">
-            <span class="next-text nav-default">shell-if</span>
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/linux/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/shell%E5%91%BD%E4%BB%A4%E7%BB%86%E5%88%86/shell-grep/">
+            <span class="next-text nav-default">shell-grep</span>
             <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
