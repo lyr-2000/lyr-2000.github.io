@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Thread per message 模式 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="如何理解 Thread-Per-Message 模式 现实世界里，很多事情我们都需要委托他人办理，一方面受限于我们的能力，总有很多搞不定的事，比如教育小朋友，搞不定怎么办呢？只能委" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/thread-per-message/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="Thread per message 模式" />
+<meta property="og:description" content="如何理解 Thread-Per-Message 模式 现实世界里，很多事情我们都需要委托他人办理，一方面受限于我们的能力，总有很多搞不定的事，比如教育小朋友，搞不定怎么办呢？只能委" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/thread-per-message/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="Thread per message 模式">
+<meta itemprop="description" content="如何理解 Thread-Per-Message 模式 现实世界里，很多事情我们都需要委托他人办理，一方面受限于我们的能力，总有很多搞不定的事，比如教育小朋友，搞不定怎么办呢？只能委">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="1583">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Thread per message 模式"/>
+<meta name="twitter:description" content="如何理解 Thread-Per-Message 模式 现实世界里，很多事情我们都需要委托他人办理，一方面受限于我们的能力，总有很多搞不定的事，比如教育小朋友，搞不定怎么办呢？只能委"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Thread per message 模式</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#如何理解-thread-per-message-模式">如何理解 Thread-Per-Message 模式</a>
+          <ul>
+            <li><a href="#问题引出">问题引出</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="如何理解-thread-per-message-模式">如何理解 Thread-Per-Message 模式</h2>
+<p>现实世界里，很多事情我们都需要委托他人办理，一方面受限于我们的能力，总有很多搞不定的事，比如教育小朋友，搞不定怎么办呢？只能委托学校老师了；另一方面受限于我们的时间，比如忙着写 Bug，哪有时间买别墅呢？只能委托房产中介了。委托他人代办有一个非常大的好处，那就是可以专心做自己的事了。</p>
+<p>在编程领域也有很多类似的需求，比如写一个 HTTP Server，很显然只能在主线程中接收请求，而不能处理 HTTP 请求，因为如果在主线程中处理 HTTP 请求的话，那同一时间只能处理一个请求，太慢了！怎么办呢？可以利用代办的思路，创建一个子线程，委托子线程去处理 HTTP 请求。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">final</span> <span class="n">ServerSocketChannel</span> <span class="n">ssc</span> <span class="o">=</span> 
+  <span class="n">ServerSocketChannel</span><span class="o">.</span><span class="na">open</span><span class="o">().</span><span class="na">bind</span><span class="o">(</span>
+    <span class="k">new</span> <span class="n">InetSocketAddress</span><span class="o">(</span><span class="n">8080</span><span class="o">));</span>
+<span class="c1">// 处理请求    
+</span><span class="c1"></span><span class="k">try</span> <span class="o">{</span>
+  <span class="k">while</span> <span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// 接收请求
+</span><span class="c1"></span>    <span class="n">SocketChannel</span> <span class="n">sc</span> <span class="o">=</span> <span class="n">ssc</span><span class="o">.</span><span class="na">accept</span><span class="o">();</span>
+    <span class="c1">// 每个请求都创建一个线程
+</span><span class="c1"></span>    <span class="k">new</span> <span class="n">Thread</span><span class="o">(()-&gt;{</span>
+      <span class="k">try</span> <span class="o">{</span>
+        <span class="c1">// 读 Socket
+</span><span class="c1"></span>        <span class="n">ByteBuffer</span> <span class="n">rb</span> <span class="o">=</span> <span class="n">ByteBuffer</span>
+          <span class="o">.</span><span class="na">allocateDirect</span><span class="o">(</span><span class="n">1024</span><span class="o">);</span>
+        <span class="n">sc</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">rb</span><span class="o">);</span>
+        <span class="c1">// 模拟处理请求
+</span><span class="c1"></span>        <span class="n">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="n">2000</span><span class="o">);</span>
+        <span class="c1">// 写 Socket
+</span><span class="c1"></span>        <span class="n">ByteBuffer</span> <span class="n">wb</span> <span class="o">=</span> 
+          <span class="o">(</span><span class="n">ByteBuffer</span><span class="o">)</span><span class="n">rb</span><span class="o">.</span><span class="na">flip</span><span class="o">();</span>
+        <span class="n">sc</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">wb</span><span class="o">);</span>
+        <span class="c1">// 关闭 Socket
+</span><span class="c1"></span>        <span class="n">sc</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+      <span class="o">}</span><span class="k">catch</span><span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">){</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="n">UncheckedIOException</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}).</span><span class="na">start</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+  <span class="n">ssc</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+<span class="o">}</span>   
+</code></pre></td></tr></table>
+</div>
+</div><p>于是，你开始质疑 Thread-Per-Message 模式，而且开始重新思索解决方案，这时候很可能你会想到 Java 提供的线程池。你的这个思路没有问题，但是引入线程池难免会增加复杂度。其实你完全可以换一个角度来思考这个问题，语言、工具、框架本身应该是帮助我们更敏捷地实现方案的，而不是用来否定方案的，Thread-Per-Message 模式作为一种最简单的分工方案，Java 语言支持不了，显然是 Java 语言本身的问题。</p>
+<p>Java 语言里，<strong>Java 线程是和操作系统线程一一对应的</strong>，这种做法本质上是将 <strong>Java 线程的调度权完全委托给操作系统，而操作系统在这方面非常成熟，所以这种做法的好处是稳定、可靠</strong>，但是<strong>也继承了操作系统线程的缺点</strong>：<strong>创建成本高</strong>。为了解决这个缺点，Java 并发包里提供了线程池等工具类。这个思路在很长一段时间里都是很稳妥的方案，但是这个方案并不是唯一的方案。</p>
+<p>业界还有另外一种方案，叫做<strong>轻量级线程</strong>。这个方案在 Java 领域知名度并不高，但是在其他编程语言里却叫得很响，例如 Go 语言、Lua 语言里的协程，本质上就是一种轻量级的线程。轻量级的线程，创建的成本很低，基本上和创建一个普通对象的成本相似；并且创建的速度和内存占用相比操作系统线程至少有一个数量级的提升，所以基于轻量级线程实现 Thread-Per-Message 模式就完全没有问题了。</p>
+<p>Java 语言目前也已经意识到轻量级线程的重要性了，<strong>OpenJDK 有个 Loom 项目，就是要解决 Java 语言的轻量级线程问题</strong>，在这个项目中，轻量级线程被叫做<strong>Fiber</strong>。下面我们就来看看基于 Fiber 如何实现 Thread-Per-Message 模式。</p>
+<p>Loom 项目在设计轻量级线程时，充分考量了当前 Java 线程的使用方式，采取的是尽量兼容的态度，所以使用上还是挺简单的。用 Fiber 实现 echo 服务的示例代码如下所示，<strong>对比 Thread 的实现，你会发现改动量非常小</strong>，只需要把 <code>new Thread(()-&gt;{…}).start()</code> 换成 <code>Fiber.schedule(()-&gt;{})</code> 就可以了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">final</span> <span class="n">ServerSocketChannel</span> <span class="n">ssc</span> <span class="o">=</span> 
+  <span class="n">ServerSocketChannel</span><span class="o">.</span><span class="na">open</span><span class="o">().</span><span class="na">bind</span><span class="o">(</span>
+    <span class="k">new</span> <span class="n">InetSocketAddress</span><span class="o">(</span><span class="n">8080</span><span class="o">));</span>
+<span class="c1">// 处理请求
+</span><span class="c1"></span><span class="k">try</span><span class="o">{</span>
+  <span class="k">while</span> <span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// 接收请求
+</span><span class="c1"></span>    <span class="kd">final</span> <span class="n">SocketChannel</span> <span class="n">sc</span> <span class="o">=</span> 
+      <span class="n">serverSocketChannel</span><span class="o">.</span><span class="na">accept</span><span class="o">();</span>
+      <span class="c1">// 开启协程处理
+</span><span class="c1"></span>    <span class="n">Fiber</span><span class="o">.</span><span class="na">schedule</span><span class="o">(()-&gt;{</span>
+      <span class="k">try</span> <span class="o">{</span>
+        <span class="c1">// 读 Socket
+</span><span class="c1"></span>        <span class="n">ByteBuffer</span> <span class="n">rb</span> <span class="o">=</span> <span class="n">ByteBuffer</span>
+          <span class="o">.</span><span class="na">allocateDirect</span><span class="o">(</span><span class="n">1024</span><span class="o">);</span>
+        <span class="n">sc</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">rb</span><span class="o">);</span>
+        <span class="c1">// 模拟处理请求
+</span><span class="c1"></span>        <span class="n">LockSupport</span><span class="o">.</span><span class="na">parkNanos</span><span class="o">(</span><span class="n">2000</span><span class="o">*</span><span class="n">1000000</span><span class="o">);</span>
+        <span class="c1">// 写 Socket
+</span><span class="c1"></span>        <span class="n">ByteBuffer</span> <span class="n">wb</span> <span class="o">=</span> 
+          <span class="o">(</span><span class="n">ByteBuffer</span><span class="o">)</span><span class="n">rb</span><span class="o">.</span><span class="na">flip</span><span class="o">()</span>
+        <span class="n">sc</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">wb</span><span class="o">);</span>
+        <span class="c1">// 关闭 Socket
+</span><span class="c1"></span>        <span class="n">sc</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+      <span class="o">}</span> <span class="k">catch</span><span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">){</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="n">UncheckedIOException</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">});</span>
+  <span class="o">}</span><span class="c1">//while
+</span><span class="c1"></span><span class="o">}</span><span class="k">finally</span><span class="o">{</span>
+  <span class="n">ssc</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Thread-Per-Message 模式在 Java 领域并不是那么知名，根本原因在于 Java 语言里的线程是一个重量级的对象，为每一个任务创建一个线程成本太高，尤其是在高并发领域，基本就不具备可行性。不过这个背景条件目前正在发生巨变，Java 语言未来一定会提供轻量级线程，这样基于轻量级线程实现 Thread-Per-Message 模式就是一个非常靠谱的选择。</p>
+<p>当然，对于一些并发度没那么高的异步场景，例如定时任务，采用 Thread-Per-Message 模式是完全没有问题的。实际工作中，我就见过完全基于 Thread-Per-Message 模式实现的分布式调度框架，这个框架为每个定时任务都分配了一个独立的线程。</p>
+<h3 id="问题引出">问题引出</h3>
+<p>使用 Thread-Per-Message 模式会为每一个任务都创建一个线程，在高并发场景中，很容易导致应用 OOM，那有什么办法可以快速解决呢？</p>
+<ul>
+<li>快速解决，就只能改jvm内存配置，增大jvm新生代的大小，长期解决，<strong>引入NIO或AIO</strong>，netty 就是这么干的</li>
+</ul>
+<p><a href="https://wiki.openjdk.java.net/display/loom/Main">参考 loom项目</a></p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/immutability%E6%A8%A1%E5%BC%8F/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Immutability模式</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/threadlocal/">
+            <span class="next-text nav-default">ThreadLocal模式</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+
+
+</body>
+</html>

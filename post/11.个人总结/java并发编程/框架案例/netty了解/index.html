@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Netty框架原理剖析 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="NIO 的应用 BIO 这种线程模型适用于 socket 连接不是很多的场景；但是现在的互联网场景，往往需要服务器能够支撑十万甚至百万连接，而创建十万甚至上百万个线程显" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E6%A1%86%E6%9E%B6%E6%A1%88%E4%BE%8B/netty%E4%BA%86%E8%A7%A3/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="Netty框架原理剖析" />
+<meta property="og:description" content="NIO 的应用 BIO 这种线程模型适用于 socket 连接不是很多的场景；但是现在的互联网场景，往往需要服务器能够支撑十万甚至百万连接，而创建十万甚至上百万个线程显" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E6%A1%86%E6%9E%B6%E6%A1%88%E4%BE%8B/netty%E4%BA%86%E8%A7%A3/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="Netty框架原理剖析">
+<meta itemprop="description" content="NIO 的应用 BIO 这种线程模型适用于 socket 连接不是很多的场景；但是现在的互联网场景，往往需要服务器能够支撑十万甚至百万连接，而创建十万甚至上百万个线程显">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="1932">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Netty框架原理剖析"/>
+<meta name="twitter:description" content="NIO 的应用 BIO 这种线程模型适用于 socket 连接不是很多的场景；但是现在的互联网场景，往往需要服务器能够支撑十万甚至百万连接，而创建十万甚至上百万个线程显"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Netty框架原理剖析</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#nio-的应用">NIO 的应用</a></li>
+          </ul>
+        </li>
+        <li><a href="#reactor-模式">Reactor 模式</a></li>
+        <li><a href="#netty-中的线程模型">Netty 中的线程模型</a></li>
+        <li><a href="#用-netty-实现-echo-程序服务端">用 Netty 实现 Echo 程序服务端</a>
+          <ul>
+            <li><a href="#总结">总结</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h3 id="nio-的应用">NIO 的应用</h3>
+<p>BIO 这种线程模型适用于 socket 连接不是很多的场景；但是现在的互联网场景，往往需要服务器能够支撑十万甚至百万连接，而创建十万甚至上百万个线程显然并不现实，所以 BIO 线程模型无法解决百万连接的问题。如果仔细观察，你会发现互联网场景中，虽然连接多，但是每个连接上的请求并不频繁，所以线程大部分时间都在等待 I/O 就绪。也就是说线程大部分时间都阻塞在那里，这完全是浪费，如果我们能够解决这个问题，那就不需要这么多线程了。</p>
+<p>顺着这个思路，我们可以将线程模型优化为下图这个样子，可以用一个线程来处理多个连接，这样线程的利用率就上来了，同时所需的线程数量也跟着降下来了。这个思路很好，可是使用 BIO 相关的 API 是无法实现的，这是为什么呢？因为 BIO 相关的 socket 读写操作都是阻塞式的，而一旦调用了阻塞式 API，在 I/O 就绪前，调用线程会一直阻塞，也就无法处理其他的 socket 连接了。</p>
+<p>好在 Java 里还提供了非阻塞式（NIO）API，<strong>利用非阻塞式 API 就能够实现一个线程处理多个连接了</strong>。那具体如何实现呢？现在普遍都是<strong>采用 Reactor 模式</strong>，包括 Netty 的实现。所以，要想理解 Netty 的实现，接下来我们就需要先了解一下 Reactor 模式。</p>
+<h2 id="reactor-模式">Reactor 模式</h2>
+<p>下面是 Reactor 模式的类结构图，其中 Handle 指的是 I/O 句柄，在 Java 网络编程里，它本质上就是一个网络连接。<strong>Event Handler 很容易理解</strong>，就是一个事件处理器，其中 <strong>handle_event() 方法处理 I/O 事件</strong>，也就是每个 Event Handler 处理一个 I/O Handle；get_handle() 方法可以返回这个 I/O 的 Handle。Synchronous Event Demultiplexer 可以理解为操作系统提供的 I/O 多路复用 API，例如 POSIX 标准里的 select() 以及 Linux 里面的 epoll()。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_04_22_39_10image-20211004223910115.png" alt="image-20211004223910115"></p>
+<p>Reactor 模式的核心自然是<strong>Reactor 这个类</strong>，其中 register_handler() 和 remove_handler() 这两个方法可以注册和删除一个事件处理器；<strong>handle_events() 方式是核心</strong>，也是 Reactor 模式的发动机，这个方法的核心逻辑如下：首先通过同步事件多路选择器提供的 select() 方法监听网络事件，<strong>当有网络事件就绪后，就遍历事件处理器来处理该网络事件</strong>。由于<strong>网络事件是源源不断的</strong>，所以在主程序中启动 Reactor 模式，需要以 <code>while(true){}</code> 的方式<strong>调用 handle_events() 方法。</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="kt">void</span> <span class="n">Reactor</span><span class="o">::</span><span class="n">handle_events</span><span class="p">(){</span>
+  <span class="c1">// 通过同步事件多路选择器提供的
+</span><span class="c1"></span>  <span class="c1">//select() 方法监听网络事件
+</span><span class="c1"></span>  <span class="n">select</span><span class="p">(</span><span class="n">handlers</span><span class="p">);</span>
+  <span class="c1">// 处理网络事件
+</span><span class="c1"></span>  <span class="k">for</span><span class="p">(</span><span class="n">h</span> <span class="n">in</span> <span class="n">handlers</span><span class="p">){</span>
+    <span class="n">h</span><span class="p">.</span><span class="n">handle_event</span><span class="p">();</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1">// 在主程序中启动事件循环
+</span><span class="c1"></span><span class="k">while</span> <span class="p">(</span><span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">handle_events</span><span class="p">();</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="netty-中的线程模型">Netty 中的线程模型</h2>
+<p>Netty 的实现虽然参考了 Reactor 模式，但是并没有完全照搬，<strong>Netty 中最核心的概念是事件循环（EventLoop）</strong>，其实也就是 Reactor 模式中的 Reactor，<strong>负责监听网络事件并调用事件处理器进行处理</strong>。在 4.x 版本的 Netty 中，<strong>网络连接和 EventLoop 是稳定的多对 1 关系</strong>，<strong>而 EventLoop 和 Java 线程是 1 对 1 关系</strong>，这里的稳定指的是关系一旦确定就不再发生变化。也就是说<strong>一个网络连接只会对应唯一的一个 EventLoop</strong>，而一个 EventLoop 也只会对应到一个 Java 线程，所以<strong>一个网络连接只会对应到一个 Java 线程</strong>。</p>
+<p>概要：</p>
+<ol>
+<li>一个 eventloop 处理多个网络连接</li>
+<li>一个 eventloop 一个线程</li>
+<li>即 一个线程处理多个网络连接</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_04_22_42_11image-20211004224211189.png" alt="image-20211004224211189"></p>
+<p><strong>在 Netty 中，bossGroup 就用来处理连接请求的，而 workerGroup 是用来处理读写请求的</strong>。bossGroup 处理完连接请求后，会将这个连接提交给 workerGroup 来处理， workerGroup 里面有多个 EventLoop，<strong>那新的连接会交给哪个 EventLoop 来处理呢</strong>？这就需要一个<strong>负载均衡算法</strong>，Netty 中目前使用的是<strong>轮询算法</strong>。</p>
+<h2 id="用-netty-实现-echo-程序服务端">用 Netty 实现 Echo 程序服务端</h2>
+<p>下面的示例代码基于 Netty 实现了 echo 程序服务端：首先创建了一个事件处理器（等同于 Reactor 模式中的事件处理器），然后创建了 bossGroup 和 workerGroup，再之后创建并初始化了 ServerBootstrap，代码还是很简单的，不过有两个地方需要注意一下。</p>
+<p>第一个，如果 NettybossGroup 只监听一个端口，那 bossGroup 只需要 1 个 EventLoop 就可以了，多了纯属浪费。</p>
+<p>第二个，默认情况下，Netty 会创建“2*CPU 核数”个 EventLoop，由于网络连接与 EventLoop 有稳定的关系，所以事件处理器在处理网络事件的时候是不能有阻塞操作的，否则很容易导致请求大面积超时。如果实在无法避免使用阻塞操作，那可以通过线程池来异步处理。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">// 事件处理器
+</span><span class="c1"></span><span class="kd">final</span> <span class="n">EchoServerHandler</span> <span class="n">serverHandler</span> 
+  <span class="o">=</span> <span class="k">new</span> <span class="n">EchoServerHandler</span><span class="o">();</span>
+<span class="c1">//boss 线程组  
+</span><span class="c1"></span><span class="n">EventLoopGroup</span> <span class="n">bossGroup</span> 
+  <span class="o">=</span> <span class="k">new</span> <span class="n">NioEventLoopGroup</span><span class="o">(</span><span class="n">1</span><span class="o">);</span> 
+<span class="c1">//worker 线程组  
+</span><span class="c1"></span><span class="n">EventLoopGroup</span> <span class="n">workerGroup</span> 
+  <span class="o">=</span> <span class="k">new</span> <span class="n">NioEventLoopGroup</span><span class="o">();</span>
+<span class="k">try</span> <span class="o">{</span>
+  <span class="n">ServerBootstrap</span> <span class="n">b</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ServerBootstrap</span><span class="o">();</span>
+  <span class="n">b</span><span class="o">.</span><span class="na">group</span><span class="o">(</span><span class="n">bossGroup</span><span class="o">,</span> <span class="n">workerGroup</span><span class="o">)</span>
+   <span class="o">.</span><span class="na">channel</span><span class="o">(</span><span class="n">NioServerSocketChannel</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+   <span class="o">.</span><span class="na">childHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">ChannelInitializer</span><span class="o">&lt;</span><span class="n">SocketChannel</span><span class="o">&gt;()</span> <span class="o">{</span>
+     <span class="nd">@Override</span>
+     <span class="kd">public</span> <span class="kt">void</span> <span class="nf">initChannel</span><span class="o">(</span><span class="n">SocketChannel</span> <span class="n">ch</span><span class="o">){</span>
+       <span class="n">ch</span><span class="o">.</span><span class="na">pipeline</span><span class="o">().</span><span class="na">addLast</span><span class="o">(</span><span class="n">serverHandler</span><span class="o">);</span>
+     <span class="o">}</span>
+    <span class="o">});</span>
+  <span class="c1">//bind 服务端端口  
+</span><span class="c1"></span>  <span class="n">ChannelFuture</span> <span class="n">f</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="na">bind</span><span class="o">(</span><span class="n">9090</span><span class="o">).</span><span class="na">sync</span><span class="o">();</span>
+  <span class="n">f</span><span class="o">.</span><span class="na">channel</span><span class="o">().</span><span class="na">closeFuture</span><span class="o">().</span><span class="na">sync</span><span class="o">();</span>
+<span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+  <span class="c1">// 终止工作线程组
+</span><span class="c1"></span>  <span class="n">workerGroup</span><span class="o">.</span><span class="na">shutdownGracefully</span><span class="o">();</span>
+  <span class="c1">// 终止 boss 线程组
+</span><span class="c1"></span>  <span class="n">bossGroup</span><span class="o">.</span><span class="na">shutdownGracefully</span><span class="o">();</span>
+<span class="o">}</span>
+ 
+<span class="c1">//socket 连接处理器
+</span><span class="c1"></span><span class="kd">class</span> <span class="nc">EchoServerHandler</span> <span class="kd">extends</span> 
+    <span class="n">ChannelInboundHandlerAdapter</span> <span class="o">{</span>
+  <span class="c1">// 处理读事件  
+</span><span class="c1"></span>  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">channelRead</span><span class="o">(</span>
+    <span class="n">ChannelHandlerContext</span> <span class="n">ctx</span><span class="o">,</span> <span class="n">Object</span> <span class="n">msg</span><span class="o">){</span>
+      <span class="n">ctx</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">msg</span><span class="o">);</span>
+  <span class="o">}</span>
+  <span class="c1">// 处理读完成事件
+</span><span class="c1"></span>  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">channelReadComplete</span><span class="o">(</span>
+    <span class="n">ChannelHandlerContext</span> <span class="n">ctx</span><span class="o">){</span>
+      <span class="n">ctx</span><span class="o">.</span><span class="na">flush</span><span class="o">();</span>
+  <span class="o">}</span>
+  <span class="c1">// 处理异常事件
+</span><span class="c1"></span>  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">exceptionCaught</span><span class="o">(</span>
+    <span class="n">ChannelHandlerContext</span> <span class="n">ctx</span><span class="o">,</span>  <span class="n">Throwable</span> <span class="n">cause</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">cause</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+      <span class="n">ctx</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="总结">总结</h3>
+<p>Netty 是一个款优秀的网络编程框架，性能非常好，为了实现高性能的目标，Netty 做了很多优化，例如优化了 ByteBuffer、支持零拷贝等等，和并发编程相关的就是它的线程模型了。Netty 的线程模型设计得很精巧，每个网络连接都关联到了一个线程上，这样做的好处是：对于一个网络连接，读写操作都是单线程执行的，从而避免了并发程序的各种问题。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E6%A1%86%E6%9E%B6%E6%A1%88%E4%BE%8B/hikaricp/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">hikaricp</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+
+
+</body>
+</html>
