@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>happen-befores原则 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="happen-befores原则 使用 happens-before 在一个 goroutine 内部，程序的执行顺序和它们的代码指定的顺序是一样的，即使编译器 或者 CPU 重排了读写顺序，从行为上来" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/go%E8%AF%AD%E8%A8%80%E5%B9%B6%E5%8F%91%E7%90%86%E8%AE%BA/happen-befores%E5%8E%9F%E5%88%99/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="happen-befores原则" />
+<meta property="og:description" content="happen-befores原则 使用 happens-before 在一个 goroutine 内部，程序的执行顺序和它们的代码指定的顺序是一样的，即使编译器 或者 CPU 重排了读写顺序，从行为上来" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://doc.lyr-2000.xyz/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/go%E8%AF%AD%E8%A8%80%E5%B9%B6%E5%8F%91%E7%90%86%E8%AE%BA/happen-befores%E5%8E%9F%E5%88%99/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="happen-befores原则">
+<meta itemprop="description" content="happen-befores原则 使用 happens-before 在一个 goroutine 内部，程序的执行顺序和它们的代码指定的顺序是一样的，即使编译器 或者 CPU 重排了读写顺序，从行为上来">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="952">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="happen-befores原则"/>
+<meta name="twitter:description" content="happen-befores原则 使用 happens-before 在一个 goroutine 内部，程序的执行顺序和它们的代码指定的顺序是一样的，即使编译器 或者 CPU 重排了读写顺序，从行为上来"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">happen-befores原则</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#happen-befores原则-使用">happen-befores原则 使用</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h3 id="happen-befores原则-使用">happen-befores原则 使用</h3>
+<p><code>happens-before</code>
+在一个 goroutine 内部，程序的执行顺序和它们的代码指定的顺序是一样的，即使编译器
+或者 CPU 重排了读写顺序，从行为上来看，也和代码指定的顺序一样。</p>
+<p>我们来看一个例子。在下面的代码中，<strong>即使编译器或者 CPU 对 a、b、c 的初始化进行了</strong>
+<strong>重排，但是打印结果依然能保证是 1、2、3</strong>，而不会出现 1、0、0 或 1、0、1 等情况。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">foo</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">a</span> <span class="p">=</span> <span class="mi">1</span>
+    <span class="kd">var</span> <span class="nx">b</span> <span class="p">=</span> <span class="mi">2</span>
+    <span class="kd">var</span> <span class="nx">c</span> <span class="p">=</span> <span class="mi">3</span>
+    <span class="nb">println</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+    <span class="nb">println</span><span class="p">(</span><span class="nx">b</span><span class="p">)</span>
+    <span class="nb">println</span><span class="p">(</span><span class="nx">c</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在 Go 语言中，对变量进行零值的初始化就是一个写操作。</p>
+<ol>
+<li>如果对超过机器 word（64bit、32bit 或者其它）大小的值进行读写，那么，就可以看
+作是对拆成 word 大小的几个读写无序进行。</li>
+<li>Go <strong>并不提供直接的 CPU 屏障</strong>（CPU fence）来提示编译器或者 CPU 保证顺序性，<strong>而</strong>
+<strong>是使用不同架构的内存屏障指令来实现统一的并发原语。</strong></li>
+</ol>
+<p>包级别的变量在同一个文件中是按照声明顺序逐个初始化的，除非初始化它的时候依赖其
+它的变量。同一个包下的多个文件，会按照文件名的排列顺序进行初始化。这个顺序被定
+义在   Go 语言规范中，而不是 Go 的内存模型规范中。你可以看看下面的例子中各个变量
+的值</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="p">(</span>
+    <span class="nx">a</span> <span class="p">=</span> <span class="nx">c</span> <span class="o">+</span> <span class="nx">b</span> <span class="c1">// == 9
+</span><span class="c1"></span>    <span class="nx">b</span> <span class="p">=</span> <span class="nf">f</span><span class="p">()</span> <span class="c1">// == 4
+</span><span class="c1"></span>    <span class="nx">c</span> <span class="p">=</span> <span class="nf">f</span><span class="p">()</span> <span class="c1">// == 5
+</span><span class="c1"></span>    <span class="nx">d</span> <span class="p">=</span> <span class="mi">3</span> <span class="c1">// == 5 全部初始化完成后
+</span><span class="c1"></span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">f</span><span class="p">()</span> <span class="kt">int</span> <span class="p">{</span>
+	<span class="nx">d</span><span class="o">++</span>
+	<span class="k">return</span> <span class="nx">d</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Go 采用的是<strong>依赖分析技术</strong>。不过，依赖分析技术保证
+的顺序只是针对同一包下的变量，而且，只有引用关系是本包变量、函数和非接口的方
+法，才能保证它们的顺序性。</p>
+<p><strong>goroutine</strong>
+首先，我们需要明确一个规则：启动 goroutine 的 go 语句的执行，一定 happens
+before 此 goroutine 内的代码执行。
+根据这个规则，我们就可以知道，如果 go 语句传入的参数是一个函数执行的结果，那
+么，这个函数一定先于 goroutine 内部的代码被执行。</p>
+<p>我们来看一个例子。在下面的代码中，第 8 行 a 的赋值和第 9 行的 go 语句是在同一个
+goroutine 中执行的，所以，在主 goroutine 看来，第 8 行肯定 happens before 第 9
+行，又由于刚才的保证，第 9 行子 goroutine 的启动 happens before 第 4 行的变量输
+出，那么，我们就可以推断出，第 8 行 happens before 第 4 行。也就是说，在第 4 行打
+印 a 的值的时候，<strong>肯定会打印出“hello world”。</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="nx">a</span> <span class="kt">string</span>
+<span class="kd">func</span> <span class="nf">f</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nb">print</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+<span class="p">}</span>
+
+
+<span class="kd">func</span> <span class="nf">hello</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">a</span> <span class="p">=</span> <span class="s">&#34;hello, world&#34;</span>
+	<span class="k">go</span> <span class="nf">f</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>谨慎地使用这些保证，能够让你的程序按照设想的 happens-before 关系执行，但是不要
+以为完全理解这些概念和保证，就可以随意地制造所谓的各种技巧，否则就很容易掉
+进“坑”里，而且会给代码埋下了很多的“定时炸弹”。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/go%E8%AF%AD%E8%A8%80%E5%B9%B6%E5%8F%91%E7%90%86%E8%AE%BA/go%E8%AF%AD%E8%A8%80%E5%B9%B6%E5%8F%91%E6%A8%A1%E5%9E%8B/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">go语言并发模型</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/go%E8%AF%AD%E8%A8%80%E5%B9%B6%E5%8F%91%E7%90%86%E8%AE%BA/mutex/">
+            <span class="next-text nav-default">Mutex</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="http://doc.lyr-2000.xyz/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+
+
+</body>
+</html>
