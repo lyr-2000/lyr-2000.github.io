@@ -49,7 +49,7 @@
 <meta itemprop="description" content="这是我自己做学习的笔记，请不要拿来做坏事 [TOC] nmap 扫描漏洞 分片 IP诱骗/伪装 指定源端口 扫描延时 其他技术 采用欺骗的方式来进行IDS规避 nmap -v(详细的">
 <meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="511">
+<meta itemprop="wordCount" content="866">
 
 
 
@@ -159,6 +159,7 @@
             <li><a href="#metasplot6-用-msfd">metasplot6 用 msfd</a></li>
             <li><a href="#常用的-端口扫描指令">常用的 端口扫描指令</a></li>
             <li><a href="#扫描总结">扫描总结</a></li>
+            <li><a href="#nmap-扫描网段">nmap 扫描网段</a></li>
           </ul>
         </li>
       </ul>
@@ -290,6 +291,83 @@ wmap_vulns
 <span class="c1">#扫描漏洞详细信息</span>
 </code></pre></td></tr></table>
 </div>
+</div><h3 id="nmap-扫描网段">nmap 扫描网段</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">ipconfig
+
+   连接特定的 DNS 后缀 . . . . . . . :
+   本地链接 IPv6 地址. . . . . . . . : fe80::254a:96 
+   IPv4 地址 . . . . . . . . . . . . : 192.168.56.1
+   子网掩码  . . . . . . . . . . . . : 255.255.255.0
+   默认网关. . . . . . . . . . . . . :
+   <span class="c1"># 很简单： 255.255.255.0  相当于 24个1</span>
+ nmap -sP  192.168.56.1/24
+    Starting Nmap 7.92 <span class="o">(</span> https://nmap.org <span class="o">)</span> at 2021-10-08 21:06 中国标准时间
+    Stats: 0:00:01 elapsed<span class="p">;</span> <span class="m">0</span> hosts completed <span class="o">(</span><span class="m">0</span> up<span class="o">)</span>, <span class="m">255</span> undergoing ARP Ping Scan
+    ARP Ping Scan Timing: About 7.84% <span class="k">done</span><span class="p">;</span> ETC: 21:07 <span class="o">(</span>0:00:12 remaining<span class="o">)</span>
+    Nmap scan report <span class="k">for</span> 192.168.56.1
+    Host is up.
+----------------------------
+<span class="c1"># 下面是 连接wifi 获得的  IP 进行试验</span>
+
+  本地链接 IPv6 地址. . . . . . . . : fe80::7c51:200: 
+   IPv4 地址 . . . . . . . . . . . . : 10.218.27.255
+   子网掩码  . . . . . . . . . . . . : 255.255.224.0
+<span class="c1"># 224我们知道 有3个1， 8*2+3 = 19 个1</span>
+nmap -sP 10.218.27.255/19
+<span class="c1"># 通过 arp扫描 这个 wifi下的 主机 的 hosts</span>
+
+Nmap scan report <span class="k">for</span> 10.218.27.255
+Host is up.
+Nmap <span class="k">done</span>: <span class="m">8192</span> IP addresses <span class="o">(</span><span class="m">5</span> hosts up<span class="o">)</span> scanned in 221.10 seconds
+
+<span class="c1"># 这里 我们知道 局域网内有 5个 主机在使用</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="powershell-快速计算十进制方法">powershell 快速计算十进制方法</h4>
+<p><a href="https://zhuanlan.zhihu.com/p/150881946">参考博客</a></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">PS D:\ASUS\Desktop&gt; [System.Convert]::ToString(224,2)
+11100000
+</code></pre></td></tr></table>
+</div>
 </div>
     </div>
 
@@ -312,8 +390,8 @@ wmap_vulns
       
       <nav class="post-nav">
         
-        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/linux/kali-linux%E5%AD%A6%E4%B9%A0/kali%E5%9F%BA%E7%A1%80/kali%E7%9A%84%E4%BC%98%E5%8A%BF/">
-            <span class="next-text nav-default">kali的优势</span>
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/linux/kali-linux%E5%AD%A6%E4%B9%A0/metasploit/msf%E6%8F%90%E6%9D%83%E7%9A%84%E6%95%99%E7%A8%8B%E8%AE%B0%E5%BD%95/">
+            <span class="next-text nav-default">MSF提权的教程记录</span>
             <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
