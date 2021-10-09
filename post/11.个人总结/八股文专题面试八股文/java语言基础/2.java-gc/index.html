@@ -49,7 +49,7 @@
 <meta itemprop="description" content="内存布局 常见的垃圾回收算法 GC 的一些名词 Minor GC 新生代空间，eden,survivor 区域回收的叫做minor GC Major GC 清理Tenured区， 用于回收">
 <meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="641">
+<meta itemprop="wordCount" content="1209">
 
 
 
@@ -156,6 +156,8 @@
           <ul>
             <li></li>
             <li><a href="#常见的垃圾回收算法">常见的垃圾回收算法</a></li>
+            <li><a href="#g1收集器">G1收集器</a></li>
+            <li><a href="#调优分析工具">调优分析工具</a></li>
           </ul>
         </li>
       </ul>
@@ -166,6 +168,7 @@
 </div>
     <div class="post-content">
       <h4 id="内存布局">内存布局</h4>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_09_10_13_30image-20211009101330343.png" alt="image-20211009101330343"></p>
 <h3 id="常见的垃圾回收算法">常见的垃圾回收算法</h3>
 <h4 id="gc-的一些名词">GC 的一些名词</h4>
 <ol>
@@ -192,7 +195,10 @@
 </ol>
 <h4 id="常见的垃圾收集算法">常见的垃圾收集算法</h4>
 <ol>
-<li></li>
+<li>复制算法</li>
+<li>标记清除</li>
+<li>标记整理</li>
+<li>分代收集理论</li>
 </ol>
 <h4 id="必问的垃圾收集器">必问的垃圾收集器</h4>
 <ol>
@@ -256,7 +262,195 @@
 <li>jstack 观察到 jvM中当前所有线程的运行情况</li>
 <li>jmap</li>
 </ul>
+<h3 id="g1收集器">G1收集器</h3>
+<h4 id="rememberset">rememberset</h4>
+<p>每个 region 都有 个 卡表 card  table</p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_09_13_14_08image-20211009131408492.png" alt="image-20211009131408492"></p>
+<p>对象 直接 可能有各种引用， 可能 eden 区域的引用old 区域的</p>
+<p>通过 remember set 快速 找到对应的引用位置</p>
+<h3 id="调优分析工具">调优分析工具</h3>
+<ol>
+<li><code>jps</code>  查看进程状态</li>
+<li><code>jstat</code>  查看进程信息</li>
+<li><code>jstack</code> 查看线程信息,分析线程</li>
+<li><code>jmap</code> 查看堆信息</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_09_13_19_20image-20211009131920791.png" alt="image-20211009131920791"></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># jps</span>
+<span class="m">7425</span> Jps
+<span class="m">3203</span> jar
+<span class="m">1429</span> Bootstrap
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># jstat -gc  3203 250 4</span>
+ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU    CCSC   CCSU   YGC     YGCT    FGC    FGCT     GCT
+3712.0 3712.0 3712.0  0.0   30080.0  28864.0   74836.0    62548.4   77480.0 74150.1 9384.0 8772.2    <span class="m">694</span>    3.766  <span class="m">13</span>      1.974    5.741
+3712.0 3712.0 3712.0  0.0   30080.0  28864.0   74836.0    62548.4   77480.0 74150.1 9384.0 8772.2    <span class="m">694</span>    3.766  <span class="m">13</span>      1.974    5.741
+3712.0 3712.0 3712.0  0.0   30080.0  28864.0   74836.0    62548.4   77480.0 74150.1 9384.0 8772.2    <span class="m">694</span>    3.766  <span class="m">13</span>      1.974    5.741
+3712.0 3712.0 3712.0  0.0   30080.0  28864.0   74836.0    62548.4   77480.0 74150.1 9384.0 8772.2    <span class="m">694</span>    3.766  <span class="m">13</span>      1.974    5.741
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span>#
 
+<span class="c1"># 只查看 old gc</span>
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># jstat -gcnew  3203</span>
+ S0C    S1C    S0U    S1U   TT MTT  DSS      EC       EU     YGC     YGCT
+3712.0 3712.0 3712.0    0.0  <span class="m">1</span>  <span class="m">15</span> 1856.0  30080.0  29366.9    <span class="m">694</span>    3.766
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># jstat -gcold  3203</span>
+   MC       MU      CCSC     CCSU       OC          OU       YGC    FGC    FGCT     GCT
+ 77480.0  74150.1   9384.0   8772.2     74836.0     62548.4    <span class="m">694</span>    <span class="m">13</span>    1.974    5.741
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span>#
+
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># jstack 3203</span>
+2021-10-09 13:21:54
+Full thread dump OpenJDK 64-Bit Server VM <span class="o">(</span>25.302-b08 mixed mode<span class="o">)</span>:
+
+<span class="s2">&#34;Attach Listener&#34;</span> <span class="c1">#23150 daemon prio=9 os_prio=0 tid=0x00007fd0e4006800 nid=0x51c6 waiting on condition [0x0000000000000000]</span>
+   java.lang.Thread.State: RUNNABLE
+
+<span class="s2">&#34;Email_pool_thread_27&#34;</span> <span class="c1">#27 prio=5 os_prio=0 tid=0x00007fd0d42b2000 nid=0x7523 waiting on condition [0x00007fd0d88a5000]</span>
+   java.lang.Thread.State: WAITING <span class="o">(</span>parking<span class="o">)</span>
+        at sun.misc.Unsafe.park<span class="o">(</span>Native Method<span class="o">)</span>
+        - parking to <span class="nb">wait</span> <span class="k">for</span>  &lt;0x00000000ee2d93a0&gt; <span class="o">(</span>a java.util.concurrent.locks.AbstractQueuedSynchronizer<span class="nv">$ConditionObject</span><span class="o">)</span>
+        at java.util.concurrent.locks.LockSupport.park<span class="o">(</span>LockSupport.java:175<span class="o">)</span>
+        at java.util.concurrent.locks.AbstractQueuedSynchronizer<span class="nv">$ConditionObject</span>.await<span class="o">(</span>AbstractQueuedSynchronizer.java:2039<span class="o">)</span>
+        at java.util.concurrent.LinkedBlockingQueue.take<span class="o">(</span>LinkedBlockingQueue.java:442<span class="o">)</span>
+        at java.util.concurrent.ThreadPoolExecutor.getTask<span class="o">(</span>ThreadPoolExecutor.java:1074<span class="o">)</span>
+        at java.util.concurrent.ThreadPoolExecutor.runWorker<span class="o">(</span>ThreadPoolExecutor.java:1134<span class="o">)</span>
+        at java.util.concurrent.ThreadPoolExecutor<span class="nv">$Worker</span>.run<span class="o">(</span>ThreadPoolExecutor.java:624<span class="o">)</span>
+        at java.lang.Thread.run<span class="o">(</span>Thread.java:748<span class="o">)</span>
+
+<span class="s2">&#34;HikariPool-1 housekeeper&#34;</span> <span class="c1">#25 daemon prio=5 os_prio=0 tid=0x00007fd0d4235000 nid=0x751f waiting on condition [0x00007fd0d8aa7000]</span>
+   java.lang.Thread.State: TIMED_WAITING <span class="o">(</span>parking<span class="o">)</span>
+        at sun.misc.Unsafe.park<span class="o">(</span>Native Method<span class="o">)</span>
+        - parking to <span class="nb">wait</span> <span class="k">for</span>  &lt;0x00000000ee12ae70&gt; <span class="o">(</span>a ja
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># jmap -heap 3203</span>
+Attaching to process ID 3203, please wait...
+Debugger attached successfully.
+Server compiler detected.
+JVM version is 25.302-b08
+
+using thread-local object allocation.
+Mark Sweep Compact GC
+
+Heap Configuration:
+   <span class="nv">MinHeapFreeRatio</span>         <span class="o">=</span> <span class="m">40</span>
+   <span class="nv">MaxHeapFreeRatio</span>         <span class="o">=</span> <span class="m">70</span>
+   <span class="nv">MaxHeapSize</span>              <span class="o">=</span> <span class="m">482344960</span> <span class="o">(</span>460.0MB<span class="o">)</span>
+   <span class="nv">NewSize</span>                  <span class="o">=</span> <span class="m">10485760</span> <span class="o">(</span>10.0MB<span class="o">)</span>
+   <span class="nv">MaxNewSize</span>               <span class="o">=</span> <span class="m">160759808</span> <span class="o">(</span>153.3125MB<span class="o">)</span>
+   <span class="nv">OldSize</span>                  <span class="o">=</span> <span class="m">20971520</span> <span class="o">(</span>20.0MB<span class="o">)</span>
+   <span class="nv">NewRatio</span>                 <span class="o">=</span> <span class="m">2</span>
+   <span class="nv">SurvivorRatio</span>            <span class="o">=</span> <span class="m">8</span>
+   <span class="nv">MetaspaceSize</span>            <span class="o">=</span> <span class="m">21807104</span> <span class="o">(</span>20.796875MB<span class="o">)</span>
+   <span class="nv">CompressedClassSpaceSize</span> <span class="o">=</span> <span class="m">1073741824</span> <span class="o">(</span>1024.0MB<span class="o">)</span>
+   <span class="nv">MaxMetaspaceSize</span>         <span class="o">=</span> <span class="m">17592186044415</span> MB
+   <span class="nv">G1HeapRegionSize</span>         <span class="o">=</span> <span class="m">0</span> <span class="o">(</span>0.0MB<span class="o">)</span>
+
+Heap Usage:
+New Generation <span class="o">(</span>Eden + <span class="m">1</span> Survivor Space<span class="o">)</span>:
+   <span class="nv">capacity</span> <span class="o">=</span> <span class="m">34603008</span> <span class="o">(</span>33.0MB<span class="o">)</span>
+   <span class="nv">used</span>     <span class="o">=</span> <span class="m">4369832</span> <span class="o">(</span>4.167396545410156MB<span class="o">)</span>
+   <span class="nv">free</span>     <span class="o">=</span> <span class="m">30233176</span> <span class="o">(</span>28.832603454589844MB<span class="o">)</span>
+   12.628474380030777% used
+   <span class="c1">#      导出文件分析</span>
+   
+<span class="o">[</span>root@VM-0-7-centos temp<span class="o">]</span><span class="c1"># jmap -dump:file=jvmtool 3203</span>
+Dumping heap to /root/temp/jvmtool ...
+Heap dump file created   
+</code></pre></td></tr></table>
+</div>
+</div>
     </div>
 
     <div class="post-copyright">
