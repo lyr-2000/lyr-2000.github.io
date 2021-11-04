@@ -49,7 +49,7 @@
 <meta itemprop="description" content="golang GMP模型 学习教程, 看11分钟 一个进程 可以有多个线程 ，每个线程 有多个协程 协程和线程的关系 N：M原理 一个协程可以挂到不同的线程上面去，所以是">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="322">
+<meta itemprop="wordCount" content="498">
 
 
 
@@ -127,9 +127,42 @@
       </li><li class="menu-item">
         <a class="menu-item-link" href="/friends">大佬</a>
       </li><li style="menu-item;list-style: none;position: relative;left: 310px;bottom: 26px;">
-		<input type="search" class="docsearch-input" placeholder="Search" />
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
 	  </li></ul>
 </nav>
+
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
 
     </header>
 
@@ -162,6 +195,7 @@
             <li><a href="#调度器策略">调度器策略</a></li>
             <li><a href="#可视化-gmp编程">可视化 GMP编程</a></li>
             <li><a href="#工作窃取算法">工作窃取算法</a></li>
+            <li><a href="#大致流程">大致流程</a></li>
           </ul>
         </li>
       </ul>
@@ -191,6 +225,16 @@
 <p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_11_02_10_49_09image-20211102104906465.png" alt="image-20211102104906465"></p>
 <p>整个流程就是  M 线程 如果空闲，先去其他的 线程的 任务队列里面偷任务来执行【工作窃取算法】， 如果偷不到其他的队列的任务，再从全局队列中取出 groutine 来执行。</p>
 <p>因为 如果都从全局队列中拿，会占用锁，所以从其他线程的本地队列中 获取 会比较好。</p>
+<h3 id="大致流程">大致流程</h3>
+<p>GMP调度流程大致如下：</p>
+<ul>
+<li>线程M想运行任务就需得获取 P，即与P关联。</li>
+<li>然而 P 的本地队列(LRQ)获取 G</li>
+<li>若LRQ中没有可运行的G，M 会尝试从全局队列(GRQ)拿一批G放到P的本地队列，</li>
+<li>若全局队列也未找到可运行的G时候，M会随机从其他 P 的本地队列偷一半放到自己 P 的本地队列。</li>
+<li>拿到可运行的G之后，M 运行 G，G 执行之后，M 会从 P 获取下一个 G，不断重复下去。</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/0740098bdb9889fbbf2556005834ac55.png" alt="https://img-blog.csdnimg.cn/img_convert/0740098bdb9889fbbf2556005834ac55.png"></p>
 
     </div>
 
