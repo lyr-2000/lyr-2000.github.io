@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>基于ping 命令探测学习 - 笔试面试经验浓缩</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="免责声明： 这个是我学习网络的笔记，不要拿笔记上的方法来做坏事,后果自负 hping3使用方法 hping3 hping 是 面向命令行的用于生成和解析TCP/IP协议数" /><meta name="keywords" content="LYR的文档站, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/kali-linux%E5%AD%A6%E4%B9%A0/kali%E5%9F%BA%E7%A1%80/ping%E5%91%BD%E4%BB%A4%E6%8E%A2%E6%B5%8B/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="基于ping 命令探测学习" />
+<meta property="og:description" content="免责声明： 这个是我学习网络的笔记，不要拿笔记上的方法来做坏事,后果自负 hping3使用方法 hping3 hping 是 面向命令行的用于生成和解析TCP/IP协议数" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/kali-linux%E5%AD%A6%E4%B9%A0/kali%E5%9F%BA%E7%A1%80/ping%E5%91%BD%E4%BB%A4%E6%8E%A2%E6%B5%8B/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="基于ping 命令探测学习">
+<meta itemprop="description" content="免责声明： 这个是我学习网络的笔记，不要拿笔记上的方法来做坏事,后果自负 hping3使用方法 hping3 hping 是 面向命令行的用于生成和解析TCP/IP协议数">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="1722">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="基于ping 命令探测学习"/>
+<meta name="twitter:description" content="免责声明： 这个是我学习网络的笔记，不要拿笔记上的方法来做坏事,后果自负 hping3使用方法 hping3 hping 是 面向命令行的用于生成和解析TCP/IP协议数"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">LYR的文档站</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">LYR的文档站</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li><li style="menu-item;list-style: none;position: relative;left: 310px;bottom: 26px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">基于ping 命令探测学习</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#hping3使用方法">hping3使用方法</a></li>
+            <li><a href="#fping-命令使用方法">fping 命令使用方法</a></li>
+            <li><a href="#arping-原理">arping 原理</a></li>
+            <li><a href="#awk-命令的基本使用">awk 命令的基本使用</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p><strong>免责声明：</strong></p>
+<p>这个是我学习网络的笔记，不要拿笔记上的方法来做坏事,后果自负</p>
+<h3 id="hping3使用方法">hping3使用方法</h3>
+<p>hping3</p>
+<p><strong>hping</strong> 是 面向命令行的用于生成和解析TCP/IP协议数据包汇编/分析的开源工具。作者是Salvatore Sanfilippo，界面灵感来自ping（8）unix命令，<strong>目前最新版是 hping3</strong>，它支持TCP，UDP，ICMP和RAW-IP协议，具有跟踪路由模式，能够在覆盖的信道之间发送文件以及许多其他功能，支持使用tcl脚本自动化地调用其API。<strong>hping是安全审计、防火墙测试等工作的标配工具</strong>。<strong>hping 优势在于能够定制数据包的各个部分，因此用户可以灵活对目标机进行细致地探测。</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">hping3 -c <span class="m">1000</span> -d <span class="m">120</span> -S -w <span class="m">64</span> -p <span class="m">80</span> --flood --rand-source www.lyr-2000.xyz
+
+<span class="c1"># --flood 洪水式攻击</span>
+<span class="c1"># 让大量请求处于等待状态 sync</span>
+<span class="c1"># 然后服务器瘫痪</span>
+<span class="c1"># 这个就是 ddos 攻击原理</span>
+<span class="c1"># 解决ddos 攻击的方法</span>
+:<span class="s">&lt;&lt;EOF
+</span><span class="s">1. 扩容
+</span><span class="s">2. 分流
+</span><span class="s">--rand-source # 表示伪造源IP地址，局域网中伪造
+</span><span class="s">-w 64 = TCP 窗口大小
+</span><span class="s">-S 只是发送 SYN 数据包
+</span><span class="s">-c 1000   1000个请求
+</span><span class="s">
+</span><span class="s">
+</span><span class="s">EOF</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="fping-命令使用方法">fping 命令使用方法</h3>
+<p><a href="https://fping.org/">fping 官网</a></p>
+<p>fping是一个小型命令行工具，用于向网络主机发送ICMP （ Internet控制消息协议 ）回应请求，类似于ping，但在ping多个主机时性能要高得多。 fping完全不同于ping，因为您可以在命令行上定义任意数量的主机，或者指定包含要ping的IP地址或主机列表的文件。例如，使用fping，我们可以指定完整的网络范围（ 192.168.0.1/24 ）。 它会向主机发送Fping请求，并以循环方式移动到另一个目标主机。 与ping不同，Fping基本上用于编写脚本。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"> fping 172.28.18.178
+ :<span class="s">&lt;&lt;Note
+</span><span class="s"> # 下面是 命令的返回结果
+</span><span class="s"> 172.28.18.178 is alive
+</span><span class="s"> 
+</span><span class="s"> ifconfig # 查看本地ip的信息
+</span><span class="s"> inet addr:192.168.1.105 Bcast:192.168.1.255 Mask:255.255.255.0分别是ip地址/网关/子网掩码
+</span><span class="s"> 
+</span><span class="s"> Note</span>
+ 
+ 
+ fping -a -g 192.168.1.1/24
+  
+:<span class="s">&lt;&lt;NOTE
+</span><span class="s"> 192.168.1.1
+</span><span class="s">192.168.1.2
+</span><span class="s">192.168.1.3
+</span><span class="s">192.168.1.10
+</span><span class="s">
+</span><span class="s"> 
+</span><span class="s"> NOTE</span>
+ 
+fping -ag 192.168.1.1 192.168.1.254 &gt; fpint.txt
+
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="arping-原理">arping 原理</h3>
+<p>ARP协议： 叫做 地址解析协议 address resolution protocol , 的缩写， 计算机通过 ARP协议将IP地址转换为 MAC地址</p>
+<p>RARP协议 是反过来，reverse的意思，将 MAC地址转为 IP地址</p>
+<p>arp协议。在同一以太网中，通过地址解析协议，源主机可以通过目的主机的IP地址获得目的主机的MAC地址。arping程序就是完成上述过程的程序。</p>
+<p>arping，用来向局域网内的其它主机发送ARP请求的指令，它可以用来测试局域网内的某个IP是否已被使用。</p>
+<p>arp协议就是通过广播去发送给局域网中的各种主机 【广播请求，单播回应 】</p>
+<h5 id="cut命令截取关键信息">cut命令截取关键信息</h5>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"> arping 172.28.16.1  -c <span class="m">1</span> <span class="p">|</span> grep <span class="s2">&#34;bytes from&#34;</span>
+ :<span class="s">&lt;&lt;EOF
+</span><span class="s"> 42 bytes from 00:15:5d:64:c0:c5 (172.28.16.1): index=0 time=261.500 usec
+</span><span class="s"> # 可以后面 用个 cut 命令， 类型java 字符串的 split 方法 
+</span><span class="s"> EOF</span>
+ 
+  arping 172.28.16.1  -c <span class="m">1</span> <span class="p">|</span> grep <span class="s2">&#34;bytes from&#34;</span> <span class="p">|</span> cut -d <span class="s2">&#34; &#34;</span> -f <span class="m">5</span>
+  
+  
+:<span class="s">&lt;&lt;EOF
+</span><span class="s"># 这里不会的  就 cut  --help
+</span><span class="s">Mandatory arguments to long options are mandatory for short options too.
+</span><span class="s">  -b, --bytes=LIST        select only these bytes
+</span><span class="s">  -c, --characters=LIST   select only these characters
+</span><span class="s">  -d, --delimiter=DELIM   use DELIM instead of TAB for field delimiter
+</span><span class="s">  -f, --fields=LIST       select only these fields;  also print any line
+</span><span class="s">                            that contains no delimiter character, unless
+</span><span class="s">                            the -s option is specified
+</span><span class="s">  -n                      (ignored)
+</span><span class="s">      --complement        complement the set of selected bytes, characters
+</span><span class="s">                            or fields
+</span><span class="s">  -s, --only-delimited    do not print lines not containing delimiters
+</span><span class="s">      --output-delimiter=STRING  use STRING as the output delimiter
+</span><span class="s">                            the default is to use the input delimiter
+</span><span class="s">  -z, --zero-terminated    line delimiter is NUL, not newline
+</span><span class="s">
+</span><span class="s"># 可以知道 -f 就是 选择数组的下标
+</span><span class="s">EOF</span>
+
+
+ arping 172.28.16.1  -c <span class="m">1</span> <span class="p">|</span> grep <span class="s2">&#34;bytes from&#34;</span> <span class="p">|</span> cut -d <span class="s2">&#34; &#34;</span> -f <span class="m">5</span> <span class="p">|</span> cut -d <span class="s2">&#34;(&#34;</span> -f <span class="m">2</span> <span class="p">|</span> cut -
+d <span class="s2">&#34;)&#34;</span> -f <span class="m">1</span>
+
+<span class="c1"># 返回结果： 172.28.16.1</span>
+
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="awk-命令的基本使用">awk 命令的基本使用</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"> <span class="nb">echo</span> <span class="s2">&#34;hello wowld&#34;</span> <span class="p">|</span> awk -F<span class="s2">&#34; &#34;</span>  <span class="s1">&#39;{print $1}&#39;</span>
+ :<span class="s">&lt;&lt;EOF
+</span><span class="s"> hello
+</span><span class="s"> # -F 用来指定分隔符
+</span><span class="s"> 
+</span><span class="s"> EOF</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>192.168.1.1解释：</p>
+<p>192.168.1.1属于IP地址的C类地址，属于保留IP，专门用于路由器设置。</p>
+<p>DNS定义：</p>
+<p>DNS 是计算机域名系统 (Domain Name System 或Domain Name Service) 的缩写，它是由解析器以及域名服务器组成的。</p>
+<p>DNS 命名用于 Internet的 TCP/IP网络中，通过用户友好的名称查找计算机和服务。当用户在应用程序中输入 DNS 名称时，DNS 服务可以将此名称解析为与之相关的其他信息。</p>
+<p>192.168.1.1的DNS地址查询方法：</p>
+<p>1、 在“开始”中找到“运行”（或者直接【Win】+【R】）</p>
+<p>2、在管理员界面中输入命令：ipconfig/all然后按Enter键确认即可显示Windows IP配置，在这里可以查看到DNS服务器地址。</p>
+<h4 id="ifconfig查看网段">ifconfig查看网段</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">ifconfig eth0
+<span class="c1"># 可以列出 地址</span>
+:<span class="s">&lt;&lt;EOF
+</span><span class="s">inet 192.168.1.53 ,netmask 255.255.255.0
+</span><span class="s">那么 192.168.1 前面这个部分就是网段
+</span><span class="s">
+</span><span class="s">EOF</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="查看网络中存活的主机">查看网络中存活的主机</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">netdiscover -i eth0 -r 192.168.1.0/24
+<span class="c1"># 主动模式探测太危险了</span>
+<span class="c1"># 一般会选择被动, 发送给本机的数据包，就收下</span>
+<span class="c1"># 网卡被设置混杂模式来侦听 网络中的 arp数据包</span>
+netdiscover -p
+
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/kali-linux%E5%AD%A6%E4%B9%A0/kali%E5%9F%BA%E7%A1%80/%E4%B8%BB%E5%8A%A8%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86%E5%8E%9F%E7%90%86/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">主动信息收集原理</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/kali-linux%E5%AD%A6%E4%B9%A0/kali%E5%9F%BA%E7%A1%80/%E9%85%8D%E7%BD%AE%E6%97%A0%E7%BA%BF%E7%BD%91%E5%8D%A1/">
+            <span class="next-text nav-default">配置无线网卡</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
+<script>
+docsearch({
+    apiKey: "2991187e127fb95e62db841ea946bc06",
+    indexName: "blog",
+    appId: "UVGAU2QDTQ",
+    inputSelector: '.docsearch-input',
+    debug: false,
+});
+docsearch({
+    apiKey: "2991187e127fb95e62db841ea946bc06",
+    indexName: "blog",
+    appId: "UVGAU2QDTQ",
+    inputSelector: '.mob-docsearch-input',
+    debug: false,
+});
+</script>
+</body>
+</html>
