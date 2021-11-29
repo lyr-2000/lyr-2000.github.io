@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Golang_语言的特性 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="为什么需要 go语言 其他语言的弊端 硬件发展速度远远超过软件 c语言等原生语言 缺乏好的依赖管理【依赖于头文件】 java 和 c&#43;&#43; 等语言过于笨重 系统语言对垃圾回" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/golang/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E7%9A%84%E7%89%B9%E6%80%A7/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="Golang_语言的特性" />
+<meta property="og:description" content="为什么需要 go语言 其他语言的弊端 硬件发展速度远远超过软件 c语言等原生语言 缺乏好的依赖管理【依赖于头文件】 java 和 c&#43;&#43; 等语言过于笨重 系统语言对垃圾回" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/golang/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E7%9A%84%E7%89%B9%E6%80%A7/" />
+<meta property="article:published_time" content="2021-08-14T22:42:48+08:00" />
+<meta property="article:modified_time" content="2021-08-14T22:42:48+08:00" />
+<meta itemprop="name" content="Golang_语言的特性">
+<meta itemprop="description" content="为什么需要 go语言 其他语言的弊端 硬件发展速度远远超过软件 c语言等原生语言 缺乏好的依赖管理【依赖于头文件】 java 和 c&#43;&#43; 等语言过于笨重 系统语言对垃圾回">
+<meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
+<meta itemprop="wordCount" content="1071">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Golang_语言的特性"/>
+<meta name="twitter:description" content="为什么需要 go语言 其他语言的弊端 硬件发展速度远远超过软件 c语言等原生语言 缺乏好的依赖管理【依赖于头文件】 java 和 c&#43;&#43; 等语言过于笨重 系统语言对垃圾回"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li><li style="menu-item;list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Golang_语言的特性</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-14 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#为什么需要-go语言">为什么需要 go语言</a></li>
+        <li><a href="#go语言不支持的特性">go语言不支持的特性</a>
+          <ul>
+            <li><a href="#环境目录">环境目录</a></li>
+            <li><a href="#go的常用命令">go的常用命令</a></li>
+            <li><a href="#一些基本的命令">一些基本的命令</a></li>
+            <li><a href="#go-test">Go test</a></li>
+            <li><a href="#go-vet">go vet</a></li>
+          </ul>
+        </li>
+        <li><a href="#golang-playground">Golang playground</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="为什么需要-go语言">为什么需要 go语言</h2>
+<ul>
+<li>其他语言的弊端
+<ul>
+<li>硬件发展速度远远超过软件</li>
+<li>c语言等原生语言 缺乏好的依赖管理【依赖于头文件】</li>
+<li>java 和 c++ 等语言过于笨重</li>
+<li>系统语言对垃圾回收和并行计算等基础功能缺乏支持</li>
+<li>对多核计算机缺乏支持</li>
+</ul>
+</li>
+<li>go是个 可以编译高效、支持高并发、垃圾回收的全新语言
+<ul>
+<li>秒级 完成大型项目的单点编译</li>
+<li>依赖管理清晰</li>
+<li>不支持继承，程序员无需花费精力定义不同类型之间的关系</li>
+<li>支持垃圾回收，并发执行，多线程通讯</li>
+<li>对多核计算机支持友好</li>
+</ul>
+</li>
+</ul>
+<h2 id="go语言不支持的特性">go语言不支持的特性</h2>
+<ul>
+<li>不支持函数重载和操作符重载</li>
+<li>避免在 c/c++ 开发中的一些 bug 和 混乱，不支持隐式转换</li>
+<li>支持接口抽象，不支持继承</li>
+<li>不支持动态加载代码</li>
+<li>不支持动态链接库</li>
+<li>通过 recover 和 panic 代替异常机制</li>
+<li>不支持断言</li>
+<li>不支持静态变量</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_11_28_01_04_09image-20211128010406544.png" alt="image-20211128010406544"></p>
+<h3 id="环境目录">环境目录</h3>
+<ol>
+<li>
+<p>GOPATH</p>
+<ol>
+<li>src: 存放源代码</li>
+<li>pkg 存放依赖包</li>
+<li>bin 存放可执行文件</li>
+</ol>
+</li>
+<li>
+<p>GOROOT</p>
+<ol>
+<li>go的安装目录</li>
+</ol>
+</li>
+<li>
+<p>其他变量</p>
+<ol>
+<li>GOOS、GOARCH、GOPROXY</li>
+<li>国内用户 建议设置 goproxy: <code>export GOPROXY=https://goproxy.cn</code></li>
+</ol>
+<h3 id="go的常用命令">go的常用命令</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">set</span> <span class="nv">GOOS</span><span class="o">=</span>linux
+<span class="c1"># 设置 golang 的 os 操作系统是 linux</span>
+go build main.go 
+<span class="c1"># 获得的文件 只能在 linux 执行</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+</ol>
+<h3 id="一些基本的命令">一些基本的命令</h3>
+<ul>
+<li>
+<p>bug  start a bug report</p>
+</li>
+<li>
+<p>build compile packages and dependencies</p>
+</li>
+<li>
+<p>clean  remove object files and cached files</p>
+</li>
+<li>
+<p>doc  show  documentation for package or symbol</p>
+</li>
+<li>
+<p>env  print GO environment information</p>
+</li>
+<li>
+<p>fix   update packages to use new APIS</p>
+</li>
+<li>
+<p>fmt   gofmt (reformat) package sources</p>
+</li>
+<li>
+<p>generate  generate go files by processing source</p>
+</li>
+<li>
+<p>get     add dependencies to current module and install them</p>
+</li>
+<li>
+<p>install compile and install packages and dependencies</p>
+</li>
+<li>
+<p>list list packages or modules</p>
+</li>
+<li>
+<p>mod module maintenance</p>
+</li>
+<li>
+<p>run compile and run Go program</p>
+</li>
+<li>
+<p>test test packages</p>
+</li>
+<li>
+<p>tool run specified go tool</p>
+</li>
+<li>
+<p>version print Go version</p>
+</li>
+<li>
+<p>vet report likely mistakes in packages</p>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">go fmt main.go
+<span class="c1"># go 自动帮你格式化，不需要你自己 格式化了</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="go-test">Go test</h3>
+<p>go语言自带 测试框架</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">import</span> <span class="s">&#34;testing&#34;</span>
+<span class="kd">func</span> <span class="nf">TestIncreates</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Log</span><span class="p">(</span><span class="s">&#34;start testing&#34;</span><span class="p">)</span>
+    <span class="nf">increase</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">go <span class="nb">test</span> ./... -v 
+<span class="c1"># 运行测试</span>
+go <span class="nb">test</span> main_test.go  -v
+
+</code></pre></td></tr></table>
+</div>
+</div><p>go test 命令 扫描 所有 *_test.go 为结尾的文件，惯例是将测试代码与正式代码放在同一个目录下面 ， 如  <code>foo.go</code> 测试代码 一般写在  <code>foo_test.go</code></p>
+<p>-v 是用于输出所有Log的信息</p>
+<p>也可以指写具体的方法名，只要包含这些名称的测试方法就会运行，如果要测试多个方法，名称用&quot;|&quot;分开</p>
+<p><a href="https://www.cnblogs.com/li-peng/p/10036468.html">参考博客</a></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;testing&#34;</span>
+
+	<span class="nx">assert</span> <span class="s">&#34;github.com/stretchr/testify/assert&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">add</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="nx">a</span> <span class="o">+</span> <span class="nx">b</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">Test_increase</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">t</span><span class="p">.</span><span class="nf">Log</span><span class="p">(</span><span class="s">&#34;hello world&#34;</span><span class="p">)</span>
+	<span class="kd">var</span> <span class="nx">result</span> <span class="p">=</span> <span class="nf">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+	<span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">result</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="p">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="go-vet">go vet</h3>
+<p><strong>代码静态检查，发现可能的 bug 或者 可疑的构造</strong></p>
+<ul>
+<li>Print-format 错误，检查类型不匹配的print</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="nx">str</span> <span class="p">=</span> <span class="s">&#34;hello world !&#34;</span>
+<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%v\n&#34;</span><span class="p">,</span> <span class="nx">str</span><span class="p">)</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>boolean 错误，检查一直为 true，false 或者冗余的表达式</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span> <span class="nx">i</span><span class="o">!=</span><span class="mi">0</span> <span class="o">||</span> <span class="nx">i</span><span class="o">!=</span><span class="mi">1</span><span class="p">)</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Range 循环，比如以下代码 主协程 会先退出， go routine 无法执行</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="nx">words</span> <span class="p">=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;foo&#34;</span><span class="p">,</span><span class="s">&#34;bar&#34;</span><span class="p">,</span><span class="s">&#34;baz&#34;</span><span class="p">}</span>
+
+<span class="k">for</span> <span class="nx">_</span><span class="p">,</span><span class="nx">word</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">words</span> <span class="p">{</span>
+    <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">word</span><span class="p">)</span> 
+    <span class="p">}()</span>
+<span class="p">}</span>
+
+
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>unreachable 的代码，例如 return 之后的代码</li>
+<li>其他错误，比如 变量自复制，error 滞后等</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="nx">res</span><span class="p">,</span><span class="nx">err</span> <span class="p">=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;https://www.baidu.com&#34;</span><span class="p">)</span>
+<span class="k">defer</span> <span class="nx">res</span><span class="p">.</span><span class="nx">Body</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>参考项目</p>
+<p><a href="https://github.com/cncamp/golang">https://github.com/cncamp/golang</a></p>
+<p>设计系统的时候， 优先用组合 而不是继承，因此 golang 支持组合 不支持继承 就是这样的。</p>
+<h4 id="go-和-java-的编译区别">go 和 java 的编译区别</h4>
+<p>java  可以将类库 导出一个个 的 jar 包，然后用 classLoader 来加载，但是 go 必须将 代码 包拉到本地，然后 再统一 编译到一个 二进制文件里面，这就是 区别</p>
+<h2 id="golang-playground">Golang playground</h2>
+<p>官方 playground
+<a href="https://play.golang.org/">https://play.golang.org/</a>
+<strong>可直接编写和运行 Go 语言程序</strong>
+<strong>国内可直接访问的 playground</strong></p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-14
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/golang/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Golang_语言的基础语法</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/golang/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E8%BF%9B%E9%98%B6%E8%AF%AD%E6%B3%95/">
+            <span class="next-text nav-default">Golang_进阶语法</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+<script 
+ defer
+ async  src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
+<script>
+docsearch({
+    apiKey: "2991187e127fb95e62db841ea946bc06",
+    indexName: "blog",
+    appId: "UVGAU2QDTQ",
+    inputSelector: '.docsearch-input',
+    debug: false,
+});
+docsearch({
+    apiKey: "2991187e127fb95e62db841ea946bc06",
+    indexName: "blog",
+    appId: "UVGAU2QDTQ",
+    inputSelector: '.mob-docsearch-input',
+    debug: false,
+});
+</script>
+</body>
+</html>
