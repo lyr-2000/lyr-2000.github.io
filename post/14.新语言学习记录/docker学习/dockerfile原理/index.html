@@ -49,7 +49,7 @@
 <meta itemprop="description" content="Dockerfile Dockerfile概念 Dockerfile 是一个文本文件 包含一条条指令 每一条指令 构建一层 ，基于基础镜像，最终构建出全新的镜像 对于开发人员： 可以为开发团队提">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="1513">
+<meta itemprop="wordCount" content="2192">
 
 
 
@@ -196,6 +196,8 @@ input.PC_MARK1:focus{
             <li><a href="#导出镜像-从-images中导出">导出镜像 【从 images中导出】</a></li>
           </ul>
         </li>
+        <li><a href="#docker-多段构建multi-stage-build">docker 多段构建（Multi-stage build)</a></li>
+        <li><a href="#dockerfile-最佳实践">Dockerfile 最佳实践</a></li>
       </ul>
     </li>
   </ul>
@@ -562,7 +564,74 @@ docker load &lt; gotest.tar
 
 </code></pre></td></tr></table>
 </div>
+</div><h2 id="docker-多段构建multi-stage-build">docker 多段构建（Multi-stage build)</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="k">FROM</span><span class="s"> golang:1.16-alpine AS build</span><span class="err">
+</span><span class="err"></span><span class="k">RUN</span> apk add --no-cache git<span class="err">
+</span><span class="err"></span><span class="k">RUN</span> go get github.com/golang/dep/cmd/dep<span class="err">
+</span><span class="err"></span><span class="k">COPY</span> Gopkg.lock Gopkg.toml /go/src/project/<span class="err">
+</span><span class="err"></span><span class="k">WORKDIR</span><span class="s"> /go/src/project/</span><span class="err">
+</span><span class="err"></span><span class="k">RUN</span> dep ensure -vendor-only<span class="err">
+</span><span class="err"></span><span class="k">COPY</span> . /go/src/project/<span class="err">
+</span><span class="err"></span><span class="k">RUN</span> go build -o /bin/project<span class="err">
+</span><span class="err"></span><span class="c">#（只有这个二进制文件是产线需要的，其他都是waste）</span><span class="err">
+</span><span class="err"></span><span class="k">FROM</span><span class="s"> scratch</span><span class="err">
+</span><span class="err"></span><span class="c"># 从上面 那个 build 的 别名的镜像中 copy 过来</span><span class="err">
+</span><span class="err"></span><span class="k">COPY</span> --from<span class="o">=</span>build /bin/project /bin/project<span class="err">
+</span><span class="err"></span><span class="k">ENTRYPOINT</span> <span class="p">[</span><span class="s2">&#34;/bin/project&#34;</span><span class="p">]</span><span class="err">
+</span><span class="err"></span><span class="k">CMD</span> <span class="p">[</span><span class="s2">&#34;--help&#34;</span><span class="p">]</span><span class="err">
+</span></code></pre></td></tr></table>
 </div>
+</div><p>VOLUME： 将指定目录定义为外挂存储卷，Dockerfile 中在该指令之后所有对同一目录的修改都无效
+VOLUME [&quot;/data&rdquo;]
+等价于 docker run –v /data，可通过 docker inspect 查看主机的 mount point，
+/var/lib/docker/volumes/<containerid>/_data
+• USER：切换运行镜像的用户和用户组，因安全性要求，越来越多的场景要求容器应用要以 non-root 身份运行
+USER <user>[:<group>]
+• WORKDIR：等价于 cd，切换工作目录
+WORKDIR /path/to/workdir
+• 其他非常用指令
+• ARG
+• ONBUILD
+• STOPSIGNAL
+• HEALTHCHECK
+• SHELL</p>
+<h2 id="dockerfile-最佳实践">Dockerfile 最佳实践</h2>
+<p>• 不要安装无效软件包。
+• 应简化镜像中同时运行的进程数，理想状况下，每个镜像应该只有一个进程。
+• 当无法避免同一镜像运行多进程时，应选择合理的初始化进程（init process）。
+• 最小化层级数
+• 最新的 docker 只有 RUN， COPY，ADD 创建新层，其他指令创建临时层，不会增加镜像大小。
+• 比如 EXPOSE 指令就不会生成新层。
+• 多条 RUN 命令可通过连接符连接成一条指令集以减少层数。
+• 通过多段构建减少镜像层数。
+• 把多行参数按字母排序，可以减少可能出现的重复参数，并且提高可读性。
+• 编写 dockerfile 的时候，应该把变更频率低的编译指令优先构建以便放在镜像底层以有效利用 build cache。
+• 复制文件时，每个文件应独立复制，这确保某个文件变更时，只影响改文件对应的缓存。</p>
+<p>多进程的容器镜像
+• 选择适当的 init 进程
+• 需要捕获 SIGTERM 信号并完成子进程的优雅终止
+• 负责清理退出的子进程以避免僵尸进程
+开源项目
+<a href="https://github.com/krallin/tini">https://github.com/krallin/tini</a></p>
+
     </div>
 
     <div class="post-copyright">
