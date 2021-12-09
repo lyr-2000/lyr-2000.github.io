@@ -49,7 +49,7 @@
 <meta itemprop="description" content="clickhouse 安装部署记录 安装 docker-compose 参考我的博客 参考其他博客 1 2 3 4 5 sudo curl -L https://get.daocloud.io/docker/compose/releases/download/1.25.1/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose sudo chmod &#43;x /usr/local/bin/docker-compose docker-compose --version 去 GitHub上找到写好的 配置 参考项目 1 2 git clone git@github.com:rongfengliang/clickhouse-docker-compose.git cd clickhouse-docker-compose/ 1 2 3">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="222">
+<meta itemprop="wordCount" content="669">
 
 
 
@@ -191,10 +191,15 @@ input.PC_MARK1:focus{
         <li><a href="#clickhouse-安装部署记录">clickhouse 安装部署记录</a>
           <ul>
             <li><a href="#创建测试">创建测试</a></li>
+            <li><a href="#clickhouse时区问题中国时区">clickhouse时区问题【中国时区】</a></li>
             <li><a href="#一些规则限制">一些规则限制</a></li>
           </ul>
         </li>
-        <li><a href="#从其他表中迁移数据">从其他表中迁移数据</a></li>
+        <li><a href="#从其他表中迁移数据">从其他表中迁移数据</a>
+          <ul>
+            <li><a href="#修改-字段">修改 字段</a></li>
+          </ul>
+        </li>
       </ul>
     </li>
   </ul>
@@ -315,6 +320,19 @@ docker-compose --version
 
 </code></pre></td></tr></table>
 </div>
+</div><h3 id="clickhouse时区问题中国时区">clickhouse时区问题【中国时区】</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">select</span> <span class="n">now</span><span class="p">(</span><span class="s1">&#39;Asia/Shanghai&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">col1</span> <span class="p">,</span><span class="n">now</span><span class="p">(</span><span class="s1">&#39;GMT&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">col2</span><span class="p">;</span>
+<span class="o">#</span> <span class="err">北京时间</span> <span class="err">和</span> <span class="n">GMT</span> <span class="err">时间</span>
+ 
+</code></pre></td></tr></table>
+</div>
 </div><h3 id="一些规则限制">一些规则限制</h3>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -350,6 +368,275 @@ docker-compose --version
 <span class="k">insert</span> <span class="k">into</span> <span class="n">test01</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>  <span class="k">select</span> <span class="n">columns</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span> <span class="p">,</span><span class="n">columns</span><span class="p">(</span><span class="s1">&#39;Name&#39;</span><span class="p">)</span>  <span class="k">from</span> <span class="n">NewTable</span> 
 <span class="o">#</span> <span class="err">注意，这里我们要用</span> <span class="n">columns</span> <span class="err">函数</span>
 
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span>  <span class="o">`</span><span class="n">Title</span><span class="o">`</span><span class="p">,</span><span class="o">`</span><span class="n">JavaEnable</span><span class="o">`</span>                  
+<span class="k">FROM</span> <span class="o">`</span><span class="n">hits_100m_obfuscated</span><span class="o">`</span>
+
+<span class="k">WHERE</span> <span class="n">EventDate</span> <span class="o">=</span> <span class="s1">&#39;2013-07-15&#39;</span>
+ 
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="修改-字段">修改 字段</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">alter</span> <span class="k">table</span> <span class="n">tableName</span> <span class="k">add</span> <span class="k">column</span> <span class="n">content</span> <span class="n">String</span> <span class="k">after</span> <span class="n">col1</span><span class="p">;</span>
+<span class="o">#</span> <span class="err">修改字段类型</span>
+<span class="k">alter</span> <span class="k">table</span> <span class="n">tableName</span> <span class="k">modify</span> <span class="k">column</span> <span class="n">newColname</span> <span class="n">string</span>
+
+<span class="o">#</span> <span class="err">删除字段</span>
+<span class="k">alter</span> <span class="k">table</span> <span class="n">tableName</span> <span class="k">drop</span> <span class="k">column</span> <span class="n">newColname</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">datasets</span><span class="p">.</span><span class="n">hits_100m_obfuscated</span>
+<span class="p">(</span>
+    <span class="o">`</span><span class="n">WatchID</span><span class="o">`</span> <span class="n">UInt64</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">JavaEnable</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Title</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">GoodEvent</span><span class="o">`</span> <span class="n">Int16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">EventTime</span><span class="o">`</span> <span class="n">DateTime</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">EventDate</span><span class="o">`</span> <span class="nb">Date</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">CounterID</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">ClientIP</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">RegionID</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">UserID</span><span class="o">`</span> <span class="n">UInt64</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">CounterClass</span><span class="o">`</span> <span class="nb">Int8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">OS</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">UserAgent</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">URL</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Referer</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Refresh</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">RefererCategoryID</span><span class="o">`</span> <span class="n">UInt16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">RefererRegionID</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">URLCategoryID</span><span class="o">`</span> <span class="n">UInt16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">URLRegionID</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">ResolutionWidth</span><span class="o">`</span> <span class="n">UInt16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">ResolutionHeight</span><span class="o">`</span> <span class="n">UInt16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">ResolutionDepth</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">FlashMajor</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">FlashMinor</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">FlashMinor2</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">NetMajor</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">NetMinor</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">UserAgentMajor</span><span class="o">`</span> <span class="n">UInt16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">UserAgentMinor</span><span class="o">`</span> <span class="n">FixedString</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+    <span class="o">`</span><span class="n">CookieEnable</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">JavascriptEnable</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">IsMobile</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">MobilePhone</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">MobilePhoneModel</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Params</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">IPNetworkID</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">TraficSourceID</span><span class="o">`</span> <span class="nb">Int8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">SearchEngineID</span><span class="o">`</span> <span class="n">UInt16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">SearchPhrase</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">AdvEngineID</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">IsArtifical</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">WindowClientWidth</span><span class="o">`</span> <span class="n">UInt16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">WindowClientHeight</span><span class="o">`</span> <span class="n">UInt16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">ClientTimeZone</span><span class="o">`</span> <span class="n">Int16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">ClientEventTime</span><span class="o">`</span> <span class="n">DateTime</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">SilverlightVersion1</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">SilverlightVersion2</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">SilverlightVersion3</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">SilverlightVersion4</span><span class="o">`</span> <span class="n">UInt16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">PageCharset</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">CodeVersion</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">IsLink</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">IsDownload</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">IsNotBounce</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">FUniqID</span><span class="o">`</span> <span class="n">UInt64</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">OriginalURL</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">HID</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">IsOldCounter</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">IsEvent</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">IsParameter</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">DontCountHits</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">WithHash</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">HitColor</span><span class="o">`</span> <span class="n">FixedString</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+    <span class="o">`</span><span class="n">LocalEventTime</span><span class="o">`</span> <span class="n">DateTime</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Age</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Sex</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Income</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Interests</span><span class="o">`</span> <span class="n">UInt16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">Robotness</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">RemoteIP</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">WindowName</span><span class="o">`</span> <span class="n">Int32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">OpenerName</span><span class="o">`</span> <span class="n">Int32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">HistoryLength</span><span class="o">`</span> <span class="n">Int16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">BrowserLanguage</span><span class="o">`</span> <span class="n">FixedString</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+    <span class="o">`</span><span class="n">BrowserCountry</span><span class="o">`</span> <span class="n">FixedString</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+    <span class="o">`</span><span class="n">SocialNetwork</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">SocialAction</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">HTTPError</span><span class="o">`</span> <span class="n">UInt16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">SendTiming</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">DNSTiming</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">ConnectTiming</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">ResponseStartTiming</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">ResponseEndTiming</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">FetchTiming</span><span class="o">`</span> <span class="n">UInt32</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">SocialSourceNetworkID</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">SocialSourcePage</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">ParamPrice</span><span class="o">`</span> <span class="n">Int64</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">ParamOrderID</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">ParamCurrency</span><span class="o">`</span> <span class="n">FixedString</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+    <span class="o">`</span><span class="n">ParamCurrencyID</span><span class="o">`</span> <span class="n">UInt16</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">OpenstatServiceName</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">OpenstatCampaignID</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">OpenstatAdID</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">OpenstatSourceID</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">UTMSource</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">UTMMedium</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">UTMCampaign</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">UTMContent</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">UTMTerm</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">FromTag</span><span class="o">`</span> <span class="n">String</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">HasGCLID</span><span class="o">`</span> <span class="n">UInt8</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">RefererHash</span><span class="o">`</span> <span class="n">UInt64</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">URLHash</span><span class="o">`</span> <span class="n">UInt64</span><span class="p">,</span>
+    <span class="o">`</span><span class="n">CLID</span><span class="o">`</span> <span class="n">UInt32</span>
+<span class="p">)</span>
+<span class="n">ENGINE</span> <span class="o">=</span> <span class="n">MergeTree</span>
+<span class="n">PARTITION</span> <span class="k">BY</span> <span class="n">toYYYYMM</span><span class="p">(</span><span class="n">EventDate</span><span class="p">)</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="p">(</span><span class="n">CounterID</span><span class="p">,</span> <span class="n">EventDate</span><span class="p">,</span> <span class="n">intHash32</span><span class="p">(</span><span class="n">UserID</span><span class="p">),</span> <span class="n">EventTime</span><span class="p">)</span>
+<span class="n">SAMPLE</span> <span class="k">BY</span> <span class="n">intHash32</span><span class="p">(</span><span class="n">UserID</span><span class="p">)</span>
+<span class="n">SETTINGS</span> <span class="n">index_granularity_bytes</span> <span class="o">=</span> <span class="mi">1048576</span><span class="p">,</span> <span class="n">index_granularity</span> <span class="o">=</span> <span class="mi">8192</span>
 </code></pre></td></tr></table>
 </div>
 </div>
