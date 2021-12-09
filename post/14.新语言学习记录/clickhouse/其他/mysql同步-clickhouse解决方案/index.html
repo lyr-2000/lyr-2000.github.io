@@ -49,7 +49,7 @@
 <meta itemprop="description" content="mysql同步 clickhouse解决方案 clickhouse 设置时区 参考博客 参考文档 1 2 CREATE TABLE tmp ENGINE = MergeTree ORDER BY id AS SELECT * FROM mysql(&#39;hostip:3306&#39;,&#39;db&#39;,&#39;table&#39;,&#39;user&#39;,&#39;passwd&#39;); 可以先创建一个更具时间的临时表，然后同步">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="226">
+<meta itemprop="wordCount" content="481">
 
 
 
@@ -192,6 +192,9 @@ input.PC_MARK1:focus{
           <ul>
             <li><a href="#clickhouse-设置时区">clickhouse 设置时区</a></li>
             <li><a href="#测试记录-导入单张表">测试记录 【导入单张表】</a></li>
+            <li><a href="#获取mysql所有的表">获取mysql所有的表</a></li>
+            <li><a href="#生成所有的迁移命令">生成所有的迁移命令</a></li>
+            <li><a href="#一些坑">一些坑</a></li>
           </ul>
         </li>
       </ul>
@@ -242,7 +245,73 @@ input.PC_MARK1:focus{
 
 </code></pre></td></tr></table>
 </div>
+</div><h3 id="获取mysql所有的表">获取mysql所有的表</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql">
+ <span class="k">SELECT</span> <span class="n">group_concat</span><span class="p">(</span><span class="k">TABLE_NAME</span><span class="p">,</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>  <span class="k">FROM</span> <span class="n">information_schema</span><span class="p">.</span><span class="n">TABLES</span> <span class="n">t</span> 
+<span class="k">WHERE</span> <span class="n">TABLE_SCHEMA</span> <span class="o">=</span>  <span class="s1">&#39;你的数据库名字&#39;</span>
+</code></pre></td></tr></table>
 </div>
+</div><h3 id="生成所有的迁移命令">生成所有的迁移命令</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;fmt&#34;</span>
+	<span class="s">&#34;strings&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">var</span> <span class="nx">tables</span> <span class="p">=</span> <span class="s">&#34;t_user,t_table0&#34;</span>
+
+<span class="kd">func</span> <span class="nf">genereateSqls</span><span class="p">(</span><span class="nx">table</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">s</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;CREATE TABLE tmp ENGINE = MergeTree ORDER BY id AS SELECT * FROM mysql(&#39;host:ip&#39;,&#39;a&#39;,&#39;%s&#39;,&#39;test_user&#39;,&#39;密码&#39;);&#34;</span><span class="p">,</span> <span class="nx">table</span><span class="p">)</span>
+	<span class="k">return</span> <span class="nx">s</span>
+
+<span class="p">}</span>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">s</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">Split</span><span class="p">(</span><span class="nx">tables</span><span class="p">,</span> <span class="s">&#34;,&#34;</span><span class="p">)</span>
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">v</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">s</span> <span class="p">{</span>
+		<span class="c1">// fmt.Println(v)
+</span><span class="c1"></span>		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nf">genereateSqls</span><span class="p">(</span><span class="nx">v</span><span class="p">))</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="一些坑">一些坑</h3>
+<p>sql 查询 如果是原类型是字符串，如果用 数字就会直接报错， 原系统写的 sql都不能用</p>
+
     </div>
 
     <div class="post-copyright">
