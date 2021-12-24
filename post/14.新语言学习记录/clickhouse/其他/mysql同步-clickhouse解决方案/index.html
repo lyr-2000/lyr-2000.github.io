@@ -49,7 +49,7 @@
 <meta itemprop="description" content="mysql同步 clickhouse解决方案 clickhouse 设置时区 参考博客 参考文档 1 2 CREATE TABLE tmp ENGINE = MergeTree ORDER BY id AS SELECT * FROM mysql(&#39;hostip:3306&#39;,&#39;db&#39;,&#39;table&#39;,&#39;user&#39;,&#39;passwd&#39;); 可以先创建一个更具时间的临时表，然后同步">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="481">
+<meta itemprop="wordCount" content="691">
 
 
 
@@ -197,6 +197,12 @@ input.PC_MARK1:focus{
             <li><a href="#一些坑">一些坑</a></li>
           </ul>
         </li>
+        <li><a href="#查看数据库占用的方法">查看数据库占用的方法</a>
+          <ul>
+            <li><a href="#查看数据库容量">查看数据库容量</a></li>
+            <li><a href="#查看数据库分区信息">查看数据库分区信息</a></li>
+          </ul>
+        </li>
       </ul>
     </li>
   </ul>
@@ -311,7 +317,108 @@ input.PC_MARK1:focus{
 </div>
 </div><h3 id="一些坑">一些坑</h3>
 <p>sql 查询 如果是原类型是字符串，如果用 数字就会直接报错， 原系统写的 sql都不能用</p>
+<h2 id="查看数据库占用的方法">查看数据库占用的方法</h2>
+<h3 id="查看数据库容量">查看数据库容量</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">select</span>
+    <span class="k">sum</span><span class="p">(</span><span class="k">rows</span><span class="p">)</span> <span class="k">as</span> <span class="o">`</span><span class="err">总行数</span><span class="o">`</span><span class="p">,</span><span class="c1">--总行数
+</span><span class="c1"></span>    <span class="n">formatReadableSize</span><span class="p">(</span><span class="k">sum</span><span class="p">(</span><span class="n">data_uncompressed_bytes</span><span class="p">))</span> <span class="k">as</span> <span class="o">`</span><span class="err">原始大小</span><span class="o">`</span><span class="p">,</span><span class="c1">--原始大小
+</span><span class="c1"></span>    <span class="n">formatReadableSize</span><span class="p">(</span><span class="k">sum</span><span class="p">(</span><span class="n">data_compressed_bytes</span><span class="p">))</span> <span class="k">as</span> <span class="o">`</span><span class="err">压缩大小</span><span class="o">`</span> <span class="p">,</span><span class="c1">--压缩大小
+</span><span class="c1"></span>    <span class="n">round</span><span class="p">(</span><span class="k">sum</span><span class="p">(</span><span class="n">data_compressed_bytes</span><span class="p">)</span> <span class="o">/</span> <span class="k">sum</span><span class="p">(</span><span class="n">data_uncompressed_bytes</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">`</span><span class="err">压缩率</span><span class="o">`</span>
+<span class="k">from</span> <span class="k">system</span><span class="p">.</span><span class="n">parts</span>
+   
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="查看数据库分区信息">查看数据库分区信息</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">select</span>
+    <span class="k">database</span><span class="p">,</span>
+    <span class="k">table</span><span class="p">,</span>
+    <span class="n">formatReadableSize</span><span class="p">(</span><span class="k">size</span><span class="p">)</span> <span class="k">as</span> <span class="k">size</span><span class="p">,</span>
+    <span class="n">formatReadableSize</span><span class="p">(</span><span class="n">bytes_on_disk</span><span class="p">)</span> <span class="k">as</span> <span class="n">bytes_on_disk</span><span class="p">,</span>
+    <span class="n">formatReadableSize</span><span class="p">(</span><span class="n">data_uncompressed_bytes</span><span class="p">)</span> <span class="k">as</span> <span class="n">data_uncompressed_bytes</span><span class="p">,</span>
+    <span class="n">formatReadableSize</span><span class="p">(</span><span class="n">data_compressed_bytes</span><span class="p">)</span> <span class="k">as</span> <span class="n">data_compressed_bytes</span><span class="p">,</span>
+    <span class="n">compress_rate</span><span class="p">,</span>
+    <span class="k">rows</span><span class="p">,</span>
+    <span class="n">days</span><span class="p">,</span>
+    <span class="n">formatReadableSize</span><span class="p">(</span><span class="n">avgDaySize</span><span class="p">)</span> <span class="k">as</span> <span class="n">avgDaySize</span>
+<span class="k">from</span>
+<span class="p">(</span>
+    <span class="k">select</span>
+        <span class="k">database</span><span class="p">,</span>
+        <span class="k">table</span><span class="p">,</span>
+        <span class="k">sum</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span> <span class="k">as</span> <span class="k">size</span><span class="p">,</span>
+        <span class="k">sum</span><span class="p">(</span><span class="k">rows</span><span class="p">)</span> <span class="k">as</span> <span class="k">rows</span><span class="p">,</span>
+        <span class="k">min</span><span class="p">(</span><span class="n">min_date</span><span class="p">)</span> <span class="k">as</span> <span class="n">min_date</span><span class="p">,</span>
+        <span class="k">max</span><span class="p">(</span><span class="n">max_date</span><span class="p">)</span> <span class="k">as</span> <span class="n">max_date</span><span class="p">,</span>
+        <span class="k">sum</span><span class="p">(</span><span class="n">bytes_on_disk</span><span class="p">)</span> <span class="k">as</span> <span class="n">bytes_on_disk</span><span class="p">,</span>
+        <span class="k">sum</span><span class="p">(</span><span class="n">data_uncompressed_bytes</span><span class="p">)</span> <span class="k">as</span> <span class="n">data_uncompressed_bytes</span><span class="p">,</span>
+        <span class="k">sum</span><span class="p">(</span><span class="n">data_compressed_bytes</span><span class="p">)</span> <span class="k">as</span> <span class="n">data_compressed_bytes</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">data_compressed_bytes</span> <span class="o">/</span> <span class="n">data_uncompressed_bytes</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span> <span class="k">as</span> <span class="n">compress_rate</span><span class="p">,</span>
+        <span class="n">max_date</span> <span class="o">-</span> <span class="n">min_date</span> <span class="k">as</span> <span class="n">days</span><span class="p">,</span>
+        <span class="k">size</span> <span class="o">/</span> <span class="p">(</span><span class="n">max_date</span> <span class="o">-</span> <span class="n">min_date</span><span class="p">)</span> <span class="k">as</span> <span class="n">avgDaySize</span>
+    <span class="k">from</span> <span class="k">system</span><span class="p">.</span><span class="n">parts</span>
+    <span class="k">where</span> <span class="n">active</span> 
+     <span class="k">and</span> <span class="k">database</span> <span class="o">=</span> <span class="s1">&#39;t&#39;</span>
+   <span class="c1">--  and table = &#39;tablename&#39;
+</span><span class="c1"></span>    <span class="k">group</span> <span class="k">by</span>
+        <span class="k">database</span><span class="p">,</span>
+        <span class="k">table</span>
+<span class="p">)</span>
 
+ 
+</code></pre></td></tr></table>
+</div>
+</div>
     </div>
 
     <div class="post-copyright">
