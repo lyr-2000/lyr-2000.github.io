@@ -49,7 +49,7 @@
 <meta itemprop="description" content="clickhouse相关的引擎 tinylog mysql 引擎 replaceingMerge Tree SummingMergeTree 引擎 AggregatingMergeTree 引擎 CK 引擎之CollapsingMergeTree 引擎 CK 引擎之多版本折叠树引擎 &laquo;&laquo;&laquo;&lt; HEAD clickhouse 的引擎">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="1708">
+<meta itemprop="wordCount" content="2290">
 
 
 
@@ -203,6 +203,13 @@ input.PC_MARK1:focus{
             <li><a href="#列-ttl">列 TTL</a></li>
           </ul>
         </li>
+        <li><a href="#mergetree合并树家族引擎">MergeTree合并树家族引擎</a>
+          <ul>
+            <li><a href="#replacingmergetree">ReplacingMergeTree</a></li>
+            <li><a href="#aggregatemergetree">AggregateMergeTree</a></li>
+            <li><a href="#collapsingmergetree">CollapsingMergeTree</a></li>
+          </ul>
+        </li>
       </ul>
     </li>
   </ul>
@@ -330,22 +337,45 @@ clickhouse 的引擎是这个数据库的一大特色</p>
 
 </code></pre></td></tr></table>
 </div>
-</div><p>=======</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>5254acca4237f18747677e7d0623c1ffd9b3d97d</p>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
+</div><h2 id="mergetree合并树家族引擎">MergeTree合并树家族引擎</h2>
+<h3 id="replacingmergetree">ReplacingMergeTree</h3>
+<p>该引擎和MergeTree的不同之处在于它会删除具有相同主键的重复项。</p>
+<p>在数据合并的时候会对主键进行去重，合并会在后台执行，执行时间未知，因此你无法预先做出计划</p>
+<p><strong>ReplacingMergeTree会根据ORDER BY所声明的表达式去重</strong></p>
+<p>创建表时没有设置ver参数，<strong>故保留分组内的最后一条数据</strong>(create_time字段)</p>
+<h3 id="aggregatemergetree">AggregateMergeTree</h3>
+<p>该引擎改变了数据片段的合并逻辑,ClickHouse会将相同主键的所有行(在一个数据片段内)替换为单个存储一系列的聚合函数状态的行。可以使用该引擎来做增量数据统计聚合,包括物化视图的数据聚合。
+<strong>AggregateMergeTree</strong>引擎的表不能直接使用insert来查询写入数据。一般用 <strong>insert select</strong> 来写入数据,常用于该引擎做增量数据统计聚合,<strong>包括物化视图的数据聚合</strong>。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">create</span> <span class="k">table</span> <span class="n">arr_table_base</span> <span class="p">(</span><span class="n">id</span> <span class="n">String</span><span class="p">,</span> <span class="n">city</span> <span class="n">String</span><span class="p">,</span> <span class="n">code</span> <span class="n">String</span><span class="p">,</span><span class="n">value</span> <span class="n">UInt32</span><span class="p">)</span> <span class="n">engine</span><span class="o">=</span><span class="n">MergeTree</span> <span class="n">partition</span> <span class="k">by</span> <span class="n">city</span> <span class="k">order</span> <span class="k">by</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="n">city</span><span class="p">);</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>创建物化视图</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">create</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">agg_view</span> <span class="n">engine</span><span class="o">=</span><span class="n">AggregatingMergeTree</span><span class="p">()</span> <span class="n">partition</span> <span class="k">by</span>
+<span class="n">city</span> <span class="k">order</span> <span class="k">by</span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="n">city</span><span class="p">)</span>
+<span class="k">as</span> <span class="k">select</span> <span class="n">id</span><span class="p">,</span><span class="n">city</span><span class="p">,</span><span class="n">uniqState</span><span class="p">(</span><span class="n">code</span><span class="p">)</span> <span class="k">as</span> <span class="n">code</span><span class="p">,</span>
+<span class="n">sumState</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">as</span> <span class="n">value</span> <span class="k">from</span> <span class="n">arr_table_base</span> <span class="k">group</span> <span class="k">by</span> <span class="n">id</span><span class="p">,</span><span class="n">city</span><span class="p">;</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="collapsingmergetree">CollapsingMergeTree</h3>
+<p>CollapsingMergeTree会异步的删除特定列Sign有1和-1的值以外,其余所有字段的值都相等的成对的行。没有成对的行会被保留。该引擎可以降低存储量提高select查询效率。CollapsingMergeTree引擎有个状态列sign,这个值为1是”状态“行,-1为”取消“行。
+对于数据而言只关心状态列为状态的数据,不关心状态列为取消的数据。</p>
 
     </div>
 
