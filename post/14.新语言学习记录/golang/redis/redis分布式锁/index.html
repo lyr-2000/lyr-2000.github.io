@@ -49,7 +49,7 @@
 <meta itemprop="description" content="redis分布式锁 参考项目 https://github.com/go-redsync/redsync 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 package main import ( goredislib &#34;github.com/go-redis/redis/v8&#34; &#34;github.com/go-redsync/redsync/v4&#34; &#34;github.com/go-redsync/redsync/v4/redis/goredis/v8&#34; ) func main() { // Create a pool">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="230">
+<meta itemprop="wordCount" content="1217">
 
 
 
@@ -189,6 +189,14 @@ input.PC_MARK1:focus{
     <li>
       <ul>
         <li><a href="#redis分布式锁">redis分布式锁</a></li>
+        <li><a href="#对分布式锁的解决方案做的调研">对分布式锁的解决方案做的调研</a>
+          <ul>
+            <li><a href="#分布式锁解决方案调研"><strong>分布式锁解决方案调研</strong></a></li>
+            <li><a href="#基于zookeeper解决方法"><strong>基于zookeeper解决方法</strong></a></li>
+            <li><a href="#基于redis的解决方法"><strong>基于Redis的解决方法</strong></a></li>
+          </ul>
+        </li>
+        <li><a href="#golang分布式锁-超时控制的实现">golang分布式锁 超时控制的实现</a></li>
       </ul>
     </li>
   </ul>
@@ -281,6 +289,245 @@ input.PC_MARK1:focus{
 </span><span class="c1"></span>	<span class="k">if</span> <span class="nx">ok</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mutex</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">();</span> <span class="p">!</span><span class="nx">ok</span> <span class="o">||</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
 		<span class="nb">panic</span><span class="p">(</span><span class="s">&#34;unlock failed&#34;</span><span class="p">)</span>
 	<span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="对分布式锁的解决方案做的调研">对分布式锁的解决方案做的调研</h2>
+<h3 id="分布式锁解决方案调研"><strong>分布式锁解决方案调研</strong></h3>
+<p>一个分布式锁需要的基本功能如下：</p>
+<p>\1. 互斥性： 只能有一个客户端获得锁</p>
+<p>\2. 不会发生死锁： 客户端在持有锁的时候突然 crash掉，最终可以让其他客户端获得锁</p>
+<p>\3. 容错性： Redis 集群中大部分的节点正常运行，客户端就可以进行加锁和解锁操作</p>
+<p>Java 框架的解决方案：</p>
+<h3 id="基于zookeeper解决方法"><strong>基于zookeeper解决方法</strong></h3>
+<p>采用临时有序节点 实现节点监听</p>
+<h3 id="基于redis的解决方法"><strong>基于Redis的解决方法</strong></h3>
+<p>参考 redission框架</p>
+<p><a href="https://www.jianshu.com/p/0d3f5395ceaf">https://www.jianshu.com/p/0d3f5395ceaf</a></p>
+<p>基本的功能：</p>
+<p>\1. 可重入锁： 获得锁的线程不会锁住自己</p>
+<p>\2. 超时时间： 获得锁的进程 如果宕机了， Redis 中存的锁如果不设置过期时间，就会发生死锁，</p>
+<p>\3. 看门狗机制, 【如果方法一直在占用锁执行任务， 可以自动延续锁的占用时间】</p>
+<p>\4. 红锁算法 【Redis集群下，采用多数原则，大多数节点上锁成功，才能任务是上锁成功】</p>
+<p>参考：</p>
+<p><a href="https://www.cnblogs.com/jelly12345/p/14699492.html">https://www.cnblogs.com/jelly12345/p/14699492.html</a></p>
+<p>参考gitee上已经开源的看门狗机制的实现</p>
+<p><a href="https://gitee.com/rmy_20/watch-dog-demo">https://gitee.com/rmy_20/watch-dog-demo</a></p>
+<p>基于golang的 红锁算法实现：</p>
+<p><a href="https://github.com/turbo-q/redlock/blob/master/redlock/redlock.go">https://github.com/turbo-q/redlock/blob/master/redlock/redlock.go</a></p>
+<p>上锁成功数 大于 一半才算上锁成功</p>
+<p>如果需要 tryLock 做超时控制，可以 在此基础上做一个封装即可</p>
+<h2 id="golang分布式锁-超时控制的实现">golang分布式锁 超时控制的实现</h2>
+<p><a href="https://github.com/bsm/redislock">https://github.com/bsm/redislock</a></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;context&#34;</span>
+	<span class="s">&#34;errors&#34;</span>
+	<span class="s">&#34;github.com/bsm/redislock&#34;</span>
+	<span class="s">&#34;github.com/go-redis/redis/v8&#34;</span>
+	<span class="s">&#34;log&#34;</span>
+	<span class="s">&#34;time&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">var</span> <span class="nx">client</span> <span class="p">=</span> <span class="nx">redis</span><span class="p">.</span><span class="nf">NewClient</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">redis</span><span class="p">.</span><span class="nx">Options</span><span class="p">{</span>
+	<span class="nx">Network</span><span class="p">:</span> <span class="s">&#34;tcp&#34;</span><span class="p">,</span>
+	<span class="nx">Addr</span><span class="p">:</span>    <span class="s">&#34;127.0.0.1:6379&#34;</span><span class="p">,</span>
+<span class="p">})</span>
+
+<span class="c1">//func GetEnv() {}
+</span><span class="c1">//
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">worker</span><span class="p">(</span><span class="nx">id</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">lock</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nf">tryForLock</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span> <span class="o">*</span> <span class="mi">6</span><span class="p">)</span>
+	<span class="c1">//fmt.Println(res, err)
+</span><span class="c1"></span>	<span class="c1">//time.Sleep(time.Second * 100)
+</span><span class="c1"></span>	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;获得锁失败=== &#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="k">return</span>
+	<span class="p">}</span>
+	<span class="c1">//看门狗，自动续期
+</span><span class="c1"></span>	<span class="kd">var</span> <span class="nx">ctxParent</span> <span class="p">=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">()</span>
+	<span class="kd">var</span> <span class="nx">ctx</span><span class="p">,</span> <span class="nx">cancel</span> <span class="p">=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithCancel</span><span class="p">(</span><span class="nx">ctxParent</span><span class="p">)</span>
+	<span class="c1">//解锁
+</span><span class="c1"></span>	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">err</span> <span class="p">=</span> <span class="nx">lock</span><span class="p">.</span><span class="nf">Release</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">())</span>
+		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34; unlock failed !!!&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+			<span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;===== 解锁成功 ==== id==== &#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">,</span> <span class="s">&#34; ====== &#34;</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}()</span>
+	<span class="c1">//超时控制
+</span><span class="c1"></span>	<span class="k">defer</span> <span class="nf">cancel</span><span class="p">()</span>
+	<span class="kd">var</span> <span class="nx">watchDog</span> <span class="p">=</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="k">for</span> <span class="p">{</span>
+			<span class="k">select</span> <span class="p">{</span>
+			<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">ctx</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span>
+				<span class="c1">//被cancel掉了说明任务做完，立刻退出，不要继续加时间了
+</span><span class="c1"></span>				<span class="k">return</span>
+			<span class="k">default</span><span class="p">:</span>
+				<span class="c1">//时间不够了， 再加 4秒时间
+</span><span class="c1"></span>				<span class="nx">lock</span><span class="p">.</span><span class="nf">Refresh</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="c1">//自动续期
+</span><span class="c1"></span>	<span class="k">go</span> <span class="nf">watchDog</span><span class="p">()</span>
+
+	<span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;获得锁成功, id ======= &#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">,</span> <span class="s">&#34;===== doing  task ======&#34;</span><span class="p">)</span>
+	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+	<span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;== compliete ===&#34;</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="c1">//3s 无法获得锁，就退出，不抢锁了
+</span><span class="c1"></span>	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="k">go</span> <span class="nf">worker</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34; === ok ====&#34;</span><span class="p">)</span>
+	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span> <span class="o">*</span> <span class="mi">38</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">tryForLock</span><span class="p">(</span><span class="nx">waitTime</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">)</span> <span class="p">(</span><span class="o">*</span><span class="nx">redislock</span><span class="p">.</span><span class="nx">Lock</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+
+	<span class="c1">// Create a new lock client.
+</span><span class="c1"></span>	<span class="nx">locker</span> <span class="o">:=</span> <span class="nx">redislock</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">client</span><span class="p">)</span>
+
+	<span class="nx">ctx</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">()</span>
+	<span class="c1">//var timeout = time.Second * 3
+</span><span class="c1"></span>	<span class="c1">//3秒 无法获得 就退出
+</span><span class="c1"></span>	<span class="c1">// Try to obtain lock.
+</span><span class="c1"></span>	<span class="kd">var</span> <span class="nx">timeout</span> <span class="p">=</span> <span class="nx">time</span><span class="p">.</span><span class="nf">After</span><span class="p">(</span><span class="nx">waitTime</span><span class="p">)</span>
+<span class="nx">tryLock</span><span class="p">:</span>
+	<span class="k">for</span> <span class="p">{</span>
+		<span class="k">select</span> <span class="p">{</span>
+		<span class="c1">//case &lt;-ctx.Done():
+</span><span class="c1"></span>		<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">timeout</span><span class="p">:</span>
+
+			<span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;无法获得锁===&#34;</span><span class="p">)</span>
+			<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;超时无法获得锁&#34;</span><span class="p">)</span>
+		<span class="k">default</span><span class="p">:</span>
+			<span class="c1">//上锁10秒
+</span><span class="c1"></span>			<span class="nx">ok</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">locker</span><span class="p">.</span><span class="nf">Obtain</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="s">&#34;mylock&#34;</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="o">*</span><span class="mi">8</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+			<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="nx">redislock</span><span class="p">.</span><span class="nx">ErrNotObtained</span> <span class="p">{</span>
+				<span class="k">continue</span> <span class="nx">tryLock</span>
+			<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+				<span class="c1">//其他问题
+</span><span class="c1"></span>				<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+			<span class="p">}</span>
+			<span class="k">return</span> <span class="nx">ok</span><span class="p">,</span> <span class="kc">nil</span>
+
+		<span class="p">}</span>
+
+	<span class="p">}</span>
+
 <span class="p">}</span>
 
 </code></pre></td></tr></table>
