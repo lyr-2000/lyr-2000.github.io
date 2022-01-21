@@ -49,7 +49,7 @@
 <meta itemprop="description" content="redis分布式锁 参考项目 https://github.com/go-redsync/redsync 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 package main import ( goredislib &#34;github.com/go-redis/redis/v8&#34; &#34;github.com/go-redsync/redsync/v4&#34; &#34;github.com/go-redsync/redsync/v4/redis/goredis/v8&#34; ) func main() { // Create a pool">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="1299">
+<meta itemprop="wordCount" content="1645">
 
 
 
@@ -196,7 +196,11 @@ input.PC_MARK1:focus{
             <li><a href="#基于redis的解决方法"><strong>基于Redis的解决方法</strong></a></li>
           </ul>
         </li>
-        <li><a href="#golang分布式锁-超时控制的实现">golang分布式锁 超时控制的实现</a></li>
+        <li><a href="#golang分布式锁-超时控制的实现">golang分布式锁 超时控制的实现</a>
+          <ul>
+            <li></li>
+          </ul>
+        </li>
       </ul>
     </li>
   </ul>
@@ -574,6 +578,216 @@ input.PC_MARK1:focus{
 
 	<span class="k">return</span> <span class="nx">w</span><span class="p">.</span><span class="nf">_close</span><span class="p">()</span>
 <span class="p">}</span>
+
+
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="分布式锁改进">分布式锁改进</h4>
+<p>下面是对分布式锁的改进</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;context&#34;</span>
+	<span class="s">&#34;errors&#34;</span>
+	<span class="s">&#34;github.com/bsm/redislock&#34;</span>
+	<span class="s">&#34;github.com/go-redis/redis/v8&#34;</span>
+	<span class="s">&#34;time&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">var</span> <span class="p">(</span>
+	<span class="c1">//获取锁时间超时
+</span><span class="c1"></span>	<span class="nx">WaitLockTimeout</span> <span class="p">=</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;wait for lock timeout&#34;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">waitLock</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="c1">//退出协程
+</span><span class="c1"></span>	<span class="nx">unlockNotice</span> <span class="kd">chan</span> <span class="kt">byte</span>
+	<span class="c1">//等待协程退出
+</span><span class="c1"></span>	<span class="nx">waitExit</span> <span class="kd">chan</span> <span class="kt">byte</span>
+	<span class="nx">key</span>      <span class="kt">string</span>
+
+	<span class="nx">cli</span>  <span class="o">*</span><span class="nx">redis</span><span class="p">.</span><span class="nx">Client</span>
+	<span class="nx">lock</span> <span class="o">*</span><span class="nx">redislock</span><span class="p">.</span><span class="nx">Lock</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">NewWaitLock</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">cli</span> <span class="o">*</span><span class="nx">redis</span><span class="p">.</span><span class="nx">Client</span><span class="p">)</span> <span class="o">*</span><span class="nx">waitLock</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">s</span> <span class="nx">waitLock</span>
+	<span class="nx">s</span><span class="p">.</span><span class="nx">waitExit</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">byte</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+	<span class="nx">s</span><span class="p">.</span><span class="nx">unlockNotice</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">byte</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+	<span class="nx">s</span><span class="p">.</span><span class="nx">key</span> <span class="p">=</span> <span class="nx">key</span>
+	<span class="c1">//s.keyttl = time.Minute
+</span><span class="c1"></span>	<span class="nx">s</span><span class="p">.</span><span class="nx">cli</span> <span class="p">=</span> <span class="nx">cli</span>
+
+	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">s</span>
+<span class="p">}</span>
+<span class="kd">func</span> <span class="p">(</span><span class="nx">w</span> <span class="o">*</span><span class="nx">waitLock</span><span class="p">)</span> <span class="nf">Unlock</span><span class="p">()</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">w</span><span class="p">.</span><span class="nx">unlockNotice</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">w</span><span class="p">.</span><span class="nx">unlockNotice</span> <span class="o">&lt;-</span> <span class="mi">1</span>
+	<span class="p">}</span>
+	<span class="o">&lt;-</span><span class="nx">w</span><span class="p">.</span><span class="nx">waitExit</span>
+	<span class="k">return</span> <span class="nx">w</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">Release</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nf">TODO</span><span class="p">())</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">w</span> <span class="o">*</span><span class="nx">waitLock</span><span class="p">)</span> <span class="nf">TryLock</span><span class="p">(</span><span class="nx">pctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">waitTime</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">locker</span> <span class="p">=</span> <span class="nx">redislock</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">w</span><span class="p">.</span><span class="nx">cli</span><span class="p">)</span>
+	<span class="kd">var</span> <span class="nx">ctx</span><span class="p">,</span> <span class="nx">cancel</span> <span class="p">=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithTimeout</span><span class="p">(</span><span class="nx">pctx</span><span class="p">,</span> <span class="nx">waitTime</span><span class="p">)</span>
+	<span class="k">defer</span> <span class="nf">cancel</span><span class="p">()</span>
+<span class="nx">trylock</span><span class="p">:</span>
+	<span class="k">for</span> <span class="p">{</span>
+		<span class="k">select</span> <span class="p">{</span>
+		<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">ctx</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span>
+			<span class="k">return</span> <span class="nx">WaitLockTimeout</span>
+		<span class="k">default</span><span class="p">:</span>
+			<span class="nx">res</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">locker</span><span class="p">.</span><span class="nf">Obtain</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">w</span><span class="p">.</span><span class="nx">key</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Minute</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+			<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+				<span class="nx">w</span><span class="p">.</span><span class="nx">lock</span> <span class="p">=</span> <span class="nx">res</span>
+				<span class="k">break</span> <span class="nx">trylock</span>
+			<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+				<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="nx">redislock</span><span class="p">.</span><span class="nx">ErrNotObtained</span> <span class="p">{</span>
+					<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Millisecond</span><span class="o">*</span><span class="mi">500</span><span class="p">)</span>
+					<span class="k">continue</span> <span class="nx">trylock</span>
+				<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+
+					<span class="k">return</span> <span class="nx">err</span>
+				<span class="p">}</span>
+			<span class="p">}</span>
+
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="c1">// begin lock
+</span><span class="c1"></span>	<span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+			<span class="nx">w</span><span class="p">.</span><span class="nx">waitExit</span> <span class="o">&lt;-</span> <span class="mi">1</span>
+		<span class="p">}()</span>
+	<span class="nx">addTime</span><span class="p">:</span>
+		<span class="k">for</span> <span class="p">{</span>
+			<span class="k">select</span> <span class="p">{</span>
+			<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">w</span><span class="p">.</span><span class="nx">unlockNotice</span><span class="p">:</span>
+				<span class="k">break</span> <span class="nx">addTime</span>
+			<span class="k">default</span><span class="p">:</span>
+				<span class="nx">w</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">Refresh</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nf">TODO</span><span class="p">(),</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="o">*</span><span class="mi">30</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+				<span class="k">select</span> <span class="p">{</span>
+				<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">time</span><span class="p">.</span><span class="nf">After</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span> <span class="o">*</span> <span class="mi">10</span><span class="p">):</span>
+
+					<span class="k">continue</span> <span class="nx">addTime</span>
+				<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">w</span><span class="p">.</span><span class="nx">unlockNotice</span><span class="p">:</span>
+					<span class="c1">// 立刻返回
+</span><span class="c1"></span>					<span class="k">break</span> <span class="nx">addTime</span>
+
+				<span class="p">}</span>
+
+			<span class="p">}</span>
+		<span class="p">}</span>
+	<span class="p">}()</span>
+	<span class="k">return</span> <span class="kc">nil</span>
+
+<span class="p">}</span>
+
 
 
 </code></pre></td></tr></table>
