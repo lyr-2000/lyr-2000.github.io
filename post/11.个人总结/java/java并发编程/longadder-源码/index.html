@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>LongAdder源码 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="LongAdder源码学习 学习视频参考 在 JDK1.8 中，Java 提供了一个新的原子类 LongAdder。LongAdder 在高并发场景下会比 AtomicInteger 和 AtomicLong 的性" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/longadder-%E6%BA%90%E7%A0%81/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="LongAdder源码" />
+<meta property="og:description" content="LongAdder源码学习 学习视频参考 在 JDK1.8 中，Java 提供了一个新的原子类 LongAdder。LongAdder 在高并发场景下会比 AtomicInteger 和 AtomicLong 的性" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/longadder-%E6%BA%90%E7%A0%81/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="LongAdder源码">
+<meta itemprop="description" content="LongAdder源码学习 学习视频参考 在 JDK1.8 中，Java 提供了一个新的原子类 LongAdder。LongAdder 在高并发场景下会比 AtomicInteger 和 AtomicLong 的性">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="958">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="LongAdder源码"/>
+<meta name="twitter:description" content="LongAdder源码学习 学习视频参考 在 JDK1.8 中，Java 提供了一个新的原子类 LongAdder。LongAdder 在高并发场景下会比 AtomicInteger 和 AtomicLong 的性"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li><li style="menu-item;list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">LongAdder源码</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#longadder源码学习">LongAdder源码学习</a></li>
+            <li><a href="#缓存行伪共享问题">缓存行伪共享问题</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h3 id="longadder源码学习">LongAdder源码学习</h3>
+<p><a href="https://www.bilibili.com/video/BV16J411h7Rd?p=177">学习视频参考</a></p>
+<p>在 JDK1.8 中，Java 提供了一个新的原子类 LongAdder。LongAdder 在高并发场景下会比 AtomicInteger 和 AtomicLong 的性能更好，代价就是会消耗更多的内存空间。</p>
+<p>LongAdder 的原理就是降低操作共享变量的并发数，也就是将对单一共享变量的操作压力分散到多个变量值上，将竞争的每个写线程的 value 值分散到一个数组中，不同线程会命中到数组的不同槽中，各个线程只对自己槽中的 value 值进行 CAS 操作，最后在读取值的时候会将原子操作的共享变量与各个分散在数组的 value 值相加，返回一个近似准确的数值。</p>
+<p>LongAdder 内部由一个 base 变量和一个 cell[] 数组组成。当只有一个写线程，没有竞争的情况下，LongAdder 会直接使用 base 变量作为原子操作变量，通过 CAS 操作修改变量；当有多个写线程竞争的情况下，除了占用 base 变量的一个写线程之外，其它各个线程会将修改的变量写入到自己的槽 cell[] 数组中，最终结果可通过以下公式计算得出：</p>
+<p><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAkACQAAD/4QCARXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAIdpAAQAAAABAAAATgAAAAAAAACQAAAAAQAAAJAAAAABAAOgAQADAAAAAQABAACgAgAEAAAAAQAAArCgAwAEAAAAAQAAAMIAAAAA/+0AOFBob3Rvc2hvcCAzLjAAOEJJTQQEAAAAAAAAOEJJTQQlAAAAAAAQ1B2M2Y8AsgTpgAmY7PhCfv/AABEIAMICsAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2wBDAAICAgICAgMCAgMFAwMDBQYFBQUFBggGBgYGBggKCAgICAgICgoKCgoKCgoMDAwMDAwODg4ODg8PDw8PDw8PDw//2wBDAQICAgQEBAcEBAcQCwkLEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBD/3QAEACv/2gAMAwEAAhEDEQA/AP38ooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Q/fyiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD/9H9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAoqjJqemxS+TLdwpJ/daRQ35E1JFfWU7mOC4jkcdQrgn8gaALVFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAH//0v38ooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKjmVnidEO1mUgH0JFSUh5BAoYI/LHx34E1PV/2k9C0RtVlnkdpWvSrMq7QuVBAOOleieADa2P7Smp6T4buXg03ShGLpXkLK5dOPvHjmvozSfgj9i+Kmr/Eu91P7S2ohRFDsx5OF2nB75riNF/ZgOl/EPUvGU2uGay1J1eS0CbTlOnz9aeB9xUYy2ipX9W2kvO0X96Hjff8Aatat8tvlZv8AHT0PrUEEAjnNLTIo1ijSJeiAAfQU+kIKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//9P9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAoqnfxXE1nLHazeRKyna+M7TjrivzL8PfFL45D9qeL4Uy+K/7U0a3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Hiv2C174j/Cbw3qUukamIFuocb1S3D7c+u0HFd54V1Twvr+mx6z4YELW02cPGiqTj1xWuDahP2yV7fhe6uTiOaUHSbtc6WKNYYkiXhUAUfQVJRRWbKCiiigAooooAKKKKACggEYPINFFAFFNL02OXz47SFZf7wjUN+eM1eoooArXFnaXYC3cCTAdA6hv50+C3t7ZBHbRLEg/hRQo/IVNRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAH//1/38ooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA+RP2kfjTpHg3SptDv8ARH1m0LxpcgSNDs3sACGHX8K9G8PeNvh98PfAukyFZdPsLpN8Ue15iM8nJ5PevnP9s+5lOoeGtFeyaTT76RmuZEQtzGQUBwM8nivobw7r/iqfwJpF1a+EkuZTHtMDuvyBeAeR3HNThdaE59ea3yW35v8APqaYhJVILpa/36fp+KRP/wANG/Cz/n/n/wDAeT/Cpovjp4B1yK5sNFu5ZLtoZWQNA6jKqT1IxVT+3/Hv/RPoP+/kf+FXbG/8YapJJp+oeDItOguI5EaZXQldykdhmlUTcWlvYzTsz5F/ZL1JfG918RPEOrxieebcuX+bAXcBjPSuh/Yn8Q3FxqfjDwwXY22mTjylJzt3sSaxPg5bxfAnxD468OeJoJLeK+GbR1RnEpcMSOBxya9G/Y9+H+peH7TXfGGqW5tX16UsqN1wjHB/EV2UOXm5o/D7KK+fu6euj/EWKWk119o2vT3tfSzX4H21RRRXMMKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD//Q/fyiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigCtcWVnd4N1BHNt6b1DY+mRU6oqKFQBVHQAYFOooAKKKKAKsthYzNvmt45G9WQE/qKnjiihQRwoEUdlGB+lPooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//R/fyiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD/9L9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAP/0/38ooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Z" alt="img"></p>
+<p>LongAdder 在操作后的返回值只是一个近似准确的数值，但是 LongAdder 最终返回的是一个准确的数值， 所以在一些对实时性要求比较高的场景下，LongAdder 并不能取代 AtomicInteger 或 AtomicLong。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java">     <span class="cm">/** Number of CPUS, to place bound on table size */</span>
+    <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">NCPU</span> <span class="o">=</span> <span class="n">Runtime</span><span class="o">.</span><span class="na">getRuntime</span><span class="o">().</span><span class="na">availableProcessors</span><span class="o">();</span>
+
+    <span class="cm">/**
+</span><span class="cm">     * 单元格表。当非空时，大小为 2 的功率。
+</span><span class="cm">     */</span>
+    <span class="kd">transient</span> <span class="kd">volatile</span> <span class="n">Cell</span><span class="o">[]</span> <span class="n">cells</span><span class="o">;</span>
+
+    <span class="cm">/**
+</span><span class="cm">     * 基本值，主要用于没有争用时，但也作为
+</span><span class="cm">     * 在表初始化比赛期间的回退。通过 CAS 更新。
+</span><span class="cm">     */</span>
+    <span class="kd">transient</span> <span class="kd">volatile</span> <span class="kt">long</span> <span class="n">base</span><span class="o">;</span>
+
+    <span class="cm">/**
+</span><span class="cm">     * 调整大小和/或创建单元格时使用的旋转锁（通过 CAS 锁定）。
+</span><span class="cm">     * 1表示加锁，0表示没加锁
+</span><span class="cm">     *  创建和扩容的时候，都是置为1
+</span><span class="cm">     */</span>
+    <span class="kd">transient</span> <span class="kd">volatile</span> <span class="kt">int</span> <span class="n">cellsBusy</span><span class="o">;</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="缓存行伪共享问题">缓存行伪共享问题</h3>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_08_18_14__44_36image-20210818144436503.png" alt="image-20210818144436503"></p>
+<p>cycle 表示1个时钟周期</p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_08_18_14__45_07image-20210818144507439.png" alt="image-20210818144507439"></p>
+<p>CPU3级缓存是将内存中的数据预先读入 缓存，加快访问速度</p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_08_18_14__47_11image-20210818144711613.png" alt="image-20210818144711613"></p>
+<p>一个 cell 单位是24 字节（16字节的对象头和8字节的value）</p>
+<ul>
+<li>core-0 修改 cell[0]</li>
+<li>core-1 修改 cell[1]</li>
+</ul>
+<p>无论谁修改成功，其他的 cell都会缓存行失效， 解决的方法就是 加 padding， 让一个 cell 占用整个缓存行</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">*表项属于Cell类;
+    原子长填充的一种变体
+*(通过@sun.misc.Contended)来减少缓存争用。
+    填充
+*对于大多数原子来说是多余的，因为它们通常是
+*不规则地分散在内存中，因此不会产生太多干扰
+*彼此之间。
+    但是驻留在数组中的原子对象会
+*倾向于相邻放置，大多数也是如此
+*经常共享缓存线(具有巨大的负面性能)
+*冲击)没有这个预防措施。
+前后 加了 128字节的空隙， 
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">java并发编程基础学习</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/netty-%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8Bnio-reactor%E6%A8%A1%E5%9E%8B/">
+            <span class="next-text nav-default">netty线程模型【nio-reactor】</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+<script 
+ defer
+ async  src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+<script src="/js/custom/docsearch.min.js" ></script>
+<script>
+ 
+  docsearch({
+    apiKey: "2991187e127fb95e62db841ea946bc06",
+    indexName: "blog",
+    appId: "UVGAU2QDTQ",
+    inputSelector: '.docsearch-input',
+    debug: false,
+  });
+  docsearch({
+    apiKey: "2991187e127fb95e62db841ea946bc06",
+    indexName: "blog",
+    appId: "UVGAU2QDTQ",
+    inputSelector: '.mob-docsearch-input',
+    debug: false,
+  });
+ 
+</script>
+</body>
+</html>

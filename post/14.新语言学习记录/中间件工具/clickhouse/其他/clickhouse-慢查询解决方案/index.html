@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>clickhouse 慢查询解决方案 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="clickhouse 慢查询解决方案 单表 使用 prewhere 多表 in代替 join 【等值查询】 记录： 第一次使用 clickhouse join 了 2 张表，耗时 用了 2-3 秒，速度不够 看网上的解决方法是，使用 小表 放 左边，" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%B7%A5%E5%85%B7/clickhouse/%E5%85%B6%E4%BB%96/clickhouse-%E6%85%A2%E6%9F%A5%E8%AF%A2%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="clickhouse 慢查询解决方案" />
+<meta property="og:description" content="clickhouse 慢查询解决方案 单表 使用 prewhere 多表 in代替 join 【等值查询】 记录： 第一次使用 clickhouse join 了 2 张表，耗时 用了 2-3 秒，速度不够 看网上的解决方法是，使用 小表 放 左边，" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%B7%A5%E5%85%B7/clickhouse/%E5%85%B6%E4%BB%96/clickhouse-%E6%85%A2%E6%9F%A5%E8%AF%A2%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" />
+<meta property="article:published_time" content="2021-08-14T22:42:48+08:00" />
+<meta property="article:modified_time" content="2021-08-14T22:42:48+08:00" />
+<meta itemprop="name" content="clickhouse 慢查询解决方案">
+<meta itemprop="description" content="clickhouse 慢查询解决方案 单表 使用 prewhere 多表 in代替 join 【等值查询】 记录： 第一次使用 clickhouse join 了 2 张表，耗时 用了 2-3 秒，速度不够 看网上的解决方法是，使用 小表 放 左边，">
+<meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
+<meta itemprop="wordCount" content="595">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="clickhouse 慢查询解决方案"/>
+<meta name="twitter:description" content="clickhouse 慢查询解决方案 单表 使用 prewhere 多表 in代替 join 【等值查询】 记录： 第一次使用 clickhouse join 了 2 张表，耗时 用了 2-3 秒，速度不够 看网上的解决方法是，使用 小表 放 左边，"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li><li style="menu-item;list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">clickhouse 慢查询解决方案</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-14 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#clickhouse-慢查询解决方案">clickhouse 慢查询解决方案</a>
+      <ul>
+        <li><a href="#单表">单表</a>
+          <ul>
+            <li><a href="#使用-prewhere">使用 prewhere</a></li>
+          </ul>
+        </li>
+        <li><a href="#多表">多表</a>
+          <ul>
+            <li><a href="#in代替-join-等值查询">in代替 join 【等值查询】</a></li>
+            <li><a href="#谓词下推">谓词下推</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h1 id="clickhouse-慢查询解决方案">clickhouse 慢查询解决方案</h1>
+<h2 id="单表">单表</h2>
+<h3 id="使用-prewhere">使用 prewhere</h3>
+<h2 id="多表">多表</h2>
+<h3 id="in代替-join-等值查询">in代替 join 【等值查询】</h3>
+<p>记录： 第一次使用 clickhouse   join 了 2 张表，耗时 用了 2-3 秒，速度不够</p>
+<p>看网上的解决方法是，使用 小表 放 左边，因为  clickhouse  永远都是 左边 去 查右表的数据</p>
+<p><strong>JOIN操作时一定要把数据量小的表放在右表，ClickHouse中无论是Left Join 、Right Join还是Inner Join永远都是拿着左表中的每一条记录到右表中查找该记录是否存在，所以右表必须是小表</strong></p>
+<p>clickhouse 会把 所有的数据从右表加载到内存，右表数据量过大，还会爆内存，这就很难受</p>
+<h3 id="谓词下推">谓词下推</h3>
+<p>这里举个例子，我们来看两个查询结果一致的 sql</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql">
+ <span class="k">select</span>  <span class="k">count</span><span class="p">(</span><span class="n">vr</span><span class="p">.</span><span class="n">id</span><span class="p">),</span><span class="n">vr</span><span class="p">.</span><span class="n">result_type</span>  <span class="p">,</span><span class="n">idc</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="n">crg</span><span class="p">.</span><span class="n">project_name</span> <span class="k">from</span> <span class="p">(</span>
+  
+	<span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">v_result5</span> <span class="n">vr</span>   
+
+	   <span class="k">WHERE</span>  <span class="n">db_archive_year</span> <span class="o">=</span> <span class="mi">2022</span>  <span class="k">and</span>  <span class="n">db_archive_month</span> <span class="o">=</span> <span class="mi">12</span>  
+ <span class="p">)</span> <span class="n">vr</span>  
+ 
+  <span class="k">join</span> <span class="n">cmdb_idc</span> <span class="n">idc</span> <span class="k">on</span> <span class="n">vr</span><span class="p">.</span><span class="n">idc_id</span> <span class="o">=</span> <span class="n">idc</span><span class="p">.</span><span class="n">id</span>   
+
+ <span class="k">join</span> <span class="n">cmdb_resource_group</span> <span class="n">crg</span>  <span class="k">on</span>    <span class="n">crg</span><span class="p">.</span><span class="n">resource_id</span>  <span class="o">=</span> <span class="n">vr</span><span class="p">.</span><span class="n">id</span> 
+ 
+ <span class="k">and</span> <span class="n">crg</span><span class="p">.</span><span class="n">resource_type</span> <span class="o">=</span> <span class="n">vr</span><span class="p">.</span><span class="n">resource_type</span> 
+  
+ 
+  <span class="k">where</span> <span class="n">vr</span><span class="p">.</span><span class="n">db_archive_year</span> <span class="o">=</span> <span class="mi">2022</span> <span class="k">and</span> <span class="n">vr</span><span class="p">.</span><span class="n">db_archive_month</span> <span class="o">=</span> <span class="mi">12</span>    <span class="k">and</span> <span class="n">vr</span><span class="p">.</span><span class="n">delete_flag</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">and</span> <span class="n">crg</span><span class="p">.</span><span class="n">db_archive_year</span> <span class="o">=</span> <span class="mi">2022</span> <span class="k">and</span> <span class="n">crg</span><span class="p">.</span><span class="n">db_archive_month</span> <span class="o">=</span> <span class="mi">12</span>  <span class="k">and</span> <span class="n">crg</span><span class="p">.</span><span class="n">delete_flag</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">and</span> <span class="n">idc</span><span class="p">.</span><span class="n">db_archive_year</span> <span class="o">=</span> <span class="mi">2022</span> <span class="k">and</span> <span class="n">idc</span><span class="p">.</span><span class="n">db_archive_month</span> <span class="o">=</span> <span class="mi">12</span>  <span class="k">and</span>  <span class="n">idc</span><span class="p">.</span><span class="n">delete_flag</span> <span class="o">=</span> <span class="mi">0</span>
+ 
+  
+ <span class="k">group</span> <span class="k">by</span> <span class="n">crg</span><span class="p">.</span><span class="n">project_name</span><span class="p">,</span> <span class="n">idc</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="n">vr</span><span class="p">.</span><span class="n">result_type</span>
+ <span class="k">limit</span> <span class="mi">300</span>
+ 
+ 
+</code></pre></td></tr></table>
+</div>
+</div><p>这个 sql 首次查询用 了 7秒, 后续查询 都是 接近了 1秒 ， 0.8 秒的查询速度</p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_12_13_11_56_19image-20211213115615770.png" alt="image-20211213115615770"></p>
+<p>我们使用谓词下推，  join 里面 使用子查询，缩小 join 表的范围，就可以大大减少数据集，我们会看到 上面 有 125万条数据，明显 数据量过大了</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql">
+ <span class="k">select</span>  <span class="k">count</span><span class="p">(</span><span class="n">vr</span><span class="p">.</span><span class="n">id</span><span class="p">),</span><span class="n">vr</span><span class="p">.</span><span class="n">result_type</span>  <span class="p">,</span><span class="n">idc</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="n">crg</span><span class="p">.</span><span class="n">project_name</span> <span class="k">from</span> <span class="p">(</span>
+  
+	  <span class="k">SELECT</span>
+	    <span class="n">id</span><span class="p">,</span>
+	    <span class="n">idc_id</span><span class="p">,</span>
+	    <span class="n">asset_number</span><span class="p">,</span>
+	    <span class="n">cabinet_id</span><span class="p">,</span>
+	    <span class="n">sn</span><span class="p">,</span>
+	    <span class="s1">&#39;服务器&#39;</span> <span class="k">AS</span> <span class="n">result_type</span><span class="p">,</span>
+	    <span class="mi">1</span> <span class="k">AS</span> <span class="n">col_type</span><span class="p">,</span>
+	    <span class="mi">2</span> <span class="k">AS</span> <span class="n">resource_type</span><span class="p">,</span>
+	    <span class="n">db_archive_year</span><span class="p">,</span>
+	    <span class="n">db_archive_month</span>
+	    <span class="k">FROM</span> <span class="n">test</span><span class="p">.</span><span class="n">cmdb_physical_machine</span> <span class="k">AS</span> <span class="n">cpm</span>
+	   <span class="k">WHERE</span> <span class="n">cpm</span><span class="p">.</span><span class="n">db_archive_year</span> <span class="o">=</span> <span class="mi">2022</span>  <span class="k">and</span> <span class="n">cpm</span><span class="p">.</span><span class="n">db_archive_month</span> <span class="o">=</span> <span class="mi">12</span>  <span class="k">and</span> <span class="n">cpm</span><span class="p">.</span><span class="n">delete_flag</span> <span class="o">=</span> <span class="mi">0</span>
+ <span class="p">)</span> <span class="n">vr</span>  
+ 
+  <span class="k">join</span> <span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">cmdb_idc</span> <span class="n">idc</span>  <span class="k">where</span>  <span class="n">idc</span><span class="p">.</span><span class="n">db_archive_year</span> <span class="o">=</span> <span class="mi">2022</span> <span class="k">and</span> <span class="n">idc</span><span class="p">.</span><span class="n">db_archive_month</span> <span class="o">=</span> <span class="mi">12</span>  <span class="k">and</span>  <span class="n">idc</span><span class="p">.</span><span class="n">delete_flag</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>  <span class="n">idc</span> <span class="k">on</span> <span class="n">vr</span><span class="p">.</span><span class="n">idc_id</span> <span class="o">=</span> <span class="n">idc</span><span class="p">.</span><span class="n">id</span>   
+
+ <span class="k">join</span> <span class="p">(</span><span class="k">select</span>  <span class="o">*</span> <span class="k">from</span> <span class="n">cmdb_resource_group</span> <span class="n">crg</span>  <span class="k">where</span>    <span class="n">crg</span><span class="p">.</span><span class="n">db_archive_year</span> <span class="o">=</span> <span class="mi">2022</span> <span class="k">and</span> <span class="n">crg</span><span class="p">.</span><span class="n">db_archive_month</span> <span class="o">=</span> <span class="mi">12</span>   <span class="p">)</span>  <span class="n">crg</span>  <span class="k">on</span>    <span class="n">crg</span><span class="p">.</span><span class="n">resource_id</span>  <span class="o">=</span> <span class="n">vr</span><span class="p">.</span><span class="n">id</span> 
+ 
+ <span class="k">and</span> <span class="n">crg</span><span class="p">.</span><span class="n">resource_type</span> <span class="o">=</span> <span class="n">vr</span><span class="p">.</span><span class="n">resource_type</span> 
+
+ <span class="k">group</span> <span class="k">by</span> <span class="n">crg</span><span class="p">.</span><span class="n">project_name</span><span class="p">,</span> <span class="n">idc</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="n">vr</span><span class="p">.</span><span class="n">result_type</span>
+ <span class="k">limit</span> <span class="mi">300</span>
+ 
+ 
+</code></pre></td></tr></table>
+</div>
+</div><p>在 join 里面使用子查询，就减少为 几千行数据</p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_12_13_11_58_17image-20211213115815864.png" alt="image-20211213115815864"></p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-14
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%B7%A5%E5%85%B7/clickhouse/%E5%85%B6%E4%BB%96/clickhouse%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">clickhouse 安装部署</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%B7%A5%E5%85%B7/clickhouse/clickhouse%E4%BC%98%E5%8C%96%E6%8A%80%E5%B7%A7/">
+            <span class="next-text nav-default">clickhouse优化技巧</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+<script 
+ defer
+ async  src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+<script src="/js/custom/docsearch.min.js" ></script>
+<script>
+ 
+  docsearch({
+    apiKey: "2991187e127fb95e62db841ea946bc06",
+    indexName: "blog",
+    appId: "UVGAU2QDTQ",
+    inputSelector: '.docsearch-input',
+    debug: false,
+  });
+  docsearch({
+    apiKey: "2991187e127fb95e62db841ea946bc06",
+    indexName: "blog",
+    appId: "UVGAU2QDTQ",
+    inputSelector: '.mob-docsearch-input',
+    debug: false,
+  });
+ 
+</script>
+</body>
+</html>

@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>JVM全集 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="JMM JMM是什么 JMM是一种规范，目的是解决由于多线程通过共享内存进行通信时，存在的本地内存数据不一致、编译器会对代码指令重排序、处理器会对代" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/jvm%E7%90%86%E8%AE%BA/jvm%E8%AF%A6%E7%BB%86%E5%8E%9F%E7%90%86%E6%9D%A5%E8%87%AA%E7%BD%91%E5%8F%8B%E6%95%B4%E7%90%86/jvm%E5%85%A8%E9%9B%86/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="JVM全集" />
+<meta property="og:description" content="JMM JMM是什么 JMM是一种规范，目的是解决由于多线程通过共享内存进行通信时，存在的本地内存数据不一致、编译器会对代码指令重排序、处理器会对代" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/jvm%E7%90%86%E8%AE%BA/jvm%E8%AF%A6%E7%BB%86%E5%8E%9F%E7%90%86%E6%9D%A5%E8%87%AA%E7%BD%91%E5%8F%8B%E6%95%B4%E7%90%86/jvm%E5%85%A8%E9%9B%86/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="JVM全集">
+<meta itemprop="description" content="JMM JMM是什么 JMM是一种规范，目的是解决由于多线程通过共享内存进行通信时，存在的本地内存数据不一致、编译器会对代码指令重排序、处理器会对代">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="7013">
+
+
+
+<meta itemprop="keywords" content="JVM," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="JVM全集"/>
+<meta name="twitter:description" content="JMM JMM是什么 JMM是一种规范，目的是解决由于多线程通过共享内存进行通信时，存在的本地内存数据不一致、编译器会对代码指令重排序、处理器会对代"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li><li style="menu-item;list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">JVM全集</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#jmm">JMM</a>
+      <ul>
+        <li><a href="#1概述">1.概述</a></li>
+        <li><a href="#2堆内存相关">2.堆内存相关</a>
+          <ul>
+            <li><a href="#21显式指定堆内存xms和-xmx">2.1.显式指定堆内存<code>–Xms</code>和<code>-Xmx</code></a></li>
+            <li><a href="#22显式新生代内存young-ceneration">2.2.显式新生代内存(Young Ceneration)</a></li>
+            <li><a href="#23显示指定永久代元空间的大小">2.3.显示指定永久代/元空间的大小</a></li>
+          </ul>
+        </li>
+        <li><a href="#3垃圾收集相关">3.垃圾收集相关</a>
+          <ul>
+            <li><a href="#31垃圾回收器">3.1.垃圾回收器</a></li>
+            <li><a href="#32gc记录">3.2.GC记录</a></li>
+          </ul>
+        </li>
+        <li><a href="#推荐阅读">推荐阅读</a></li>
+      </ul>
+    </li>
+    <li><a href="#运行时数据区">运行时数据区</a></li>
+    <li><a href="#类加载器">类加载器</a></li>
+    <li><a href="#类加载过程">类加载过程</a></li>
+    <li><a href="#垃圾回收机制">垃圾回收机制</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h1 id="jmm">JMM</h1>
+<blockquote>
+<p>JMM是什么</p>
+</blockquote>
+<p>JMM是一种规范，目的是解决由于多线程通过共享内存进行通信时，存在的本地内存数据不一致、编译器会对代码指令重排序、处理器会对代码乱序执行等带来的问题。</p>
+<p>作用于本地内存和主存之间
+<img src="https://gitee.com/super-jimwang/img/raw/master/img/20210314100503.png" alt=""></p>
+<blockquote>
+<p>JMM的特性</p>
+</blockquote>
+<ul>
+<li>原子性
+<ul>
+<li>提供了两个高级的字节码指令monitorenter和monitorexit。也就是synchronized。代码块内是原子性的</li>
+</ul>
+</li>
+<li>可见性
+<ul>
+<li>通过在变量修改后将新值同步回主内存，在变量读取前从主内存刷新变量值</li>
+<li>volatile（读写屏障），synchronized（JVM规定，加锁前同步，解锁后同步）和final两个关键字也可以实现可见性</li>
+</ul>
+</li>
+<li>有序性
+<ul>
+<li>synchronized和volatile来保证多线程之间操作的有序性</li>
+<li>volatile关键字会禁止指令重排。synchronized关键字保证同一时刻只允许一条线程操作。</li>
+</ul>
+</li>
+</ul>
+<h2 id="1概述">1.概述</h2>
+<p>在本篇文章中，你将掌握最常用的 JVM 参数配置。如果对于下面提到了一些概念比如堆、</p>
+<h2 id="2堆内存相关">2.堆内存相关</h2>
+<blockquote>
+<p>Java 虚拟机所管理的内存中最大的一块，Java 堆是所有线程共享的一块内存区域，在虚拟机启动时创建。<strong>此内存区域的唯一目的就是存放对象实例，几乎所有的对象实例以及数组都在这里分配内存。</strong></p>
+</blockquote>
+<h3 id="21显式指定堆内存xms和-xmx">2.1.显式指定堆内存<code>–Xms</code>和<code>-Xmx</code></h3>
+<p>与性能有关的最常见实践之一是根据应用程序要求初始化堆内存。如果我们需要指定最小和最大堆大小（推荐显示指定大小），以下参数可以帮助你实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">-Xms&lt;heap size&gt;[unit] 
+-Xmx&lt;heap size&gt;[unit]
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li><strong>heap size</strong> 表示要初始化内存的具体大小。</li>
+<li><strong>unit</strong> 表示要初始化内存的单位。单位为***“ g”*** (GB) 、***“ m”***（MB）、***“ k”***（KB）。</li>
+</ul>
+<p>举个栗子🌰，如果我们要为JVM分配最小2 GB和最大5 GB的堆内存大小，我们的参数应该这样来写：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">-Xms2G -Xmx5G
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>指定栈的内存大小</p>
+</blockquote>
+<ul>
+<li><code>-Xss</code></li>
+</ul>
+<h3 id="22显式新生代内存young-ceneration">2.2.显式新生代内存(Young Ceneration)</h3>
+<p>根据<a href="https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/sizing.html">Oracle官方文档</a>，在堆总可用内存配置完成之后，第二大影响因素是为 <code>Young Generation</code> 在堆内存所占的比例。默认情况下，YG 的最小大小为 1310 <em>MB</em>，最大大小为<em>无限制</em>。</p>
+<p>一共有两种指定 新生代内存(Young Ceneration)大小的方法：</p>
+<p><strong>1.通过<code>-XX:NewSize</code>和<code>-XX:MaxNewSize</code>指定</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">-XX:NewSize=&lt;young size&gt;[unit] 
+-XX:MaxNewSize=&lt;young size&gt;[unit]
+</code></pre></td></tr></table>
+</div>
+</div><p>举个栗子🌰，如果我们要为 新生代分配 最小256m 的内存，最大 1024m的内存我们的参数应该这样来写：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">-XX:NewSize=256m
+-XX:MaxNewSize=1024m
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>2.通过<code>-Xmn&lt;young size&gt;[unit] </code>指定</strong></p>
+<p>举个栗子🌰，如果我们要为 新生代分配256m的内存（NewSize与MaxNewSize设为一致），我们的参数应该这样来写：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">-Xmn256m 
+</code></pre></td></tr></table>
+</div>
+</div><p>GC 调优策略中很重要的一条经验总结是这样说的：</p>
+<blockquote>
+<p>将新对象预留在新生代，由于 Full GC 的成本远高于 Minor GC，因此尽可能将对象分配在新生代是明智的做法，实际项目中根据 GC 日志分析新生代空间大小分配是否合理，适当通过“-Xmn”命令调节新生代大小，最大限度降低新对象直接进入老年代的情况。</p>
+</blockquote>
+<p>另外，你还可以通过<strong><code>-XX:NewRatio=&lt;int&gt;</code></strong>来设置新生代和老年代内存的比值。</p>
+<p>比如下面的参数就是设置新生代（包括Eden和两个Survivor区）与老年代的比值为1。也就是说：新生代与老年代所占比值为1：1，新生代占整个堆栈的 1/2。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">-XX:NewRatio=1
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="23显示指定永久代元空间的大小">2.3.显示指定永久代/元空间的大小</h3>
+<p><strong>从Java 8开始，如果我们没有指定 Metaspace 的大小，随着更多类的创建，虚拟机会耗尽所有可用的系统内存（永久代并不会出现这种情况）。</strong></p>
+<p>JDK 1.8 之前永久代还没被彻底移除的时候通常通过下面这些参数来调节方法区大小</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="o">-</span><span class="n">XX</span><span class="o">:</span><span class="n">PermSize</span><span class="o">=</span><span class="n">N</span> <span class="c1">//方法区 (永久代) 初始大小
+</span><span class="c1"></span><span class="o">-</span><span class="n">XX</span><span class="o">:</span><span class="n">MaxPermSize</span><span class="o">=</span><span class="n">N</span> <span class="c1">//方法区 (永久代) 最大大小,超过这个值将会抛出 OutOfMemoryError 异常:java.lang.OutOfMemoryError: PermGen
+</span></code></pre></td></tr></table>
+</div>
+</div><p>相对而言，垃圾收集行为在这个区域是比较少出现的，但并非数据进入方法区后就“永久存在”了。</p>
+<p><strong>JDK 1.8 的时候，方法区（HotSpot 的永久代）被彻底移除了（JDK1.7 就已经开始了），取而代之是元空间，元空间使用的是直接内存。</strong></p>
+<p>下面是一些常用参数：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="o">-</span><span class="n">XX</span><span class="o">:</span><span class="n">MetaspaceSize</span><span class="o">=</span><span class="n">N</span> <span class="c1">//设置 Metaspace 的初始（和最小大小）
+</span><span class="c1"></span><span class="o">-</span><span class="n">XX</span><span class="o">:</span><span class="n">MaxMetaspaceSize</span><span class="o">=</span><span class="n">N</span> <span class="c1">//设置 Metaspace 的最大大小，如果不指定大小的话，随着更多类的创建，虚拟机会耗尽所有可用的系统内存。
+</span></code></pre></td></tr></table>
+</div>
+</div><h2 id="3垃圾收集相关">3.垃圾收集相关</h2>
+<h3 id="31垃圾回收器">3.1.垃圾回收器</h3>
+<p>为了提高应用程序的稳定性，选择正确的<a href="http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html">垃圾收集</a>算法至关重要。</p>
+<p>JVM具有四种类型的<em>GC</em>实现：</p>
+<ul>
+<li>串行垃圾收集器</li>
+<li>并行垃圾收集器</li>
+<li>CMS垃圾收集器</li>
+<li>G1垃圾收集器</li>
+</ul>
+<p>可以使用以下参数声明这些实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">-XX:+UseSerialGC
+-XX:+UseParallelGC
+-XX:+USeParNewGC
+-XX:+UseG1GC
+</code></pre></td></tr></table>
+</div>
+</div><p>有关<em>垃圾回收</em>实施的更多详细信息，请参见<a href="https://github.com/Snailclimb/JavaGuide/blob/master/docs/java/jvm/JVM%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6.md">此处</a>。</p>
+<h3 id="32gc记录">3.2.GC记录</h3>
+<p>为了严格监控应用程序的运行状况，我们应该始终检查JVM的<em>垃圾回收</em>性能。最简单的方法是以人类可读的格式记录<em>GC</em>活动。</p>
+<p>使用以下参数，我们可以记录<em>GC</em>活动：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">-XX:+UseGCLogFileRotation 
+-XX:NumberOfGCLogFiles=&lt; number of log files &gt; 
+-XX:GCLogFileSize=&lt; file size &gt;[ unit ]
+-Xloggc:/path/to/gc.log
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="推荐阅读">推荐阅读</h2>
+<ul>
+<li><a href="https://www.jianshu.com/p/832fc4d4cb53">CMS GC 默认新生代是多大？</a></li>
+<li><a href="https://www.cnblogs.com/hongdada/p/10277782.html">CMS GC启动参数优化配置</a></li>
+<li><a href="https://tech.meituan.com/2017/12/29/jvm-optimize.html">从实际案例聊聊Java应用的GC优化-美团技术团队</a></li>
+<li><a href="https://www.choupangxia.com/2019/11/11/interview-jvm-gc-08/">JVM性能调优详解</a> （2019-11-11）</li>
+<li><a href="https://segmentfault.com/a/1190000010603813">JVM参数使用手册</a></li>
+</ul>
+<h1 id="运行时数据区">运行时数据区</h1>
+<blockquote>
+<p>运行时数据区内有哪些东西</p>
+</blockquote>
+<p>1.8以前：
+线程共享的有堆和方法区（永久代是其实现方式）
+线程独立的有本地方法栈、虚拟方法栈和程序计数器</p>
+<p>1.8以后
+线程共享的有堆
+线程独立的有本地方法栈、虚拟方法栈和程序计数器
+方法区的实现方法变为元空间放在内存中</p>
+<blockquote>
+<p>程序计数器有什么用？生命周期说一下</p>
+</blockquote>
+<p>通过改变程序计数器可以依次读取执行指令，从而实现代码的流控制
+另外，每个线程都有一个独立的程序计数器，互不影响。</p>
+<p>随着线程的创建而创建，线程消失而消失</p>
+<blockquote>
+<p>虚拟机栈有什么用？是如何运作的？</p>
+</blockquote>
+<p>虚拟机栈内是栈帧。
+每调用一次函数，对应的栈帧就会被压入虚拟机栈。里面保存了局部变量表，操作数栈、动态链接、方法出口等信息。</p>
+<blockquote>
+<p>堆内是存什么的</p>
+</blockquote>
+<p>对象实例和数组</p>
+<blockquote>
+<p>所有的对象实例都分配在堆上吗</p>
+</blockquote>
+<p>不是。jdk1.7开始有逃逸分析，如果对象引用没有被返回或者未被外面使用，那么对象可以直接分配在栈上</p>
+<blockquote>
+<p>堆内存是如何分布的</p>
+</blockquote>
+<p>年轻代、老年代和永久代（也就是方法区）
+其中，年轻代的Eden survivor0 survivor1的比例是8:1:1
+年轻代和老年代的比例是1:2</p>
+<blockquote>
+<p>年轻代什么时候会变成老年代？</p>
+</blockquote>
+<p>每经过一次垃圾回收，年龄+1（从Eden到s区，年龄初始化为1）。年龄到15就会被晋升到老年代。
+有别的情况：
+会把年轻代中的所有按年龄排序，如果某个年龄的大小超过了s区的一半时，就取这个年龄和15的最小值作为晋升年龄</p>
+<blockquote>
+<p>方法区存储了哪些信息</p>
+</blockquote>
+<p>加载的类的信息，常量，静态变量</p>
+<blockquote>
+<p>为什么要将永久代替换为元空间</p>
+</blockquote>
+<p>因为永久代设置空间大小是很难确定的。空间小容易FullGC和OOM，分配大了就会浪费
+而元空间是用本地空间</p>
+<blockquote>
+<p>说一说运行时常量池的变化</p>
+</blockquote>
+<p>1.7以前，运行时常量池包含字符串常量
+1.7 字符串常量池被移到了堆中
+1.8 运行时常量池还在方法区中，只不过变成了元空间，到内存中去了</p>
+<blockquote>
+<p>讲一下java对象创建的过程</p>
+</blockquote>
+<ol>
+<li>
+<p>类加载检查
+检查能否在常量池中定位到这个类的符号引用，检查是否被加载、验证、准备、解析和初始化</p>
+</li>
+<li>
+<p>内存分配
+为新生对象分配内存，可以使用 指针碰撞 或 空闲列表法，取决于堆是否规整</p>
+</li>
+<li>
+<p>初始化零值
+将分配到的内存空间初始化为0值</p>
+</li>
+<li>
+<p>设置对象头
+设置一些信息在对象头中，比如属于哪个类，年龄等</p>
+</li>
+<li>
+<p>执行init方法
+按照程序员的意愿进行初始化</p>
+</li>
+</ol>
+<blockquote>
+<p>虚拟机对对象初始化时，如何保证线程安全</p>
+</blockquote>
+<p>采用两种方式：</p>
+<ol>
+<li>CAS+失败重试</li>
+<li>TLAB，每个线程私有的缓存空间，如果能存的下就存，存不下在放到堆中。TLAB也在堆中。</li>
+</ol>
+<blockquote>
+<p>对象的内存分布是怎么样的</p>
+</blockquote>
+<p>对象头、实例数据和对齐填充</p>
+<blockquote>
+<p>虚拟机中对象是如何访问定位的</p>
+</blockquote>
+<p>栈上的reference数据来操作堆上的具体对象
+有两种方法：使用句柄和直接指针</p>
+<ol>
+<li>
+<p>句柄：reference指向句柄，句柄中存着到对象实例的地址和到对象类型的地址</p>
+</li>
+<li>
+<p>直接指针：reference直接指向对象实例数据，然后实例数据有指针指向对象类型数据</p>
+</li>
+</ol>
+<blockquote>
+<p>哪些包装类在常量池中有缓存数据，缓存数值是多少</p>
+</blockquote>
+<p>Byte[-128,127]
+Short[-128,127]
+Integer[-128,127]
+Long[-128,127]
+Character[0,127]
+Boolean直接返回True or False</p>
+<blockquote>
+<p>Integer i1 =33;
+Integer i2 = 33;
+i1==i2的结果是什么</p>
+<p>Integer i3 = new Integer(33);
+i3==i2的结果是什么</p>
+</blockquote>
+<p>true，因为能缓存到常量池中</p>
+<p>false，因为new Integer是创建对象</p>
+<blockquote>
+<p>讲一下JVM中两种内存分配的方法</p>
+</blockquote>
+<p>指针碰撞：
+内存规整的情况下使用，用一个指针表明左边是用过的，右边是没用过的</p>
+<p>空闲列表：
+堆内存不规整的时候用，用列表记录哪些内存可用</p>
+<p>注意：
+在操作系统中，是用位图或者链表法。</p>
+<h1 id="类加载器">类加载器</h1>
+<blockquote>
+<p>jvm内置的类加载器说一下，各负责加载什么</p>
+</blockquote>
+<p>BootstrapClassLoader(启动类加载器)：负责加载%JAVA_HOME%/lib目录下的jar包和类或者被-Xbootclasspath参数指定的路径中的所有类</p>
+<p>ExtensionClassLoader(扩展类加载器)：加载%JRE_HOME%/lib/ext目录下的包和类，或者java.ext.dirs系统变量指定目录下的jar包</p>
+<p>AppClassLoader(应用程序类加载器)：加载classpath下的jar包和类</p>
+<blockquote>
+<p>双亲委派机制讲一下</p>
+</blockquote>
+<p>如果要加载一个类，会先判断是否已经加载。如果为加载，会把请求委派给父加载器，如果父加载器还有父，则让父的父加载。如果父为null，则给BootstrapClassLoader。如果父无法处理，才由儿子来处理</p>
+<blockquote>
+<p>双亲委派机制的好处</p>
+</blockquote>
+<ol>
+<li>避免了重复类的加载（相同文件，被不同的类加载器加载了，就是不同的类）</li>
+<li>保证java核心代码不会被篡改（总是先由最上层来加载）</li>
+</ol>
+<blockquote>
+<p>什么时候需要破坏双亲委派机制</p>
+</blockquote>
+<p>因为在某些情况下父类加载器需要委托子类加载器去加载class文件。受到加载范围的限制，父类加载器无法加载到需要的文件，以Driver接口为例，由于Driver接口定义在jdk当中的，而其实现由各个数据库的服务商来提供，比如mysql的就写了MySQL Connector，那么问题就来了，DriverManager（也由jdk提供）要加载各个实现了Driver接口的实现类，然后进行管理，但是DriverManager由启动类加载器加载，只能记载JAVA_HOME的lib下文件，而其实现是由服务商提供的，由系统类加载器加载，这个时候就需要启动类加载器来委托子类来加载Driver实现，从而破坏了双亲委派，这里仅仅是举了破坏双亲委派的其中一个情况。</p>
+<p>==由启动类加载器加载的接口要加载其实现类时，由于是服务商提供的，只能委托给应用程序类加载器来加载==</p>
+<h1 id="类加载过程">类加载过程</h1>
+<blockquote>
+<p>类的生命周期说一下</p>
+</blockquote>
+<p>加载、连接（验证，准备，解析）、初始化、使用、卸载</p>
+<blockquote>
+<p>类的加载过程具体说一下</p>
+</blockquote>
+<p>类的加载包括了加载、连接（验证，准备，解析）、初始化</p>
+<ol>
+<li>加载</li>
+</ol>
+<ul>
+<li>通过全类名获取定义此类的二进制字节流</li>
+<li>将字节流所代表的静态存储结构转换为运行时数据区的结构</li>
+<li>在内存中生成一个代表该类的Class对象，作为方法区这些数据的访问入口</li>
+</ul>
+<ol start="2">
+<li>验证</li>
+</ol>
+<ul>
+<li>文件格式验证</li>
+<li>元数据验证</li>
+<li>字节码验证</li>
+<li>符号引用验证</li>
+</ul>
+<ol start="3">
+<li>准备</li>
+</ol>
+<ul>
+<li>为类变量（static）分配内存并设置类变量初始值</li>
+<li>准备阶段初始化为0值，等到初始化阶段才会赋值。==但是有特殊情况，如果是final static的变量，那么准备阶段就会被赋值了==</li>
+</ul>
+<ol start="4">
+<li>解析</li>
+</ol>
+<ul>
+<li>将常量池内的符号引用替换为直接引用的过程</li>
+<li>符号引用就是一组符号来描述目标，可以是任何字面量。直接引用就是直接指向目标的指针。</li>
+</ul>
+<ol start="5">
+<li>初始化</li>
+</ol>
+<ul>
+<li>调用<code>&lt;clint&gt;</code>方法，就是执行静态代码块</li>
+<li>只有以下6中情况会发生初始化
+<ul>
+<li>遇到new、getstatic、putstatic、invokestatic</li>
+<li>反射，比如class.forName(&hellip;)，newInstance等</li>
+<li>初始化一个类，其父类还没初始化，先让其父类初始化</li>
+<li>包含main方法的主类，会先初始化</li>
+<li>MethodHandle和VarHandle可以看作是轻量级的反射，要用这两个，需要先使用findStaticVarHandle来初始化要调用的类</li>
+<li>当一个接口定义了JDK8中新的default接口方法时，如果实现类发生了初始化，那该接口要在其之前被初始化</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>卸载发生的条件</p>
+</blockquote>
+<ul>
+<li>该类的所有的实例对象都被GC了，堆中不存在该类的任何对象</li>
+<li>该类没有在其他地方被引用</li>
+<li>该类的类加载器的实例已被GC</li>
+</ul>
+<blockquote>
+<p>卸载是什么意思</p>
+</blockquote>
+<p>该类的class对象被GC</p>
+<h1 id="垃圾回收机制">垃圾回收机制</h1>
+<blockquote>
+<p>讲一下堆常见的分配策略</p>
+</blockquote>
+<ul>
+<li>
+<p>对象优先在Eden区分配</p>
+</li>
+<li>
+<p>第一次垃圾回收后，如果s区放不下，那么只能通过==分配担保机制==把新生代的对象提前转移到老年代</p>
+</li>
+<li>
+<p>大对象直接进入老年代</p>
+<ul>
+<li>新生代如果放不下，直接放到老年代</li>
+<li>==如果在分配对象到Eden区的时候发现放不下，触发了GC，还是放不下，那么就会老年代尝试存放，如果老年代也放不下会触发FGC，如若还是放不下直接OOM。==</li>
+</ul>
+</li>
+<li>
+<p>长期存活的对象将进入老年代</p>
+<ul>
+<li>大于默认年龄的会进入老年代，一般的垃圾回收器是15，而CMS是6</li>
+<li>动态年龄，按照年龄从小到大排序，对占用的大小进行累计，如果累计的某个年龄大小超过了s区的一半，那么取这个年龄和默认年龄的最小值，作为晋升年龄
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">年龄1的对象占用了33%
+年龄2的对象占用33%
+年龄3的对象占用34%。
+年龄2和3都会晋升到老年代
+</code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>JVM中有几种GC讲一下</p>
+</blockquote>
+<p>分为两大类：</p>
+<ul>
+<li>Partial GC
+<ul>
+<li>Young GC：只收集年轻代的GC</li>
+<li>Old GC： 只收集老年代的GC</li>
+<li>Mixed GC: 收集整个年轻代和部分老年代</li>
+</ul>
+</li>
+<li>Full GC
+<ul>
+<li>收集整个堆的，包括年轻代，老年代和永久代</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>说一下各GC的触发条件</p>
+</blockquote>
+<ul>
+<li>young GC：eden区分配满了的时候。==注意s区满了是不会触发gc的==</li>
+<li>full GC：当要触发young GC时，根据以前的统计数据，young GC平均晋升的大小比目前老年代剩余空间大，那么就触发full GC，不会再发生young GC了</li>
+<li>如果有永久代的话，永久代剩余空间不足时，会触发full GC</li>
+<li>老年代空间不足也会触发full GC</li>
+</ul>
+<blockquote>
+<p>如何判断一个对象已经无效</p>
+</blockquote>
+<ul>
+<li>
+<p>引用计数法</p>
+<ul>
+<li>每被引用一次+1，引用失效-1，引用次数为0的就无效了。</li>
+<li>但是存在无法解决相互引用的问题。比如A引用B，B引用A。而这俩没有其他的引用，应该被回收掉，但是此时无法回收。</li>
+</ul>
+</li>
+<li>
+<p>可达性分析算法</p>
+<ul>
+<li>从GC Root的对象作为起点，开始搜索引用链，如果一个对象没有到GC Root的引用链，那就是不可用的。</li>
+<li>可以作用GC Roots的对象包括
+<ul>
+<li>虚拟机栈中引用的对象</li>
+<li>本地方法栈中引用的对象</li>
+<li>方法区中类静态属性引用的对象</li>
+<li>方法区中常量引用的属性</li>
+<li>所有被同步锁持有的对象</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>说一下几种引用的情况</p>
+</blockquote>
+<ul>
+<li>强引用
+<ul>
+<li>大部分引用都是强引用</li>
+<li>无论如何垃圾回收器都不会回收</li>
+</ul>
+</li>
+<li>软引用
+<ul>
+<li>如果内存空间足够，就不会回收，如果不足，就会回收这些引用</li>
+</ul>
+</li>
+<li>弱引用
+<ul>
+<li>一旦被发现是弱引用，不管内存是否足够，马上将它回收</li>
+</ul>
+</li>
+<li>虚引用
+<ul>
+<li>就跟没有引用一样</li>
+<li>虚引用主要用来跟踪对象被垃圾回收器回收的活动。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>不可达的对象一定会被回收吗</p>
+</blockquote>
+<p>不一定，在真正被回收之前需要标记两次。</p>
+<ul>
+<li>第一次是检查这些被标记的是否要进行finalize方法，如果对象没有覆盖finalize方法或者已经执行过了，那么就会被回收</li>
+<li>第二次：如果这个对象被判定为有必要执行finalize()方法，那么这个对象将会放置在一个叫做F-Queue的队列之中，触发finalize方法，它们有可能重新被引用而逃离死亡。</li>
+</ul>
+<p>但是虚拟机并不承诺会等待finalize的结果。如果一个对象在finalize()方法中执行缓慢，或者发生了死循环。</p>
+<blockquote>
+<p>如何判断常量是废弃常量，谁负责回收它。</p>
+</blockquote>
+<p>运行时常量池负责回收废弃常量。</p>
+<p>如果一个常量没有对象引用它了，就会被回收。</p>
+<blockquote>
+<p>如何判断一个类是无用类，谁负责回收它</p>
+</blockquote>
+<p>方法区主要负责回收无用的类。 三个条件</p>
+<ul>
+<li>该类的所有实例都已经被回收</li>
+<li>加载该类的classLoader已经被回收</li>
+<li>该类对应的Class对象没有在任何地方被引用</li>
+</ul>
+<blockquote>
+<p>讲一下有哪几种垃圾回收算法，讲一下缺点</p>
+</blockquote>
+<ul>
+<li>标记-清除算法：先把不需要回收的对象标记出来，统一回收没有标记的对象
+<ul>
+<li>效率问题</li>
+<li>空间问题，会产生碎片</li>
+</ul>
+</li>
+<li>标记-复制算法：把内存分为两个大小一样的块，标记不需要回收的，复制到另一边，然后清空这一边
+<ul>
+<li>浪费空间</li>
+</ul>
+</li>
+<li>标记-整理算法：让所有存活的对象向一段移动，然后清理掉端边界以外的内存
+<ul>
+<li>算法复杂度大，步骤复杂</li>
+</ul>
+</li>
+<li>分代收集算法
+<ul>
+<li>根据对象存活周期的不同，将内存分为年轻代，老年代和永久代</li>
+<li>年轻代有大量的对象死去，就用标记-复制算法</li>
+<li>老年代存活率高用标记-清除或标记-整理</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>为什么HotSpot要分为年轻代和老年代</p>
+</blockquote>
+<p>因为使用了分代收集算法，可以根据对象存活的时间，选择不同的算法</p>
+<blockquote>
+<p>讲一下有哪些垃圾收集器</p>
+</blockquote>
+<ul>
+<li>Serial收集器
+<ul>
+<li>单线程，必须停止所有工作线程stop the world</li>
+<li>年轻代使用标记-复制算法，老年代使用标记-整理算法</li>
+</ul>
+</li>
+<li>ParNew收集器
+<ul>
+<li>就是并行的Serial，多线程版本。</li>
+<li>年轻代标记-复制，老年代标记-整理</li>
+</ul>
+</li>
+<li>Parallel Scavenge收集器
+<ul>
+<li>关注吞吐量的多线程收集器</li>
+<li>年轻代标记-复制，老年代标记-整理</li>
+<li>JDK8默认收集器</li>
+</ul>
+</li>
+<li>Serial Old
+<ul>
+<li>Serial的老年代版本</li>
+</ul>
+</li>
+<li>Parallel Old
+<ul>
+<li>Parallel Scavenge的老年代版本</li>
+</ul>
+</li>
+<li>CMS
+<ul>
+<li>是并发收集器，实现最短停顿时间</li>
+<li>是一种标记-清除算法，会有空间碎片</li>
+<li>四个步骤
+<ul>
+<li>初始标记：stw，暂停所有的其他线程，记录下与root相连的对象，速度很快</li>
+<li>并发标记：同时启动GC和用户线程，记录Roots的可达对象</li>
+<li>重新标记：stw，修正并发阶段因为用户行为导致的变动。并发</li>
+<li>并发清除：开启用户线程，并发清除垃圾
+<img src="https://gitee.com/super-jimwang/img/raw/master/img/20210301153937.png" alt=""></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>如果频繁发生full gc是什么原因</p>
+</blockquote>
+<p>可能有内存泄漏了</p>
+<blockquote>
+<p>举几个会发生内存泄漏的例子</p>
+</blockquote>
+<p>被静态集合引用的对象。<code>static List&lt;&gt; ls; ls.add(a)</code>。因为静态对象的生命周期跟JVM一样，JVM不结束静态集合就不会销毁。</p>
+<p>hash会改变的对象。比如set.add(这个对象)，然后对象的hash变了，这时候想去set里删除这个对象是不行的。</p>
+<blockquote>
+<p>哪些东西会被当作垃圾回收？</p>
+</blockquote>
+<p>不在引用链上的所有对象，以及在链上的软、弱、虚引用对象。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/jvm/">JVM</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/jvm%E7%90%86%E8%AE%BA/jvm%E8%AF%A6%E7%BB%86%E5%8E%9F%E7%90%86%E6%9D%A5%E8%87%AA%E7%BD%91%E5%8F%8B%E6%95%B4%E7%90%86/jmm/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">JMM</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/jvm%E7%90%86%E8%AE%BA/jvm%E8%AF%A6%E7%BB%86%E5%8E%9F%E7%90%86%E6%9D%A5%E8%87%AA%E7%BD%91%E5%8F%8B%E6%95%B4%E7%90%86/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/">
+            <span class="next-text nav-default">垃圾回收机制</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+<script 
+ defer
+ async  src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+<script src="/js/custom/docsearch.min.js" ></script>
+<script>
+ 
+  docsearch({
+    apiKey: "2991187e127fb95e62db841ea946bc06",
+    indexName: "blog",
+    appId: "UVGAU2QDTQ",
+    inputSelector: '.docsearch-input',
+    debug: false,
+  });
+  docsearch({
+    apiKey: "2991187e127fb95e62db841ea946bc06",
+    indexName: "blog",
+    appId: "UVGAU2QDTQ",
+    inputSelector: '.mob-docsearch-input',
+    debug: false,
+  });
+ 
+</script>
+</body>
+</html>

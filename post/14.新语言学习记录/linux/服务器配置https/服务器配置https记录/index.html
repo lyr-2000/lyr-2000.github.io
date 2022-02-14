@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>服务器配置https记录 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="服务器配置https记录 1 2 3 4 5 cd / find -name &amp;#34;www.xxx.crt&amp;#34; # 寻找我原来证书的位置 =&amp;gt; 我忘记 原来证书放哪里了， # 找到证书位置后 /www/server/nginx/conf # 将证书替换 1 2 3 4 5 6 7 8 9" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%85%8D%E7%BD%AEhttps/%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%85%8D%E7%BD%AEhttps%E8%AE%B0%E5%BD%95/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="服务器配置https记录" />
+<meta property="og:description" content="服务器配置https记录 1 2 3 4 5 cd / find -name &#34;www.xxx.crt&#34; # 寻找我原来证书的位置 =&gt; 我忘记 原来证书放哪里了， # 找到证书位置后 /www/server/nginx/conf # 将证书替换 1 2 3 4 5 6 7 8 9" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%85%8D%E7%BD%AEhttps/%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%85%8D%E7%BD%AEhttps%E8%AE%B0%E5%BD%95/" />
+<meta property="article:published_time" content="2022-02-13T22:42:48+08:00" />
+<meta property="article:modified_time" content="2022-02-13T22:42:48+08:00" />
+<meta itemprop="name" content="服务器配置https记录">
+<meta itemprop="description" content="服务器配置https记录 1 2 3 4 5 cd / find -name &#34;www.xxx.crt&#34; # 寻找我原来证书的位置 =&gt; 我忘记 原来证书放哪里了， # 找到证书位置后 /www/server/nginx/conf # 将证书替换 1 2 3 4 5 6 7 8 9">
+<meta itemprop="datePublished" content="2022-02-13T22:42:48&#43;08:00" />
+<meta itemprop="dateModified" content="2022-02-13T22:42:48&#43;08:00" />
+<meta itemprop="wordCount" content="1675">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="服务器配置https记录"/>
+<meta name="twitter:description" content="服务器配置https记录 1 2 3 4 5 cd / find -name &#34;www.xxx.crt&#34; # 寻找我原来证书的位置 =&gt; 我忘记 原来证书放哪里了， # 找到证书位置后 /www/server/nginx/conf # 将证书替换 1 2 3 4 5 6 7 8 9"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li><li style="menu-item;list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">服务器配置https记录</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-02-13 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#服务器配置https记录">服务器配置https记录</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h2 id="服务器配置https记录">服务器配置https记录</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">cd</span> /
+find -name <span class="s2">&#34;www.xxx.crt&#34;</span>
+<span class="c1"># 寻找我原来证书的位置 =&gt; 我忘记 原来证书放哪里了，</span>
+<span class="c1"># 找到证书位置后  /www/server/nginx/conf</span>
+<span class="c1"># 将证书替换</span>
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span><span class="lnt">166
+</span><span class="lnt">167
+</span><span class="lnt">168
+</span><span class="lnt">169
+</span><span class="lnt">170
+</span><span class="lnt">171
+</span><span class="lnt">172
+</span><span class="lnt">173
+</span><span class="lnt">174
+</span><span class="lnt">175
+</span><span class="lnt">176
+</span><span class="lnt">177
+</span><span class="lnt">178
+</span><span class="lnt">179
+</span><span class="lnt">180
+</span><span class="lnt">181
+</span><span class="lnt">182
+</span><span class="lnt">183
+</span><span class="lnt">184
+</span><span class="lnt">185
+</span><span class="lnt">186
+</span><span class="lnt">187
+</span><span class="lnt">188
+</span><span class="lnt">189
+</span><span class="lnt">190
+</span><span class="lnt">191
+</span><span class="lnt">192
+</span><span class="lnt">193
+</span><span class="lnt">194
+</span><span class="lnt">195
+</span><span class="lnt">196
+</span><span class="lnt">197
+</span><span class="lnt">198
+</span><span class="lnt">199
+</span><span class="lnt">200
+</span><span class="lnt">201
+</span><span class="lnt">202
+</span><span class="lnt">203
+</span><span class="lnt">204
+</span><span class="lnt">205
+</span><span class="lnt">206
+</span><span class="lnt">207
+</span><span class="lnt">208
+</span><span class="lnt">209
+</span><span class="lnt">210
+</span><span class="lnt">211
+</span><span class="lnt">212
+</span><span class="lnt">213
+</span><span class="lnt">214
+</span><span class="lnt">215
+</span><span class="lnt">216
+</span><span class="lnt">217
+</span><span class="lnt">218
+</span><span class="lnt">219
+</span><span class="lnt">220
+</span><span class="lnt">221
+</span><span class="lnt">222
+</span><span class="lnt">223
+</span><span class="lnt">224
+</span><span class="lnt">225
+</span><span class="lnt">226
+</span><span class="lnt">227
+</span><span class="lnt">228
+</span><span class="lnt">229
+</span><span class="lnt">230
+</span><span class="lnt">231
+</span><span class="lnt">232
+</span><span class="lnt">233
+</span><span class="lnt">234
+</span><span class="lnt">235
+</span><span class="lnt">236
+</span><span class="lnt">237
+</span><span class="lnt">238
+</span><span class="lnt">239
+</span><span class="lnt">240
+</span><span class="lnt">241
+</span><span class="lnt">242
+</span><span class="lnt">243
+</span><span class="lnt">244
+</span><span class="lnt">245
+</span><span class="lnt">246
+</span><span class="lnt">247
+</span><span class="lnt">248
+</span><span class="lnt">249
+</span><span class="lnt">250
+</span><span class="lnt">251
+</span><span class="lnt">252
+</span><span class="lnt">253
+</span><span class="lnt">254
+</span><span class="lnt">255
+</span><span class="lnt">256
+</span><span class="lnt">257
+</span><span class="lnt">258
+</span><span class="lnt">259
+</span><span class="lnt">260
+</span><span class="lnt">261
+</span><span class="lnt">262
+</span><span class="lnt">263
+</span><span class="lnt">264
+</span><span class="lnt">265
+</span><span class="lnt">266
+</span><span class="lnt">267
+</span><span class="lnt">268
+</span><span class="lnt">269
+</span><span class="lnt">270
+</span><span class="lnt">271
+</span><span class="lnt">272
+</span><span class="lnt">273
+</span><span class="lnt">274
+</span><span class="lnt">275
+</span><span class="lnt">276
+</span><span class="lnt">277
+</span><span class="lnt">278
+</span><span class="lnt">279
+</span><span class="lnt">280
+</span><span class="lnt">281
+</span><span class="lnt">282
+</span><span class="lnt">283
+</span><span class="lnt">284
+</span><span class="lnt">285
+</span><span class="lnt">286
+</span><span class="lnt">287
+</span><span class="lnt">288
+</span><span class="lnt">289
+</span><span class="lnt">290
+</span><span class="lnt">291
+</span><span class="lnt">292
+</span><span class="lnt">293
+</span><span class="lnt">294
+</span><span class="lnt">295
+</span><span class="lnt">296
+</span><span class="lnt">297
+</span><span class="lnt">298
+</span><span class="lnt">299
+</span><span class="lnt">300
+</span><span class="lnt">301
+</span><span class="lnt">302
+</span><span class="lnt">303
+</span><span class="lnt">304
+</span><span class="lnt">305
+</span><span class="lnt">306
+</span><span class="lnt">307
+</span><span class="lnt">308
+</span><span class="lnt">309
+</span><span class="lnt">310
+</span><span class="lnt">311
+</span><span class="lnt">312
+</span><span class="lnt">313
+</span><span class="lnt">314
+</span><span class="lnt">315
+</span><span class="lnt">316
+</span><span class="lnt">317
+</span><span class="lnt">318
+</span><span class="lnt">319
+</span><span class="lnt">320
+</span><span class="lnt">321
+</span><span class="lnt">322
+</span><span class="lnt">323
+</span><span class="lnt">324
+</span><span class="lnt">325
+</span><span class="lnt">326
+</span><span class="lnt">327
+</span><span class="lnt">328
+</span><span class="lnt">329
+</span><span class="lnt">330
+</span><span class="lnt">331
+</span><span class="lnt">332
+</span><span class="lnt">333
+</span><span class="lnt">334
+</span><span class="lnt">335
+</span><span class="lnt">336
+</span><span class="lnt">337
+</span><span class="lnt">338
+</span><span class="lnt">339
+</span><span class="lnt">340
+</span><span class="lnt">341
+</span><span class="lnt">342
+</span><span class="lnt">343
+</span><span class="lnt">344
+</span><span class="lnt">345
+</span><span class="lnt">346
+</span><span class="lnt">347
+</span><span class="lnt">348
+</span><span class="lnt">349
+</span><span class="lnt">350
+</span><span class="lnt">351
+</span><span class="lnt">352
+</span><span class="lnt">353
+</span><span class="lnt">354
+</span><span class="lnt">355
+</span><span class="lnt">356
+</span><span class="lnt">357
+</span><span class="lnt">358
+</span><span class="lnt">359
+</span><span class="lnt">360
+</span><span class="lnt">361
+</span><span class="lnt">362
+</span><span class="lnt">363
+</span><span class="lnt">364
+</span><span class="lnt">365
+</span><span class="lnt">366
+</span><span class="lnt">367
+</span><span class="lnt">368
+</span><span class="lnt">369
+</span><span class="lnt">370
+</span><span class="lnt">371
+</span><span class="lnt">372
+</span><span class="lnt">373
+</span><span class="lnt">374
+</span><span class="lnt">375
+</span><span class="lnt">376
+</span><span class="lnt">377
+</span><span class="lnt">378
+</span><span class="lnt">379
+</span><span class="lnt">380
+</span><span class="lnt">381
+</span><span class="lnt">382
+</span><span class="lnt">383
+</span><span class="lnt">384
+</span><span class="lnt">385
+</span><span class="lnt">386
+</span><span class="lnt">387
+</span><span class="lnt">388
+</span><span class="lnt">389
+</span><span class="lnt">390
+</span><span class="lnt">391
+</span><span class="lnt">392
+</span><span class="lnt">393
+</span><span class="lnt">394
+</span><span class="lnt">395
+</span><span class="lnt">396
+</span><span class="lnt">397
+</span><span class="lnt">398
+</span><span class="lnt">399
+</span><span class="lnt">400
+</span><span class="lnt">401
+</span><span class="lnt">402
+</span><span class="lnt">403
+</span><span class="lnt">404
+</span><span class="lnt">405
+</span><span class="lnt">406
+</span><span class="lnt">407
+</span><span class="lnt">408
+</span><span class="lnt">409
+</span><span class="lnt">410
+</span><span class="lnt">411
+</span><span class="lnt">412
+</span><span class="lnt">413
+</span><span class="lnt">414
+</span><span class="lnt">415
+</span><span class="lnt">416
+</span><span class="lnt">417
+</span><span class="lnt">418
+</span><span class="lnt">419
+</span><span class="lnt">420
+</span><span class="lnt">421
+</span><span class="lnt">422
+</span><span class="lnt">423
+</span><span class="lnt">424
+</span><span class="lnt">425
+</span><span class="lnt">426
+</span><span class="lnt">427
+</span><span class="lnt">428
+</span><span class="lnt">429
+</span><span class="lnt">430
+</span><span class="lnt">431
+</span><span class="lnt">432
+</span><span class="lnt">433
+</span><span class="lnt">434
+</span><span class="lnt">435
+</span><span class="lnt">436
+</span><span class="lnt">437
+</span><span class="lnt">438
+</span><span class="lnt">439
+</span><span class="lnt">440
+</span><span class="lnt">441
+</span><span class="lnt">442
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-nginx" data-lang="nginx"><span class="k">user</span>  <span class="s">www</span> <span class="s">www</span><span class="p">;</span>
+<span class="k">worker_processes</span> <span class="s">auto</span><span class="p">;</span>
+<span class="k">error_log</span>  <span class="s">/www/wwwlogs/nginx_error.log</span>  <span class="s">crit</span><span class="p">;</span>
+<span class="k">pid</span>        <span class="s">/www/server/nginx/logs/nginx.pid</span><span class="p">;</span>
+<span class="k">worker_rlimit_nofile</span> <span class="mi">51200</span><span class="p">;</span>
+
+<span class="k">events</span>
+    <span class="p">{</span>
+        <span class="kn">use</span> <span class="s">epoll</span><span class="p">;</span>
+        <span class="kn">worker_connections</span> <span class="mi">51200</span><span class="p">;</span>
+        <span class="kn">multi_accept</span> <span class="no">on</span><span class="p">;</span>
+    <span class="p">}</span>
+
+<span class="k">http</span>
+    <span class="p">{</span>
+        <span class="kn">include</span>       <span class="s">mime.types</span><span class="p">;</span>
+		<span class="c1">#include luawaf.conf;
+</span><span class="c1"></span>
+		<span class="kn">include</span> <span class="s">proxy.conf</span><span class="p">;</span>
+
+        <span class="kn">default_type</span>  <span class="s">application/octet-stream</span><span class="p">;</span>
+
+        <span class="kn">server_names_hash_bucket_size</span> <span class="mi">512</span><span class="p">;</span>
+        <span class="kn">client_header_buffer_size</span> <span class="mi">32k</span><span class="p">;</span>
+        <span class="kn">large_client_header_buffers</span> <span class="mi">4</span> <span class="mi">32k</span><span class="p">;</span>
+        <span class="kn">client_max_body_size</span> <span class="mi">50m</span><span class="p">;</span>
+
+        <span class="kn">sendfile</span>   <span class="no">on</span><span class="p">;</span>
+        <span class="kn">tcp_nopush</span> <span class="no">on</span><span class="p">;</span>
+
+        <span class="kn">keepalive_timeout</span> <span class="mi">82</span><span class="p">;</span>
+
+        <span class="kn">tcp_nodelay</span> <span class="no">on</span><span class="p">;</span>
+
+        <span class="kn">fastcgi_connect_timeout</span> <span class="mi">300</span><span class="p">;</span>
+        <span class="kn">fastcgi_send_timeout</span> <span class="mi">300</span><span class="p">;</span>
+        <span class="kn">fastcgi_read_timeout</span> <span class="mi">300</span><span class="p">;</span>
+        <span class="kn">fastcgi_buffer_size</span> <span class="mi">64k</span><span class="p">;</span>
+        <span class="kn">fastcgi_buffers</span> <span class="mi">4</span> <span class="mi">64k</span><span class="p">;</span>
+        <span class="kn">fastcgi_busy_buffers_size</span> <span class="mi">128k</span><span class="p">;</span>
+        <span class="kn">fastcgi_temp_file_write_size</span> <span class="mi">256k</span><span class="p">;</span>
+		<span class="kn">fastcgi_intercept_errors</span> <span class="no">on</span><span class="p">;</span>
+
+        <span class="kn">gzip</span> <span class="no">on</span><span class="p">;</span>
+        <span class="kn">gzip_min_length</span> <span class="mi">1k</span><span class="p">;</span>
+        <span class="kn">gzip_buffers</span>     <span class="mi">4</span> <span class="mi">16k</span><span class="p">;</span>
+        <span class="kn">gzip_http_version</span> <span class="mi">1</span><span class="s">.1</span><span class="p">;</span>
+        <span class="kn">gzip_comp_level</span> <span class="mi">2</span><span class="p">;</span>
+        <span class="kn">gzip_types</span>     <span class="s">text/plain</span> <span class="s">application/javascript</span> <span class="s">application/x-javascript</span> <span class="s">text/javascript</span> <span class="s">text/css</span> <span class="s">application/xml</span><span class="p">;</span>
+        <span class="kn">gzip_vary</span> <span class="no">on</span><span class="p">;</span>
+        <span class="kn">gzip_proxied</span>   <span class="s">expired</span> <span class="s">no-cache</span> <span class="s">no-store</span> <span class="s">private</span> <span class="s">auth</span><span class="p">;</span>
+        <span class="kn">gzip_disable</span>   <span class="s">&#34;MSIE</span> <span class="s">[1-6]\.&#34;</span><span class="p">;</span>
+
+        <span class="kn">limit_conn_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=perip:10m</span><span class="p">;</span>
+		<span class="kn">limit_conn_zone</span> <span class="nv">$server_name</span> <span class="s">zone=perserver:10m</span><span class="p">;</span>
+
+        <span class="kn">server_tokens</span> <span class="no">off</span><span class="p">;</span>
+        <span class="kn">access_log</span> <span class="no">off</span><span class="p">;</span>
+        
+  <span class="kn">server</span>
+    <span class="p">{</span>
+        <span class="kn">listen</span> <span class="mi">80</span><span class="p">;</span>
+        <span class="kn">server_name</span> <span class="s">admin.lyr-2000.xyz</span><span class="p">;</span>
+        <span class="kn">tcp_nodelay</span>  <span class="no">on</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">Host</span> <span class="nv">$host</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Real-IP</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">REMOTE-HOST</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Forwarded-For</span> <span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+ 
+        
+ 
+        <span class="kn">location</span> <span class="s">/</span> <span class="p">{</span>
+          
+        
+    	    <span class="c1"># rewrite ^/(.*)$ /$1 break;
+</span><span class="c1"></span>          <span class="kn">proxy_pass</span>   <span class="s">http://localhost:8081/</span><span class="p">;</span>
+          <span class="kn">proxy_cookie_path</span> <span class="p">~</span><span class="sr">*^/.*</span> <span class="s">/</span><span class="p">;</span>
+        <span class="p">}</span>
+ 
+        <span class="kn">location</span> <span class="p">~</span> <span class="sr">/\.</span>
+        <span class="p">{</span>
+            <span class="kn">deny</span> <span class="s">all</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kn">access_log</span>  <span class="s">/www/wwwlogs/access.log</span><span class="p">;</span>
+    <span class="p">}</span>      
+    
+    
+    <span class="kn">server</span>
+    <span class="p">{</span>
+        <span class="kn">listen</span> <span class="mi">80</span><span class="p">;</span>
+        <span class="kn">server_name</span> <span class="s">blog.lyr-2000.xyz</span><span class="p">;</span>
+        <span class="kn">tcp_nodelay</span>  <span class="no">on</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">Host</span> <span class="nv">$host</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Real-IP</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">REMOTE-HOST</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Forwarded-For</span> <span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+ 
+        
+ 
+        <span class="c1"># location /ffff {
+</span><span class="c1"></span>          
+        
+    	   <span class="c1"># # rewrite ^/(.*)$ /$1 break;
+</span><span class="c1"></span>        <span class="c1">#   proxy_pass   http://localhost:8083/;
+</span><span class="c1"></span>        <span class="c1">#   proxy_cookie_path ~*^/.* /;
+</span><span class="c1"></span>        <span class="c1"># }
+</span><span class="c1"></span>        
+        
+        <span class="kn">location</span> <span class="s">/css</span> <span class="p">{</span>
+          <span class="kn">root</span> <span class="s">/www/static/</span><span class="p">;</span>
+    			<span class="kn">if</span> <span class="s">(!-f</span> <span class="nv">$request_filename</span><span class="s">)</span> <span class="p">{</span> <span class="c1">#请求的文件不存在，就反向代理
+</span><span class="c1"></span>    				<span class="kn">proxy_pass</span> <span class="s">http://127.0.0.1:8083</span><span class="p">;</span>
+    				 
+ 
+    				<span class="kn">break</span><span class="p">;</span>
+    			<span class="p">}</span>
+        
+        <span class="p">}</span>
+        
+        <span class="kn">location</span> <span class="p">~</span> <span class="sr">^/favicon\.ico$</span> <span class="p">{</span>
+
+           <span class="kn">root</span>    <span class="s">/www/static/</span><span class="p">;</span>
+
+        <span class="p">}</span>
+        
+        <span class="kn">location</span> <span class="s">/js</span> <span class="p">{</span>
+          <span class="kn">root</span> <span class="s">/www/static/</span><span class="p">;</span>
+    			<span class="kn">if</span> <span class="s">(!-f</span> <span class="nv">$request_filename</span><span class="s">)</span> <span class="p">{</span> <span class="c1">#请求的文件不存在，就反向代理
+</span><span class="c1"></span>    				<span class="kn">proxy_pass</span> <span class="s">http://127.0.0.1:8083</span><span class="p">;</span>
+    			  
+    				<span class="kn">break</span><span class="p">;</span>
+    			<span class="p">}</span>
+        
+        <span class="p">}</span>
+         <span class="kn">location</span> <span class="s">/fonts</span> <span class="p">{</span>
+          <span class="kn">root</span> <span class="s">/www/static/</span><span class="p">;</span>
+    			<span class="kn">if</span> <span class="s">(!-f</span> <span class="nv">$request_filename</span><span class="s">)</span> <span class="p">{</span> <span class="c1">#请求的文件不存在，就反向代理
+</span><span class="c1"></span>    				<span class="kn">proxy_pass</span> <span class="s">http://127.0.0.1:8083</span><span class="p">;</span>
+    				<span class="kn">break</span><span class="p">;</span>
+    			<span class="p">}</span>
+        
+        <span class="p">}</span>
+         <span class="kn">location</span> <span class="s">/img</span> <span class="p">{</span>
+          <span class="kn">root</span> <span class="s">/www/static/</span><span class="p">;</span>
+    			<span class="kn">if</span> <span class="s">(!-f</span> <span class="nv">$request_filename</span><span class="s">)</span> <span class="p">{</span> <span class="c1">#请求的文件不存在，就反向代理
+</span><span class="c1"></span>    				<span class="kn">proxy_pass</span> <span class="s">http://127.0.0.1:8083</span><span class="p">;</span>
+    				<span class="kn">break</span><span class="p">;</span>
+    			<span class="p">}</span>
+        
+        <span class="p">}</span>
+         <span class="kn">location</span> <span class="s">/lib</span> <span class="p">{</span>
+          <span class="kn">root</span> <span class="s">/www/static/</span><span class="p">;</span>
+    			<span class="kn">if</span> <span class="s">(!-f</span> <span class="nv">$request_filename</span><span class="s">)</span> <span class="p">{</span> <span class="c1">#请求的文件不存在，就反向代理
+</span><span class="c1"></span>    				<span class="kn">proxy_pass</span> <span class="s">http://127.0.0.1:8083</span><span class="p">;</span>
+    				<span class="kn">break</span><span class="p">;</span>
+    			<span class="p">}</span>
+        
+        <span class="p">}</span>
+        <span class="kn">location</span> <span class="s">/extra_tool</span> <span class="p">{</span>
+           <span class="kn">root</span> <span class="s">/www/static/</span><span class="p">;</span>
+    		 	 <span class="kn">if</span> <span class="s">(!-f</span> <span class="nv">$request_filename</span><span class="s">)</span> <span class="p">{</span> <span class="c1">#请求的文件不存在，就反向代理
+</span><span class="c1"></span>    				<span class="kn">proxy_pass</span> <span class="s">http://127.0.0.1:8083</span><span class="p">;</span>
+    				<span class="kn">break</span><span class="p">;</span>
+    			<span class="p">}</span>
+        <span class="p">}</span>
+        
+       
+         
+        <span class="kn">location</span> <span class="s">/</span> <span class="p">{</span>
+          <span class="kn">error_page</span>  <span class="mi">500</span> <span class="mi">502</span> <span class="mi">503</span> <span class="mi">504</span>  <span class="s">https://www.abc.com/lib/500.html</span><span class="p">;</span>
+        
+    	    <span class="kn">rewrite</span> <span class="s">^/(.*)</span>$ <span class="s">/</span><span class="nv">$1</span> <span class="s">break</span><span class="p">;</span>
+          <span class="kn">proxy_pass</span>   <span class="s">http://1.15.108.110:8083/</span><span class="p">;</span>
+        <span class="p">}</span>
+        
+        
+ 
+        <span class="kn">location</span> <span class="p">~</span> <span class="sr">/\.</span>
+        <span class="p">{</span>
+            <span class="kn">deny</span> <span class="s">all</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kn">access_log</span>  <span class="s">/www/wwwlogs/access.log</span><span class="p">;</span>
+    <span class="p">}</span>         
+
+<span class="kn">server</span>
+    <span class="p">{</span>
+        <span class="kn">listen</span> <span class="mi">80</span><span class="p">;</span>
+        <span class="kn">server_name</span> <span class="s">www.abc.com</span><span class="p">;</span>
+    
+     
+       <span class="kn">tcp_nodelay</span>  <span class="no">on</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">Host</span> <span class="nv">$host</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Real-IP</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">REMOTE-HOST</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Forwarded-For</span> <span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+ 
+        
+      <span class="kn">rewrite</span> <span class="s">^(.*)</span>$ <span class="s">https://</span><span class="nv">${server_name}$1</span> <span class="s">permanent</span><span class="p">;</span>  
+      
+      <span class="kn">location</span> <span class="p">~</span> <span class="sr">.*\.(js|css)$</span> <span class="p">{</span>
+         <span class="kn">proxy_pass</span> <span class="s">http://127.0.0.1:8080</span><span class="p">;</span>
+     <span class="p">}</span>
+        
+        
+        
+      
+
+ 
+        <span class="kn">location</span> <span class="p">~</span> <span class="sr">/\.</span>
+        <span class="p">{</span>
+            <span class="kn">deny</span> <span class="s">all</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kn">access_log</span>  <span class="s">/www/wwwlogs/access.log</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="kn">server</span> <span class="p">{</span>
+      <span class="kn">listen</span> <span class="mi">80</span><span class="p">;</span>
+      <span class="kn">server_name</span> <span class="s">novel_backend.lyr-2000.xyz</span><span class="p">;</span>
+      <span class="kn">location</span> <span class="s">/</span> <span class="p">{</span>
+          
+          <span class="kn">proxy_pass</span>   <span class="s">http://localhost:8041/</span><span class="p">;</span>
+      <span class="p">}</span>
+    
+    <span class="p">}</span>
+    <span class="kn">server</span>
+    <span class="p">{</span>
+        <span class="kn">listen</span> <span class="mi">80</span><span class="p">;</span>
+        <span class="kn">server_name</span> <span class="s">m.lyr-2000.xyz</span><span class="p">;</span>
+        <span class="c1"># index index.html index.htm index.php;
+</span><span class="c1"></span>        <span class="c1"># root  /www/server/phpmyadmin;
+</span><span class="c1"></span>
+        <span class="c1">#error_page   404   /404.html;
+</span><span class="c1"></span>        <span class="c1"># include enable-php.conf;
+</span><span class="c1"></span>     
+      
+        
+        <span class="kn">location</span> <span class="s">/</span> <span class="p">{</span>
+          
+        
+    	    <span class="kn">rewrite</span> <span class="s">^/(.*)</span>$ <span class="s">/</span><span class="nv">$1</span> <span class="s">break</span><span class="p">;</span>
+          <span class="kn">proxy_pass</span>   <span class="s">http://1.15.108.110:8089/</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kn">location</span> <span class="p">~</span> <span class="sr">/\.</span>
+        <span class="p">{</span>
+            <span class="kn">deny</span> <span class="s">all</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kn">access_log</span>  <span class="s">/www/wwwlogs/access.log</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="kn">server</span>
+    <span class="p">{</span>
+        <span class="kn">listen</span> <span class="mi">80</span><span class="p">;</span>
+        <span class="kn">server_name</span> <span class="s">cloud.lyr-2000.xyz</span><span class="p">;</span>
+        <span class="kn">location</span> <span class="s">/</span> <span class="p">{</span>
+    	    <span class="kn">rewrite</span> <span class="s">^/(.*)</span>$ <span class="s">/</span><span class="nv">$1</span> <span class="s">break</span><span class="p">;</span>
+          <span class="kn">proxy_pass</span>   <span class="s">http://1.15.108.110:5212/</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="kn">location</span> <span class="p">~</span> <span class="sr">/\.</span>
+        <span class="p">{</span>
+            <span class="kn">deny</span> <span class="s">all</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="kn">access_log</span>  <span class="s">/www/wwwlogs/access_nextcloud.log</span><span class="p">;</span>
+    <span class="p">}</span>
+    
+    
+    
+    <span class="kn">server</span>
+    <span class="p">{</span>
+        <span class="kn">listen</span> <span class="mi">80</span><span class="p">;</span>
+        <span class="kn">server_name</span> <span class="s">coderead.lyr-2000.xyz</span><span class="p">;</span>
+        <span class="kn">tcp_nodelay</span>  <span class="no">on</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">Host</span> <span class="nv">$host</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Real-IP</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">REMOTE-HOST</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Forwarded-For</span> <span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+ 
+        
+ 
+        <span class="kn">location</span> <span class="s">/</span> <span class="p">{</span>
+          
+        
+    	    <span class="c1"># rewrite ^/(.*)$ /$1 break;
+</span><span class="c1"></span>          <span class="kn">proxy_pass</span>   <span class="s">http://localhost:8686/</span><span class="p">;</span>
+          <span class="kn">proxy_cookie_path</span> <span class="p">~</span><span class="sr">*^/.*</span> <span class="s">/</span><span class="p">;</span>
+        <span class="p">}</span>
+ 
+        <span class="kn">location</span> <span class="p">~</span> <span class="sr">/\.</span>
+        <span class="p">{</span>
+            <span class="kn">deny</span> <span class="s">all</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kn">access_log</span>  <span class="s">/www/wwwlogs/access.log</span><span class="p">;</span>
+    <span class="p">}</span>    
+    
+     <span class="kn">server</span>
+    <span class="p">{</span>
+        <span class="kn">listen</span> <span class="mi">80</span><span class="p">;</span>
+        <span class="kn">server_name</span> <span class="s">cet.lyr-2000.xyz</span><span class="p">;</span>
+        <span class="kn">tcp_nodelay</span>  <span class="no">on</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">Host</span> <span class="nv">$host</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Real-IP</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">REMOTE-HOST</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Forwarded-For</span> <span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+ 
+        
+ 
+        <span class="kn">location</span> <span class="s">/</span> <span class="p">{</span>
+          
+        
+    	    <span class="c1"># rewrite ^/(.*)$ /$1 break;
+</span><span class="c1"></span>          <span class="kn">proxy_pass</span>   <span class="s">http://localhost:8088/</span><span class="p">;</span>
+          <span class="kn">proxy_cookie_path</span> <span class="p">~</span><span class="sr">*^/.*</span> <span class="s">/</span><span class="p">;</span>
+        <span class="p">}</span>
+ 
+        <span class="kn">location</span> <span class="p">~</span> <span class="sr">/\.</span>
+        <span class="p">{</span>
+            <span class="kn">deny</span> <span class="s">all</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kn">access_log</span>  <span class="s">/www/wwwlogs/access.log</span><span class="p">;</span>
+    <span class="p">}</span>    
+    
+     
+     
+     
+     
+     
+     <span class="kn">server</span> <span class="p">{</span>
+       <span class="kn">listen</span>       <span class="mi">443</span> <span class="s">ssl</span> <span class="s">http2</span><span class="p">;</span>
+       <span class="kn">server_name</span>  <span class="s">www.abc.com</span><span class="p">;</span>
+       
+       <span class="kn">ssl_certificate</span>      <span class="s">1_www.abc.com_bundle.crt</span><span class="p">;</span>
+       <span class="kn">ssl_certificate_key</span>  <span class="s">2_www.abc.com.key</span><span class="p">;</span>
+
+       <span class="kn">ssl_session_cache</span>    <span class="s">shared:SSL:1m</span><span class="p">;</span>
+       <span class="kn">ssl_session_timeout</span> <span class="mi">5m</span><span class="p">;</span>
+       <span class="kn">ssl_protocols</span> <span class="s">TLSv1</span> <span class="s">TLSv1.1</span> <span class="s">TLSv1.2</span><span class="p">;</span> <span class="c1">#按照这个协议配置
+</span><span class="c1"></span>       <span class="kn">ssl_ciphers</span> <span class="s">ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE</span><span class="p">;</span><span class="c1">#按照这个套件配置
+</span><span class="c1"></span>       <span class="kn">ssl_prefer_server_ciphers</span>  <span class="no">on</span><span class="p">;</span>
+       
+       
+       
+        <span class="kn">proxy_set_header</span>   <span class="s">Host</span> <span class="nv">$host</span><span class="p">;</span>
+        <span class="kn">proxy_hide_header</span> <span class="s">Server</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Real-IP</span>      <span class="nv">$remote_addr</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Forwarded-For</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+ 
+       
+       
+       
+     <span class="c1">#if ($http_user_agent ~* (mobile|nokia|iphone|ipad|android|samsung|htc|blackberry)) {
+</span><span class="c1"></span>      <span class="c1">#  return 302    &#39;http://m.lyr-2000.xyz&#39; ;
+</span><span class="c1"></span>      <span class="c1">#}
+</span><span class="c1"></span>
+
+        <span class="kn">location</span> <span class="s">/css</span> <span class="p">{</span>
+          <span class="kn">root</span> <span class="s">/www/static/</span><span class="p">;</span>
+    			<span class="kn">if</span> <span class="s">(!-f</span> <span class="nv">$request_filename</span><span class="s">)</span> <span class="p">{</span> <span class="c1">#请求的文件不存在，就反向代理
+</span><span class="c1"></span>    				<span class="kn">proxy_pass</span> <span class="s">http://127.0.0.1:8080</span><span class="p">;</span>
+    				 
+ 
+    				<span class="kn">break</span><span class="p">;</span>
+    			<span class="p">}</span>
+        
+        <span class="p">}</span>
+        
+        <span class="kn">location</span> <span class="p">~</span> <span class="sr">^/favicon\.ico$</span> <span class="p">{</span>
+
+           <span class="kn">root</span>    <span class="s">/www/static/</span><span class="p">;</span>
+
+        <span class="p">}</span>
+        
+        <span class="kn">location</span> <span class="s">/js</span> <span class="p">{</span>
+          <span class="kn">root</span> <span class="s">/www/static/</span><span class="p">;</span>
+    			<span class="kn">if</span> <span class="s">(!-f</span> <span class="nv">$request_filename</span><span class="s">)</span> <span class="p">{</span> <span class="c1">#请求的文件不存在，就反向代理
+</span><span class="c1"></span>    				<span class="kn">proxy_pass</span> <span class="s">http://127.0.0.1:8080</span><span class="p">;</span>
+    			  
+    				<span class="kn">break</span><span class="p">;</span>
+    			<span class="p">}</span>
+        
+        <span class="p">}</span>
+         <span class="kn">location</span> <span class="s">/fonts</span> <span class="p">{</span>
+          <span class="kn">root</span> <span class="s">/www/static/</span><span class="p">;</span>
+    			<span class="kn">if</span> <span class="s">(!-f</span> <span class="nv">$request_filename</span><span class="s">)</span> <span class="p">{</span> <span class="c1">#请求的文件不存在，就反向代理
+</span><span class="c1"></span>    				<span class="kn">proxy_pass</span> <span class="s">http://127.0.0.1:8080</span><span class="p">;</span>
+    				<span class="kn">break</span><span class="p">;</span>
+    			<span class="p">}</span>
+        
+        <span class="p">}</span>
+         <span class="kn">location</span> <span class="s">/img</span> <span class="p">{</span>
+          <span class="kn">root</span> <span class="s">/www/static/</span><span class="p">;</span>
+    			<span class="kn">if</span> <span class="s">(!-f</span> <span class="nv">$request_filename</span><span class="s">)</span> <span class="p">{</span> <span class="c1">#请求的文件不存在，就反向代理
+</span><span class="c1"></span>    				<span class="kn">proxy_pass</span> <span class="s">http://127.0.0.1:8080</span><span class="p">;</span>
+    				<span class="kn">break</span><span class="p">;</span>
+    			<span class="p">}</span>
+        
+        <span class="p">}</span>
+         <span class="kn">location</span> <span class="s">/lib</span> <span class="p">{</span>
+          <span class="kn">root</span> <span class="s">/www/static/</span><span class="p">;</span>
+    			<span class="kn">if</span> <span class="s">(!-f</span> <span class="nv">$request_filename</span><span class="s">)</span> <span class="p">{</span> <span class="c1">#请求的文件不存在，就反向代理
+</span><span class="c1"></span>    				<span class="kn">proxy_pass</span> <span class="s">http://127.0.0.1:8080</span><span class="p">;</span>
+    				<span class="kn">break</span><span class="p">;</span>
+    			<span class="p">}</span>
+        
+        <span class="p">}</span>
+        <span class="kn">location</span> <span class="s">/extra_tool</span> <span class="p">{</span>
+           <span class="kn">root</span> <span class="s">/www/static/</span><span class="p">;</span>
+    		 	 <span class="kn">if</span> <span class="s">(!-f</span> <span class="nv">$request_filename</span><span class="s">)</span> <span class="p">{</span> <span class="c1">#请求的文件不存在，就反向代理
+</span><span class="c1"></span>    				<span class="kn">proxy_pass</span> <span class="s">http://127.0.0.1:8080</span><span class="p">;</span>
+    				<span class="kn">break</span><span class="p">;</span>
+    			<span class="p">}</span>
+        <span class="p">}</span>
+        
+       
+         
+        <span class="kn">location</span> <span class="s">/</span> <span class="p">{</span>
+          <span class="kn">error_page</span>  <span class="mi">500</span> <span class="mi">502</span> <span class="mi">503</span> <span class="mi">504</span>  <span class="s">https://www.abc.com/lib/500.html</span><span class="p">;</span>
+        
+    	    <span class="kn">rewrite</span> <span class="s">^/(.*)</span>$ <span class="s">/</span><span class="nv">$1</span> <span class="s">break</span><span class="p">;</span>
+          <span class="kn">proxy_pass</span>   <span class="s">http://1.15.108.110:8080/</span><span class="p">;</span>
+        <span class="p">}</span>
+        
+      
+    <span class="p">}</span>
+     
+     
+     
+     
+     
+     
+     
+
+    
+<span class="kn">include</span> <span class="s">/www/server/panel/vhost/nginx/*.conf</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+
+
+</code></pre></td></tr></table>
+</div>
+</div><p>把证书直接丢到</p>
+<p>/www/server/nginx/conf 目录下面</p>
+<p>https配置=&gt;</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-nginx" data-lang="nginx"><span class="k">server</span> <span class="p">{</span>
+       <span class="kn">listen</span>       <span class="mi">443</span> <span class="s">ssl</span> <span class="s">http2</span><span class="p">;</span>
+       <span class="kn">server_name</span>  <span class="s">admin.lyr-2000.xyz</span><span class="p">;</span>
+       <span class="kn">ssl_certificate</span>      <span class="s">admin.lyr-2000.xyz.crt</span><span class="p">;</span>
+       <span class="kn">ssl_certificate_key</span>  <span class="s">admin.lyr-2000.xyz.key</span><span class="p">;</span>
+       <span class="kn">ssl_session_cache</span>    <span class="s">shared:SSL:1m</span><span class="p">;</span>
+       <span class="kn">ssl_session_timeout</span> <span class="mi">5m</span><span class="p">;</span>
+       <span class="kn">ssl_protocols</span> <span class="s">TLSv1</span> <span class="s">TLSv1.1</span> <span class="s">TLSv1.2</span><span class="p">;</span> <span class="c1">#按照这个协议配置
+</span><span class="c1"></span>       <span class="kn">ssl_ciphers</span> <span class="s">ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE</span><span class="p">;</span><span class="c1">#按照这个套件配置
+</span><span class="c1"></span>       <span class="kn">ssl_prefer_server_ciphers</span>  <span class="no">on</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span>   <span class="s">Host</span> <span class="nv">$host</span><span class="p">;</span>
+        <span class="kn">proxy_hide_header</span> <span class="s">Server</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Real-IP</span>      <span class="nv">$remote_addr</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Forwarded-For</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+     <span class="c1">#if ($http_user_agent ~* (mobile|nokia|iphone|ipad|android|samsung|htc|blackberry)) {
+</span><span class="c1"></span>      <span class="c1">#  return 302    &#39;http://m.lyr-2000.xyz&#39; ;
+</span><span class="c1"></span>      <span class="c1">#}
+</span><span class="c1"></span>        <span class="kn">location</span> <span class="s">/</span> <span class="p">{</span>
+          <span class="kn">error_page</span>  <span class="mi">500</span> <span class="mi">502</span> <span class="mi">503</span> <span class="mi">504</span>  <span class="s">https://www.lyr-2000.xyz/lib/500.html</span><span class="p">;</span>
+        
+          <span class="kn">rewrite</span> <span class="s">^/(.*)</span>$ <span class="s">/</span><span class="nv">$1</span> <span class="s">break</span><span class="p">;</span>
+          <span class="kn">proxy_pass</span>   <span class="s">http://1.15.108.110:8081/</span><span class="p">;</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+     
+</code></pre></td></tr></table>
+</div>
+</div><p>用 springboot的话 也可以，但是 好像没办法 同一台服务器 跑多个 https 可能会端口占用，最好 还是 配到 nginx，然后让 nginx做域名转发</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-02-13
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/%E6%90%AD%E5%BB%BAnextcloud/%E6%90%AD%E5%BB%BAnextcloud%E8%AE%B0%E5%BD%95/">
+            <span class="next-text nav-default">linux安装教程</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+<script 
+ defer
+ async  src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+<script src="/js/custom/docsearch.min.js" ></script>
+<script>
+ 
+  docsearch({
+    apiKey: "2991187e127fb95e62db841ea946bc06",
+    indexName: "blog",
+    appId: "UVGAU2QDTQ",
+    inputSelector: '.docsearch-input',
+    debug: false,
+  });
+  docsearch({
+    apiKey: "2991187e127fb95e62db841ea946bc06",
+    indexName: "blog",
+    appId: "UVGAU2QDTQ",
+    inputSelector: '.mob-docsearch-input',
+    debug: false,
+  });
+ 
+</script>
+</body>
+</html>

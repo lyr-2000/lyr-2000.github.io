@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>阿里OSS 断点续传 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="阿里OSS 断点续传 【后端 java代码】 断点续传思路 数据库记录最后传输成功的 那个 序列号 seq 客户端停止上传了 客户端重新上传，发送数据包给服务器校验" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/java/%E5%A4%A7%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E4%BC%98%E5%8C%96/%E9%98%BF%E9%87%8Coss-%E6%96%AD%E7%82%B9%E7%BB%AD%E4%BC%A0%E5%AE%9E%E7%8E%B0/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="阿里OSS 断点续传" />
+<meta property="og:description" content="阿里OSS 断点续传 【后端 java代码】 断点续传思路 数据库记录最后传输成功的 那个 序列号 seq 客户端停止上传了 客户端重新上传，发送数据包给服务器校验" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/java/%E5%A4%A7%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E4%BC%98%E5%8C%96/%E9%98%BF%E9%87%8Coss-%E6%96%AD%E7%82%B9%E7%BB%AD%E4%BC%A0%E5%AE%9E%E7%8E%B0/" />
+<meta property="article:published_time" content="2021-08-14T22:42:48+08:00" />
+<meta property="article:modified_time" content="2021-08-14T22:42:48+08:00" />
+<meta itemprop="name" content="阿里OSS 断点续传">
+<meta itemprop="description" content="阿里OSS 断点续传 【后端 java代码】 断点续传思路 数据库记录最后传输成功的 那个 序列号 seq 客户端停止上传了 客户端重新上传，发送数据包给服务器校验">
+<meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
+<meta itemprop="wordCount" content="1713">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="阿里OSS 断点续传"/>
+<meta name="twitter:description" content="阿里OSS 断点续传 【后端 java代码】 断点续传思路 数据库记录最后传输成功的 那个 序列号 seq 客户端停止上传了 客户端重新上传，发送数据包给服务器校验"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">大佬</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">大佬</a>
+      </li><li style="menu-item;list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">阿里OSS 断点续传</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-14 </span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#阿里oss-断点续传-后端-java代码">阿里OSS 断点续传 【后端 java代码】</a></li>
+            <li><a href="#前端代码示例">前端代码示例</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h3 id="阿里oss-断点续传-后端-java代码">阿里OSS 断点续传 【后端 java代码】</h3>
+<h4 id="断点续传思路">断点续传思路</h4>
+<ol>
+<li>数据库记录最后传输成功的 那个 序列号 seq</li>
+<li>客户端停止上传了</li>
+<li>客户端重新上传，发送数据包给服务器校验，服务器从数据库中读取 记录，没有读取到记录，就重新上传</li>
+<li>如果发现已经有记录到 seq了，下次 直接从 seq + 1 的数据包开始上传。</li>
+</ol>
+<p>断点续传因此 需要数据库辅助。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="nn">io.github.lyr2000.dissertation.util</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">cn.hutool.crypto.SecureUtil</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.aliyun.oss.OSS</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.aliyun.oss.model.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">io.github.lyr2000.dissertation.components.AliYunOssPropertis</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">lombok.extern.slf4j.Slf4j</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.multipart.MultipartFile</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.servlet.http.HttpSession</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
+
+<span class="cm">/**
+</span><span class="cm"> * @author lyr
+</span><span class="cm"> * @description ossUtil
+</span><span class="cm"> * @create 2021-11-19 18:54
+</span><span class="cm"> */</span>
+<span class="nd">@Slf4j</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">AliOssUtil</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">String</span> <span class="nf">generateFileKey</span><span class="o">(</span><span class="n">String</span> <span class="n">fileName</span><span class="o">,</span> <span class="n">String</span> <span class="n">uid</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">SecureUtil</span><span class="o">.</span><span class="na">sha1</span><span class="o">(</span><span class="n">fileName</span><span class="o">)</span> <span class="o">+</span> <span class="n">uid</span> <span class="o">+</span> <span class="n">FileUtil</span><span class="o">.</span><span class="na">getUserFileName</span><span class="o">(</span><span class="n">fileName</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+</span><span class="cm">     * 生成文件 key
+</span><span class="cm">     *
+</span><span class="cm">     * @param fileName
+</span><span class="cm">     * @return
+</span><span class="cm">     */</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">String</span> <span class="nf">generateFileKey</span><span class="o">(</span><span class="n">String</span> <span class="n">fileName</span><span class="o">,</span> <span class="n">HttpSession</span> <span class="n">session</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//将用户的 sessionId 和 文件名拼接一起，隔离不同用户的文件上传，使得全局唯一
+</span><span class="c1"></span>        <span class="n">String</span> <span class="n">userId</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">getId</span><span class="o">();</span>
+        <span class="c1">// F://app/a.txt
+</span><span class="c1"></span>        <span class="c1">// aabcccxxxa.txt
+</span><span class="c1"></span>        <span class="c1">// return SecureUtil.sha1(fileName)+userId + FileUtil.getUserFileName(fileName);
+</span><span class="c1"></span>        <span class="k">return</span> <span class="n">generateFileKey</span><span class="o">(</span><span class="n">fileName</span><span class="o">,</span> <span class="n">userId</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">String</span> <span class="nf">generateUploadId</span><span class="o">(</span><span class="n">OSS</span> <span class="n">client</span><span class="o">,</span> <span class="n">String</span> <span class="n">bucketName</span><span class="o">,</span> <span class="n">String</span> <span class="n">key</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">InitiateMultipartUploadRequest</span> <span class="n">request</span> <span class="o">=</span> <span class="k">new</span> <span class="n">InitiateMultipartUploadRequest</span><span class="o">(</span><span class="n">bucketName</span><span class="o">,</span> <span class="n">key</span><span class="o">);</span>
+        <span class="n">InitiateMultipartUploadResult</span> <span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="na">initiateMultipartUpload</span><span class="o">(</span><span class="n">request</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="na">getUploadId</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+</span><span class="cm">     * 合并所有文件分片
+</span><span class="cm">     * @param client     上传客户端
+</span><span class="cm">     * @param bucketName 桶名字
+</span><span class="cm">     * @param key        文件的ID
+</span><span class="cm">     * @param uploadId   全局上传 ID ,token
+</span><span class="cm">     */</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">completeMultipartUpload</span><span class="o">(</span><span class="n">OSS</span> <span class="n">client</span><span class="o">,</span> <span class="n">String</span> <span class="n">bucketName</span><span class="o">,</span>
+                                               <span class="n">String</span> <span class="n">key</span><span class="o">,</span> <span class="n">String</span> <span class="n">uploadId</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">ListPartsRequest</span> <span class="n">listPartsRequest</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ListPartsRequest</span><span class="o">(</span><span class="n">bucketName</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">uploadId</span><span class="o">);</span>
+        <span class="n">PartListing</span> <span class="n">partListing</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="na">listParts</span><span class="o">(</span><span class="n">listPartsRequest</span><span class="o">);</span>
+        <span class="n">List</span><span class="o">&lt;</span><span class="n">PartSummary</span><span class="o">&gt;</span> <span class="n">parts</span> <span class="o">=</span> <span class="n">partListing</span><span class="o">.</span><span class="na">getParts</span><span class="o">();</span>
+        <span class="kt">int</span> <span class="n">partCnt</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+
+        <span class="c1">// String[] list = new String[partCnt];
+</span><span class="c1"></span>        <span class="n">List</span><span class="o">&lt;</span><span class="n">PartETag</span><span class="o">&gt;</span> <span class="n">list</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;(</span><span class="n">partCnt</span><span class="o">);</span>
+        <span class="c1">//获取所有已经上传完成的文件分片
+</span><span class="c1"></span>        <span class="k">for</span> <span class="o">(</span><span class="n">PartSummary</span> <span class="n">summary</span> <span class="o">:</span> <span class="n">parts</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">String</span> <span class="n">eTag</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="na">getETag</span><span class="o">();</span>
+            <span class="kt">int</span> <span class="n">partNumber</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="na">getPartNumber</span><span class="o">();</span>
+            <span class="n">list</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">PartETag</span><span class="o">(</span><span class="n">partNumber</span><span class="o">,</span> <span class="n">eTag</span><span class="o">));</span>
+        <span class="o">}</span>
+        <span class="n">CompleteMultipartUploadRequest</span> <span class="n">end</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CompleteMultipartUploadRequest</span><span class="o">(</span><span class="n">bucketName</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">uploadId</span><span class="o">,</span> <span class="n">list</span><span class="o">);</span>
+        
+        <span class="c1">//合并所有的 文件分片
+</span><span class="c1"></span>        <span class="n">client</span><span class="o">.</span><span class="na">completeMultipartUpload</span><span class="o">(</span><span class="n">end</span><span class="o">);</span>
+        <span class="c1">// res.get
+</span><span class="c1"></span>
+        <span class="c1">// new PartETag()
+</span><span class="c1"></span>    <span class="o">}</span>
+
+    <span class="cm">/**
+</span><span class="cm">     *  上传文件分片的封装
+</span><span class="cm">     * @param f           文件句柄
+</span><span class="cm">     * @param uploadId    上传 的文件ID
+</span><span class="cm">     * @param fileKeyName 文件名字
+</span><span class="cm">     * @param seqCnt      第几个序列
+</span><span class="cm">     * @param oss         上传 client
+</span><span class="cm">     * @param prop        配置属性
+</span><span class="cm">     */</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">uploadSlice</span><span class="o">(</span><span class="n">MultipartFile</span> <span class="n">f</span><span class="o">,</span>
+                                   <span class="n">String</span> <span class="n">uploadId</span><span class="o">,</span>
+                                   <span class="n">String</span> <span class="n">fileKeyName</span><span class="o">,</span>
+                                   <span class="kt">int</span> <span class="n">seqCnt</span><span class="o">,</span>
+                                   <span class="n">OSS</span> <span class="n">oss</span><span class="o">,</span> <span class="n">AliYunOssPropertis</span> <span class="n">prop</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+        <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;upload id = {}, fileKeyName = {}, seq = {}&#34;</span><span class="o">,</span> <span class="n">uploadId</span><span class="o">,</span> <span class="n">fileKeyName</span><span class="o">,</span> <span class="n">seqCnt</span><span class="o">);</span>
+        <span class="n">UploadPartRequest</span> <span class="n">uploadPartRequest</span> <span class="o">=</span> <span class="k">new</span> <span class="n">UploadPartRequest</span><span class="o">();</span>
+        <span class="n">uploadPartRequest</span><span class="o">.</span><span class="na">setKey</span><span class="o">(</span><span class="n">fileKeyName</span><span class="o">);</span>
+        <span class="n">uploadPartRequest</span><span class="o">.</span><span class="na">setBucketName</span><span class="o">(</span><span class="n">prop</span><span class="o">.</span><span class="na">getBucketName</span><span class="o">());</span>
+        <span class="n">uploadPartRequest</span><span class="o">.</span><span class="na">setUploadId</span><span class="o">(</span><span class="n">uploadId</span><span class="o">);</span>
+        <span class="n">uploadPartRequest</span><span class="o">.</span><span class="na">setPartSize</span><span class="o">(</span><span class="n">f</span><span class="o">.</span><span class="na">getSize</span><span class="o">());</span>
+        <span class="n">uploadPartRequest</span><span class="o">.</span><span class="na">setPartNumber</span><span class="o">(</span><span class="n">seqCnt</span><span class="o">);</span>
+        <span class="c1">//设置文件流
+</span><span class="c1"></span>        <span class="n">uploadPartRequest</span><span class="o">.</span><span class="na">setInputStream</span><span class="o">(</span><span class="n">f</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">());</span>
+        <span class="n">UploadPartResult</span> <span class="n">uploadPartResult</span> <span class="o">=</span> <span class="n">oss</span><span class="o">.</span><span class="na">uploadPart</span><span class="o">(</span><span class="n">uploadPartRequest</span><span class="o">);</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">uploadPartResult</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;result = {}&#34;</span><span class="o">,</span> <span class="n">uploadPartResult</span><span class="o">);</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+<span class="o">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="nn">io.github.lyr2000.dissertation.components</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">com.aliyun.oss.OSS</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.aliyun.oss.OSSClientBuilder</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">lombok.Data</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.boot.context.properties.ConfigurationProperties</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Configuration</span><span class="o">;</span>
+
+<span class="cm">/**
+</span><span class="cm"> * @author lyr
+</span><span class="cm"> * @description 阿里配置
+</span><span class="cm"> * @create 2021-11-19 18:01
+</span><span class="cm"> */</span>
+<span class="nd">@Data</span>
+<span class="nd">@Configuration</span>
+<span class="nd">@ConfigurationProperties</span><span class="o">(</span><span class="n">prefix</span> <span class="o">=</span> <span class="s">&#34;aliyun.oss&#34;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">AliYunOssPropertis</span> <span class="o">{</span>
+    <span class="c1">// @Value(&#34;${aliyun.oss.accessKey}&#34;)
+</span><span class="c1"></span>    <span class="kd">private</span> <span class="n">String</span> <span class="n">accessKey</span><span class="o">;</span>
+
+    <span class="c1">// @Value(&#34;${aliyun.oss.accessKeySecret}&#34;)
+</span><span class="c1"></span>    <span class="kd">private</span> <span class="n">String</span> <span class="n">accessKeySecret</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">bucketName</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">endpoint</span><span class="o">;</span>
+
+
+    <span class="kd">public</span> <span class="n">OSS</span> <span class="nf">getOssClient</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">OSSClientBuilder</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">build</span><span class="o">(</span><span class="n">endpoint</span><span class="o">,</span> <span class="n">accessKey</span><span class="o">,</span> <span class="n">accessKeySecret</span><span class="o">);</span>
+
+    <span class="o">}</span>
+
+
+<span class="o">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="nn">io.github.lyr2000.dissertation.controller.test</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">com.aliyun.oss.OSS</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">io.github.lyr2000.common.dto.R</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">io.github.lyr2000.common.dto.Result</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">io.github.lyr2000.dissertation.components.AliYunOssPropertis</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">io.github.lyr2000.dissertation.util.AliOssUtil</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">lombok.extern.slf4j.Slf4j</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.beans.factory.annotation.Autowired</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.beans.factory.annotation.Value</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Profile</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.multipart.MultipartFile</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.annotation.PostConstruct</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.servlet.http.HttpSession</span><span class="o">;</span>
+
+<span class="cm">/**
+</span><span class="cm"> * @author lyr
+</span><span class="cm"> * @description fileTest
+</span><span class="cm"> * @create 2021-11-18 23:44
+</span><span class="cm"> */</span>
+<span class="nd">@Slf4j</span>
+<span class="nd">@RestController</span>
+<span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">&#34;/test/api/file&#34;</span><span class="o">)</span>
+<span class="nd">@Profile</span><span class="o">(</span><span class="s">&#34;test&#34;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">FileTestController</span> <span class="o">{</span>
+    <span class="nd">@Value</span><span class="o">(</span><span class="s">&#34;D:/ASUS/Desktop/app/&#34;</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">FILE_DIR</span><span class="o">;</span>
+
+    <span class="nd">@PostConstruct</span>
+    <span class="kt">void</span> <span class="nf">init</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;test 文件上传测试开启,本地测试路径： = {}&#34;</span><span class="o">,</span> <span class="n">FILE_DIR</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="n">AliYunOssPropertis</span> <span class="n">propertis</span><span class="o">;</span>
+
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">&#34;/get-uploadId&#34;</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="n">Result</span> <span class="nf">getUploadId</span><span class="o">(</span><span class="nd">@RequestParam</span> <span class="n">String</span> <span class="n">fileName</span><span class="o">,</span> <span class="n">HttpSession</span> <span class="n">session</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">String</span> <span class="n">fileKeyName</span> <span class="o">=</span> <span class="n">AliOssUtil</span><span class="o">.</span><span class="na">generateFileKey</span><span class="o">(</span><span class="n">fileName</span><span class="o">,</span> <span class="n">session</span><span class="o">);</span>
+        <span class="n">OSS</span> <span class="n">ossClient</span> <span class="o">=</span> <span class="n">propertis</span><span class="o">.</span><span class="na">getOssClient</span><span class="o">();</span>
+        <span class="k">try</span> <span class="o">{</span>
+
+            <span class="n">String</span> <span class="n">uploadId</span> <span class="o">=</span> <span class="n">AliOssUtil</span><span class="o">.</span><span class="na">generateUploadId</span><span class="o">(</span><span class="n">ossClient</span><span class="o">,</span> <span class="n">propertis</span><span class="o">.</span><span class="na">getBucketName</span><span class="o">(),</span> <span class="n">fileKeyName</span><span class="o">);</span>
+            <span class="c1">//返回生成的 uploadId 
+</span><span class="c1"></span>            <span class="k">return</span> <span class="n">R</span><span class="o">.</span><span class="na">res</span><span class="o">()</span>
+                    <span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;uploadId&#34;</span><span class="o">,</span> <span class="n">uploadId</span><span class="o">)</span>
+                    <span class="o">.</span><span class="na">end</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+            <span class="n">ossClient</span><span class="o">.</span><span class="na">shutdown</span><span class="o">();</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+
+    <span class="nd">@PostMapping</span><span class="o">(</span><span class="s">&#34;/oss-slice&#34;</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="n">Result</span> <span class="nf">uploadSliceFile</span><span class="o">(</span>
+            <span class="nd">@RequestParam</span><span class="o">(</span><span class="s">&#34;uploadId&#34;</span><span class="o">)</span> <span class="n">String</span> <span class="n">uploadId</span><span class="o">,</span>
+            <span class="nd">@RequestPart</span><span class="o">(</span><span class="s">&#34;file&#34;</span><span class="o">)</span> <span class="n">MultipartFile</span> <span class="n">file</span><span class="o">,</span>
+            <span class="nd">@RequestParam</span><span class="o">(</span><span class="s">&#34;targetName&#34;</span><span class="o">)</span> <span class="n">String</span> <span class="n">targetName</span><span class="o">,</span>
+            <span class="nd">@RequestParam</span><span class="o">(</span><span class="s">&#34;seq&#34;</span><span class="o">)</span> <span class="n">Integer</span> <span class="n">seq</span><span class="o">,</span>
+            <span class="nd">@RequestParam</span><span class="o">(</span><span class="s">&#34;total&#34;</span><span class="o">)</span> <span class="n">Integer</span> <span class="n">total</span><span class="o">,</span>
+            <span class="n">HttpSession</span> <span class="n">session</span>
+    <span class="o">)</span> <span class="o">{</span>
+
+        <span class="n">String</span> <span class="n">fileKeyName</span> <span class="o">=</span> <span class="n">AliOssUtil</span><span class="o">.</span><span class="na">generateFileKey</span><span class="o">(</span><span class="n">targetName</span><span class="o">,</span> <span class="n">session</span><span class="o">);</span>
+
+        <span class="n">OSS</span> <span class="n">ossClient</span> <span class="o">=</span> <span class="n">propertis</span><span class="o">.</span><span class="na">getOssClient</span><span class="o">();</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">AliOssUtil</span><span class="o">.</span><span class="na">uploadSlice</span><span class="o">(</span><span class="n">file</span><span class="o">,</span> <span class="n">uploadId</span><span class="o">,</span> <span class="n">fileKeyName</span><span class="o">,</span> <span class="n">seq</span><span class="o">,</span> <span class="n">ossClient</span><span class="o">,</span> <span class="n">propertis</span><span class="o">);</span>
+            <span class="c1">//这里只能单线程上传， 如果多线程上传 到最后一个 ，最后一个上传完成 ，前面没有上传，就会有问题， 合并的话就要分离到另一个接口
+</span><span class="c1"></span>            <span class="k">if</span> <span class="o">(</span><span class="n">total</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">seq</span><span class="o">))</span> <span class="o">{</span>
+                <span class="c1">// 传输完成 , 合并所有分片
+</span><span class="c1"></span>                <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;传输完成，合并所有分片文件。&#34;</span><span class="o">);</span>
+                <span class="n">AliOssUtil</span><span class="o">.</span><span class="na">completeMultipartUpload</span><span class="o">(</span><span class="n">ossClient</span><span class="o">,</span><span class="n">propertis</span><span class="o">.</span><span class="na">getBucketName</span><span class="o">(),</span><span class="n">fileKeyName</span><span class="o">,</span><span class="n">uploadId</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;upload error msg = {}&#34;</span><span class="o">,</span><span class="n">e</span><span class="o">.</span><span class="na">getMessage</span><span class="o">());</span>
+            <span class="k">return</span> <span class="n">R</span><span class="o">.</span><span class="na">fail</span><span class="o">();</span>
+        <span class="o">}</span><span class="k">finally</span> <span class="o">{</span>
+
+            <span class="n">ossClient</span><span class="o">.</span><span class="na">shutdown</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">R</span><span class="o">.</span><span class="na">ok</span><span class="o">();</span>
+    <span class="o">}</span>
+
+ 
+
+<span class="o">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="前端代码示例">前端代码示例</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-html" data-lang="html"><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&#34;en&#34;</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&#34;UTF-8&#34;</span> <span class="p">/&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">http-equiv</span><span class="o">=</span><span class="s">&#34;X-UA-Compatible&#34;</span> <span class="na">content</span><span class="o">=</span><span class="s">&#34;IE=edge&#34;</span> <span class="p">/&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">name</span><span class="o">=</span><span class="s">&#34;viewport&#34;</span> <span class="na">content</span><span class="o">=</span><span class="s">&#34;width=device-width, initial-scale=1.0&#34;</span> <span class="p">/&gt;</span>
+    <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>Document<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&#34;https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js&#34;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">form</span> <span class="na">method</span><span class="o">=</span><span class="s">&#34;POST&#34;</span> <span class="na">enctype</span><span class="o">=</span><span class="s">&#34;multipart/form-data&#34;</span><span class="p">&gt;</span>
+      上传文件：
+      <span class="p">&lt;</span><span class="nt">input</span>
+        <span class="na">multiple</span>
+        <span class="na">id</span><span class="o">=</span><span class="s">&#34;file&#34;</span>
+        <span class="na">type</span><span class="o">=</span><span class="s">&#34;file&#34;</span>
+        <span class="na">name</span><span class="o">=</span><span class="s">&#34;file&#34;</span>
+        <span class="na">placeholder</span><span class="o">=</span><span class="s">&#34;上传文件&#34;</span>
+      <span class="p">/&gt;</span>
+      <span class="p">&lt;</span><span class="nt">button</span> <span class="na">id</span><span class="o">=</span><span class="s">&#34;upload&#34;</span> <span class="na">type</span><span class="o">=</span><span class="s">&#34;button&#34;</span><span class="p">&gt;</span>上传<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">form</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
+      <span class="nx">$</span><span class="p">(</span><span class="s2">&#34;#upload&#34;</span><span class="p">).</span><span class="nx">click</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+        <span class="nx">getUploadId</span><span class="p">();</span>
+		<span class="c1">//upload();
+</span><span class="c1"></span>      <span class="p">});</span>
+    <span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+	<span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
+		<span class="kd">function</span> <span class="nx">getUploadId</span><span class="p">()</span> <span class="p">{</span>
+		<span class="kd">let</span> <span class="nx">file</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;file&#34;</span><span class="p">).</span><span class="nx">files</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+			<span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+				<span class="nx">url</span><span class="o">:</span> <span class="s2">&#34;/test/api/file/get-uploadId?fileName=&#34;</span><span class="o">+</span><span class="nx">file</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
+				<span class="nx">type</span><span class="o">:</span> <span class="s2">&#34;post&#34;</span><span class="p">,</span>
+				<span class="nx">processData</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+				<span class="nx">contentType</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+			
+          <span class="p">}).</span><span class="nx">success</span><span class="p">((</span><span class="nx">res</span><span class="p">)=&gt;{</span>
+			<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">res</span><span class="p">);</span>
+			<span class="kd">let</span> <span class="nx">uploadId</span> <span class="o">=</span> <span class="nx">res</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">uploadId</span><span class="p">;</span>
+			<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;uploadId&#39;</span><span class="p">,</span><span class="nx">uploadId</span><span class="p">);</span>
+			<span class="c1">//
+</span><span class="c1"></span>			<span class="nx">upload</span><span class="p">(</span><span class="nx">uploadId</span><span class="p">)</span>
+		  
+		  <span class="p">})</span>
+		<span class="p">}</span>
+	<span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+
+    <span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
+      <span class="c1">//设置每个切片大小 ， 2M
+</span><span class="c1"></span>      <span class="kd">let</span> <span class="nx">bytesPerPiece</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">2</span><span class="p">;</span>
+
+      <span class="c1">//上传文件函数
+</span><span class="c1"></span>      <span class="kd">function</span> <span class="nx">upload</span><span class="p">(</span><span class="nx">uploadId</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">//获取上传文件
+</span><span class="c1"></span>        <span class="kd">let</span> <span class="nx">file</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;file&#34;</span><span class="p">).</span><span class="nx">files</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">file</span><span class="p">);</span>
+        <span class="kd">let</span> <span class="nx">start</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+          <span class="nx">end</span><span class="p">,</span>
+          <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+          <span class="nx">filesize</span> <span class="o">=</span> <span class="nx">file</span><span class="p">.</span><span class="nx">size</span><span class="p">,</span>
+          <span class="nx">name</span> <span class="o">=</span> <span class="nx">file</span><span class="p">.</span><span class="nx">name</span><span class="p">;</span>
+        <span class="c1">//计算切片总数
+</span><span class="c1"></span>        <span class="kd">let</span> <span class="nx">totalPieces</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">ceil</span><span class="p">(</span><span class="nx">filesize</span> <span class="o">/</span> <span class="nx">bytesPerPiece</span><span class="p">);</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;total pieces = &#39;</span><span class="p">,</span><span class="nx">totalPieces</span><span class="p">)</span>
+        <span class="kd">let</span> <span class="nx">ucnt</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">//用于记录第几个数据包
+</span><span class="c1"></span>        <span class="k">while</span> <span class="p">(</span><span class="nx">ucnt</span> <span class="o">&lt;</span> <span class="nx">totalPieces</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">end</span> <span class="o">=</span> <span class="nx">start</span> <span class="o">+</span> <span class="nx">bytesPerPiece</span><span class="p">;</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">end</span> <span class="o">&gt;</span> <span class="nx">filesize</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">end</span> <span class="o">=</span> <span class="nx">filesize</span><span class="p">;</span>
+          <span class="p">}</span>
+          <span class="kd">let</span> <span class="nx">chunk</span> <span class="o">=</span> <span class="nx">file</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="nx">start</span><span class="p">,</span> <span class="nx">end</span><span class="p">);</span>
+          <span class="kd">let</span> <span class="nx">formData</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">FormData</span><span class="p">();</span>
+          <span class="nx">ucnt</span><span class="o">++</span><span class="p">;</span>
+          <span class="kd">let</span> <span class="nx">filename</span> <span class="o">=</span> <span class="sb">`</span><span class="si">${</span><span class="nx">name</span><span class="si">}</span><span class="sb">-no-</span><span class="si">${</span><span class="nx">ucnt</span><span class="si">}</span><span class="sb">`</span><span class="p">;</span>
+		  <span class="nx">formData</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s1">&#39;uploadId&#39;</span><span class="p">,</span><span class="nx">uploadId</span><span class="p">);</span>
+          <span class="nx">formData</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s2">&#34;file&#34;</span><span class="p">,</span> <span class="nx">chunk</span><span class="p">,</span> <span class="nx">filename</span><span class="p">);</span>
+          <span class="c1">//seq 表示 第几个数据包
+</span><span class="c1"></span>          <span class="nx">formData</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s2">&#34;seq&#34;</span><span class="p">,</span> <span class="nx">ucnt</span><span class="p">);</span>
+          <span class="c1">//提交总分片数量
+</span><span class="c1"></span>          <span class="nx">formData</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s2">&#34;total&#34;</span><span class="p">,</span><span class="nx">totalPieces</span><span class="p">);</span>
+
+          <span class="c1">//最终名字
+</span><span class="c1"></span>          <span class="nx">formData</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s2">&#34;targetName&#34;</span><span class="p">,</span><span class="nx">name</span><span class="p">);</span>
+          <span class="c1">//原生js发请求
+</span><span class="c1"></span>          <span class="c1">//   let xhr = new XMLHttpRequest();
+</span><span class="c1"></span>          <span class="c1">//   xhr.onreadystatechange = function(){
+</span><span class="c1"></span>          <span class="c1">//       if(this.readyState == 4 &amp;&amp; this.status == 200){
+</span><span class="c1"></span>
+          <span class="c1">//       }
+</span><span class="c1"></span>          <span class="c1">//   }
+</span><span class="c1"></span>          <span class="c1">//   xhr.open(&#39;post&#39;, &#39;/api/upload&#39;, true);
+</span><span class="c1"></span>          <span class="c1">//   xhr.send(formData);
+</span><span class="c1"></span>          <span class="c1">// 使用jquery,需要将contentType，processData设置为false
+</span><span class="c1"></span>
+          <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&#34;upload --&#34;</span><span class="p">,</span> <span class="nx">formData</span><span class="p">,</span> <span class="nx">ucnt</span><span class="p">);</span>
+          <span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+            <span class="nx">url</span><span class="o">:</span> <span class="s2">&#34;/test/api/file/oss-slice&#34;</span><span class="p">,</span>
+            <span class="nx">type</span><span class="o">:</span> <span class="s2">&#34;post&#34;</span><span class="p">,</span>
+            <span class="nx">data</span><span class="o">:</span> <span class="nx">formData</span><span class="p">,</span>
+            <span class="nx">processData</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+            <span class="nx">contentType</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+            <span class="nx">async</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+          <span class="p">})</span>
+          <span class="p">.</span><span class="nx">success</span><span class="p">((</span><span class="nx">res</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&#34;ok .. {}&#34;</span><span class="p">,</span> <span class="nx">res</span><span class="p">);</span>
+            
+          <span class="p">})</span>
+          <span class="p">.</span><span class="nx">error</span><span class="p">((</span><span class="nx">err</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{});</span>
+          <span class="c1">//传输下一部分  
+</span><span class="c1"></span>          <span class="nx">start</span> <span class="o">=</span> <span class="nx">end</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-14
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/java/%E5%A4%A7%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E4%BC%98%E5%8C%96/%E9%98%BF%E9%87%8Coss-%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%B8%8A%E4%BC%A0%E8%B7%A8%E5%9F%9F%E9%97%AE%E9%A2%98/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">阿里OSS 客户端上传跨域问题</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/java/%E5%A4%A7%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E4%BC%98%E5%8C%96/%E9%98%BF%E9%87%8Coss-%E8%A7%86%E9%A2%91%E7%82%B9%E6%92%AD/">
+            <span class="next-text nav-default">阿里OSS 视频点播</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+<script 
+ defer
+ async  src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.c12618f9a600c40bd024996677e951e64d3487006775aeb22e200c990006c5c7.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js//custom/latex_plugin.js"></script>
+<script src="/js/custom/docsearch.min.js" ></script>
+<script>
+ 
+  docsearch({
+    apiKey: "2991187e127fb95e62db841ea946bc06",
+    indexName: "blog",
+    appId: "UVGAU2QDTQ",
+    inputSelector: '.docsearch-input',
+    debug: false,
+  });
+  docsearch({
+    apiKey: "2991187e127fb95e62db841ea946bc06",
+    indexName: "blog",
+    appId: "UVGAU2QDTQ",
+    inputSelector: '.mob-docsearch-input',
+    debug: false,
+  });
+ 
+</script>
+</body>
+</html>
