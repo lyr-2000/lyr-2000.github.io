@@ -3,6 +3,7 @@
   // 添加 button 
   // console.log('add')
   window.addEventListener('load', function (event) {
+    var $ = window.jQuery;
     console.log("DOM fully loaded and parsed");  // 先打印
     if (!$) {
       return;
