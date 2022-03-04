@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>mysql查询去重总结 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="mysql查询去重总结 ​ 错误做法： distinct 去重 ， distinct去重只能去重单个字段 group by 去重, group by 是用来分组的，不能用于去重 分组查询中选用非分组列" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/mysql/mysql%E6%9F%A5%E8%AF%A2%E5%8E%BB%E9%87%8D%E6%80%BB%E7%BB%93/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.8963a0cb46404a2c7f30f461e9a04aad32051004a9f78e2ca478263e3a85569d.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="mysql查询去重总结" />
+<meta property="og:description" content="mysql查询去重总结 ​ 错误做法： distinct 去重 ， distinct去重只能去重单个字段 group by 去重, group by 是用来分组的，不能用于去重 分组查询中选用非分组列" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/mysql/mysql%E6%9F%A5%E8%AF%A2%E5%8E%BB%E9%87%8D%E6%80%BB%E7%BB%93/" />
+<meta property="og:image" content="https://tva3.sinaimg.cn/large/005WQYV9gy1fqdf874afuj31hc0u0qis.jpg" />
+<meta property="article:published_time" content="2022-03-04T13:43:48+08:00" />
+<meta property="article:modified_time" content="2022-03-04T13:43:48+08:00" />
+<meta itemprop="name" content="mysql查询去重总结">
+<meta itemprop="description" content="mysql查询去重总结 ​ 错误做法： distinct 去重 ， distinct去重只能去重单个字段 group by 去重, group by 是用来分组的，不能用于去重 分组查询中选用非分组列">
+<meta itemprop="datePublished" content="2022-03-04T13:43:48&#43;08:00" />
+<meta itemprop="dateModified" content="2022-03-04T13:43:48&#43;08:00" />
+<meta itemprop="wordCount" content="647">
+<meta itemprop="image" content="https://tva3.sinaimg.cn/large/005WQYV9gy1fqdf874afuj31hc0u0qis.jpg">
+
+
+
+<meta itemprop="keywords" content="mysql," /><meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://tva3.sinaimg.cn/large/005WQYV9gy1fqdf874afuj31hc0u0qis.jpg"/>
+
+<meta name="twitter:title" content="mysql查询去重总结"/>
+<meta name="twitter:description" content="mysql查询去重总结 ​ 错误做法： distinct 去重 ， distinct去重只能去重单个字段 group by 去重, group by 是用来分组的，不能用于去重 分组查询中选用非分组列"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body>
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+  </div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+<link rel="stylesheet" href="/custom/css/post.css">
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	<div class="customByLyr">
+  
+			<img class="lazyload"  draggable="false"  data-original="https://tva3.sinaimg.cn/large/005WQYV9gy1fqdf874afuj31hc0u0qis.jpg" />
+		</div>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">mysql查询去重总结</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-03-04 </span>
+        <div class="post-category">
+            <a href="/categories/mysql/"> mysql </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#mysql查询去重总结">mysql查询去重总结</a></li>
+        <li><a href="#通用做法">通用做法</a>
+          <ul>
+            <li></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h2 id="mysql查询去重总结">mysql查询去重总结</h2>
+<p>​</p>
+<p>错误做法：</p>
+<ol>
+<li><code>distinct 去重</code> ， distinct去重只能去重单个字段</li>
+<li><code>group by</code> 去重, group by 是用来分组的，不能用于去重
+<ol>
+<li>分组查询中选用非分组列：SELECT后面出现的非分组列一定是直接依赖分组列，并且在每个组内的值是唯一的。可以在服务器的SQL_MODE设置为包含ONLY_FULL_GROUP_BY来禁止这样的写法。</li>
+</ol>
+</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="o">@@</span><span class="n">sql_mode</span> <span class="p">;</span>
+<span class="c1">-- 如果是 only_full_group_by 是没办法用 group by 去重的
+</span><span class="c1"></span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="通用做法">通用做法</h2>
+<p>使用自连接查询 【 不需要 依赖于 <code>@@sql_mode</code> 的设置】</p>
+<p><a href="https://www.cnblogs.com/candlia/p/11920037.html">参考博客</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/101310541">参考知乎博客，窗口函数</a></p>
+<p>总结技巧</p>
+<ol>
+<li><code>in (max)</code></li>
+<li><code>join  equal (max)</code></li>
+<li><code>group by ，需要设置 @@sql_mode </code>，不通用，建议别用</li>
+<li>自定义rank变量【https://zhuanlan.zhihu.com/p/101310541】</li>
+<li>窗口函数，暂时没资料</li>
+</ol>
+<p>用自连接查询</p>
+<h4 id="场景说明">场景说明</h4>
+<table>
+<thead>
+<tr>
+<th>answer表</th>
+<th>字段说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>answer_id</td>
+<td>用户填写的答案id</td>
+</tr>
+<tr>
+<td>paper_id</td>
+<td>试卷id【有多份试卷，用户可以重复答题】</td>
+</tr>
+<tr>
+<td>content</td>
+<td>用户作答的内容</td>
+</tr>
+</tbody>
+</table>
+<p>answer 表 是 用户答案记录表</p>
+<h5 id="使用-in">使用 in</h5>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql">	
+<span class="c1">-- paper_id 相同，取 answer_id 最大的作为 结果	
+</span><span class="c1"></span><span class="k">select</span> <span class="n">a</span><span class="p">.</span><span class="o">*</span>  <span class="k">from</span> <span class="n">t_answer</span> 	<span class="n">a</span>   <span class="k">where</span> <span class="n">a</span><span class="p">.</span><span class="n">answer_id</span> <span class="k">in</span> <span class="p">(</span><span class="k">select</span> <span class="k">max</span><span class="p">(</span><span class="n">answer_id</span> <span class="p">)</span> <span class="k">from</span> <span class="n">t_answer</span> <span class="k">group</span> <span class="k">by</span> <span class="n">paper_id</span> <span class="p">)</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h5 id="使用-join">使用 join</h5>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"> 
+<span class="c1">-- paper_id 相同，取 answer_id 最大的作为 结果	
+</span><span class="c1"></span><span class="k">select</span> <span class="n">a</span><span class="p">.</span><span class="o">*</span>  <span class="k">from</span> <span class="n">t_answer</span> 	<span class="n">a</span>    <span class="k">join</span> <span class="p">(</span><span class="k">select</span> <span class="k">max</span><span class="p">(</span><span class="n">answer_id</span><span class="p">)</span> <span class="n">answer_id</span>  <span class="k">from</span> <span class="n">t_answer</span> <span class="k">group</span> <span class="k">by</span> <span class="n">paper_id</span>  <span class="p">)</span> <span class="n">atemp</span> 
+
+<span class="k">on</span> <span class="n">a</span><span class="p">.</span><span class="n">answer_id</span> <span class="o">=</span> <span class="n">atemp</span><span class="p">.</span><span class="n">answer_id</span>
+
+
+
+</code></pre></td></tr></table>
+</div>
+</div><h5 id="自定义变量">自定义变量</h5>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="c1">-- 用 rank 变量计数， 数到第一个的就出来
+</span><span class="c1"></span><span class="k">SELECT</span>
+	<span class="n">a</span><span class="p">.</span><span class="o">*</span> 
+<span class="k">FROM</span>
+	<span class="p">(</span>
+	<span class="k">SELECT</span>
+		<span class="n">a</span><span class="p">.</span><span class="o">*</span><span class="p">,</span>
+		<span class="o">@</span><span class="n">rank</span> <span class="p">:</span><span class="o">=</span>
+	<span class="k">IF</span>
+		<span class="p">(</span> <span class="o">@</span><span class="n">cur</span> <span class="o">=</span> <span class="n">a</span><span class="p">.</span><span class="n">paper_id</span><span class="p">,</span> <span class="o">@</span><span class="n">rank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="p">)</span> <span class="k">AS</span> <span class="n">rk</span><span class="p">,</span>
+		<span class="o">@</span><span class="n">cur</span> <span class="p">:</span><span class="o">=</span> <span class="n">a</span><span class="p">.</span><span class="n">paper_id</span> <span class="k">AS</span> <span class="n">cur_paper_id</span> 
+	<span class="k">FROM</span>
+		<span class="n">t_answer</span> <span class="n">a</span> 
+	<span class="k">ORDER</span> <span class="k">BY</span>
+		<span class="n">paper_id</span><span class="p">,</span>
+		<span class="n">answer_id</span> <span class="k">DESC</span> 
+	<span class="p">)</span> <span class="n">a</span> 
+<span class="k">WHERE</span>
+	<span class="n">rk</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+
+</code></pre></td></tr></table>
+</div>
+</div><p>另一种写法</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql">
+<span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="p">(</span>
+<span class="k">SELECT</span>
+	<span class="n">a</span><span class="p">.</span><span class="o">*</span> <span class="p">,</span>
+	<span class="k">case</span> 
+	<span class="k">when</span> <span class="o">@</span><span class="n">preId</span> <span class="o">=</span> <span class="n">paper_id</span> <span class="k">then</span> <span class="o">@</span><span class="n">curRank</span><span class="p">:</span><span class="o">=</span> <span class="o">@</span><span class="n">curRank</span> <span class="o">+</span><span class="mi">1</span> <span class="c1">-- 等于，于是自增 ,  @preId 记录上一个 id
+</span><span class="c1"></span>	<span class="k">when</span> <span class="o">@</span><span class="n">preId</span> <span class="p">:</span><span class="o">=</span> <span class="n">paper_id</span> <span class="k">then</span> <span class="o">@</span><span class="n">curRank</span><span class="p">:</span><span class="o">=</span><span class="mi">1</span>  <span class="c1">-- 不等于，于是赋值 ,一开始 @preId is null 
+</span><span class="c1"></span>	
+	<span class="k">end</span> <span class="k">as</span> <span class="n">rank_no</span> 
+	<span class="k">from</span> <span class="n">t_answer</span> <span class="n">a</span>  
+ <span class="p">)</span> <span class="n">p</span> 
+ 
+ <span class="k">where</span> <span class="n">p</span><span class="p">.</span><span class="n">rank_no</span> <span class="o">&lt;=</span> <span class="mi">1</span>
+ 
+ <span class="k">order</span> <span class="k">by</span> <span class="n">paper_id</span> <span class="p">,</span><span class="n">rank_no</span> 
+</code></pre></td></tr></table>
+</div>
+</div><h5 id="窗口函数">窗口函数</h5>
+<p>mysql8 才支持窗口函数，这里 不做介绍</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-03-04
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/mysql/">mysql</a>
+          </div>
+      <nav class="post-nav">
+        
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/mysql/mysql%E5%BC%80%E5%8F%91%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/">
+            <span class="next-text nav-default">mysql开发注意事项</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-03-04 13:43:48 \u002b0800 \u002b0800',
+        title: 'mysql查询去重总结',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2021 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.1d4991d9d159e67ef57c84fcb29df54b75e3d3fdf0c97f9ccf096ed809d13284.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script defer="defer" async src="/js/custom/docsearch.min.js" ></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  <script  src="/custom/img/lazyload.min.js"></script>
+  <script defer="defer" async src="/custom/post/back_btn.js"></script>
+  
+</body>
+</html>
