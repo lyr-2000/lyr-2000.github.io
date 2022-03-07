@@ -51,7 +51,7 @@
 <meta itemprop="description" content="mysql查询去重总结 ​ 错误做法： distinct 去重 ， distinct去重只能去重单个字段 group by 去重, group by 是用来分组的，不能用于去重 分组查询中选用非分组列">
 <meta itemprop="datePublished" content="2022-03-04T13:43:48&#43;08:00" />
 <meta itemprop="dateModified" content="2022-03-04T13:43:48&#43;08:00" />
-<meta itemprop="wordCount" content="647">
+<meta itemprop="wordCount" content="784">
 <meta itemprop="image" content="https://tva3.sinaimg.cn/large/005WQYV9gy1fqdf874afuj31hc0u0qis.jpg">
 
 
@@ -212,6 +212,7 @@ input.PC_MARK1:focus{
             <li></li>
           </ul>
         </li>
+        <li><a href="#使用记录">使用记录</a></li>
       </ul>
     </li>
   </ul>
@@ -343,10 +344,12 @@ input.PC_MARK1:focus{
 </span><span class="lnt">20
 </span><span class="lnt">21
 </span><span class="lnt">22
+</span><span class="lnt">23
 </span></code></pre></td>
 <td class="lntd">
 <pre class="chroma"><code class="language-sql" data-lang="sql"><span class="c1">-- 用 rank 变量计数， 数到第一个的就出来
-</span><span class="c1"></span><span class="k">SELECT</span>
+</span><span class="c1"></span><span class="k">set</span> <span class="o">@</span><span class="n">cur</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+<span class="k">SELECT</span>
 	<span class="n">a</span><span class="p">.</span><span class="o">*</span> 
 <span class="k">FROM</span>
 	<span class="p">(</span>
@@ -387,9 +390,11 @@ input.PC_MARK1:focus{
 </span><span class="lnt">13
 </span><span class="lnt">14
 </span><span class="lnt">15
+</span><span class="lnt">16
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-sql" data-lang="sql">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">set</span> <span class="o">@</span><span class="n">preId</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+
 <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="p">(</span>
 <span class="k">SELECT</span>
 	<span class="n">a</span><span class="p">.</span><span class="o">*</span> <span class="p">,</span>
@@ -406,9 +411,88 @@ input.PC_MARK1:focus{
  <span class="k">order</span> <span class="k">by</span> <span class="n">paper_id</span> <span class="p">,</span><span class="n">rank_no</span> 
 </code></pre></td></tr></table>
 </div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="p">(</span>
+<span class="k">SELECT</span>
+	  <span class="n">a</span><span class="p">.</span><span class="o">*</span> <span class="p">,</span>
+	  <span class="o">@</span><span class="n">rank</span> <span class="p">:</span><span class="o">=</span> <span class="k">if</span><span class="p">(</span><span class="o">@</span><span class="n">pre</span> <span class="o">=</span> <span class="n">paper_id</span><span class="p">,</span><span class="o">@</span><span class="n">rank</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">rank_no</span>  <span class="p">,</span>
+    <span class="o">@</span><span class="n">pre</span><span class="p">:</span><span class="o">=</span> <span class="n">paper_id</span>
+
+	   <span class="k">from</span> <span class="n">t_answer</span> <span class="n">a</span> <span class="p">,</span>
+		 <span class="p">(</span><span class="k">select</span> <span class="o">@</span><span class="n">pre</span> <span class="p">:</span><span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="p">)</span> <span class="n">x</span>
+		 
+     <span class="k">order</span> <span class="k">by</span> <span class="n">a</span><span class="p">.</span><span class="n">paper_id</span> <span class="p">,</span><span class="n">a</span><span class="p">.</span><span class="n">answer_id</span> <span class="k">desc</span>
+ <span class="p">)</span> <span class="n">p</span>
+ <span class="k">where</span> <span class="n">p</span><span class="p">.</span><span class="n">rank_no</span> <span class="o">&lt;=</span> <span class="mi">1</span>
+ 
+ <span class="k">order</span> <span class="k">by</span> <span class="n">paper_id</span> <span class="p">,</span><span class="n">rank_no</span>  
+</code></pre></td></tr></table>
+</div>
 </div><h5 id="窗口函数">窗口函数</h5>
 <p>mysql8 才支持窗口函数，这里 不做介绍</p>
+<h2 id="使用记录">使用记录</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="p">(</span>
+<span class="k">SELECT</span>
+	   <span class="n">a</span><span class="p">.</span><span class="o">*</span> <span class="p">,</span>
+		 <span class="n">p</span><span class="p">.</span><span class="n">title</span><span class="p">,</span>
+	   <span class="o">@</span><span class="n">rank</span> <span class="p">:</span><span class="o">=</span> <span class="k">if</span><span class="p">(</span><span class="o">@</span><span class="n">pre</span> <span class="o">=</span> <span class="n">paper_id</span><span class="p">,</span><span class="o">@</span><span class="n">rank</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">rank_no</span>  <span class="p">,</span>
+     <span class="o">@</span><span class="n">pre</span><span class="p">:</span><span class="o">=</span> <span class="n">paper_id</span>
+ 
+	   <span class="k">from</span> <span class="n">t_answer</span> <span class="n">a</span>    <span class="k">join</span>  <span class="n">t_paper</span> <span class="n">p</span> <span class="k">on</span> <span class="n">a</span><span class="p">.</span><span class="n">paper_id</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="n">id</span> 
+		 
+		 <span class="p">,(</span><span class="k">select</span> <span class="o">@</span><span class="n">pre</span> <span class="p">:</span><span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="p">)</span> <span class="n">xxx</span>
+		  	<span class="k">order</span> <span class="k">by</span> <span class="n">paper_id</span><span class="p">,</span><span class="n">answer_id</span> <span class="k">desc</span>
 
+ <span class="p">)</span> <span class="n">p</span> 
+	
+ <span class="k">where</span> <span class="n">p</span><span class="p">.</span><span class="n">rank_no</span> <span class="o">&lt;=</span> <span class="mi">1</span>
+ 
+ <span class="k">order</span> <span class="k">by</span> <span class="n">paper_id</span> <span class="p">,</span><span class="n">rank_no</span>  
+ 
+   
+</code></pre></td></tr></table>
+</div>
+</div>
     </div>
 
     <div class="post-copyright">
@@ -490,7 +574,7 @@ input.PC_MARK1:focus{
   <span class="copyright-year">
     &copy; 
     2021 - 
-    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>lyr</span>
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
   </span>
 </div>
 
@@ -499,6 +583,11 @@ input.PC_MARK1:focus{
 <script 
  
     src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
 
 
 
