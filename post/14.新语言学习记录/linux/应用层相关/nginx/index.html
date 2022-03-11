@@ -35,7 +35,7 @@
 
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
-<link href="/sass/main.min.755a55554eacedfc972c3c8b6de9579c880c97221e583f6731ac7117264918fb.css" rel="stylesheet"> 
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
@@ -50,7 +50,7 @@
 <meta itemprop="description" content="nginx 的用法 参考官方文档 NGINX 可以根据特定 IP 地址或客户端计算机的 IP 地址范围允许或拒绝访问。要允许或拒绝访问，请在流上下文或服务器块中使用允许和拒绝指">
 <meta itemprop="datePublished" content="2022-02-15T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2022-02-15T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="664">
+<meta itemprop="wordCount" content="620">
 
 
 
@@ -186,6 +186,8 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2022-02-15 </span>
         
+          <span class="more-meta"> 约 620 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -218,124 +220,56 @@ input.PC_MARK1:focus{
 <p>NGINX 可以根据特定 IP 地址或客户端计算机的 IP 地址范围允许或拒绝访问。要允许或拒绝访问，请在<a href="https://nginx.org/en/docs/stream/ngx_stream_core_module.html#stream">流</a>上下文或<a href="https://nginx.org/en/docs/stream/ngx_stream_core_module.html#server">服务器</a>块中使用<a href="https://nginx.org/en/docs/stream/ngx_stream_access_module.html#allow">允许</a>和<a href="https://nginx.org/en/docs/stream/ngx_stream_access_module.html#deny">拒绝</a>指令：</p>
 <p>您可以限制来自一个 IP 地址的同时 TCP 连接数。这对于防止拒绝服务 (DoS) 攻击很有用。</p>
 <p>首先，让我们定义将存储到一个服务器的最大 TCP 连接数的*区域，以及用于识别连接的密钥。*这可以通过<a href="https://nginx.org/en/docs/stream/ngx_stream_core_module.html#stream">流</a>上下文中的<a href="https://nginx.org/en/docs/http/ngx_http_limit_conn_module.html#limit_conn_zone">limit_conn_zone</a>指令来完成：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-nginx" data-lang="nginx"><span class="k">stream</span> <span class="p">{</span>
-    <span class="c1">#...
-</span><span class="c1"></span>    <span class="kn">limit_conn_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=ip_addr:10m</span><span class="p">;</span>
-    <span class="c1">#...
-</span><span class="c1"></span><span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>标识连接的密钥定义为<code>$binary_remote_addr</code>，以二进制格式表示客户端的 IP 地址。共享内存区域的名称是<code>ip_addr</code>，区域大小是 10 兆字节。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nginx" data-lang="nginx"><span style="color:#66d9ef">stream</span> {
+    <span style="color:#75715e">#...
+</span><span style="color:#75715e"></span>    <span style="color:#f92672">limit_conn_zone</span> $binary_remote_addr <span style="color:#e6db74">zone=ip_addr:10m</span>;
+    <span style="color:#75715e">#...
+</span><span style="color:#75715e"></span>}
+</code></pre></div><p>标识连接的密钥定义为<code>$binary_remote_addr</code>，以二进制格式表示客户端的 IP 地址。共享内存区域的名称是<code>ip_addr</code>，区域大小是 10 兆字节。</p>
 <p>定义区域后，使用<a href="https://nginx.org/en/docs/stream/ngx_stream_limit_conn_module.html#limit_conn">limit_conn</a>指令限制连接。它的第一个参数指定先前由<a href="https://nginx.org/en/docs/http/ngx_http_limit_conn_module.html#limit_conn_zone">limit_conn_zone</a>定义的共享内存区域的名称。作为第二个参数，指定每个 IP 地址的最大允许连接数，在<a href="https://nginx.org/en/docs/stream/ngx_stream_core_module.html#stream">流</a>上下文或<a href="https://nginx.org/en/docs/stream/ngx_stream_core_module.html#server">服务器</a>块中（如本例中，它还显示了先决条件<code>limit_conn_zone</code>指令）：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span><span class="lnt">9
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-nginx" data-lang="nginx"><span class="k">stream</span> <span class="p">{</span>
-    <span class="c1">#...
-</span><span class="c1"></span>    <span class="kn">limit_conn_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=ip_addr:10m</span><span class="p">;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nginx" data-lang="nginx"><span style="color:#66d9ef">stream</span> {
+    <span style="color:#75715e">#...
+</span><span style="color:#75715e"></span>    <span style="color:#f92672">limit_conn_zone</span> $binary_remote_addr <span style="color:#e6db74">zone=ip_addr:10m</span>;
 
-    <span class="kn">server</span> <span class="p">{</span>
-        <span class="c1">#...
-</span><span class="c1"></span>        <span class="kn">limit_conn</span> <span class="s">ip_addr</span> <span class="mi">1</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><h2 id="限制带宽">限制带宽</h2>
+    <span style="color:#f92672">server</span> {
+        <span style="color:#75715e">#...
+</span><span style="color:#75715e"></span>        <span style="color:#f92672">limit_conn</span> <span style="color:#e6db74">ip_addr</span> <span style="color:#ae81ff">1</span>;
+    }
+}
+</code></pre></div><h2 id="限制带宽">限制带宽</h2>
 <p>通过这些设置，客户端可以通过单个连接以最高 100 KB/秒的速度下载数据，并通过单个连接以最高 50 KB/秒的速度上传数据。但是，客户端可以打开多个连接。因此，如果目标是限制每个客户端的整体加载速度，则连接数也必须限制<code>1</code>在上一节中描述的范围内。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-nginx" data-lang="nginx"><span class="k">stream</span> <span class="p">{</span>
-    <span class="c1">#...
-</span><span class="c1"></span>    <span class="kn">limit_conn_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=ip_addr:10m</span><span class="p">;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nginx" data-lang="nginx"><span style="color:#66d9ef">stream</span> {
+    <span style="color:#75715e">#...
+</span><span style="color:#75715e"></span>    <span style="color:#f92672">limit_conn_zone</span> $binary_remote_addr <span style="color:#e6db74">zone=ip_addr:10m</span>;
 
-    <span class="kn">server</span> <span class="p">{</span>
-        <span class="c1">#...
-</span><span class="c1"></span>        <span class="kn">limit_conn</span> <span class="s">ip_addr</span>  <span class="mi">1</span><span class="p">;</span>
-        <span class="kn">proxy_download_rate</span> <span class="mi">100k</span><span class="p">;</span>
-        <span class="kn">proxy_upload_rate</span>   <span class="mi">50k</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><h2 id="设置密码校验">设置密码校验</h2>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-nginx" data-lang="nginx"><span class="k">http</span> <span class="p">{</span>
-    <span class="kn">server</span> <span class="p">{</span>
-        <span class="kn">listen</span> <span class="n">192.168.1.23</span><span class="p">:</span><span class="mi">8080</span><span class="p">;</span>
-        <span class="kn">root</span>   <span class="s">/usr/share/nginx/html</span><span class="p">;</span>
+    <span style="color:#f92672">server</span> {
+        <span style="color:#75715e">#...
+</span><span style="color:#75715e"></span>        <span style="color:#f92672">limit_conn</span> <span style="color:#e6db74">ip_addr</span>  <span style="color:#ae81ff">1</span>;
+        <span style="color:#f92672">proxy_download_rate</span> <span style="color:#ae81ff">100k</span>;
+        <span style="color:#f92672">proxy_upload_rate</span>   <span style="color:#ae81ff">50k</span>;
+    }
+}
+</code></pre></div><h2 id="设置密码校验">设置密码校验</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nginx" data-lang="nginx"><span style="color:#66d9ef">http</span> {
+    <span style="color:#f92672">server</span> {
+        <span style="color:#f92672">listen</span> 192.168.1.23:<span style="color:#ae81ff">8080</span>;
+        <span style="color:#f92672">root</span>   <span style="color:#e6db74">/usr/share/nginx/html</span>;
 
-        <span class="kn">location</span> <span class="s">/api</span> <span class="p">{</span>
-            <span class="kn">api</span><span class="p">;</span>
-            <span class="kn">satisfy</span> <span class="s">all</span><span class="p">;</span>
+        <span style="color:#f92672">location</span> <span style="color:#e6db74">/api</span> {
+            <span style="color:#f92672">api</span>;
+            <span style="color:#f92672">satisfy</span> <span style="color:#e6db74">all</span>;
 
-            <span class="kn">deny</span>  <span class="mi">192</span><span class="s">.168.1.2</span><span class="p">;</span>
-            <span class="kn">allow</span> <span class="mi">192</span><span class="s">.168.1.1/24</span><span class="p">;</span>
-            <span class="kn">allow</span> <span class="mi">127</span><span class="s">.0.0.1</span><span class="p">;</span>
-            <span class="kn">deny</span>  <span class="s">all</span><span class="p">;</span>
+            <span style="color:#f92672">deny</span>  <span style="color:#ae81ff">192</span><span style="color:#e6db74">.168.1.2</span>;
+            <span style="color:#f92672">allow</span> <span style="color:#ae81ff">192</span><span style="color:#e6db74">.168.1.1/24</span>;
+            <span style="color:#f92672">allow</span> <span style="color:#ae81ff">127</span><span style="color:#e6db74">.0.0.1</span>;
+            <span style="color:#f92672">deny</span>  <span style="color:#e6db74">all</span>;
 
-            <span class="kn">auth_basic</span>           <span class="s">&#34;Administrator’s</span> <span class="s">Area&#34;</span><span class="p">;</span>
-            <span class="kn">auth_basic_user_file</span> <span class="s">/etc/apache2/.htpasswd</span><span class="p">;</span> 
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p><img src="https://cdn.wp.nginx.com/wp-content/uploads/2016/10/auth_required.png" alt="https://cdn.wp.nginx.com/wp-content/uploads/2016/10/auth_required.png"></p>
+            <span style="color:#f92672">auth_basic</span>           <span style="color:#e6db74">&#34;Administrator’s</span> <span style="color:#e6db74">Area&#34;</span>;
+            <span style="color:#f92672">auth_basic_user_file</span> <span style="color:#e6db74">/etc/apache2/.htpasswd</span>; 
+        }
+    }
+}
+</code></pre></div><p><img src="https://cdn.wp.nginx.com/wp-content/uploads/2016/10/auth_required.png" alt="https://cdn.wp.nginx.com/wp-content/uploads/2016/10/auth_required.png"></p>
 <h2 id="限制国家-地理位置访问">限制国家 地理位置访问</h2>
 <p><a href="https://docs.nginx.com/nginx/admin-guide/security-controls/controlling-access-by-geoip/">参考文档</a></p>
 
@@ -463,7 +397,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
@@ -513,5 +447,6 @@ input.PC_MARK1:focus{
   <script  src="/custom/img/lazyload.min.js"></script>
   <script defer="defer" async src="/custom/post/back_btn.js"></script>
   
+
 </body>
 </html>

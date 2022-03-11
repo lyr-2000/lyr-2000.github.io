@@ -35,7 +35,7 @@
 
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
-<link href="/sass/main.min.755a55554eacedfc972c3c8b6de9579c880c97221e583f6731ac7117264918fb.css" rel="stylesheet"> 
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
@@ -50,7 +50,7 @@
 <meta itemprop="description" content="Mysql 基础架构 server层 连接器：管理连接，权限验证 使用长连接后，你可能会发现，有些时候 MySQL 占用内存涨得特别快，这是因为 MySQL 在执行过程中临时使用的">
 <meta itemprop="datePublished" content="2021-08-14T22:43:02&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:43:02&#43;08:00" />
-<meta itemprop="wordCount" content="13976">
+<meta itemprop="wordCount" content="13887">
 
 
 
@@ -186,6 +186,8 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-14 </span>
         
+          <span class="more-meta"> 约 13887 字 </span>
+          <span class="more-meta"> 预计阅读 28 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -709,31 +711,10 @@ Mysql 提供了对于默认的 SQL 语句都不使用查询缓存的方式</li>
 <ul>
 <li><strong>数据库自增ID</strong></li>
 </ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-fallback" data-lang="fallback">// 数据库表
+<pre><code>// 数据库表
 CREATE TABLE SEQID.SEQUENCE_ID (
 	id bigint(20) unsigned NOT NULL auto_increment, 
-	stub char(10) NOT NULL default &#39;&#39;,
+	stub char(10) NOT NULL default '',
 	PRIMARY KEY (id),
 	UNIQUE KEY stub (stub)
 ) ENGINE=MyISAM;
@@ -742,40 +723,15 @@ CREATE TABLE SEQID.SEQUENCE_ID (
 // stub字段在这里并没有什么特殊的意义，只是为了方便的去插入数据，只有能插入数据才能产生自增id
 // 对于插入我们用的是replace，replace会先看是否存在stub指定值一样的数据，如果存在则先delete再insert，如果不存在则直接insert
 begin;
-replace into SEQUENCE_ID (stub) VALUES (&#39;anyword&#39;);
+replace into SEQUENCE_ID (stub) VALUES ('anyword');
 select last_insert_id();
 commit;
 
 # 业务系统每次需要一个ID时，都需要请求数据库获取，性能低，并且如果此数据库实例下线了，那么将影响所有的业务系统
-</code></pre></td></tr></table>
-</div>
-</div><ul>
+</code></pre><ul>
 <li><strong>数据库多主模式</strong></li>
 </ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-fallback" data-lang="fallback">// 单独给每个Mysql实例配置不同的起始值和自增步长
+<pre><code>// 单独给每个Mysql实例配置不同的起始值和自增步长
 
 // 第一台Mysql实例配置：
 set @@auto_increment_offset = 1;     -- 起始值
@@ -794,33 +750,14 @@ set @@auto_increment_increment = 2;  -- 步长
 # 第一，mysql1、mysql2的步长肯定都要修改为3，而且只能是人工去修改，这是需要时间的
 # 第二，因为mysql1和mysql2是不停在自增的，对于mysql3的起始值我们可能要定得大一点，以给充分的时间去修改mysql1，mysql2的步长
 # 第三，在修改步长的时候很可能会出现重复ID，要解决这个问题，可能需要停机才行
-</code></pre></td></tr></table>
-</div>
-</div><ul>
+</code></pre><ul>
 <li><strong>号段模式</strong></li>
 </ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-fallback" data-lang="fallback">CREATE TABLE id_generator (
+<pre><code>CREATE TABLE id_generator (
   id int(10) NOT NULL,
-  current_max_id bigint(20) NOT NULL COMMENT &#39;当前最大id&#39;,
-  increment_step int(10) NOT NULL COMMENT &#39;号段的长度&#39;,
-  version int(10) NOT NULL COMMENT &#39;版本&#39;,
+  current_max_id bigint(20) NOT NULL COMMENT '当前最大id',
+  increment_step int(10) NOT NULL COMMENT '号段的长度',
+  version int(10) NOT NULL COMMENT '版本',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -829,24 +766,10 @@ update id_generator set current_max_id=#{newMaxId}, version=version+1 where vers
 
 // 批量获取自增id
 // 如果DistributIdService重启，会丢失一段ID，导致ID空洞
-</code></pre></td></tr></table>
-</div>
-</div><ul>
+</code></pre><ul>
 <li><strong>Redis</strong></li>
 </ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-fallback" data-lang="fallback">127.0.0.1:6379&gt; set seq_id 1     // 初始化自增ID为1
+<pre><code>127.0.0.1:6379&gt; set seq_id 1     // 初始化自增ID为1
 OK
 127.0.0.1:6379&gt; incr seq_id      // 增加1，并返回
 (integer) 2
@@ -854,24 +777,10 @@ OK
 (integer) 3
 
 // Redis支持RDB和AOF两种持久化的方式，如果Redis挂掉了，重启Redis后会出现ID重复，
-</code></pre></td></tr></table>
-</div>
-</div><ul>
+</code></pre><ul>
 <li><strong>雪花算法</strong></li>
 </ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-fallback" data-lang="fallback">// 分布式ID固定是一个long型的数字，一个long型占8个字节，也就是64个bit
+<pre><code>// 分布式ID固定是一个long型的数字，一个long型占8个字节，也就是64个bit
 // 第一个bit位是标识部分，在java中由于long的最高位是符号位，一般为0
 // 时间戳部分占41bit，这个是毫秒级的时间，41位的时间戳可以使用69年
 // 工作机器id占10bit，可以部署1024个节点
@@ -879,9 +788,7 @@ OK
 
 // 原始的snowflake算法需要人工去为每台机器去指定一个机器id，并配置在某个地方从而让snowflake从此处获取机器id，但是在大厂里，机器是很多的，人力成本太大且容易出错
 // 所以大厂对snowflake进行了改造，应用在启动时会往数据库表(uid-generator需要新增一个WORKER_NODE表)中去插入一条数据，数据插入成功后返回的该数据对应的自增唯一id就是该机器的workId
-</code></pre></td></tr></table>
-</div>
-</div><blockquote>
+</code></pre><blockquote>
 <p><a href="https://juejin.im/post/5d6fc8eff265da03ef7a324b#heading-1">大型互联网公司分布式ID方案总结</a></p>
 </blockquote>
 
@@ -1009,7 +916,7 @@ OK
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
@@ -1059,5 +966,6 @@ OK
   <script  src="/custom/img/lazyload.min.js"></script>
   <script defer="defer" async src="/custom/post/back_btn.js"></script>
   
+
 </body>
 </html>

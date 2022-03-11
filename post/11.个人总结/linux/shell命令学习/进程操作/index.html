@@ -35,7 +35,7 @@
 
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
-<link href="/sass/main.min.755a55554eacedfc972c3c8b6de9579c880c97221e583f6731ac7117264918fb.css" rel="stylesheet"> 
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
@@ -50,7 +50,7 @@
 <meta itemprop="description" content="进程间通信的几种方式 管道pipe：管道是一种半双工的通信方式，数据只能单向流动，而且只能在具有亲缘关系的进程间使用。进程的亲缘关系通常是指父">
 <meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="2600">
+<meta itemprop="wordCount" content="2473">
 
 
 
@@ -186,6 +186,8 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
+          <span class="more-meta"> 约 2473 字 </span>
+          <span class="more-meta"> 预计阅读 5 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -225,19 +227,10 @@ input.PC_MARK1:focus{
 <li>信号 ( sinal ) ： 信号是一种比较复杂的通信方式，用于<strong>通知接收进程某个事件</strong>已经发生。</li>
 <li>套接字： socket</li>
 </ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="nb">kill</span> -l
-<span class="c1"># 列出所有信号</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">kill -l
+<span style="color:#75715e"># 列出所有信号</span>
 
-</code></pre></td></tr></table>
-</div>
-</div><p>系统会发送一个SIGTERM的信号给对应的程序。当程序接收到该signal后，将会发生以下的事情</p>
+</code></pre></div><p>系统会发送一个SIGTERM的信号给对应的程序。当程序接收到该signal后，将会发生以下的事情</p>
 <ol>
 <li>
 <p>程序立刻停止</p>
@@ -268,286 +261,138 @@ Ctrl+Z 产生 $ SIGTSTP $ 信号，表示停止该进程，但还未结束；
 <h3 id="文件描述符">文件描述符</h3>
 <p>ls /proc/pid/fd</p>
 <p>查看文件描述符</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># ps -ef|grep main2</span>
-root     <span class="m">13357</span>     <span class="m">1</span>  <span class="m">0</span> Oct01 ?        00:00:10 ./main2
-root     <span class="m">28066</span> <span class="m">27903</span>  <span class="m">0</span> 15:02 pts/3    00:00:00 grep --color<span class="o">=</span>auto main2
-<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># ls /proc/133</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#f92672">[</span>root@VM-0-7-centos ~<span style="color:#f92672">]</span><span style="color:#75715e"># ps -ef|grep main2</span>
+root     <span style="color:#ae81ff">13357</span>     <span style="color:#ae81ff">1</span>  <span style="color:#ae81ff">0</span> Oct01 ?        00:00:10 ./main2
+root     <span style="color:#ae81ff">28066</span> <span style="color:#ae81ff">27903</span>  <span style="color:#ae81ff">0</span> 15:02 pts/3    00:00:00 grep --color<span style="color:#f92672">=</span>auto main2
+<span style="color:#f92672">[</span>root@VM-0-7-centos ~<span style="color:#f92672">]</span><span style="color:#75715e"># ls /proc/133</span>
 1333/  13357/ 1336/
-<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># ls /proc/13357/</span>
+<span style="color:#f92672">[</span>root@VM-0-7-centos ~<span style="color:#f92672">]</span><span style="color:#75715e"># ls /proc/13357/</span>
 attr       clear_refs       cpuset   fd       limits     mem         net        oom_score      personality  schedstat  stack   syscall  wchan
 autogroup  cmdline          cwd      fdinfo   loginuid   mountinfo   ns         oom_score_adj  projid_map   sessionid  stat    task
 auxv       comm             environ  gid_map  map_files  mounts      numa_maps  pagemap        root         setgroups  statm   timers
 cgroup     coredump_filter  exe      io       maps       mountstats  oom_adj    patch_state    sched        smaps      status  uid_map
-<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># ls /proc/13357/fd</span>
+<span style="color:#f92672">[</span>root@VM-0-7-centos ~<span style="color:#f92672">]</span><span style="color:#75715e"># ls /proc/13357/fd</span>
 fd/     fdinfo/
-<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># ls /proc/13357/fd/</span>
-<span class="m">0</span>   <span class="m">1</span>   <span class="m">10</span>  <span class="m">11</span>  <span class="m">12</span>  <span class="m">13</span>  <span class="m">14</span>  <span class="m">15</span>  <span class="m">17</span>  <span class="m">2</span>   <span class="m">3</span>   <span class="m">4</span>   <span class="m">5</span>   <span class="m">6</span>   <span class="m">7</span>   <span class="m">8</span>   <span class="m">9</span>
-<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># ls /proc/13357/fd/</span>
-<span class="m">0</span>  <span class="m">1</span>  <span class="m">10</span>  <span class="m">11</span>  <span class="m">12</span>  <span class="m">13</span>  <span class="m">14</span>  <span class="m">15</span>  <span class="m">17</span>  <span class="m">2</span>  <span class="m">3</span>  <span class="m">4</span>  <span class="m">5</span>  <span class="m">6</span>  <span class="m">7</span>  <span class="m">8</span>  <span class="m">9</span>
-<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span>#
+<span style="color:#f92672">[</span>root@VM-0-7-centos ~<span style="color:#f92672">]</span><span style="color:#75715e"># ls /proc/13357/fd/</span>
+<span style="color:#ae81ff">0</span>   <span style="color:#ae81ff">1</span>   <span style="color:#ae81ff">10</span>  <span style="color:#ae81ff">11</span>  <span style="color:#ae81ff">12</span>  <span style="color:#ae81ff">13</span>  <span style="color:#ae81ff">14</span>  <span style="color:#ae81ff">15</span>  <span style="color:#ae81ff">17</span>  <span style="color:#ae81ff">2</span>   <span style="color:#ae81ff">3</span>   <span style="color:#ae81ff">4</span>   <span style="color:#ae81ff">5</span>   <span style="color:#ae81ff">6</span>   <span style="color:#ae81ff">7</span>   <span style="color:#ae81ff">8</span>   <span style="color:#ae81ff">9</span>
+<span style="color:#f92672">[</span>root@VM-0-7-centos ~<span style="color:#f92672">]</span><span style="color:#75715e"># ls /proc/13357/fd/</span>
+<span style="color:#ae81ff">0</span>  <span style="color:#ae81ff">1</span>  <span style="color:#ae81ff">10</span>  <span style="color:#ae81ff">11</span>  <span style="color:#ae81ff">12</span>  <span style="color:#ae81ff">13</span>  <span style="color:#ae81ff">14</span>  <span style="color:#ae81ff">15</span>  <span style="color:#ae81ff">17</span>  <span style="color:#ae81ff">2</span>  <span style="color:#ae81ff">3</span>  <span style="color:#ae81ff">4</span>  <span style="color:#ae81ff">5</span>  <span style="color:#ae81ff">6</span>  <span style="color:#ae81ff">7</span>  <span style="color:#ae81ff">8</span>  <span style="color:#ae81ff">9</span>
+<span style="color:#f92672">[</span>root@VM-0-7-centos ~<span style="color:#f92672">]</span>#
 
 
 
-<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># ls /proc/13357/fd/ -l</span>
-total <span class="m">0</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">0</span> -&gt; /dev/null
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">1</span> -&gt; /root/cet6_learn/nohup.out
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">10</span> -&gt; socket:<span class="o">[</span>361944889<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">11</span> -&gt; socket:<span class="o">[</span>307931949<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">12</span> -&gt; socket:<span class="o">[</span>361944891<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">13</span> -&gt; socket:<span class="o">[</span>361944893<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">14</span> -&gt; socket:<span class="o">[</span>361944895<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">15</span> -&gt; socket:<span class="o">[</span>361944897<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">17</span> -&gt; socket:<span class="o">[</span>361944904<span class="o">]</span>
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">2</span> -&gt; /root/cet6_learn/nohup.out
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">3</span> -&gt; anon_inode:inotify
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">4</span> -&gt; anon_inode:<span class="o">[</span>eventpoll<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">5</span> -&gt; pipe:<span class="o">[</span>307931942<span class="o">]</span>
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">6</span> -&gt; pipe:<span class="o">[</span>307931942<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">7</span> -&gt; anon_inode:<span class="o">[</span>eventpoll<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">8</span> -&gt; pipe:<span class="o">[</span>307931943<span class="o">]</span>
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">9</span> -&gt; pipe:<span class="o">[</span>307931943<span class="o">]</span>
-<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span>#
-<span class="c1"># 这个 是 一个 golang 的项目</span>
+<span style="color:#f92672">[</span>root@VM-0-7-centos ~<span style="color:#f92672">]</span><span style="color:#75715e"># ls /proc/13357/fd/ -l</span>
+total <span style="color:#ae81ff">0</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">0</span> -&gt; /dev/null
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">1</span> -&gt; /root/cet6_learn/nohup.out
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">10</span> -&gt; socket:<span style="color:#f92672">[</span>361944889<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">11</span> -&gt; socket:<span style="color:#f92672">[</span>307931949<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">12</span> -&gt; socket:<span style="color:#f92672">[</span>361944891<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">13</span> -&gt; socket:<span style="color:#f92672">[</span>361944893<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">14</span> -&gt; socket:<span style="color:#f92672">[</span>361944895<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">15</span> -&gt; socket:<span style="color:#f92672">[</span>361944897<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">17</span> -&gt; socket:<span style="color:#f92672">[</span>361944904<span style="color:#f92672">]</span>
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">2</span> -&gt; /root/cet6_learn/nohup.out
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">3</span> -&gt; anon_inode:inotify
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">4</span> -&gt; anon_inode:<span style="color:#f92672">[</span>eventpoll<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">5</span> -&gt; pipe:<span style="color:#f92672">[</span>307931942<span style="color:#f92672">]</span>
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">6</span> -&gt; pipe:<span style="color:#f92672">[</span>307931942<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">7</span> -&gt; anon_inode:<span style="color:#f92672">[</span>eventpoll<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">8</span> -&gt; pipe:<span style="color:#f92672">[</span>307931943<span style="color:#f92672">]</span>
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">9</span> -&gt; pipe:<span style="color:#f92672">[</span>307931943<span style="color:#f92672">]</span>
+<span style="color:#f92672">[</span>root@VM-0-7-centos ~<span style="color:#f92672">]</span>#
+<span style="color:#75715e"># 这个 是 一个 golang 的项目</span>
 
-<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># cat /root/cet6_learn/deploy.sh</span>
+<span style="color:#f92672">[</span>root@VM-0-7-centos ~<span style="color:#f92672">]</span><span style="color:#75715e"># cat /root/cet6_learn/deploy.sh</span>
 
-<span class="nb">kill</span> -9  <span class="k">$(</span>lsof -i:8088  -t<span class="k">)</span>
+kill -9  <span style="color:#66d9ef">$(</span>lsof -i:8088  -t<span style="color:#66d9ef">)</span>
 cp ./main  ./main2
 sudo chmod +x main2
 
-nohup  ./main2   <span class="p">&amp;</span>
+nohup  ./main2   &amp;
 
 
-</code></pre></td></tr></table>
-</div>
-</div><div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span><span class="lnt">54
-</span><span class="lnt">55
-</span><span class="lnt">56
-</span><span class="lnt">57
-</span><span class="lnt">58
-</span><span class="lnt">59
-</span><span class="lnt">60
-</span><span class="lnt">61
-</span><span class="lnt">62
-</span><span class="lnt">63
-</span><span class="lnt">64
-</span><span class="lnt">65
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># ls /proc/3203/fd -l</span>
-total <span class="m">0</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">0</span> -&gt; /dev/null
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">1</span> -&gt; /root/blog4_backend/nohup.out
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">10</span> -&gt; /dev/random
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">11</span> -&gt; /dev/urandom
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">12</span> -&gt; /dev/random
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">13</span> -&gt; /dev/random
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">14</span> -&gt; /dev/urandom
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">15</span> -&gt; /dev/urandom
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">16</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/ext/sunec.jar
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">17</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/ext/sunjce_provider.jar
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">18</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/charsets.jar
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">19</span> -&gt; pipe:<span class="o">[</span>41166<span class="o">]</span>
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">2</span> -&gt; /root/blog4_backend/nohup.out
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">20</span> -&gt; pipe:<span class="o">[</span>41166<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">21</span> -&gt; anon_inode:<span class="o">[</span>eventpoll<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">22</span> -&gt; pipe:<span class="o">[</span>41167<span class="o">]</span>
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">23</span> -&gt; pipe:<span class="o">[</span>41167<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">24</span> -&gt; anon_inode:<span class="o">[</span>eventpoll<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">25</span> -&gt; pipe:<span class="o">[</span>41168<span class="o">]</span>
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">26</span> -&gt; pipe:<span class="o">[</span>41168<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">27</span> -&gt; anon_inode:<span class="o">[</span>eventpoll<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">28</span> -&gt; pipe:<span class="o">[</span>41222<span class="o">]</span>
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">29</span> -&gt; pipe:<span class="o">[</span>41222<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">3</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/rt.jar
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">30</span> -&gt; anon_inode:<span class="o">[</span>eventpoll<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">31</span> -&gt; socket:<span class="o">[</span>41216<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">32</span> -&gt; pipe:<span class="o">[</span>41223<span class="o">]</span>
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">33</span> -&gt; pipe:<span class="o">[</span>41223<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">34</span> -&gt; anon_inode:<span class="o">[</span>eventpoll<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">35</span> -&gt; pipe:<span class="o">[</span>41224<span class="o">]</span>
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">36</span> -&gt; pipe:<span class="o">[</span>41224<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">37</span> -&gt; anon_inode:<span class="o">[</span>eventpoll<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">38</span> -&gt; pipe:<span class="o">[</span>41225<span class="o">]</span>
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">39</span> -&gt; pipe:<span class="o">[</span>41225<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">4</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/jfr.jarlrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">40</span> -&gt; anon_inode:<span class="o">[</span>eventpoll<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">41</span> -&gt; pipe:<span class="o">[</span>41226<span class="o">]</span>
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">42</span> -&gt; pipe:<span class="o">[</span>41226<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">43</span> -&gt; anon_inode:<span class="o">[</span>eventpoll<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">44</span> -&gt; socket:<span class="o">[</span>41227<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">45</span> -&gt; socket:<span class="o">[</span>41228<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">46</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/ext/localedata.jar
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">47</span> -&gt; /dev/null
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">48</span> -&gt; /dev/null
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">49</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/ext/cldrdata.jar
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">5</span> -&gt; /root/blog4_backend/blog-api-basic-backend2-controller-0.0.1-SNAPSHOT.jar
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">50</span> -&gt; socket:<span class="o">[</span>532719251<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">51</span> -&gt; socket:<span class="o">[</span>532752543<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">52</span> -&gt; socket:<span class="o">[</span>532919848<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">53</span> -&gt; /usr/share/fonts/dejavu/DejaVuSans.ttf
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">54</span> -&gt; socket:<span class="o">[</span>533121541<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">55</span> -&gt; socket:<span class="o">[</span>532259152<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">56</span> -&gt; /dev/random
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">57</span> -&gt; socket:<span class="o">[</span>532825408<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">58</span> -&gt; socket:<span class="o">[</span>532530568<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">59</span> -&gt; socket:<span class="o">[</span>532415118<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">6</span> -&gt; /root/blog4_backend/blog-api-basic-backend2-controller-0.0.1-SNAPSHOT.jar
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">60</span> -&gt; socket:<span class="o">[</span>532617855<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 07:31 <span class="m">61</span> -&gt; socket:<span class="o">[</span>532464801<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">63</span> -&gt; pipe:<span class="o">[</span>9540779<span class="o">]</span>
-l-wx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">64</span> -&gt; pipe:<span class="o">[</span>9540779<span class="o">]</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">65</span> -&gt; anon_inode:<span class="o">[</span>eventpoll<span class="o">]</span>
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">7</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/resources.jar
-lr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">8</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/jce.jarlr-x------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 13:31 <span class="m">9</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/jsse.jar
-</code></pre></td></tr></table>
-</div>
-</div><div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># ll /proc/$$/fd</span>
-total <span class="m">0</span>
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 15:02 <span class="m">0</span> -&gt; /dev/pts/3
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 15:02 <span class="m">1</span> -&gt; /dev/pts/3
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 15:02 <span class="m">2</span> -&gt; /dev/pts/3
-lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <span class="m">6</span> 15:07 <span class="m">255</span> -&gt; /dev/pts/3
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="文件重定向">文件重定向</h3>
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#f92672">[</span>root@VM-0-7-centos ~<span style="color:#f92672">]</span><span style="color:#75715e"># ls /proc/3203/fd -l</span>
+total <span style="color:#ae81ff">0</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">0</span> -&gt; /dev/null
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">1</span> -&gt; /root/blog4_backend/nohup.out
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">10</span> -&gt; /dev/random
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">11</span> -&gt; /dev/urandom
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">12</span> -&gt; /dev/random
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">13</span> -&gt; /dev/random
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">14</span> -&gt; /dev/urandom
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">15</span> -&gt; /dev/urandom
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">16</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/ext/sunec.jar
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">17</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/ext/sunjce_provider.jar
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">18</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/charsets.jar
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">19</span> -&gt; pipe:<span style="color:#f92672">[</span>41166<span style="color:#f92672">]</span>
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">2</span> -&gt; /root/blog4_backend/nohup.out
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">20</span> -&gt; pipe:<span style="color:#f92672">[</span>41166<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">21</span> -&gt; anon_inode:<span style="color:#f92672">[</span>eventpoll<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">22</span> -&gt; pipe:<span style="color:#f92672">[</span>41167<span style="color:#f92672">]</span>
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">23</span> -&gt; pipe:<span style="color:#f92672">[</span>41167<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">24</span> -&gt; anon_inode:<span style="color:#f92672">[</span>eventpoll<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">25</span> -&gt; pipe:<span style="color:#f92672">[</span>41168<span style="color:#f92672">]</span>
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">26</span> -&gt; pipe:<span style="color:#f92672">[</span>41168<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">27</span> -&gt; anon_inode:<span style="color:#f92672">[</span>eventpoll<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">28</span> -&gt; pipe:<span style="color:#f92672">[</span>41222<span style="color:#f92672">]</span>
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">29</span> -&gt; pipe:<span style="color:#f92672">[</span>41222<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">3</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/rt.jar
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">30</span> -&gt; anon_inode:<span style="color:#f92672">[</span>eventpoll<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">31</span> -&gt; socket:<span style="color:#f92672">[</span>41216<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">32</span> -&gt; pipe:<span style="color:#f92672">[</span>41223<span style="color:#f92672">]</span>
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">33</span> -&gt; pipe:<span style="color:#f92672">[</span>41223<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">34</span> -&gt; anon_inode:<span style="color:#f92672">[</span>eventpoll<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">35</span> -&gt; pipe:<span style="color:#f92672">[</span>41224<span style="color:#f92672">]</span>
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">36</span> -&gt; pipe:<span style="color:#f92672">[</span>41224<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">37</span> -&gt; anon_inode:<span style="color:#f92672">[</span>eventpoll<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">38</span> -&gt; pipe:<span style="color:#f92672">[</span>41225<span style="color:#f92672">]</span>
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">39</span> -&gt; pipe:<span style="color:#f92672">[</span>41225<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">4</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/jfr.jarlrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">40</span> -&gt; anon_inode:<span style="color:#f92672">[</span>eventpoll<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">41</span> -&gt; pipe:<span style="color:#f92672">[</span>41226<span style="color:#f92672">]</span>
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">42</span> -&gt; pipe:<span style="color:#f92672">[</span>41226<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">43</span> -&gt; anon_inode:<span style="color:#f92672">[</span>eventpoll<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">44</span> -&gt; socket:<span style="color:#f92672">[</span>41227<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">45</span> -&gt; socket:<span style="color:#f92672">[</span>41228<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">46</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/ext/localedata.jar
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">47</span> -&gt; /dev/null
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">48</span> -&gt; /dev/null
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">49</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/ext/cldrdata.jar
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">5</span> -&gt; /root/blog4_backend/blog-api-basic-backend2-controller-0.0.1-SNAPSHOT.jar
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">50</span> -&gt; socket:<span style="color:#f92672">[</span>532719251<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">51</span> -&gt; socket:<span style="color:#f92672">[</span>532752543<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">52</span> -&gt; socket:<span style="color:#f92672">[</span>532919848<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">53</span> -&gt; /usr/share/fonts/dejavu/DejaVuSans.ttf
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">54</span> -&gt; socket:<span style="color:#f92672">[</span>533121541<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">55</span> -&gt; socket:<span style="color:#f92672">[</span>532259152<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">56</span> -&gt; /dev/random
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">57</span> -&gt; socket:<span style="color:#f92672">[</span>532825408<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">58</span> -&gt; socket:<span style="color:#f92672">[</span>532530568<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">59</span> -&gt; socket:<span style="color:#f92672">[</span>532415118<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">6</span> -&gt; /root/blog4_backend/blog-api-basic-backend2-controller-0.0.1-SNAPSHOT.jar
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">60</span> -&gt; socket:<span style="color:#f92672">[</span>532617855<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 07:31 <span style="color:#ae81ff">61</span> -&gt; socket:<span style="color:#f92672">[</span>532464801<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">63</span> -&gt; pipe:<span style="color:#f92672">[</span>9540779<span style="color:#f92672">]</span>
+l-wx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">64</span> -&gt; pipe:<span style="color:#f92672">[</span>9540779<span style="color:#f92672">]</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">65</span> -&gt; anon_inode:<span style="color:#f92672">[</span>eventpoll<span style="color:#f92672">]</span>
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">7</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/resources.jar
+lr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">8</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/jce.jarlr-x------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 13:31 <span style="color:#ae81ff">9</span> -&gt; /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.302.b08-0.el7_9.x86_64/jre/lib/jsse.jar
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#f92672">[</span>root@VM-0-7-centos ~<span style="color:#f92672">]</span><span style="color:#75715e"># ll /proc/$$/fd</span>
+total <span style="color:#ae81ff">0</span>
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 15:02 <span style="color:#ae81ff">0</span> -&gt; /dev/pts/3
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 15:02 <span style="color:#ae81ff">1</span> -&gt; /dev/pts/3
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 15:02 <span style="color:#ae81ff">2</span> -&gt; /dev/pts/3
+lrwx------ <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">64</span> Oct  <span style="color:#ae81ff">6</span> 15:07 <span style="color:#ae81ff">255</span> -&gt; /dev/pts/3
+</code></pre></div><h3 id="文件重定向">文件重定向</h3>
 <p><strong>推荐使用 案例4</strong></p>
 <p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_06_15_27_09image-20211006152709477.png" alt="image-20211006152709477"></p>
 <h3 id="管道">管道</h3>
 <p><a href="https://www.bilibili.com/video/BV1zb41147pu?p=61">学习视频</a></p>
 <h3 id="tee-管道">TEE 管道</h3>
 <p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_06_16_01_00image-20211006160100382.png" alt="image-20211006160100382"></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-bash" data-lang="bash">ip addr <span class="p">|</span> grep <span class="s1">&#39;inet&#39;</span> <span class="p">|</span> tee -a ip.txt 
-<span class="c1"># 追加方式</span>
-</code></pre></td></tr></table>
-</div>
-</div>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ip addr | grep <span style="color:#e6db74">&#39;inet&#39;</span> | tee -a ip.txt 
+<span style="color:#75715e"># 追加方式</span>
+</code></pre></div>
     </div>
 
     <div class="post-copyright">
@@ -668,7 +513,7 @@ lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <sp
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
@@ -718,5 +563,6 @@ lrwx------ <span class="m">1</span> root root <span class="m">64</span> Oct  <sp
   <script  src="/custom/img/lazyload.min.js"></script>
   <script defer="defer" async src="/custom/post/back_btn.js"></script>
   
+
 </body>
 </html>

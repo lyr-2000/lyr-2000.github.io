@@ -35,7 +35,7 @@
 
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
-<link href="/sass/main.min.755a55554eacedfc972c3c8b6de9579c880c97221e583f6731ac7117264918fb.css" rel="stylesheet"> 
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
@@ -51,7 +51,7 @@
 <meta itemprop="description" content="面试题.正则表达式匹配 请实现一个函数用来匹配包含&rsquo;. &lsquo;和&rsquo;&lsquo;的正则表达式。模式中的字符&rs">
 <meta itemprop="datePublished" content="2022-03-10T17:46:48&#43;08:00" />
 <meta itemprop="dateModified" content="2022-03-10T17:46:48&#43;08:00" />
-<meta itemprop="wordCount" content="1080">
+<meta itemprop="wordCount" content="999">
 <meta itemprop="image" content="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxkd5scpnj31kw0w0h93.jpg">
 
 
@@ -195,6 +195,8 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/%E7%8A%B6%E6%80%81%E8%BD%AC%E7%A7%BBdp%E6%9C%89%E5%90%91%E5%9B%BE%E7%9A%84%E6%9C%80%E5%A4%A7%E9%95%BF%E5%BA%A6/"> 状态转移dp【有向图的最大长度】 </a>
             </div>
+          <span class="more-meta"> 约 999 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -256,181 +258,88 @@ p 可能为空，且只包含从 a-z 的小写字母以及字符 . 和 <em>，�
 <p>注意：本题与主站 10 题相同：https://leetcode-cn.com/problems/regular-expression-matching/</p>
 <h2 id="解题思路">解题思路</h2>
 <h3 id="解题代码">解题代码</h3>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="k">class</span> <span class="nc">Solution</span> <span class="p">{</span>
-<span class="k">public</span><span class="o">:</span>
-    <span class="kt">bool</span> <span class="n">isMatch</span><span class="p">(</span><span class="n">string</span> <span class="n">s</span><span class="p">,</span> <span class="n">string</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
-        <span class="kt">int</span> <span class="n">n</span><span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span><span class="n">m</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
-        <span class="c1">// if(n==0) return m==0;
-</span><span class="c1"></span>        <span class="k">if</span><span class="p">(</span><span class="n">m</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="n">n</span><span class="o">==</span><span class="mi">0</span><span class="p">;</span>
-        <span class="c1">//dp[i,j] = a[i]==b[i] &amp;&amp; dp[i-1,j-1] || (dp[i-1,j]||dp[i,j-1])
-</span><span class="c1"></span>        <span class="n">vector</span><span class="o">&lt;</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;&gt;</span> <span class="n">dp</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">));</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Solution</span> {
+<span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+    <span style="color:#66d9ef">bool</span> isMatch(string s, string p) {
+        <span style="color:#66d9ef">int</span> n<span style="color:#f92672">=</span> s.size(),m <span style="color:#f92672">=</span> p.size();
+        <span style="color:#75715e">// if(n==0) return m==0;
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span>(m<span style="color:#f92672">==</span><span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">return</span> n<span style="color:#f92672">==</span><span style="color:#ae81ff">0</span>;
+        <span style="color:#75715e">//dp[i,j] = a[i]==b[i] &amp;&amp; dp[i-1,j-1] || (dp[i-1,j]||dp[i,j-1])
+</span><span style="color:#75715e"></span>        vector<span style="color:#f92672">&lt;</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">bool</span><span style="color:#f92672">&gt;&gt;</span> dp(n<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>,vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">bool</span><span style="color:#f92672">&gt;</span>(m<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>));
 
-        <span class="c1">//构造p 的表达式
-</span><span class="c1"></span>        <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;=</span><span class="n">m</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-            <span class="k">if</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="sc">&#39;*&#39;</span><span class="p">)</span> <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">-</span><span class="mi">2</span><span class="p">];</span><span class="c1">//****,表示任意字符
-</span><span class="c1"></span>        <span class="p">}</span>
-        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;=</span><span class="n">n</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-            <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;=</span><span class="n">m</span><span class="p">;</span><span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-                <span class="kt">char</span> <span class="n">x</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">];</span>
-                <span class="kt">char</span> <span class="n">y</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">];</span>
-                <span class="k">if</span><span class="p">(</span><span class="n">x</span><span class="o">==</span><span class="n">y</span> <span class="o">||</span> <span class="n">y</span><span class="o">==</span><span class="sc">&#39;.&#39;</span> <span class="p">)</span> <span class="p">{</span>
-                    <span class="c1">//匹配到 1
-</span><span class="c1"></span>                    <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="o">|</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">];</span>
-                <span class="p">}</span>
-                <span class="k">else</span> <span class="nf">if</span><span class="p">(</span><span class="n">y</span><span class="o">==</span><span class="sc">&#39;*&#39;</span> <span class="o">&amp;&amp;</span> <span class="n">j</span><span class="o">&gt;=</span><span class="mi">2</span> <span class="p">)</span> <span class="p">{</span>
-                    <span class="c1">//匹配0  个字符
-</span><span class="c1"></span>                    <span class="c1">//* 依赖于前面的字符
-</span><span class="c1"></span>                 
-                    <span class="kt">char</span> <span class="n">prey</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">2</span><span class="p">];</span>
-                    <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">|</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="mi">2</span><span class="p">];</span><span class="c1">//匹配0个字符，当前不匹配
-</span><span class="c1"></span>                    <span class="c1">//匹配前一个字符
-</span><span class="c1"></span>                    
-                    <span class="c1">// char prey = p[j-2];
-</span><span class="c1"></span>
-                    <span class="k">if</span> <span class="p">(</span> <span class="n">prey</span> <span class="o">==</span> <span class="n">x</span> <span class="o">||</span> <span class="n">prey</span> <span class="o">==</span> <span class="sc">&#39;.&#39;</span><span class="p">)</span> 
-                    <span class="c1">//匹配前1个字符，prex is s[i-1]
-</span><span class="c1"></span>                        <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="o">|</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">];</span>
+        <span style="color:#75715e">//构造p 的表达式
+</span><span style="color:#75715e"></span>        dp[<span style="color:#ae81ff">0</span>][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> true;
+        <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>;i<span style="color:#f92672">&lt;=</span>m;i<span style="color:#f92672">++</span>) {
+            <span style="color:#66d9ef">if</span>(p[i<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]<span style="color:#f92672">==</span><span style="color:#e6db74">&#39;*&#39;</span>) dp[<span style="color:#ae81ff">0</span>][i] <span style="color:#f92672">=</span> dp[<span style="color:#ae81ff">0</span>][i<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>];<span style="color:#75715e">//****,表示任意字符
+</span><span style="color:#75715e"></span>        }
+        <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>;i<span style="color:#f92672">&lt;=</span>n;i<span style="color:#f92672">++</span>) {
+            <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> j<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>;j<span style="color:#f92672">&lt;=</span>m;j<span style="color:#f92672">++</span>) {
+                <span style="color:#66d9ef">char</span> x <span style="color:#f92672">=</span> s[i<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>];
+                <span style="color:#66d9ef">char</span> y <span style="color:#f92672">=</span> p[j<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>];
+                <span style="color:#66d9ef">if</span>(x<span style="color:#f92672">==</span>y <span style="color:#f92672">||</span> y<span style="color:#f92672">==</span><span style="color:#e6db74">&#39;.&#39;</span> ) {
+                    <span style="color:#75715e">//匹配到 1
+</span><span style="color:#75715e"></span>                    dp[i][j] <span style="color:#f92672">=</span> dp[i][j]<span style="color:#f92672">|</span>dp[i<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>][j<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>];
+                }
+                <span style="color:#66d9ef">else</span> <span style="color:#a6e22e">if</span>(y<span style="color:#f92672">==</span><span style="color:#e6db74">&#39;*&#39;</span> <span style="color:#f92672">&amp;&amp;</span> j<span style="color:#f92672">&gt;=</span><span style="color:#ae81ff">2</span> ) {
+                    <span style="color:#75715e">//匹配0  个字符
+</span><span style="color:#75715e"></span>                    <span style="color:#75715e">//* 依赖于前面的字符
+</span><span style="color:#75715e"></span>                 
+                    <span style="color:#66d9ef">char</span> prey <span style="color:#f92672">=</span> p[j<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>];
+                    dp[i][j] <span style="color:#f92672">=</span>dp[i][j] <span style="color:#f92672">|</span> dp[i][j<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>];<span style="color:#75715e">//匹配0个字符，当前不匹配
+</span><span style="color:#75715e"></span>                    <span style="color:#75715e">//匹配前一个字符
+</span><span style="color:#75715e"></span>                    
+                    <span style="color:#75715e">// char prey = p[j-2];
+</span><span style="color:#75715e"></span>
+                    <span style="color:#66d9ef">if</span> ( prey <span style="color:#f92672">==</span> x <span style="color:#f92672">||</span> prey <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;.&#39;</span>) 
+                    <span style="color:#75715e">//匹配前1个字符，prex is s[i-1]
+</span><span style="color:#75715e"></span>                        dp[i][j] <span style="color:#f92672">=</span> dp[i][j]<span style="color:#f92672">|</span> dp[i<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>][j];
 
-                <span class="p">}</span>
+                }
 
-            <span class="p">}</span>
-        <span class="p">}</span>
-        <span class="k">return</span> <span class="n">dp</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">m</span><span class="p">];</span>
+            }
+        }
+        <span style="color:#66d9ef">return</span> dp[n][m];
 
-    <span class="p">}</span>
-<span class="p">};</span>
-</code></pre></td></tr></table>
-</div>
-</div><div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="k">class</span> <span class="nc">Solution</span> <span class="p">{</span>
-<span class="k">public</span><span class="o">:</span>
-    <span class="kt">bool</span> <span class="n">isMatch</span><span class="p">(</span><span class="n">string</span> <span class="n">s</span><span class="p">,</span> <span class="n">string</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
-        <span class="kt">int</span> <span class="n">n</span><span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span><span class="n">m</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
-        <span class="c1">// if(n==0) return m==0;
-</span><span class="c1"></span>        <span class="k">if</span><span class="p">(</span><span class="n">m</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="n">n</span><span class="o">==</span><span class="mi">0</span><span class="p">;</span>
-        <span class="c1">//dp[i,j] = a[i]==b[i] &amp;&amp; dp[i-1,j-1] || (dp[i-1,j]||dp[i,j-1])
-</span><span class="c1"></span>        <span class="n">vector</span><span class="o">&lt;</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;&gt;</span> <span class="n">dp</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">));</span>
+    }
+};
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Solution</span> {
+<span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+    <span style="color:#66d9ef">bool</span> isMatch(string s, string p) {
+        <span style="color:#66d9ef">int</span> n<span style="color:#f92672">=</span> s.size(),m <span style="color:#f92672">=</span> p.size();
+        <span style="color:#75715e">// if(n==0) return m==0;
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span>(m<span style="color:#f92672">==</span><span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">return</span> n<span style="color:#f92672">==</span><span style="color:#ae81ff">0</span>;
+        <span style="color:#75715e">//dp[i,j] = a[i]==b[i] &amp;&amp; dp[i-1,j-1] || (dp[i-1,j]||dp[i,j-1])
+</span><span style="color:#75715e"></span>        vector<span style="color:#f92672">&lt;</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">bool</span><span style="color:#f92672">&gt;&gt;</span> dp(n<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>,vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">bool</span><span style="color:#f92672">&gt;</span>(m<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>));
 
-        <span class="c1">//构造p 的表达式
-</span><span class="c1"></span>        <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;=</span><span class="n">m</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-            <span class="k">if</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="sc">&#39;*&#39;</span><span class="p">)</span> <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="o">-</span><span class="mi">2</span><span class="p">];</span><span class="c1">//****,表示任意字符
-</span><span class="c1"></span>        <span class="p">}</span>
-        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;=</span><span class="n">n</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-            <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;=</span><span class="n">m</span><span class="p">;</span><span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-                <span class="kt">char</span> <span class="n">x</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">y</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">];</span>
-                <span class="k">if</span><span class="p">(</span> <span class="n">y</span> <span class="o">==</span> <span class="sc">&#39;*&#39;</span> <span class="o">&amp;&amp;</span> <span class="n">j</span><span class="o">&gt;=</span><span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
-                    <span class="c1">//匹配0 个a ,例如 a*
-</span><span class="c1"></span>                    <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="mi">2</span><span class="p">];</span>
-                    <span class="k">if</span><span class="p">(</span>  <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">p</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">||</span> <span class="n">p</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="sc">&#39;.&#39;</span><span class="p">)</span> <span class="p">{</span>
-                        <span class="c1">//匹配 1-n 个 a
-</span><span class="c1"></span>                        <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">|</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">];</span>
-                    <span class="p">}</span>
-                <span class="p">}</span><span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">x</span><span class="o">==</span> <span class="n">y</span> <span class="o">||</span> <span class="n">y</span> <span class="o">==</span> <span class="sc">&#39;.&#39;</span><span class="p">)</span> <span class="p">{</span>
-                    <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">];</span>
-                <span class="p">}</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-        <span class="k">return</span> <span class="n">dp</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">m</span><span class="p">];</span>
+        <span style="color:#75715e">//构造p 的表达式
+</span><span style="color:#75715e"></span>        dp[<span style="color:#ae81ff">0</span>][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> true;
+        <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>;i<span style="color:#f92672">&lt;=</span>m;i<span style="color:#f92672">++</span>) {
+            <span style="color:#66d9ef">if</span>(p[i<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]<span style="color:#f92672">==</span><span style="color:#e6db74">&#39;*&#39;</span>) dp[<span style="color:#ae81ff">0</span>][i] <span style="color:#f92672">=</span> dp[<span style="color:#ae81ff">0</span>][i<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>];<span style="color:#75715e">//****,表示任意字符
+</span><span style="color:#75715e"></span>        }
+        <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>;i<span style="color:#f92672">&lt;=</span>n;i<span style="color:#f92672">++</span>) {
+            <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> j<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>;j<span style="color:#f92672">&lt;=</span>m;j<span style="color:#f92672">++</span>) {
+                <span style="color:#66d9ef">char</span> x <span style="color:#f92672">=</span> s[i<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>],y <span style="color:#f92672">=</span> p[j<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>];
+                <span style="color:#66d9ef">if</span>( y <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;*&#39;</span> <span style="color:#f92672">&amp;&amp;</span> j<span style="color:#f92672">&gt;=</span><span style="color:#ae81ff">2</span>) {
+                    <span style="color:#75715e">//匹配0 个a ,例如 a*
+</span><span style="color:#75715e"></span>                    dp[i][j] <span style="color:#f92672">=</span> dp[i][j<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>];
+                    <span style="color:#66d9ef">if</span>(  s[i<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">==</span> p[j<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">||</span> p[j<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;.&#39;</span>) {
+                        <span style="color:#75715e">//匹配 1-n 个 a
+</span><span style="color:#75715e"></span>                        dp[i][j] <span style="color:#f92672">=</span> dp[i][j] <span style="color:#f92672">|</span> dp[i<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>][j];
+                    }
+                }<span style="color:#66d9ef">else</span> <span style="color:#a6e22e">if</span> (x<span style="color:#f92672">==</span> y <span style="color:#f92672">||</span> y <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;.&#39;</span>) {
+                    dp[i][j] <span style="color:#f92672">=</span> dp[i<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>][j<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>];
+                }
+            }
+        }
+        <span style="color:#66d9ef">return</span> dp[n][m];
         
 
 
 
 
-    <span class="p">}</span>
-<span class="p">};</span>
-</code></pre></td></tr></table>
-</div>
-</div>
+    }
+};
+</code></pre></div>
     </div>
 
     <div class="post-copyright">
@@ -553,7 +462,7 @@ p 可能为空，且只包含从 a-z 的小写字母以及字符 . 和 <em>，�
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
@@ -603,5 +512,6 @@ p 可能为空，且只包含从 a-z 的小写字母以及字符 . 和 <em>，�
   <script  src="/custom/img/lazyload.min.js"></script>
   <script defer="defer" async src="/custom/post/back_btn.js"></script>
   
+
 </body>
 </html>

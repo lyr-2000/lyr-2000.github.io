@@ -35,7 +35,7 @@
 
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
-<link href="/sass/main.min.755a55554eacedfc972c3c8b6de9579c880c97221e583f6731ac7117264918fb.css" rel="stylesheet"> 
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
@@ -50,7 +50,7 @@
 <meta itemprop="description" content="扩展接口 需求分析 为了用户更加方便地使用 axios 发送请求，我们可以为所有支持请求方法扩展一些接口： axios.request(config) axios.get(url[, config]) axios.delete(url[, config]) axios.head(url[, config]) axios.options(url[, config]) axios.post(url[, data[, config]]) axios.put(url[, data[, config]]) axios.patch(url[, data[, config]]) 如果使用了这些">
 <meta itemprop="datePublished" content="2020-01-05T10:56:02&#43;00:00" />
 <meta itemprop="dateModified" content="2020-01-05T10:56:02&#43;00:00" />
-<meta itemprop="wordCount" content="1927">
+<meta itemprop="wordCount" content="1745">
 
 
 
@@ -189,6 +189,8 @@ input.PC_MARK1:focus{
             <a href="/categories/typescript-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/"> 《TypeScript 从零实现 axios》 </a>
             <a href="/categories/ts-axios-%E6%8E%A5%E5%8F%A3%E6%89%A9%E5%B1%95/"> ts-axios 接口扩展 </a>
             </div>
+          <span class="more-meta"> 约 1745 字 </span>
+          <span class="more-meta"> 预计阅读 4 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -248,432 +250,208 @@ input.PC_MARK1:focus{
 <p>根据需求分析，混合对象 <code>axios</code> 本身是一个函数，我们再实现一个包括它属性方法的类，然后把这个类的原型属性和自身属性再拷贝到 <code>axios</code> 上。</p>
 <p>我们先来给 <code>axios</code> 混合对象定义接口：</p>
 <p><code>types/index.ts</code>：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="kr">interface</span> <span class="nx">Axios</span> <span class="p">{</span>
-  <span class="nx">request</span><span class="p">(</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">Axios</span> {
+  <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">config</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span>
 
-  <span class="nx">get</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span>
+  <span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span>
 
-  <span class="k">delete</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span>
+  <span style="color:#66d9ef">delete</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span>
 
-  <span class="nx">head</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span>
+  <span style="color:#a6e22e">head</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span>
 
-  <span class="nx">options</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span>
+  <span style="color:#a6e22e">options</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span>
 
-  <span class="nx">post</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">data?</span>: <span class="kt">any</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span>
+  <span style="color:#a6e22e">post</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">data?</span>: <span style="color:#66d9ef">any</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span>
 
-  <span class="nx">put</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">data?</span>: <span class="kt">any</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span>
+  <span style="color:#a6e22e">put</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">data?</span>: <span style="color:#66d9ef">any</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span>
 
-  <span class="nx">patch</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">data?</span>: <span class="kt">any</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span>
-<span class="p">}</span>
+  <span style="color:#a6e22e">patch</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">data?</span>: <span style="color:#66d9ef">any</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span>
+}
 
-<span class="kr">export</span> <span class="kr">interface</span> <span class="nx">AxiosInstance</span> <span class="kr">extends</span> <span class="nx">Axios</span> <span class="p">{</span>
-  <span class="p">(</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span>
-<span class="p">}</span>
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">AxiosInstance</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">Axios</span> {
+  (<span style="color:#a6e22e">config</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span>
+}
 
-<span class="kr">export</span> <span class="kr">interface</span> <span class="nx">AxiosRequestConfig</span> <span class="p">{</span>
-  <span class="nx">url?</span>: <span class="kt">string</span>
-  <span class="c1">// ...
-</span><span class="c1"></span><span class="p">}</span>
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">AxiosRequestConfig</span> {
+  <span style="color:#a6e22e">url?</span>: <span style="color:#66d9ef">string</span>
+  <span style="color:#75715e">// ...
+</span><span style="color:#75715e"></span>}
 
-</code></pre></td></tr></table>
-</div>
-</div><p>首先定义一个 <code>Axios</code> 类型接口，它描述了 <code>Axios</code> 类中的公共方法，接着定义了 <code>AxiosInstance</code> 接口继承 <code>Axios</code>，它就是一个混合类型的接口。</p>
+</code></pre></div><p>首先定义一个 <code>Axios</code> 类型接口，它描述了 <code>Axios</code> 类中的公共方法，接着定义了 <code>AxiosInstance</code> 接口继承 <code>Axios</code>，它就是一个混合类型的接口。</p>
 <p>另外 <code>AxiosRequestConfig</code> 类型接口中的 <code>url</code> 属性变成了可选属性。</p>
 <h2 id="创建-axios-类">创建 Axios 类</h2>
 <p>我们创建一个 <code>Axios</code> 类，来实现接口定义的公共方法。我们创建了一个 <code>core</code> 目录，用来存放发送请求核心流程的代码。我们在 <code>core</code> 目录下创建 <code>Axios.ts</code> 文件。</p>
 <p><code>core/Axios.ts</code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span><span class="lnt">54
-</span><span class="lnt">55
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="p">{</span> <span class="nx">AxiosRequestConfig</span><span class="p">,</span> <span class="nx">AxiosPromise</span><span class="p">,</span> <span class="nx">Method</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;../types&#39;</span>
-<span class="kr">import</span> <span class="nx">dispatchRequest</span> <span class="nx">from</span> <span class="s1">&#39;./dispatchRequest&#39;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">AxiosRequestConfig</span>, <span style="color:#a6e22e">AxiosPromise</span>, <span style="color:#a6e22e">Method</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;../types&#39;</span>
+<span style="color:#66d9ef">import</span> <span style="color:#a6e22e">dispatchRequest</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;./dispatchRequest&#39;</span>
 
-<span class="kr">export</span> <span class="k">default</span> <span class="kr">class</span> <span class="nx">Axios</span> <span class="p">{</span>
-  <span class="nx">request</span><span class="p">(</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="nx">dispatchRequest</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span>
-  <span class="p">}</span>
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Axios</span> {
+  <span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">config</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">dispatchRequest</span>(<span style="color:#a6e22e">config</span>)
+  }
 
-  <span class="nx">get</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_requestMethodWithoutData</span><span class="p">(</span><span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">config</span><span class="p">)</span>
-  <span class="p">}</span>
+  <span style="color:#a6e22e">get</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestMethodWithoutData</span>(<span style="color:#e6db74">&#39;get&#39;</span>, <span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">config</span>)
+  }
 
-  <span class="k">delete</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_requestMethodWithoutData</span><span class="p">(</span><span class="s1">&#39;delete&#39;</span><span class="p">,</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">config</span><span class="p">)</span>
-  <span class="p">}</span>
+  <span style="color:#66d9ef">delete</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestMethodWithoutData</span>(<span style="color:#e6db74">&#39;delete&#39;</span>, <span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">config</span>)
+  }
 
-  <span class="nx">head</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_requestMethodWithoutData</span><span class="p">(</span><span class="s1">&#39;head&#39;</span><span class="p">,</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">config</span><span class="p">)</span>
-  <span class="p">}</span>
+  <span style="color:#a6e22e">head</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestMethodWithoutData</span>(<span style="color:#e6db74">&#39;head&#39;</span>, <span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">config</span>)
+  }
 
-  <span class="nx">options</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_requestMethodWithoutData</span><span class="p">(</span><span class="s1">&#39;options&#39;</span><span class="p">,</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">config</span><span class="p">)</span>
-  <span class="p">}</span>
+  <span style="color:#a6e22e">options</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestMethodWithoutData</span>(<span style="color:#e6db74">&#39;options&#39;</span>, <span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">config</span>)
+  }
 
-  <span class="nx">post</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">data?</span>: <span class="kt">any</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_requestMethodWithData</span><span class="p">(</span><span class="s1">&#39;post&#39;</span><span class="p">,</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">config</span><span class="p">)</span>
-  <span class="p">}</span>
+  <span style="color:#a6e22e">post</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">data?</span>: <span style="color:#66d9ef">any</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestMethodWithData</span>(<span style="color:#e6db74">&#39;post&#39;</span>, <span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">data</span>, <span style="color:#a6e22e">config</span>)
+  }
 
-  <span class="nx">put</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">data?</span>: <span class="kt">any</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_requestMethodWithData</span><span class="p">(</span><span class="s1">&#39;put&#39;</span><span class="p">,</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">config</span><span class="p">)</span>
-  <span class="p">}</span>
+  <span style="color:#a6e22e">put</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">data?</span>: <span style="color:#66d9ef">any</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestMethodWithData</span>(<span style="color:#e6db74">&#39;put&#39;</span>, <span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">data</span>, <span style="color:#a6e22e">config</span>)
+  }
 
-  <span class="nx">patch</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">data?</span>: <span class="kt">any</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_requestMethodWithData</span><span class="p">(</span><span class="s1">&#39;patch&#39;</span><span class="p">,</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">config</span><span class="p">)</span>
-  <span class="p">}</span>
+  <span style="color:#a6e22e">patch</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">data?</span>: <span style="color:#66d9ef">any</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_requestMethodWithData</span>(<span style="color:#e6db74">&#39;patch&#39;</span>, <span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">data</span>, <span style="color:#a6e22e">config</span>)
+  }
 
-  <span class="nx">_requestMethodWithoutData</span><span class="p">(</span><span class="nx">method</span>: <span class="kt">Method</span><span class="p">,</span> <span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span>
-      <span class="nb">Object</span><span class="p">.</span><span class="nx">assign</span><span class="p">(</span><span class="nx">config</span> <span class="o">||</span> <span class="p">{},</span> <span class="p">{</span>
-        <span class="nx">method</span><span class="p">,</span>
-        <span class="nx">url</span>
-      <span class="p">})</span>
-    <span class="p">)</span>
-  <span class="p">}</span>
+  <span style="color:#a6e22e">_requestMethodWithoutData</span>(<span style="color:#a6e22e">method</span>: <span style="color:#66d9ef">Method</span>, <span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>) {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">request</span>(
+      Object.<span style="color:#a6e22e">assign</span>(<span style="color:#a6e22e">config</span> <span style="color:#f92672">||</span> {}, {
+        <span style="color:#a6e22e">method</span>,
+        <span style="color:#a6e22e">url</span>
+      })
+    )
+  }
 
-  <span class="nx">_requestMethodWithData</span><span class="p">(</span><span class="nx">method</span>: <span class="kt">Method</span><span class="p">,</span> <span class="nx">url</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">data?</span>: <span class="kt">any</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">request</span><span class="p">(</span>
-      <span class="nb">Object</span><span class="p">.</span><span class="nx">assign</span><span class="p">(</span><span class="nx">config</span> <span class="o">||</span> <span class="p">{},</span> <span class="p">{</span>
-        <span class="nx">method</span><span class="p">,</span>
-        <span class="nx">url</span><span class="p">,</span>
-        <span class="nx">data</span>
-      <span class="p">})</span>
-    <span class="p">)</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>其中 <code>request</code> 方法的功能和我们之前的 <code>axios</code> 函数功能是一致。<code>axios</code> 函数的功能就是发送请求，基于模块化编程的思想，我们把这部分功能抽出一个单独的模块，在 <code>core</code> 目录下创建 <code>dispatchRequest</code> 方法，把之前 <code>axios.ts</code> 的相关代码拷贝过去。另外我们把 <code>xhr.ts</code> 文件也迁移到 <code>core</code> 目录下。</p>
+  <span style="color:#a6e22e">_requestMethodWithData</span>(<span style="color:#a6e22e">method</span>: <span style="color:#66d9ef">Method</span>, <span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">data?</span>: <span style="color:#66d9ef">any</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>) {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">request</span>(
+      Object.<span style="color:#a6e22e">assign</span>(<span style="color:#a6e22e">config</span> <span style="color:#f92672">||</span> {}, {
+        <span style="color:#a6e22e">method</span>,
+        <span style="color:#a6e22e">url</span>,
+        <span style="color:#a6e22e">data</span>
+      })
+    )
+  }
+}
+</code></pre></div><p>其中 <code>request</code> 方法的功能和我们之前的 <code>axios</code> 函数功能是一致。<code>axios</code> 函数的功能就是发送请求，基于模块化编程的思想，我们把这部分功能抽出一个单独的模块，在 <code>core</code> 目录下创建 <code>dispatchRequest</code> 方法，把之前 <code>axios.ts</code> 的相关代码拷贝过去。另外我们把 <code>xhr.ts</code> 文件也迁移到 <code>core</code> 目录下。</p>
 <p><code>core/dispatchRequest.ts</code>：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="p">{</span> <span class="nx">AxiosPromise</span><span class="p">,</span> <span class="nx">AxiosRequestConfig</span><span class="p">,</span> <span class="nx">AxiosResponse</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;../types&#39;</span>
-<span class="kr">import</span> <span class="nx">xhr</span> <span class="nx">from</span> <span class="s1">&#39;./xhr&#39;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">buildURL</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;../helpers/url&#39;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">transformRequest</span><span class="p">,</span> <span class="nx">transformResponse</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;../helpers/data&#39;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">processHeaders</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;../helpers/headers&#39;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">AxiosPromise</span>, <span style="color:#a6e22e">AxiosRequestConfig</span>, <span style="color:#a6e22e">AxiosResponse</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;../types&#39;</span>
+<span style="color:#66d9ef">import</span> <span style="color:#a6e22e">xhr</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;./xhr&#39;</span>
+<span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">buildURL</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;../helpers/url&#39;</span>
+<span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">transformRequest</span>, <span style="color:#a6e22e">transformResponse</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;../helpers/data&#39;</span>
+<span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">processHeaders</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;../helpers/headers&#39;</span>
 
-<span class="kr">export</span> <span class="k">default</span> <span class="kd">function</span> <span class="nx">dispatchRequest</span><span class="p">(</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span> <span class="p">{</span>
-  <span class="nx">processConfig</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span>
-  <span class="k">return</span> <span class="nx">xhr</span><span class="p">(</span><span class="nx">config</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">res</span> <span class="o">=&gt;</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="nx">transformResponseData</span><span class="p">(</span><span class="nx">res</span><span class="p">)</span>
-  <span class="p">})</span>
-<span class="p">}</span>
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">dispatchRequest</span>(<span style="color:#a6e22e">config</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span> {
+  <span style="color:#a6e22e">processConfig</span>(<span style="color:#a6e22e">config</span>)
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">xhr</span>(<span style="color:#a6e22e">config</span>).<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">res</span> <span style="color:#f92672">=&gt;</span> {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">transformResponseData</span>(<span style="color:#a6e22e">res</span>)
+  })
+}
 
-<span class="kd">function</span> <span class="nx">processConfig</span><span class="p">(</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="k">void</span> <span class="p">{</span>
-  <span class="nx">config</span><span class="p">.</span><span class="nx">url</span> <span class="o">=</span> <span class="nx">transformURL</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span>
-  <span class="nx">config</span><span class="p">.</span><span class="nx">headers</span> <span class="o">=</span> <span class="nx">transformHeaders</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span>
-  <span class="nx">config</span><span class="p">.</span><span class="nx">data</span> <span class="o">=</span> <span class="nx">transformRequestData</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span>
-<span class="p">}</span>
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">processConfig</span>(<span style="color:#a6e22e">config</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
+  <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">url</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transformURL</span>(<span style="color:#a6e22e">config</span>)
+  <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">headers</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transformHeaders</span>(<span style="color:#a6e22e">config</span>)
+  <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transformRequestData</span>(<span style="color:#a6e22e">config</span>)
+}
 
-<span class="kd">function</span> <span class="nx">transformURL</span><span class="p">(</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="kt">string</span> <span class="p">{</span>
-  <span class="kr">const</span> <span class="p">{</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">params</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">config</span>
-  <span class="k">return</span> <span class="nx">buildURL</span><span class="p">(</span><span class="nx">url</span><span class="p">,</span> <span class="nx">params</span><span class="p">)</span>
-<span class="p">}</span>
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">transformURL</span>(<span style="color:#a6e22e">config</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#66d9ef">string</span> {
+  <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">params</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">config</span>
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">buildURL</span>(<span style="color:#a6e22e">url</span>, <span style="color:#a6e22e">params</span>)
+}
 
-<span class="kd">function</span> <span class="nx">transformRequestData</span><span class="p">(</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">any</span> <span class="p">{</span>
-  <span class="k">return</span> <span class="nx">transformRequest</span><span class="p">(</span><span class="nx">config</span><span class="p">.</span><span class="nx">data</span><span class="p">)</span>
-<span class="p">}</span>
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">transformRequestData</span>(<span style="color:#a6e22e">config</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">any</span> {
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">transformRequest</span>(<span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">data</span>)
+}
 
-<span class="kd">function</span> <span class="nx">transformHeaders</span><span class="p">(</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span> <span class="p">{</span>
-  <span class="kr">const</span> <span class="p">{</span> <span class="nx">headers</span> <span class="o">=</span> <span class="p">{},</span> <span class="nx">data</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">config</span>
-  <span class="k">return</span> <span class="nx">processHeaders</span><span class="p">(</span><span class="nx">headers</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
-<span class="p">}</span>
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">transformHeaders</span>(<span style="color:#a6e22e">config</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>) {
+  <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">headers</span> <span style="color:#f92672">=</span> {}, <span style="color:#a6e22e">data</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">config</span>
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">processHeaders</span>(<span style="color:#a6e22e">headers</span>, <span style="color:#a6e22e">data</span>)
+}
 
-<span class="kd">function</span> <span class="nx">transformResponseData</span><span class="p">(</span><span class="nx">res</span>: <span class="kt">AxiosResponse</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosResponse</span> <span class="p">{</span>
-  <span class="nx">res</span><span class="p">.</span><span class="nx">data</span> <span class="o">=</span> <span class="nx">transformResponse</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">data</span><span class="p">)</span>
-  <span class="k">return</span> <span class="nx">res</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>回到 <code>Axios.ts</code> 文件，对于 <code>get</code>、<code>delete</code>、<code>head</code>、<code>options</code>、<code>post</code>、<code>patch</code>、<code>put</code> 这些方法，都是对外提供的语法糖，内部都是通过调用 <code>request</code> 方法实现发送请求，只不过在调用之前对 <code>config</code> 做了一层合并处理。</p>
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">transformResponseData</span>(<span style="color:#a6e22e">res</span>: <span style="color:#66d9ef">AxiosResponse</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosResponse</span> {
+  <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transformResponse</span>(<span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">data</span>)
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">res</span>
+}
+</code></pre></div><p>回到 <code>Axios.ts</code> 文件，对于 <code>get</code>、<code>delete</code>、<code>head</code>、<code>options</code>、<code>post</code>、<code>patch</code>、<code>put</code> 这些方法，都是对外提供的语法糖，内部都是通过调用 <code>request</code> 方法实现发送请求，只不过在调用之前对 <code>config</code> 做了一层合并处理。</p>
 <h2 id="混合对象实现">混合对象实现</h2>
 <p>混合对象实现思路很简单，首先这个对象是一个函数，其次这个对象要包括 <code>Axios</code> 类的所有原型属性和实例属性，我们首先来实现一个辅助函数 <code>extend</code>。</p>
 <p><code>helpers/util.ts</code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="kd">function</span> <span class="nx">extend</span><span class="p">&lt;</span><span class="nt">T</span><span class="err">,</span> <span class="na">U</span><span class="p">&gt;(</span><span class="nx">to</span>: <span class="kt">T</span><span class="p">,</span> <span class="nx">from</span>: <span class="kt">U</span><span class="p">)</span><span class="o">:</span> <span class="nx">T</span> <span class="o">&amp;</span> <span class="nx">U</span> <span class="p">{</span>
-  <span class="k">for</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">from</span><span class="p">)</span> <span class="p">{</span>
-    <span class="p">;(</span><span class="nx">to</span> <span class="kr">as</span> <span class="nx">T</span> <span class="o">&amp;</span> <span class="nx">U</span><span class="p">)[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">from</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="kr">as</span> <span class="nx">any</span>
-  <span class="p">}</span>
-  <span class="k">return</span> <span class="nx">to</span> <span class="kr">as</span> <span class="nx">T</span> <span class="o">&amp;</span> <span class="nx">U</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p><code>extend</code> 方法的实现用到了交叉类型，并且用到了类型断言。<code>extend</code> 的最终目的是把 <code>from</code> 里的属性都扩展到 <code>to</code> 中，包括原型上的属性。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">extend</span>&lt;<span style="color:#f92672">T</span><span style="color:#960050;background-color:#1e0010">,</span> <span style="color:#a6e22e">U</span>&gt;(<span style="color:#a6e22e">to</span>: <span style="color:#66d9ef">T</span>, <span style="color:#a6e22e">from</span>: <span style="color:#66d9ef">U</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">T</span> <span style="color:#f92672">&amp;</span> <span style="color:#a6e22e">U</span> {
+  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">key</span> <span style="color:#66d9ef">in</span> <span style="color:#a6e22e">from</span>) {
+    ;(<span style="color:#a6e22e">to</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">T</span> <span style="color:#f92672">&amp;</span> <span style="color:#a6e22e">U</span>)[<span style="color:#a6e22e">key</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">from</span>[<span style="color:#a6e22e">key</span>] <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">any</span>
+  }
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">to</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">T</span> <span style="color:#f92672">&amp;</span> <span style="color:#a6e22e">U</span>
+}
+</code></pre></div><p><code>extend</code> 方法的实现用到了交叉类型，并且用到了类型断言。<code>extend</code> 的最终目的是把 <code>from</code> 里的属性都扩展到 <code>to</code> 中，包括原型上的属性。</p>
 <p>我们接下来对 <code>axios.ts</code> 文件做修改，我们用工厂模式去创建一个 <code>axios</code> 混合对象。</p>
 <p><code>axios.ts</code>：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="p">{</span> <span class="nx">AxiosInstance</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;./types&#39;</span>
-<span class="kr">import</span> <span class="nx">Axios</span> <span class="nx">from</span> <span class="s1">&#39;./core/Axios&#39;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">extend</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;./helpers/util&#39;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">AxiosInstance</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;./types&#39;</span>
+<span style="color:#66d9ef">import</span> <span style="color:#a6e22e">Axios</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;./core/Axios&#39;</span>
+<span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">extend</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;./helpers/util&#39;</span>
 
-<span class="kd">function</span> <span class="nx">createInstance</span><span class="p">()</span><span class="o">:</span> <span class="nx">AxiosInstance</span> <span class="p">{</span>
-  <span class="kr">const</span> <span class="nx">context</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Axios</span><span class="p">()</span>
-  <span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">Axios</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">context</span><span class="p">)</span>
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">createInstance</span>()<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosInstance</span> {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Axios</span>()
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">instance</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Axios</span>.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">bind</span>(<span style="color:#a6e22e">context</span>)
 
-  <span class="nx">extend</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">context</span><span class="p">)</span>
+  <span style="color:#a6e22e">extend</span>(<span style="color:#a6e22e">instance</span>, <span style="color:#a6e22e">context</span>)
 
-  <span class="k">return</span> <span class="nx">instance</span> <span class="kr">as</span> <span class="nx">AxiosInstance</span>
-<span class="p">}</span>
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">instance</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">AxiosInstance</span>
+}
 
-<span class="kr">const</span> <span class="nx">axios</span> <span class="o">=</span> <span class="nx">createInstance</span><span class="p">()</span>
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">axios</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">createInstance</span>()
 
-<span class="kr">export</span> <span class="k">default</span> <span class="nx">axios</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>在 <code>createInstance</code> 工厂函数的内部，我们首先实例化了 <code>Axios</code> 实例 <code>context</code>，接着创建<code>instance</code> 指向 <code>Axios.prototype.request</code> 方法，并绑定了上下文 <code>context</code>；接着通过 <code>extend</code> 方法把 <code>context</code> 中的原型方法和实例方法全部拷贝到 <code>instance</code> 上，这样就实现了一个混合对象：<code>instance</code> 本身是一个函数，又拥有了 <code>Axios</code> 类的所有原型和实例属性，最终把这个 <code>instance</code> 返回。由于这里 <code>TypeScript</code> 不能正确推断 <code>instance</code> 的类型，我们把它断言成 <code>AxiosInstance</code> 类型。</p>
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#a6e22e">axios</span>
+</code></pre></div><p>在 <code>createInstance</code> 工厂函数的内部，我们首先实例化了 <code>Axios</code> 实例 <code>context</code>，接着创建<code>instance</code> 指向 <code>Axios.prototype.request</code> 方法，并绑定了上下文 <code>context</code>；接着通过 <code>extend</code> 方法把 <code>context</code> 中的原型方法和实例方法全部拷贝到 <code>instance</code> 上，这样就实现了一个混合对象：<code>instance</code> 本身是一个函数，又拥有了 <code>Axios</code> 类的所有原型和实例属性，最终把这个 <code>instance</code> 返回。由于这里 <code>TypeScript</code> 不能正确推断 <code>instance</code> 的类型，我们把它断言成 <code>AxiosInstance</code> 类型。</p>
 <p>这样我们就可以通过 <code>createInstance</code> 工厂函数创建了 <code>axios</code>，当直接调用 <code>axios</code> 方法就相当于执行了 <code>Axios</code> 类的 <code>request</code> 方法发送请求，当然我们也可以调用 <code>axios.get</code>、<code>axios.post</code> 等方法。</p>
 <h2 id="demo-编写">demo 编写</h2>
 <p>在 <code>examples</code> 目录下创建 <code>extend</code> 目录，在 <code>extend</code> 目录下创建 <code>index.html</code>:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-html" data-lang="html"><span class="cp">&lt;!DOCTYPE html&gt;</span>
-<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&#34;en&#34;</span><span class="p">&gt;</span>
-  <span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
-    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&#34;utf-8&#34;</span><span class="p">&gt;</span>
-    <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>Extend example<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
-  <span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
-  <span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
-    <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&#34;/__build__/extend.js&#34;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
-  <span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
-<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>接着创建 <code>app.ts</code> 作为入口文件：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="nx">axios</span> <span class="nx">from</span> <span class="s1">&#39;../../src/index&#39;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html"><span style="color:#75715e">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color:#f92672">html</span> <span style="color:#a6e22e">lang</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;en&#34;</span>&gt;
+  &lt;<span style="color:#f92672">head</span>&gt;
+    &lt;<span style="color:#f92672">meta</span> <span style="color:#a6e22e">charset</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;utf-8&#34;</span>&gt;
+    &lt;<span style="color:#f92672">title</span>&gt;Extend example&lt;/<span style="color:#f92672">title</span>&gt;
+  &lt;/<span style="color:#f92672">head</span>&gt;
+  &lt;<span style="color:#f92672">body</span>&gt;
+    &lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/__build__/extend.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;
+  &lt;/<span style="color:#f92672">body</span>&gt;
+&lt;/<span style="color:#f92672">html</span>&gt;
+</code></pre></div><p>接着创建 <code>app.ts</code> 作为入口文件：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">axios</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;../../src/index&#39;</span>
 
-<span class="nx">axios</span><span class="p">({</span>
-  <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;/extend/post&#39;</span><span class="p">,</span>
-  <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span>
-  <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
-    <span class="nx">msg</span><span class="o">:</span> <span class="s1">&#39;hi&#39;</span>
-  <span class="p">}</span>
-<span class="p">})</span>
+<span style="color:#a6e22e">axios</span>({
+  <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;/extend/post&#39;</span>,
+  <span style="color:#a6e22e">method</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;post&#39;</span>,
+  <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> {
+    <span style="color:#a6e22e">msg</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;hi&#39;</span>
+  }
+})
 
-<span class="nx">axios</span><span class="p">.</span><span class="nx">request</span><span class="p">({</span>
-  <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;/extend/post&#39;</span><span class="p">,</span>
-  <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span>
-  <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
-    <span class="nx">msg</span><span class="o">:</span> <span class="s1">&#39;hello&#39;</span>
-  <span class="p">}</span>
-<span class="p">})</span>
+<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">request</span>({
+  <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;/extend/post&#39;</span>,
+  <span style="color:#a6e22e">method</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;post&#39;</span>,
+  <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> {
+    <span style="color:#a6e22e">msg</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;hello&#39;</span>
+  }
+})
 
-<span class="nx">axios</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/extend/get&#39;</span><span class="p">)</span>
+<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/extend/get&#39;</span>)
 
-<span class="nx">axios</span><span class="p">.</span><span class="nx">options</span><span class="p">(</span><span class="s1">&#39;/extend/options&#39;</span><span class="p">)</span>
+<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">options</span>(<span style="color:#e6db74">&#39;/extend/options&#39;</span>)
 
-<span class="nx">axios</span><span class="p">.</span><span class="k">delete</span><span class="p">(</span><span class="s1">&#39;/extend/delete&#39;</span><span class="p">)</span>
+<span style="color:#a6e22e">axios</span>.<span style="color:#66d9ef">delete</span>(<span style="color:#e6db74">&#39;/extend/delete&#39;</span>)
 
-<span class="nx">axios</span><span class="p">.</span><span class="nx">head</span><span class="p">(</span><span class="s1">&#39;/extend/head&#39;</span><span class="p">)</span>
+<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">head</span>(<span style="color:#e6db74">&#39;/extend/head&#39;</span>)
 
-<span class="nx">axios</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/extend/post&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">msg</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span> <span class="p">})</span>
+<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/extend/post&#39;</span>, { <span style="color:#a6e22e">msg</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;post&#39;</span> })
 
-<span class="nx">axios</span><span class="p">.</span><span class="nx">put</span><span class="p">(</span><span class="s1">&#39;/extend/put&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">msg</span><span class="o">:</span> <span class="s1">&#39;put&#39;</span> <span class="p">})</span>
+<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">put</span>(<span style="color:#e6db74">&#39;/extend/put&#39;</span>, { <span style="color:#a6e22e">msg</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;put&#39;</span> })
 
-<span class="nx">axios</span><span class="p">.</span><span class="nx">patch</span><span class="p">(</span><span class="s1">&#39;/extend/patch&#39;</span><span class="p">,</span> <span class="p">{</span> <span class="nx">msg</span><span class="o">:</span> <span class="s1">&#39;patch&#39;</span> <span class="p">})</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>然后在命令行运行 <code>npm run dev</code>，接着打开 chrome 浏览器，访问 <code>http://localhost:8080/</code> 即可访问我们的 demo 了，我们点到 <code>Extend</code> 目录下，通过开发者工具的 network 部分我们可以看到每个请求的发送情况。</p>
+<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">patch</span>(<span style="color:#e6db74">&#39;/extend/patch&#39;</span>, { <span style="color:#a6e22e">msg</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;patch&#39;</span> })
+</code></pre></div><p>然后在命令行运行 <code>npm run dev</code>，接着打开 chrome 浏览器，访问 <code>http://localhost:8080/</code> 即可访问我们的 demo 了，我们点到 <code>Extend</code> 目录下，通过开发者工具的 network 部分我们可以看到每个请求的发送情况。</p>
 <p>至此我们支持了对 <code>axios</code> API 的扩展，把它变成了一个混合对象。官方的 <code>axios</code> 实例除了支持了 <code>axios(config)</code>，还支持了传入 2 个参数 <code>axios(url, config)</code>，这里就涉及到函数重载的概念了，下一节我们来实现这个 feature。</p>
 
     </div>
@@ -798,7 +576,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
@@ -848,5 +626,6 @@ input.PC_MARK1:focus{
   <script  src="/custom/img/lazyload.min.js"></script>
   <script defer="defer" async src="/custom/post/back_btn.js"></script>
   
+
 </body>
 </html>

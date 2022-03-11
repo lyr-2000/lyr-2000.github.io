@@ -35,7 +35,7 @@
 
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
-<link href="/sass/main.min.755a55554eacedfc972c3c8b6de9579c880c97221e583f6731ac7117264918fb.css" rel="stylesheet"> 
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
@@ -50,7 +50,7 @@
 <meta itemprop="description" content="ts-axios 编译与发布 需求分析 前面的章节我们完成 ts-axios 库的代码编写和单元测试。这一章我们希望把代码部署发布到公共 npm 上，供别人下载使用。但是并不是所有人都会">
 <meta itemprop="datePublished" content="2020-01-05T10:56:02&#43;00:00" />
 <meta itemprop="dateModified" content="2020-01-05T10:56:02&#43;00:00" />
-<meta itemprop="wordCount" content="2573">
+<meta itemprop="wordCount" content="2493">
 
 
 
@@ -189,6 +189,8 @@ input.PC_MARK1:focus{
             <a href="/categories/typescript-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/"> 《TypeScript 从零实现 axios》 </a>
             <a href="/categories/ts-axios-%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%8F%91%E5%B8%83/"> ts-axios 部署与发布 </a>
             </div>
+          <span class="more-meta"> 约 2493 字 </span>
+          <span class="more-meta"> 预计阅读 5 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -230,89 +232,45 @@ input.PC_MARK1:focus{
 <p>我们会利用 <a href="https://github.com/rollup/rollup">rollup</a> 来打包我们的 <code>ts-axios</code> 库，它是一个非常著名的编译打包工具，Vue.js 也是利用 rollup 编译打包的。相比 webpack，它非常适合去编译和打包一些 JS 库。</p>
 <p>由于使用 <code>typescript-library-starter</code> 初始化我们的项目，我们已经拥有了 rollup 打包的相关配置和相关插件的安装，接下来我们就来对生成的 <code>rollup.config.ts</code> 做小小的修改。</p>
 <h3 id="修改-rollupconfigts">修改 rollup.config.ts</h3>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="nx">resolve</span> <span class="nx">from</span> <span class="s1">&#39;rollup-plugin-node-resolve&#39;</span>
-<span class="kr">import</span> <span class="nx">commonjs</span> <span class="nx">from</span> <span class="s1">&#39;rollup-plugin-commonjs&#39;</span>
-<span class="kr">import</span> <span class="nx">sourceMaps</span> <span class="nx">from</span> <span class="s1">&#39;rollup-plugin-sourcemaps&#39;</span>
-<span class="kr">import</span> <span class="nx">camelCase</span> <span class="nx">from</span> <span class="s1">&#39;lodash.camelcase&#39;</span>
-<span class="kr">import</span> <span class="nx">typescript</span> <span class="nx">from</span> <span class="s1">&#39;rollup-plugin-typescript2&#39;</span>
-<span class="kr">import</span> <span class="nx">json</span> <span class="nx">from</span> <span class="s1">&#39;rollup-plugin-json&#39;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">resolve</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;rollup-plugin-node-resolve&#39;</span>
+<span style="color:#66d9ef">import</span> <span style="color:#a6e22e">commonjs</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;rollup-plugin-commonjs&#39;</span>
+<span style="color:#66d9ef">import</span> <span style="color:#a6e22e">sourceMaps</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;rollup-plugin-sourcemaps&#39;</span>
+<span style="color:#66d9ef">import</span> <span style="color:#a6e22e">camelCase</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;lodash.camelcase&#39;</span>
+<span style="color:#66d9ef">import</span> <span style="color:#a6e22e">typescript</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;rollup-plugin-typescript2&#39;</span>
+<span style="color:#66d9ef">import</span> <span style="color:#a6e22e">json</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;rollup-plugin-json&#39;</span>
 
-<span class="kr">const</span> <span class="nx">pkg</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./package.json&#39;</span><span class="p">)</span>
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">pkg</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">require</span>(<span style="color:#e6db74">&#39;./package.json&#39;</span>)
 
-<span class="kr">const</span> <span class="nx">libraryName</span> <span class="o">=</span> <span class="s1">&#39;axios&#39;</span>
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">libraryName</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;axios&#39;</span>
 
-<span class="kr">export</span> <span class="k">default</span> <span class="p">{</span>
-  <span class="nx">input</span><span class="o">:</span> <span class="sb">`src/index.ts`</span><span class="p">,</span>
-  <span class="nx">output</span><span class="o">:</span> <span class="p">[</span>
-    <span class="p">{</span> <span class="nx">file</span>: <span class="kt">pkg.main</span><span class="p">,</span> <span class="nx">name</span>: <span class="kt">camelCase</span><span class="p">(</span><span class="nx">libraryName</span><span class="p">),</span> <span class="nx">format</span><span class="o">:</span> <span class="s1">&#39;umd&#39;</span><span class="p">,</span> <span class="nx">sourcemap</span>: <span class="kt">true</span> <span class="p">},</span>
-    <span class="p">{</span> <span class="nx">file</span>: <span class="kt">pkg.module</span><span class="p">,</span> <span class="nx">format</span><span class="o">:</span> <span class="s1">&#39;es&#39;</span><span class="p">,</span> <span class="nx">sourcemap</span>: <span class="kt">true</span> <span class="p">}</span>
-  <span class="p">],</span>
-  <span class="c1">// Indicate here external modules you don&#39;t wanna include in your bundle (i.e.: &#39;lodash&#39;)
-</span><span class="c1"></span>  <span class="nx">external</span><span class="o">:</span> <span class="p">[],</span>
-  <span class="nx">watch</span><span class="o">:</span> <span class="p">{</span>
-    <span class="nx">include</span><span class="o">:</span> <span class="s1">&#39;src/**&#39;</span>
-  <span class="p">},</span>
-  <span class="nx">plugins</span><span class="o">:</span> <span class="p">[</span>
-    <span class="c1">// Allow json resolution
-</span><span class="c1"></span>    <span class="nx">json</span><span class="p">(),</span>
-    <span class="c1">// Compile TypeScript files
-</span><span class="c1"></span>    <span class="nx">typescript</span><span class="p">({</span> <span class="nx">useTsconfigDeclarationDir</span>: <span class="kt">true</span> <span class="p">}),</span>
-    <span class="c1">// Allow bundling cjs modules (unlike webpack, rollup doesn&#39;t understand cjs)
-</span><span class="c1"></span>    <span class="nx">commonjs</span><span class="p">(),</span>
-    <span class="c1">// Allow node_modules resolution, so you can use &#39;external&#39; to control
-</span><span class="c1"></span>    <span class="c1">// which external modules to include in the bundle
-</span><span class="c1"></span>    <span class="c1">// https://github.com/rollup/rollup-plugin-node-resolve#usage
-</span><span class="c1"></span>    <span class="nx">resolve</span><span class="p">(),</span>
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> {
+  <span style="color:#a6e22e">input</span><span style="color:#f92672">:</span> <span style="color:#e6db74">`src/index.ts`</span>,
+  <span style="color:#a6e22e">output</span><span style="color:#f92672">:</span> [
+    { <span style="color:#a6e22e">file</span>: <span style="color:#66d9ef">pkg.main</span>, <span style="color:#a6e22e">name</span>: <span style="color:#66d9ef">camelCase</span>(<span style="color:#a6e22e">libraryName</span>), <span style="color:#a6e22e">format</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;umd&#39;</span>, <span style="color:#a6e22e">sourcemap</span>: <span style="color:#66d9ef">true</span> },
+    { <span style="color:#a6e22e">file</span>: <span style="color:#66d9ef">pkg.module</span>, <span style="color:#a6e22e">format</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;es&#39;</span>, <span style="color:#a6e22e">sourcemap</span>: <span style="color:#66d9ef">true</span> }
+  ],
+  <span style="color:#75715e">// Indicate here external modules you don&#39;t wanna include in your bundle (i.e.: &#39;lodash&#39;)
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">external</span><span style="color:#f92672">:</span> [],
+  <span style="color:#a6e22e">watch</span><span style="color:#f92672">:</span> {
+    <span style="color:#a6e22e">include</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;src/**&#39;</span>
+  },
+  <span style="color:#a6e22e">plugins</span><span style="color:#f92672">:</span> [
+    <span style="color:#75715e">// Allow json resolution
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">json</span>(),
+    <span style="color:#75715e">// Compile TypeScript files
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">typescript</span>({ <span style="color:#a6e22e">useTsconfigDeclarationDir</span>: <span style="color:#66d9ef">true</span> }),
+    <span style="color:#75715e">// Allow bundling cjs modules (unlike webpack, rollup doesn&#39;t understand cjs)
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">commonjs</span>(),
+    <span style="color:#75715e">// Allow node_modules resolution, so you can use &#39;external&#39; to control
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// which external modules to include in the bundle
+</span><span style="color:#75715e"></span>    <span style="color:#75715e">// https://github.com/rollup/rollup-plugin-node-resolve#usage
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">resolve</span>(),
 
-    <span class="c1">// Resolve source maps to the original source
-</span><span class="c1"></span>    <span class="nx">sourceMaps</span><span class="p">()</span>
-  <span class="p">]</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>注意要修改的地方，把 <code>libraryName</code> 修改为 <code>axios</code>，<code>input</code> 修改为 <code>src/index.ts</code>。</p>
+    <span style="color:#75715e">// Resolve source maps to the original source
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">sourceMaps</span>()
+  ]
+}
+</code></pre></div><p>注意要修改的地方，把 <code>libraryName</code> 修改为 <code>axios</code>，<code>input</code> 修改为 <code>src/index.ts</code>。</p>
 <p><code>rollup</code> 的配置很简单，我们简单地过一下。</p>
 <ul>
 <li>input</li>
@@ -336,94 +294,48 @@ input.PC_MARK1:focus{
 <p>编译过程中使用的插件，其中 <code>rollup-plugin-typescript2</code> 就是用来编译 TypeScript 文件，<code>useTsconfigDeclarationDir</code> 表示使用 <code>tsconfig.json</code> 文件中定义的 <code>declarationDir</code>。其它插件感兴趣的同学可以自己去查阅文档。</p>
 <h3 id="修改-packagejson">修改 package.json</h3>
 <p>由于我们已经在 <code>rollup.config.ts</code> 中修改了 <code>libraryName</code> 为 <code>axios</code>， 那么在 <code>package.json</code> 文件中你需要做相关的修改：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="p">{</span>
-  <span class="s2">&#34;main&#34;</span><span class="o">:</span> <span class="s2">&#34;dist/axios.umd.js&#34;</span><span class="p">,</span>
-  <span class="s2">&#34;module&#34;</span><span class="o">:</span> <span class="s2">&#34;dist/axios.es5.js&#34;</span><span class="p">,</span>
-  <span class="s2">&#34;typings&#34;</span><span class="o">:</span> <span class="s2">&#34;dist/types/index.d.ts&#34;</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>然后我们在控制台执行 <code>npm run build</code>，会编译输出 <code>dist</code> 目录，其中 <code>lib</code> 目录是单个 <code>.ts</code> 文件编译后的 <code>.js</code> 文件。<code>types</code> 目录是所有 <code>.ts</code> 文件编译后生产的 <code>.d.ts</code> 声明文件。<code>axios.es5.js</code> 是编译后生成的 es 模式的入口文件，用在 <code>package.json</code> 的 <code>module</code> 字段，<code>axios.umd.js</code> 文件是编译后生成的 <code>umd</code> 模式的入口文件，用在 <code>package.json</code> 的 <code>main</code> 字段。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript">{
+  <span style="color:#e6db74">&#34;main&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;dist/axios.umd.js&#34;</span>,
+  <span style="color:#e6db74">&#34;module&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;dist/axios.es5.js&#34;</span>,
+  <span style="color:#e6db74">&#34;typings&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;dist/types/index.d.ts&#34;</span>
+}
+</code></pre></div><p>然后我们在控制台执行 <code>npm run build</code>，会编译输出 <code>dist</code> 目录，其中 <code>lib</code> 目录是单个 <code>.ts</code> 文件编译后的 <code>.js</code> 文件。<code>types</code> 目录是所有 <code>.ts</code> 文件编译后生产的 <code>.d.ts</code> 声明文件。<code>axios.es5.js</code> 是编译后生成的 es 模式的入口文件，用在 <code>package.json</code> 的 <code>module</code> 字段，<code>axios.umd.js</code> 文件是编译后生成的 <code>umd</code> 模式的入口文件，用在 <code>package.json</code> 的 <code>main</code> 字段。</p>
 <h2 id="自动化部署">自动化部署</h2>
 <p>由于 <code>semantic-release</code> 插件过于黑盒也略微重量，我还是决定教同学们自己编写自动化部署脚本，这样更灵活，意义也更大，因为大部分场景是用不到那么多 feature 的。</p>
 <h3 id="修改-packagejson-1">修改 package.json</h3>
 <p>发布到 npm 之前你需要为你的包命名，由于 <code>ts-axios</code> 这个名字已经被占用了，我使用了 <code>ts-axios-new</code> 这个名称，当然你学到这里，就需要起一个新名字了。可以使用 <code>npm view [&lt;@scope&gt;/]&lt;pkg&gt;[@&lt;version&gt;]</code> 的方式去搜索一个包名是否已经存在，比如你搜索 <code>npm view ts-axios-new</code> 会发现这个包已经存在，返回这个包相关信息。如果你搜索 <code>npm view xxxx</code> 返回错误 404 的话，那么你就可以使用 <code>xxxx</code> 这个包名了。</p>
 <p>如果你想让你发布的包关联你的仓库地址，可以配置 <code>repository</code> 的 <code>url</code> 字段。</p>
 <p>另外我们增加 2 个 npm scripts：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;prepub&#34;</span><span class="p">:</span> <span class="s2">&#34;npm run test:prod &amp;&amp; npm run build&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;pub&#34;</span><span class="p">:</span> <span class="s2">&#34;sh release.sh&#34;</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>当我们运行 <code>npm run pub</code> 的时候，会优先执行 <code>prepub</code> 脚本，在 <code>prepub</code> 中我们运行了 <code>test:prod</code> 和 <code>build</code> 2 个脚本。<code>&amp;&amp;</code> 符号表示前面一个命令执行成功后才会执行后面的任务。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;prepub&#34;</span>: <span style="color:#e6db74">&#34;npm run test:prod &amp;&amp; npm run build&#34;</span>,
+  <span style="color:#f92672">&#34;pub&#34;</span>: <span style="color:#e6db74">&#34;sh release.sh&#34;</span>
+}
+</code></pre></div><p>当我们运行 <code>npm run pub</code> 的时候，会优先执行 <code>prepub</code> 脚本，在 <code>prepub</code> 中我们运行了 <code>test:prod</code> 和 <code>build</code> 2 个脚本。<code>&amp;&amp;</code> 符号表示前面一个命令执行成功后才会执行后面的任务。</p>
 <p><code>npm run test:prod</code> 实际上运行了 <code>npm run lint &amp;&amp; npm run test -- --no-cache</code>。 先运行 <code>lint</code> 去校验我们的源码和测试文件是否遵循 <code>tslint</code> 规范，再运行 <code>test</code> 去跑测试。</p>
 <p><code>npm run build</code> 实际上运行了 <code>tsc --module commonjs</code>、<code>rollup -c rollup.config.ts</code> 和 <code>typedoc --out docs --target es6 --theme minimal --mode file src</code>。先运行 <code>tsc</code> 去编译我们的 <code>TypeScript</code> 文件，<code>dist/lib</code> 和 <code>dist/types</code> 下的文件就是该命令产生的，然后运行 <code>rollup</code> 去构建 <code>axios.umd.js</code> 及 <code>axios.es.js</code>，最后运行 <code>typedoc</code> 去构建项目的文档。</p>
 <p>运行完 <code>prepub</code> 后就会再运行 <code>pub</code> 命令，实际上执行了 <code>sh release.sh</code> 命令，但是目前我们没有这个脚本，接下来我们就需要来编写部署脚本 <code>release.sh</code>。</p>
 <h3 id="编写部署脚本">编写部署脚本</h3>
 <p><code>release.sh</code>：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="cp">#!/usr/bin/env sh
-</span><span class="cp"></span><span class="nb">set</span> -e
-<span class="nb">echo</span> <span class="s2">&#34;Enter release version: &#34;</span>
-<span class="nb">read</span> VERSION
-<span class="nb">read</span> -p <span class="s2">&#34;Releasing </span><span class="nv">$VERSION</span><span class="s2"> - are you sure? (y/n)&#34;</span> -n <span class="m">1</span> -r
-<span class="nb">echo</span>  <span class="c1"># (optional) move to a new line</span>
-<span class="k">if</span> <span class="o">[[</span> <span class="nv">$REPLY</span> <span class="o">=</span>~ ^<span class="o">[</span>Yy<span class="o">]</span>$ <span class="o">]]</span>
-<span class="k">then</span>
-  <span class="nb">echo</span> <span class="s2">&#34;Releasing </span><span class="nv">$VERSION</span><span class="s2"> ...&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e">#!/usr/bin/env sh
+</span><span style="color:#75715e"></span>set -e
+echo <span style="color:#e6db74">&#34;Enter release version: &#34;</span>
+read VERSION
+read -p <span style="color:#e6db74">&#34;Releasing </span>$VERSION<span style="color:#e6db74"> - are you sure? (y/n)&#34;</span> -n <span style="color:#ae81ff">1</span> -r
+echo  <span style="color:#75715e"># (optional) move to a new line</span>
+<span style="color:#66d9ef">if</span> <span style="color:#f92672">[[</span> $REPLY <span style="color:#f92672">=</span>~ ^<span style="color:#f92672">[</span>Yy<span style="color:#f92672">]</span>$ <span style="color:#f92672">]]</span>
+<span style="color:#66d9ef">then</span>
+  echo <span style="color:#e6db74">&#34;Releasing </span>$VERSION<span style="color:#e6db74"> ...&#34;</span>
 
-  <span class="c1"># commit</span>
+  <span style="color:#75715e"># commit</span>
   git add -A
-  git commit -m <span class="s2">&#34;[build] </span><span class="nv">$VERSION</span><span class="s2">&#34;</span>
-  npm version <span class="nv">$VERSION</span> --message <span class="s2">&#34;[release] </span><span class="nv">$VERSION</span><span class="s2">&#34;</span>
+  git commit -m <span style="color:#e6db74">&#34;[build] </span>$VERSION<span style="color:#e6db74">&#34;</span>
+  npm version $VERSION --message <span style="color:#e6db74">&#34;[release] </span>$VERSION<span style="color:#e6db74">&#34;</span>
   git push origin master
 
-  <span class="c1"># publish</span>
+  <span style="color:#75715e"># publish</span>
   npm publish
-<span class="k">fi</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>部署脚本是 shell 脚本，shell 脚本就是封装了多行控制台命令，来逐行解释他们的含义。</p>
+<span style="color:#66d9ef">fi</span>
+</code></pre></div><p>部署脚本是 shell 脚本，shell 脚本就是封装了多行控制台命令，来逐行解释他们的含义。</p>
 <p><code>#!/usr/bin/env sh</code> 用来表示它是一个 shell 脚本。</p>
 <p><code>set -e</code> 告诉脚本如果执行结果不为 true 则退出。</p>
 <p><code>echo &quot;Enter release version: &quot;</code> 在控制台输出 <code>Enter release version:</code>。</p>
@@ -439,41 +351,21 @@ input.PC_MARK1:focus{
 <p><code>npm publish</code> 是把仓库发布到 <code>npm</code> 上，我们会把 <code>dist</code> 目录下的代码都发布到 <code>npm</code> 上，因为我们在 <code>package.json</code> 中配置的是 <code>files</code> 是 <code>[&quot;dist&quot;]</code>。</p>
 <h2 id="运行部署脚本">运行部署脚本</h2>
 <p>接下来我们就运行 <code>npm run pub</code> 脚本部署，我们会发现在 <code>npm run prepub</code> 阶段，在执行 <code>tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'</code> 的时候失败了，原因是我们有代码不符合 lint 规范。原来是 <code>core/xhr.ts</code> 文件中 <code>processCancel</code> 函数中对 <code>promise</code> 的处理，我们没有对异常情况处理，所以我们要给它加上 <code>catch</code> 的逻辑：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kd">function</span> <span class="nx">processCancel</span><span class="p">()</span><span class="o">:</span> <span class="k">void</span> <span class="p">{</span>
-  <span class="k">if</span> <span class="p">(</span><span class="nx">cancelToken</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">cancelToken</span><span class="p">.</span><span class="nx">promise</span>
-      <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">reason</span> <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="nx">request</span><span class="p">.</span><span class="nx">abort</span><span class="p">()</span>
-        <span class="nx">reject</span><span class="p">(</span><span class="nx">reason</span><span class="p">)</span>
-      <span class="p">})</span>
-      <span class="p">.</span><span class="k">catch</span><span class="p">(</span>
-        <span class="cm">/* istanbul ignore next */</span>
-        <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="c1">// do nothing
-</span><span class="c1"></span>      <span class="p">})</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>由于我们不会走到 <code>catch</code> 逻辑，所以我们给它添加一个注释 <code>/* istanbul ignore next */</code> 忽略该代码分支的测试。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">processCancel</span>()<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
+  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">cancelToken</span>) {
+    <span style="color:#a6e22e">cancelToken</span>.<span style="color:#a6e22e">promise</span>
+      .<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">reason</span> <span style="color:#f92672">=&gt;</span> {
+        <span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">abort</span>()
+        <span style="color:#a6e22e">reject</span>(<span style="color:#a6e22e">reason</span>)
+      })
+      .<span style="color:#66d9ef">catch</span>(
+        <span style="color:#75715e">/* istanbul ignore next */</span>
+        () <span style="color:#f92672">=&gt;</span> {
+        <span style="color:#75715e">// do nothing
+</span><span style="color:#75715e"></span>      })
+  }
+}
+</code></pre></div><p>由于我们不会走到 <code>catch</code> 逻辑，所以我们给它添加一个注释 <code>/* istanbul ignore next */</code> 忽略该代码分支的测试。</p>
 <p>然后我们再重新运行 <code>npm run pub</code> 逻辑，它会先执行 <code>test</code>，然后运行 <code>build</code> 编译代码，再执行 <code>release.sh</code> 脚本。我们输入了要发布的版本，它就可以完成了整个代码的发布流程。</p>
 <p>通过编写部署脚本的一行命令发布的方式，不仅可以用在这种 JS 库，也可以用于我们平时项目开发中，可以大大帮助我们提高生产率，也是前端工程化中必不可少的一个环节，希望同学们都能学会并掌握它。</p>
 <p>至此我们完成了项目的部署和发布，我们也可以在 <code>npm</code> 官网上看到我们发布的包，下一节课我们来创建一个实际项目，来引用我们开发的 <code>ts-axios</code> 库。</p>
@@ -600,7 +492,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
@@ -650,5 +542,6 @@ input.PC_MARK1:focus{
   <script  src="/custom/img/lazyload.min.js"></script>
   <script defer="defer" async src="/custom/post/back_btn.js"></script>
   
+
 </body>
 </html>

@@ -35,7 +35,7 @@
 
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
-<link href="/sass/main.min.755a55554eacedfc972c3c8b6de9579c880c97221e583f6731ac7117264918fb.css" rel="stylesheet"> 
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
@@ -50,7 +50,7 @@
 <meta itemprop="description" content="completionService 的使用方法 如何批量执行异步任务？ 利用 CompletionService 可以快速实现 Forking 这种集群模式，比如下面的示例代码就展示了具体是如何实现的。首先我们创建了一个线程池 executor 、">
 <meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="1037">
+<meta itemprop="wordCount" content="986">
 
 
 
@@ -186,6 +186,8 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
+          <span class="more-meta"> 约 986 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -215,126 +217,63 @@ input.PC_MARK1:focus{
       <h3 id="completionservice-的使用方法">completionService 的使用方法</h3>
 <h3 id="如何批量执行异步任务">如何批量执行异步任务？</h3>
 <p>利用 CompletionService 可以快速实现 Forking 这种集群模式，比如下面的示例代码就展示了具体是如何实现的。首先我们创建了一个线程池 executor 、一个 CompletionService 对象 cs 和一个<code>Future&lt;Integer&gt;</code>类型的列表 futures，每次通过调用 CompletionService 的 submit() 方法提交一个异步任务，会返回一个 Future 对象，我们把这些 Future 对象保存在列表 futures 中。通过调用 <code>cs.take().get()</code>，我们能够拿到最快返回的任务执行结果，只要我们拿到一个正确返回的结果，就可以取消所有任务并且返回最终结果了</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">// 创建阻塞队列
-</span><span class="c1"></span><span class="n">BlockingQueue</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">bq</span> <span class="o">=</span>
-  <span class="k">new</span> <span class="n">LinkedBlockingQueue</span><span class="o">&lt;&gt;();</span>
-<span class="c1">// 电商 S1 报价异步进入阻塞队列  
-</span><span class="c1"></span><span class="n">executor</span><span class="o">.</span><span class="na">execute</span><span class="o">(()-&gt;</span>
-  <span class="n">bq</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">f1</span><span class="o">.</span><span class="na">get</span><span class="o">()));</span>
-<span class="c1">// 电商 S2 报价异步进入阻塞队列  
-</span><span class="c1"></span><span class="n">executor</span><span class="o">.</span><span class="na">execute</span><span class="o">(()-&gt;</span>
-  <span class="n">bq</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">f2</span><span class="o">.</span><span class="na">get</span><span class="o">()));</span>
-<span class="c1">// 电商 S3 报价异步进入阻塞队列  
-</span><span class="c1"></span><span class="n">executor</span><span class="o">.</span><span class="na">execute</span><span class="o">(()-&gt;</span>
-  <span class="n">bq</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">f3</span><span class="o">.</span><span class="na">get</span><span class="o">()));</span>
-<span class="c1">// 异步保存所有报价  
-</span><span class="c1"></span><span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="n">0</span><span class="o">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">3</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
-  <span class="n">Integer</span> <span class="n">r</span> <span class="o">=</span> <span class="n">bq</span><span class="o">.</span><span class="na">take</span><span class="o">();</span>
-  <span class="n">executor</span><span class="o">.</span><span class="na">execute</span><span class="o">(()-&gt;</span><span class="n">save</span><span class="o">(</span><span class="n">r</span><span class="o">));</span>
-<span class="o">}</span>  
-</code></pre></td></tr></table>
-</div>
-</div><p>因为 Java SDK 并发包里已经提供了设计精良的 CompletionService。利用 CompletionService 不但能帮你解决先获取到的报价先保存到数据库的问题，而且还能让代码更简练。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 创建阻塞队列
+</span><span style="color:#75715e"></span>BlockingQueue<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;</span> bq <span style="color:#f92672">=</span>
+  <span style="color:#66d9ef">new</span> LinkedBlockingQueue<span style="color:#f92672">&lt;&gt;();</span>
+<span style="color:#75715e">// 电商 S1 报价异步进入阻塞队列  
+</span><span style="color:#75715e"></span>executor<span style="color:#f92672">.</span><span style="color:#a6e22e">execute</span><span style="color:#f92672">(()-&gt;</span>
+  bq<span style="color:#f92672">.</span><span style="color:#a6e22e">put</span><span style="color:#f92672">(</span>f1<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">()));</span>
+<span style="color:#75715e">// 电商 S2 报价异步进入阻塞队列  
+</span><span style="color:#75715e"></span>executor<span style="color:#f92672">.</span><span style="color:#a6e22e">execute</span><span style="color:#f92672">(()-&gt;</span>
+  bq<span style="color:#f92672">.</span><span style="color:#a6e22e">put</span><span style="color:#f92672">(</span>f2<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">()));</span>
+<span style="color:#75715e">// 电商 S3 报价异步进入阻塞队列  
+</span><span style="color:#75715e"></span>executor<span style="color:#f92672">.</span><span style="color:#a6e22e">execute</span><span style="color:#f92672">(()-&gt;</span>
+  bq<span style="color:#f92672">.</span><span style="color:#a6e22e">put</span><span style="color:#f92672">(</span>f3<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">()));</span>
+<span style="color:#75715e">// 异步保存所有报价  
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span>0<span style="color:#f92672">;</span> i<span style="color:#f92672">&lt;</span>3<span style="color:#f92672">;</span> i<span style="color:#f92672">++)</span> <span style="color:#f92672">{</span>
+  Integer r <span style="color:#f92672">=</span> bq<span style="color:#f92672">.</span><span style="color:#a6e22e">take</span><span style="color:#f92672">();</span>
+  executor<span style="color:#f92672">.</span><span style="color:#a6e22e">execute</span><span style="color:#f92672">(()-&gt;</span>save<span style="color:#f92672">(</span>r<span style="color:#f92672">));</span>
+<span style="color:#f92672">}</span>  
+</code></pre></div><p>因为 Java SDK 并发包里已经提供了设计精良的 CompletionService。利用 CompletionService 不但能帮你解决先获取到的报价先保存到数据库的问题，而且还能让代码更简练。</p>
 <p>CompletionService 的实现原理也是内部维护了一个阻塞队列，当任务执行结束就把任务的执行结果加入到阻塞队列中，不同的是 CompletionService 是把任务执行结果的 Future 对象加入到阻塞队列中，而上面的示例代码是把任务最终的执行结果放入了阻塞队列中。</p>
 <p>CompletionService 接口其余的 3 个方法，都是和阻塞队列相关的，take()、poll() 都是从阻塞队列中获取并移除一个元素；它们的区别在于如果阻塞队列是空的，那么调用 take() 方法的线程会被阻塞，而 poll() 方法会返回 null 值。 <code>poll(long timeout, TimeUnit unit)</code> 方法支持以超时的方式获取并移除阻塞队列头部的一个元素，如果等待了 timeout unit 时间，阻塞队列还是空的，那么该方法会返回 null 值。</p>
 <h2 id="利用-completionservice-实现-dubbo-中的-forking-cluster">利用 CompletionService 实现 Dubbo 中的 Forking Cluster</h2>
 <p>Dubbo 中有一种叫做<strong>Forking 的集群模式</strong>，这种集群模式下，支持<strong>并行地调用多个查询服务，只要有一个成功返回结果，整个服务就可以返回了</strong>。例如你需要提供一个地址转坐标的服务，为了保证该服务的高可用和性能，你可以并行地调用 3 个地图服务商的 API，然后只要有 1 个正确返回了结果 r，那么地址转坐标这个服务就可以直接返回 r 了。这种集群模式可以容忍 2 个地图服务商服务异常，但缺点是消耗的资源偏多。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">// 创建线程池
-</span><span class="c1"></span><span class="n">ExecutorService</span> <span class="n">executor</span> <span class="o">=</span>
-  <span class="n">Executors</span><span class="o">.</span><span class="na">newFixedThreadPool</span><span class="o">(</span><span class="n">3</span><span class="o">);</span>
-<span class="c1">// 创建 CompletionService
-</span><span class="c1"></span><span class="n">CompletionService</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">cs</span> <span class="o">=</span>
-  <span class="k">new</span> <span class="n">ExecutorCompletionService</span><span class="o">&lt;&gt;(</span><span class="n">executor</span><span class="o">);</span>
-<span class="c1">// 用于保存 Future 对象
-</span><span class="c1"></span><span class="n">List</span><span class="o">&lt;</span><span class="n">Future</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;&gt;</span> <span class="n">futures</span> <span class="o">=</span>
-  <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;(</span><span class="n">3</span><span class="o">);</span>
-<span class="c1">// 提交异步任务，并保存 future 到 futures 
-</span><span class="c1"></span><span class="n">futures</span><span class="o">.</span><span class="na">add</span><span class="o">(</span>
-  <span class="n">cs</span><span class="o">.</span><span class="na">submit</span><span class="o">(()-&gt;</span><span class="n">geocoderByS1</span><span class="o">()));</span>
-<span class="n">futures</span><span class="o">.</span><span class="na">add</span><span class="o">(</span>
-  <span class="n">cs</span><span class="o">.</span><span class="na">submit</span><span class="o">(()-&gt;</span><span class="n">geocoderByS2</span><span class="o">()));</span>
-<span class="n">futures</span><span class="o">.</span><span class="na">add</span><span class="o">(</span>
-  <span class="n">cs</span><span class="o">.</span><span class="na">submit</span><span class="o">(()-&gt;</span><span class="n">geocoderByS3</span><span class="o">()));</span>
-<span class="c1">// 获取最快返回的任务执行结果
-</span><span class="c1"></span><span class="n">Integer</span> <span class="n">r</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
-<span class="k">try</span> <span class="o">{</span>
-  <span class="c1">// 只要有一个成功返回，则 break
-</span><span class="c1"></span>  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">3</span><span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span> <span class="o">{</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">cs</span><span class="o">.</span><span class="na">take</span><span class="o">().</span><span class="na">get</span><span class="o">();</span>
-    <span class="c1">// 简单地通过判空来检查是否成功返回
-</span><span class="c1"></span>    <span class="k">if</span> <span class="o">(</span><span class="n">r</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
-      <span class="k">break</span><span class="o">;</span>
-    <span class="o">}</span>
-  <span class="o">}</span>
-<span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
-  <span class="c1">// 取消所有任务
-</span><span class="c1"></span>  <span class="k">for</span><span class="o">(</span><span class="n">Future</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">f</span> <span class="o">:</span> <span class="n">futures</span><span class="o">)</span>
-    <span class="n">f</span><span class="o">.</span><span class="na">cancel</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
-<span class="o">}</span>
-<span class="c1">// 返回结果
-</span><span class="c1"></span><span class="k">return</span> <span class="n">r</span><span class="o">;</span>
-</code></pre></td></tr></table>
-</div>
-</div>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 创建线程池
+</span><span style="color:#75715e"></span>ExecutorService executor <span style="color:#f92672">=</span>
+  Executors<span style="color:#f92672">.</span><span style="color:#a6e22e">newFixedThreadPool</span><span style="color:#f92672">(</span>3<span style="color:#f92672">);</span>
+<span style="color:#75715e">// 创建 CompletionService
+</span><span style="color:#75715e"></span>CompletionService<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;</span> cs <span style="color:#f92672">=</span>
+  <span style="color:#66d9ef">new</span> ExecutorCompletionService<span style="color:#f92672">&lt;&gt;(</span>executor<span style="color:#f92672">);</span>
+<span style="color:#75715e">// 用于保存 Future 对象
+</span><span style="color:#75715e"></span>List<span style="color:#f92672">&lt;</span>Future<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;&gt;</span> futures <span style="color:#f92672">=</span>
+  <span style="color:#66d9ef">new</span> ArrayList<span style="color:#f92672">&lt;&gt;(</span>3<span style="color:#f92672">);</span>
+<span style="color:#75715e">// 提交异步任务，并保存 future 到 futures 
+</span><span style="color:#75715e"></span>futures<span style="color:#f92672">.</span><span style="color:#a6e22e">add</span><span style="color:#f92672">(</span>
+  cs<span style="color:#f92672">.</span><span style="color:#a6e22e">submit</span><span style="color:#f92672">(()-&gt;</span>geocoderByS1<span style="color:#f92672">()));</span>
+futures<span style="color:#f92672">.</span><span style="color:#a6e22e">add</span><span style="color:#f92672">(</span>
+  cs<span style="color:#f92672">.</span><span style="color:#a6e22e">submit</span><span style="color:#f92672">(()-&gt;</span>geocoderByS2<span style="color:#f92672">()));</span>
+futures<span style="color:#f92672">.</span><span style="color:#a6e22e">add</span><span style="color:#f92672">(</span>
+  cs<span style="color:#f92672">.</span><span style="color:#a6e22e">submit</span><span style="color:#f92672">(()-&gt;</span>geocoderByS3<span style="color:#f92672">()));</span>
+<span style="color:#75715e">// 获取最快返回的任务执行结果
+</span><span style="color:#75715e"></span>Integer r <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span>
+<span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+  <span style="color:#75715e">// 只要有一个成功返回，则 break
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span> i <span style="color:#f92672">&lt;</span> 3<span style="color:#f92672">;</span> <span style="color:#f92672">++</span>i<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    r <span style="color:#f92672">=</span> cs<span style="color:#f92672">.</span><span style="color:#a6e22e">take</span><span style="color:#f92672">().</span><span style="color:#a6e22e">get</span><span style="color:#f92672">();</span>
+    <span style="color:#75715e">// 简单地通过判空来检查是否成功返回
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>r <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+      <span style="color:#66d9ef">break</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+  <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span> <span style="color:#66d9ef">finally</span> <span style="color:#f92672">{</span>
+  <span style="color:#75715e">// 取消所有任务
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">for</span><span style="color:#f92672">(</span>Future<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;</span> f <span style="color:#f92672">:</span> futures<span style="color:#f92672">)</span>
+    f<span style="color:#f92672">.</span><span style="color:#a6e22e">cancel</span><span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">);</span>
+<span style="color:#f92672">}</span>
+<span style="color:#75715e">// 返回结果
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">return</span> r<span style="color:#f92672">;</span>
+</code></pre></div>
     </div>
 
     <div class="post-copyright">
@@ -459,7 +398,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
@@ -509,5 +448,6 @@ input.PC_MARK1:focus{
   <script  src="/custom/img/lazyload.min.js"></script>
   <script defer="defer" async src="/custom/post/back_btn.js"></script>
   
+
 </body>
 </html>

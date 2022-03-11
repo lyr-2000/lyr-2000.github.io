@@ -35,7 +35,7 @@
 
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
-<link href="/sass/main.min.755a55554eacedfc972c3c8b6de9579c880c97221e583f6731ac7117264918fb.css" rel="stylesheet"> 
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
@@ -50,7 +50,7 @@
 <meta itemprop="description" content="b站源码拜读-推荐算法实现原理 参考博客 首先像大多数的推荐算法一样，小破站的视频推荐也是通过对各项数据进行加权求得视频权重然后在进行再区分，提">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="606">
+<meta itemprop="wordCount" content="568">
 
 
 
@@ -186,6 +186,8 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-14 </span>
         
+          <span class="more-meta"> 约 568 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -216,89 +218,45 @@ input.PC_MARK1:focus{
 在2个内容里，分享都占到了最高权重，有0.6，这个可以理解，大部分平台都是分享权重无限高。
 播放量和阅读量真的是弟弟，两边都是最低权重，不过相比评论这些二次互动，权重低可以理解。
 评论比收藏的权重要高，这个有点特殊。因为不少平台是收藏权重大于评论的。为什么呢？因为一般来说，很多人看见内容都会评论，但是只有感觉特别好的内容，才会收藏。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go">
-<span class="c1">//countArcHot 视频=硬币*0.4+收藏*0.3+弹幕*0.4+评论*0.4+播放*0.25+点赞*0.4+分享*0.6 最新视频（一天内发布）提权[总值*1.5]
-</span><span class="c1"></span><span class="kd">func</span> <span class="nf">countArcHot</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">api</span><span class="p">.</span><span class="nx">Stat</span><span class="p">,</span> <span class="nx">ptime</span> <span class="kt">int64</span><span class="p">)</span> <span class="kt">int64</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">t</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="mi">0</span>
-	<span class="p">}</span>
-	<span class="nx">hot</span> <span class="o">:=</span> <span class="nb">float64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">Coin</span><span class="p">)</span><span class="o">*</span><span class="mf">0.4</span> <span class="o">+</span>
-		<span class="nb">float64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">Fav</span><span class="p">)</span><span class="o">*</span><span class="mf">0.3</span> <span class="o">+</span>
-		<span class="nb">float64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">Danmaku</span><span class="p">)</span><span class="o">*</span><span class="mf">0.4</span> <span class="o">+</span>
-		<span class="nb">float64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">Reply</span><span class="p">)</span><span class="o">*</span><span class="mf">0.4</span> <span class="o">+</span>
-		<span class="nb">float64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">View</span><span class="p">)</span><span class="o">*</span><span class="mf">0.25</span> <span class="o">+</span>
-		<span class="nb">float64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">Like</span><span class="p">)</span><span class="o">*</span><span class="mf">0.4</span> <span class="o">+</span>
-		<span class="nb">float64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">Share</span><span class="p">)</span><span class="o">*</span><span class="mf">0.6</span>
-	<span class="k">if</span> <span class="nx">ptime</span> <span class="o">&gt;=</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">().</span><span class="nf">AddDate</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="nf">Unix</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nx">ptime</span> <span class="o">&lt;=</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">().</span><span class="nf">Unix</span><span class="p">()</span> <span class="p">{</span>
-		<span class="nx">hot</span> <span class="o">*=</span> <span class="mf">1.5</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="nb">int64</span><span class="p">(</span><span class="nx">math</span><span class="p">.</span><span class="nf">Floor</span><span class="p">(</span><span class="nx">hot</span><span class="p">))</span>
-<span class="p">}</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">
+<span style="color:#75715e">//countArcHot 视频=硬币*0.4+收藏*0.3+弹幕*0.4+评论*0.4+播放*0.25+点赞*0.4+分享*0.6 最新视频（一天内发布）提权[总值*1.5]
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">countArcHot</span>(<span style="color:#a6e22e">t</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">api</span>.<span style="color:#a6e22e">Stat</span>, <span style="color:#a6e22e">ptime</span> <span style="color:#66d9ef">int64</span>) <span style="color:#66d9ef">int64</span> {
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">t</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+	}
+	<span style="color:#a6e22e">hot</span> <span style="color:#f92672">:=</span> float64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">Coin</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">0.4</span> <span style="color:#f92672">+</span>
+		float64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">Fav</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">0.3</span> <span style="color:#f92672">+</span>
+		float64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">Danmaku</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">0.4</span> <span style="color:#f92672">+</span>
+		float64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">Reply</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">0.4</span> <span style="color:#f92672">+</span>
+		float64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">View</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">0.25</span> <span style="color:#f92672">+</span>
+		float64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">Like</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">0.4</span> <span style="color:#f92672">+</span>
+		float64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">Share</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">0.6</span>
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">ptime</span> <span style="color:#f92672">&gt;=</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Now</span>().<span style="color:#a6e22e">AddDate</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>).<span style="color:#a6e22e">Unix</span>() <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">ptime</span> <span style="color:#f92672">&lt;=</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Now</span>().<span style="color:#a6e22e">Unix</span>() {
+		<span style="color:#a6e22e">hot</span> <span style="color:#f92672">*=</span> <span style="color:#ae81ff">1.5</span>
+	}
+	<span style="color:#66d9ef">return</span> int64(<span style="color:#a6e22e">math</span>.<span style="color:#a6e22e">Floor</span>(<span style="color:#a6e22e">hot</span>))
+}
 
-<span class="c1">// countArtHot 专栏=硬币*0.4+收藏*0.3+评论*0.4+阅读*0.25+点赞*0.4+分享*0.6 最新专栏（一天内发布）提权[总值*1.5]
-</span><span class="c1"></span><span class="kd">func</span> <span class="nf">countArtHot</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">model</span><span class="p">.</span><span class="nx">Meta</span><span class="p">)</span> <span class="kt">int64</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">t</span><span class="p">.</span><span class="nx">Stats</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="mi">0</span>
-	<span class="p">}</span>
-	<span class="nx">hot</span> <span class="o">:=</span> <span class="nb">float64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">Stats</span><span class="p">.</span><span class="nx">Coin</span><span class="p">)</span><span class="o">*</span><span class="mf">0.4</span> <span class="o">+</span>
-		<span class="nb">float64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">Stats</span><span class="p">.</span><span class="nx">Favorite</span><span class="p">)</span><span class="o">*</span><span class="mf">0.3</span> <span class="o">+</span>
-		<span class="nb">float64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">Stats</span><span class="p">.</span><span class="nx">Reply</span><span class="p">)</span><span class="o">*</span><span class="mf">0.4</span> <span class="o">+</span>
-		<span class="nb">float64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">Stats</span><span class="p">.</span><span class="nx">View</span><span class="p">)</span><span class="o">*</span><span class="mf">0.25</span> <span class="o">+</span>
-		<span class="nb">float64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">Stats</span><span class="p">.</span><span class="nx">Like</span><span class="p">)</span><span class="o">*</span><span class="mf">0.4</span> <span class="o">+</span>
-		<span class="nb">float64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">Stats</span><span class="p">.</span><span class="nx">Share</span><span class="p">)</span><span class="o">*</span><span class="mf">0.6</span>
-	<span class="k">if</span> <span class="nb">int64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">PublishTime</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">().</span><span class="nf">AddDate</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="nf">Unix</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nb">int64</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">PublishTime</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">().</span><span class="nf">Unix</span><span class="p">()</span> <span class="p">{</span>
-		<span class="nx">hot</span> <span class="o">*=</span> <span class="mf">1.5</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="nb">int64</span><span class="p">(</span><span class="nx">math</span><span class="p">.</span><span class="nf">Floor</span><span class="p">(</span><span class="nx">hot</span><span class="p">))</span>
-<span class="p">}</span>
+<span style="color:#75715e">// countArtHot 专栏=硬币*0.4+收藏*0.3+评论*0.4+阅读*0.25+点赞*0.4+分享*0.6 最新专栏（一天内发布）提权[总值*1.5]
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">countArtHot</span>(<span style="color:#a6e22e">t</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">model</span>.<span style="color:#a6e22e">Meta</span>) <span style="color:#66d9ef">int64</span> {
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">Stats</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+	}
+	<span style="color:#a6e22e">hot</span> <span style="color:#f92672">:=</span> float64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">Stats</span>.<span style="color:#a6e22e">Coin</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">0.4</span> <span style="color:#f92672">+</span>
+		float64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">Stats</span>.<span style="color:#a6e22e">Favorite</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">0.3</span> <span style="color:#f92672">+</span>
+		float64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">Stats</span>.<span style="color:#a6e22e">Reply</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">0.4</span> <span style="color:#f92672">+</span>
+		float64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">Stats</span>.<span style="color:#a6e22e">View</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">0.25</span> <span style="color:#f92672">+</span>
+		float64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">Stats</span>.<span style="color:#a6e22e">Like</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">0.4</span> <span style="color:#f92672">+</span>
+		float64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">Stats</span>.<span style="color:#a6e22e">Share</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">0.6</span>
+	<span style="color:#66d9ef">if</span> int64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">PublishTime</span>) <span style="color:#f92672">&gt;=</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Now</span>().<span style="color:#a6e22e">AddDate</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>).<span style="color:#a6e22e">Unix</span>() <span style="color:#f92672">&amp;&amp;</span> int64(<span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">PublishTime</span>) <span style="color:#f92672">&lt;=</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Now</span>().<span style="color:#a6e22e">Unix</span>() {
+		<span style="color:#a6e22e">hot</span> <span style="color:#f92672">*=</span> <span style="color:#ae81ff">1.5</span>
+	}
+	<span style="color:#66d9ef">return</span> int64(<span style="color:#a6e22e">math</span>.<span style="color:#a6e22e">Floor</span>(<span style="color:#a6e22e">hot</span>))
+}
 
 
 
-</code></pre></td></tr></table>
-</div>
-</div>
+</code></pre></div>
     </div>
 
     <div class="post-copyright">
@@ -419,7 +377,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
@@ -469,5 +427,6 @@ input.PC_MARK1:focus{
   <script  src="/custom/img/lazyload.min.js"></script>
   <script defer="defer" async src="/custom/post/back_btn.js"></script>
   
+
 </body>
 </html>

@@ -35,7 +35,7 @@
 
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
-<link href="/sass/main.min.755a55554eacedfc972c3c8b6de9579c880c97221e583f6731ac7117264918fb.css" rel="stylesheet"> 
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
@@ -50,7 +50,7 @@
 <meta itemprop="description" content="clickhouse mergeTree具体学习 百度网盘：https://pan.baidu.com/s/19gFo-FhMuQVUu7zSs4xUZQ，提取码">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="984">
+<meta itemprop="wordCount" content="922">
 
 
 
@@ -186,6 +186,8 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-14 </span>
         
+          <span class="more-meta"> 约 922 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -223,171 +225,79 @@ input.PC_MARK1:focus{
 <p><strong><a href="https://zhuanlan.zhihu.com/p/349105024">https://zhuanlan.zhihu.com/p/349105024</a></strong></p>
 <h3 id="命令连接-clickhouse">命令连接 clickhouse</h3>
 <p><a href="https://clickhouse.com/docs/zh/interfaces/cli/">参考文档</a></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-bash" data-lang="bash"> clickhouse-client
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"> clickhouse-client
  
- <span class="c1"># 查看数据库</span>
+ <span style="color:#75715e"># 查看数据库</span>
  
- <span class="c1"># 创建数据库</span>
+ <span style="color:#75715e"># 创建数据库</span>
  
- create database <span class="k">if</span> not exists <span class="nb">test</span> 
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="使用-dbeaver-连接数据库">使用 dbeaver 连接数据库</h3>
+ create database <span style="color:#66d9ef">if</span> not exists test 
+</code></pre></div><h3 id="使用-dbeaver-连接数据库">使用 dbeaver 连接数据库</h3>
 <p>使用 dbeaver 连接数据库记录</p>
 <hr>
 <h3 id="创建表">创建表</h3>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="n">use</span> <span class="n">test</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql">use test
 
-<span class="k">create</span> <span class="k">table</span> <span class="n">test01</span> <span class="p">(</span><span class="n">id</span> <span class="n">UInt8</span><span class="p">,</span> <span class="n">name</span> <span class="n">String</span><span class="p">)</span> <span class="n">ENGINE</span> <span class="o">=</span> <span class="n">MergeTree</span><span class="p">()</span> <span class="k">order</span> <span class="k">by</span> <span class="n">id</span>
+<span style="color:#66d9ef">create</span> <span style="color:#66d9ef">table</span> test01 (id UInt8, name String) ENGINE <span style="color:#f92672">=</span> MergeTree() <span style="color:#66d9ef">order</span> <span style="color:#66d9ef">by</span> id
  
-<span class="c1">-- 创建的时候要指定 id
-</span><span class="c1"></span>
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="分区合并">分区合并</h3>
+<span style="color:#75715e">-- 创建的时候要指定 id
+</span><span style="color:#75715e"></span>
+</code></pre></div><h3 id="分区合并">分区合并</h3>
 <p>分区后，面对涉及 跨分区的查询统计， clickhouse会以分区为单位进行处理。</p>
 <p><strong>数据写入与分区合并</strong></p>
 <p>任何一个批次的数据写入都会产生一个临时分区，不会纳入任何一个已有的分区。 写入后的某个时刻（大概10-15分钟后）， clickhouse 会自动执行合并操作 （等不及也可以手动通过 optimize 执行），把临时分区数据合并到已有分区中</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="n">optimize</span> <span class="k">table</span>  <span class="n">xxx</span> <span class="k">final</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql">optimize <span style="color:#66d9ef">table</span>  xxx <span style="color:#66d9ef">final</span>
 
-<span class="c1">-- 例如
-</span><span class="c1"></span> <span class="k">insert</span> <span class="k">into</span> <span class="n">test01</span> <span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;aa&#39;</span><span class="p">);</span>
-<span class="c1">-- 注意点： clickhouse 的字符串只能单引号
-</span></code></pre></td></tr></table>
-</div>
-</div><p>合并分区过程演示</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-sql" data-lang="sql"> <span class="k">insert</span> <span class="k">into</span> <span class="n">test01</span> <span class="k">values</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="s1">&#39;cc&#39;</span><span class="p">);</span>
- <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">test01</span><span class="p">;</span>
+<span style="color:#75715e">-- 例如
+</span><span style="color:#75715e"></span> <span style="color:#66d9ef">insert</span> <span style="color:#66d9ef">into</span> test01 (<span style="color:#f92672">*</span>) <span style="color:#66d9ef">VALUES</span> (<span style="color:#ae81ff">1</span>,<span style="color:#e6db74">&#39;aa&#39;</span>);
+<span style="color:#75715e">-- 注意点： clickhouse 的字符串只能单引号
+</span></code></pre></div><p>合并分区过程演示</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"> <span style="color:#66d9ef">insert</span> <span style="color:#66d9ef">into</span> test01 <span style="color:#66d9ef">values</span> (<span style="color:#ae81ff">3</span>,<span style="color:#e6db74">&#39;cc&#39;</span>);
+ <span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">FROM</span> test01;
  
-<span class="cm">/*
-</span><span class="cm"> Query id: 78754aa9-1b0e-44a3-b049-830589adcdde
-</span><span class="cm">
-</span><span class="cm">┌─id─┬─name─┐
-</span><span class="cm">│  1 │ aa   │
-</span><span class="cm">│  1 │ bb   │
-</span><span class="cm">└────┴──────┘
-</span><span class="cm">┌─id─┬─name─┐
-</span><span class="cm">│  3 │ cc   │
-</span><span class="cm">└────┴──────┘
-</span><span class="cm"> */</span>
+<span style="color:#75715e">/*
+</span><span style="color:#75715e"> Query id: 78754aa9-1b0e-44a3-b049-830589adcdde
+</span><span style="color:#75715e">
+</span><span style="color:#75715e">┌─id─┬─name─┐
+</span><span style="color:#75715e">│  1 │ aa   │
+</span><span style="color:#75715e">│  1 │ bb   │
+</span><span style="color:#75715e">└────┴──────┘
+</span><span style="color:#75715e">┌─id─┬─name─┐
+</span><span style="color:#75715e">│  3 │ cc   │
+</span><span style="color:#75715e">└────┴──────┘
+</span><span style="color:#75715e"> */</span>
  
  
- <span class="n">optimize</span> <span class="k">table</span> <span class="n">test01</span> <span class="k">final</span>
+ optimize <span style="color:#66d9ef">table</span> test01 <span style="color:#66d9ef">final</span>
  
- <span class="c1">-- 我也可以只合并某个分区
-</span><span class="c1"></span> <span class="n">optimize</span> <span class="k">table</span> <span class="n">t_order_mt</span> <span class="n">partition</span> <span class="s1">&#39;20200624&#39;</span> <span class="k">final</span><span class="p">;</span>
+ <span style="color:#75715e">-- 我也可以只合并某个分区
+</span><span style="color:#75715e"></span> optimize <span style="color:#66d9ef">table</span> t_order_mt partition <span style="color:#e6db74">&#39;20200624&#39;</span> <span style="color:#66d9ef">final</span>;
  
  
- <span class="cm">/*
-</span><span class="cm"> 
-</span><span class="cm"> 
-</span><span class="cm">┌─id─┬─name─┐
-</span><span class="cm">│  1 │ aa   │
-</span><span class="cm">│  1 │ bb   │
-</span><span class="cm">│  3 │ cc   │
-</span><span class="cm">└────┴──────┘
-</span><span class="cm"> 
-</span><span class="cm"> */</span>
+ <span style="color:#75715e">/*
+</span><span style="color:#75715e"> 
+</span><span style="color:#75715e"> 
+</span><span style="color:#75715e">┌─id─┬─name─┐
+</span><span style="color:#75715e">│  1 │ aa   │
+</span><span style="color:#75715e">│  1 │ bb   │
+</span><span style="color:#75715e">│  3 │ cc   │
+</span><span style="color:#75715e">└────┴──────┘
+</span><span style="color:#75715e"> 
+</span><span style="color:#75715e"> */</span>
  
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="查看-clickhouse-的数据文件">查看 clickhouse 的数据文件</h3>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-bash" data-lang="bash">root@025d2ab03543:/var/lib/clickhouse/data/test/test01# <span class="nb">pwd</span>
+</code></pre></div><h3 id="查看-clickhouse-的数据文件">查看 clickhouse 的数据文件</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">root@025d2ab03543:/var/lib/clickhouse/data/test/test01# pwd
 /var/lib/clickhouse/data/test/test01
 
-<span class="s">&lt;&lt;NOTE
-</span><span class="s">drwxr-x--- 2 clickhouse clickhouse 152 Dec  7 10:44 all_1_3_2
-</span><span class="s">drwxr-x--- 2 clickhouse clickhouse 152 Dec  7 10:47 all_4_4_0
-</span><span class="s">drwxr-x--- 2 clickhouse clickhouse   6 Dec  7 10:32 detached
-</span><span class="s">
-</span><span class="s">all 表示 分区 ，1 表示 第一个编号，最大是 3， 2 是表示 执行了 2次合并
-</span><span class="s">NOTE</span>
+<span style="color:#e6db74">&lt;&lt;NOTE
+</span><span style="color:#e6db74">drwxr-x--- 2 clickhouse clickhouse 152 Dec  7 10:44 all_1_3_2
+</span><span style="color:#e6db74">drwxr-x--- 2 clickhouse clickhouse 152 Dec  7 10:47 all_4_4_0
+</span><span style="color:#e6db74">drwxr-x--- 2 clickhouse clickhouse   6 Dec  7 10:32 detached
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">all 表示 分区 ，1 表示 第一个编号，最大是 3， 2 是表示 执行了 2次合并
+</span><span style="color:#e6db74">NOTE</span>
 
-</code></pre></td></tr></table>
-</div>
-</div><p><code>partition</code> 列存储分区的名称。此示例中有两个分区：<code>201901</code> 和 <code>201902</code>。在 <a href="https://clickhouse.com/docs/zh/engines/table-engines/mergetree-family/custom-partitioning-key/#alter_manipulations-with-partitions">ALTER … PARTITION</a> 语句中你可以使用该列值来指定分区名称。</p>
+</code></pre></div><p><code>partition</code> 列存储分区的名称。此示例中有两个分区：<code>201901</code> 和 <code>201902</code>。在 <a href="https://clickhouse.com/docs/zh/engines/table-engines/mergetree-family/custom-partitioning-key/#alter_manipulations-with-partitions">ALTER … PARTITION</a> 语句中你可以使用该列值来指定分区名称。</p>
 <p><code>name</code> 列为分区中数据片段的名称。在 <a href="https://clickhouse.com/docs/zh/engines/table-engines/mergetree-family/custom-partitioning-key/#alter_attach-partition">ALTER ATTACH PART</a> 语句中你可以使用此列值中来指定片段名称。</p>
 <p>这里我们拆解下第一个数据片段的名称：<code>201901_1_3_1</code>：</p>
 <ul>
@@ -523,7 +433,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
@@ -573,5 +483,6 @@ input.PC_MARK1:focus{
   <script  src="/custom/img/lazyload.min.js"></script>
   <script defer="defer" async src="/custom/post/back_btn.js"></script>
   
+
 </body>
 </html>

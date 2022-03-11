@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="LYR" /><meta name="description" content="文件查找 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 find ./ -name &amp;#34;dir0&amp;#34; find ./ -name “*.txt” | xargs rm (删除当前目录下所有以txt结尾的文件) find /home -size &#43;512k 查大于512k的" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+<meta name="author" content="LYR" /><meta name="description" content="文件查找 find ./ -name &amp;#34;dir0&amp;#34; find ./ -name “*.txt” | xargs rm (删除当前目录下所有以txt结尾的文件) find /home -size &#43;512k 查大于512k的文件 find /home -size -512k 查小于512k的文件 find" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
 
 
 
@@ -35,28 +35,28 @@
 
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
-<link href="/sass/main.min.755a55554eacedfc972c3c8b6de9579c880c97221e583f6731ac7117264918fb.css" rel="stylesheet"> 
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
 
 <meta property="og:title" content="文件原理" />
-<meta property="og:description" content="文件查找 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 find ./ -name &#34;dir0&#34; find ./ -name “*.txt” | xargs rm (删除当前目录下所有以txt结尾的文件) find /home -size &#43;512k 查大于512k的" />
+<meta property="og:description" content="文件查找 find ./ -name &#34;dir0&#34; find ./ -name “*.txt” | xargs rm (删除当前目录下所有以txt结尾的文件) find /home -size &#43;512k 查大于512k的文件 find /home -size -512k 查小于512k的文件 find" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/linux/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/%E6%96%87%E4%BB%B6%E6%9F%A5%E6%89%BE/" />
 <meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
 <meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
 <meta itemprop="name" content="文件原理">
-<meta itemprop="description" content="文件查找 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 find ./ -name &#34;dir0&#34; find ./ -name “*.txt” | xargs rm (删除当前目录下所有以txt结尾的文件) find /home -size &#43;512k 查大于512k的">
+<meta itemprop="description" content="文件查找 find ./ -name &#34;dir0&#34; find ./ -name “*.txt” | xargs rm (删除当前目录下所有以txt结尾的文件) find /home -size &#43;512k 查大于512k的文件 find /home -size -512k 查小于512k的文件 find">
 <meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="570">
+<meta itemprop="wordCount" content="546">
 
 
 
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="文件原理"/>
-<meta name="twitter:description" content="文件查找 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 find ./ -name &#34;dir0&#34; find ./ -name “*.txt” | xargs rm (删除当前目录下所有以txt结尾的文件) find /home -size &#43;512k 查大于512k的"/>
+<meta name="twitter:description" content="文件查找 find ./ -name &#34;dir0&#34; find ./ -name “*.txt” | xargs rm (删除当前目录下所有以txt结尾的文件) find /home -size &#43;512k 查大于512k的文件 find /home -size -512k 查小于512k的文件 find"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -186,6 +186,8 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
+          <span class="more-meta"> 约 546 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -214,47 +216,24 @@ input.PC_MARK1:focus{
 
     <div class="post-content">
       <h3 id="文件查找">文件查找</h3>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell">find ./  -name <span class="s2">&#34;dir0&#34;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">find ./  -name <span style="color:#e6db74">&#34;dir0&#34;</span>
 
 
-find ./ -name “*.txt” <span class="p">|</span> xargs rm    <span class="o">(</span>删除当前目录下所有以txt结尾的文件<span class="o">)</span>    
+find ./ -name “*.txt” | xargs rm    <span style="color:#f92672">(</span>删除当前目录下所有以txt结尾的文件<span style="color:#f92672">)</span>    
 find   /home   -size   +512k                查大于512k的文件
 find   /home   -size   -512k               查小于512k的文件
 find   /home   -links   +2                查硬连接数大于2的文件或目录
-find   /home   -perm   <span class="m">0700</span>                查权限为700的文件或目录
-find    /   -amin    -10     <span class="c1"># 查找在系统中最后10分钟访问的文件</span>
-find    /   -atime   -2        <span class="c1"># 查找在系统中最后48小时访问的文件</span>
-find    /   -empty             <span class="c1"># 查找在系统中为空的文件或者文件夹</span>
-find    /   -group   cat        <span class="c1"># 查找在系统中属于 groupcat的文件</span>
-find    /   -mmin   -5         <span class="c1"># 查找在系统中最后5分钟里修改过的文件</span>
-find    /   -mtime   -1       <span class="c1">#查找在系统中最后24小时里修改过的文件</span>
-find    /   -nouser           <span class="c1">#查找在系统中属于作废用户的文件</span>
-find    /   -user    fred     <span class="c1">#查找在系统中属于FRED这个用户的文件</span>
+find   /home   -perm   <span style="color:#ae81ff">0700</span>                查权限为700的文件或目录
+find    /   -amin    -10     <span style="color:#75715e"># 查找在系统中最后10分钟访问的文件</span>
+find    /   -atime   -2        <span style="color:#75715e"># 查找在系统中最后48小时访问的文件</span>
+find    /   -empty             <span style="color:#75715e"># 查找在系统中为空的文件或者文件夹</span>
+find    /   -group   cat        <span style="color:#75715e"># 查找在系统中属于 groupcat的文件</span>
+find    /   -mmin   -5         <span style="color:#75715e"># 查找在系统中最后5分钟里修改过的文件</span>
+find    /   -mtime   -1       <span style="color:#75715e">#查找在系统中最后24小时里修改过的文件</span>
+find    /   -nouser           <span style="color:#75715e">#查找在系统中属于作废用户的文件</span>
+find    /   -user    fred     <span style="color:#75715e">#查找在系统中属于FRED这个用户的文件</span>
  
-</code></pre></td></tr></table>
-</div>
-</div><p><a href="https://www.bilibili.com/video/BV1dt411f7TZ?p=22&amp;spm_id_from=pageDriver">学习教程</a></p>
+</code></pre></div><p><a href="https://www.bilibili.com/video/BV1dt411f7TZ?p=22&amp;spm_id_from=pageDriver">学习教程</a></p>
 <h3 id="nfs-服务器理解">NFS 服务器理解</h3>
 <p><a href="https://baike.baidu.com/item/%E7%BD%91%E7%BB%9C%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/9719420?fromtitle=NFS&amp;fromid=812203&amp;fr=aladdin">通过 IP 的方式去传输 linux文件</a></p>
 <h3 id="常用的文件">常用的文件</h3>
@@ -269,27 +248,14 @@ find    /   -user    fred     <span class="c1">#查找在系统中属于FRED这�
 <p>本质上来说库是一种可执行代码的二进制形式，可以被操作系统载入内存执行。库有两种：静态库（.a、.lib）和动态库（.so、.dll）。</p>
 <p>所谓静态、动态是指链接。回顾一下，将一个程序编译成可执行程序的步骤：</p>
 <h3 id="ldd-命令查看链接库的-引用">ldd 命令查看链接库的 引用</h3>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>root@VM-0-7-centos judgeServer_QD<span class="o">]</span><span class="c1"># ldd a.out</span> 
-        linux-vdso.so.1 <span class="o">=</span>&gt;  <span class="o">(</span>0x00007fff757f8000<span class="o">)</span>
-        libstdc++.so.6 <span class="o">=</span>&gt; /lib64/libstdc++.so.6 <span class="o">(</span>0x00007f5f415ef000<span class="o">)</span>
-        libm.so.6 <span class="o">=</span>&gt; /lib64/libm.so.6 <span class="o">(</span>0x00007f5f412ed000<span class="o">)</span>
-        libgcc_s.so.1 <span class="o">=</span>&gt; /lib64/libgcc_s.so.1 <span class="o">(</span>0x00007f5f410d7000<span class="o">)</span>
-        libc.so.6 <span class="o">=</span>&gt; /lib64/libc.so.6 <span class="o">(</span>0x00007f5f40d09000<span class="o">)</span>
-        /lib64/ld-linux-x86-64.so.2 <span class="o">(</span>0x00007f5f418f7000<span class="o">)</span>
-</code></pre></td></tr></table>
-</div>
-</div>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#f92672">[</span>root@VM-0-7-centos judgeServer_QD<span style="color:#f92672">]</span><span style="color:#75715e"># ldd a.out</span> 
+        linux-vdso.so.1 <span style="color:#f92672">=</span>&gt;  <span style="color:#f92672">(</span>0x00007fff757f8000<span style="color:#f92672">)</span>
+        libstdc++.so.6 <span style="color:#f92672">=</span>&gt; /lib64/libstdc++.so.6 <span style="color:#f92672">(</span>0x00007f5f415ef000<span style="color:#f92672">)</span>
+        libm.so.6 <span style="color:#f92672">=</span>&gt; /lib64/libm.so.6 <span style="color:#f92672">(</span>0x00007f5f412ed000<span style="color:#f92672">)</span>
+        libgcc_s.so.1 <span style="color:#f92672">=</span>&gt; /lib64/libgcc_s.so.1 <span style="color:#f92672">(</span>0x00007f5f410d7000<span style="color:#f92672">)</span>
+        libc.so.6 <span style="color:#f92672">=</span>&gt; /lib64/libc.so.6 <span style="color:#f92672">(</span>0x00007f5f40d09000<span style="color:#f92672">)</span>
+        /lib64/ld-linux-x86-64.so.2 <span style="color:#f92672">(</span>0x00007f5f418f7000<span style="color:#f92672">)</span>
+</code></pre></div>
     </div>
 
     <div class="post-copyright">
@@ -414,7 +380,7 @@ find    /   -user    fred     <span class="c1">#查找在系统中属于FRED这�
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
@@ -464,5 +430,6 @@ find    /   -user    fred     <span class="c1">#查找在系统中属于FRED这�
   <script  src="/custom/img/lazyload.min.js"></script>
   <script defer="defer" async src="/custom/post/back_btn.js"></script>
   
+
 </body>
 </html>

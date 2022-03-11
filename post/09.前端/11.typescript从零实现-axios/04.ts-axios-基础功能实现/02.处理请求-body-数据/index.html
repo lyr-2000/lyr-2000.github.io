@@ -35,7 +35,7 @@
 
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
-<link href="/sass/main.min.755a55554eacedfc972c3c8b6de9579c880c97221e583f6731ac7117264918fb.css" rel="stylesheet"> 
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
@@ -50,7 +50,7 @@
 <meta itemprop="description" content="处理请求 body 数据 需求分析 我们通过执行 XMLHttpRequest 对象实例的 send 方法来发送请求，并通过该方法的参数设置请求 body 数据，我们可以去 mdn 查阅该方法支持的参数类型。 我们">
 <meta itemprop="datePublished" content="2020-01-05T10:56:02&#43;00:00" />
 <meta itemprop="dateModified" content="2020-01-05T10:56:02&#43;00:00" />
-<meta itemprop="wordCount" content="1099">
+<meta itemprop="wordCount" content="1029">
 
 
 
@@ -189,6 +189,8 @@ input.PC_MARK1:focus{
             <a href="/categories/typescript-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/"> 《TypeScript 从零实现 axios》 </a>
             <a href="/categories/ts-axios-%E5%9F%BA%E7%A1%80%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0/"> ts-axios 基础功能实现 </a>
             </div>
+          <span class="more-meta"> 约 1029 字 </span>
+          <span class="more-meta"> 预计阅读 3 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -217,211 +219,93 @@ input.PC_MARK1:focus{
 <p>我们通过执行 <code>XMLHttpRequest</code> 对象实例的 <code>send</code> 方法来发送请求，并通过该方法的参数设置请求 <code>body</code> 数据，我们可以去 <a href="https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/send">mdn</a> 查阅该方法支持的参数类型。</p>
 <p>我们发现 <code>send</code> 方法的参数支持 <code>Document</code> 和 <code>BodyInit</code> 类型，<code>BodyInit</code> 包括了 <code>Blob</code>, <code>BufferSource</code>, <code>FormData</code>, <code>URLSearchParams</code>, <code>ReadableStream</code>、<code>USVString</code>，当没有数据的时候，我们还可以传入 <code>null</code>。</p>
 <p>但是我们最常用的场景还是传一个普通对象给服务端，例如：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="nx">axios</span><span class="p">({</span>
-  <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span>
-  <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;/base/post&#39;</span><span class="p">,</span>
-  <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
-    <span class="nx">a</span>: <span class="kt">1</span><span class="p">,</span>
-    <span class="nx">b</span>: <span class="kt">2</span>
-  <span class="p">}</span>
-<span class="p">})</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>这个时候 <code>data</code>是不能直接传给 <code>send</code> 函数的，我们需要把它转换成 JSON 字符串。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#a6e22e">axios</span>({
+  <span style="color:#a6e22e">method</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;post&#39;</span>,
+  <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;/base/post&#39;</span>,
+  <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> {
+    <span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">1</span>,
+    <span style="color:#a6e22e">b</span>: <span style="color:#66d9ef">2</span>
+  }
+})
+</code></pre></div><p>这个时候 <code>data</code>是不能直接传给 <code>send</code> 函数的，我们需要把它转换成 JSON 字符串。</p>
 <h2 id="transformrequest-函数实现">transformRequest 函数实现</h2>
 <p>根据需求分析，我们要实现一个工具函数，对 request 中的 <code>data</code> 做一层转换。我们在 <code>helpers</code> 目录新建 <code>data.ts</code> 文件。</p>
 <p><code>helpers/data.ts</code>：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="p">{</span> <span class="nx">isPlainObject</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;./util&#39;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">isPlainObject</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;./util&#39;</span>
 
-<span class="kr">export</span> <span class="kd">function</span> <span class="nx">transformRequest</span> <span class="p">(</span><span class="nx">data</span>: <span class="kt">any</span><span class="p">)</span><span class="o">:</span> <span class="nx">any</span> <span class="p">{</span>
-  <span class="k">if</span> <span class="p">(</span><span class="nx">isPlainObject</span><span class="p">(</span><span class="nx">data</span><span class="p">))</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span>
-  <span class="p">}</span>
-  <span class="k">return</span> <span class="nx">data</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p><code>helpers/util.js</code>：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="kd">function</span> <span class="nx">isPlainObject</span> <span class="p">(</span><span class="nx">val</span>: <span class="kt">any</span><span class="p">)</span><span class="o">:</span> <span class="nx">val</span> <span class="nx">is</span> <span class="nb">Object</span> <span class="p">{</span>
-  <span class="k">return</span> <span class="nx">toString</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">val</span><span class="p">)</span> <span class="o">===</span> <span class="s1">&#39;[object Object]&#39;</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>这里为什么要使用 <code>isPlainObject</code> 函数判断，而不用之前的 <code>isObject</code> 函数呢，因为 <code>isObject</code> 的判断方式，对于 <code>FormData</code>、<code>ArrayBuffer</code> 这些类型，<code>isObject</code> 判断也为 <code>true</code>，但是这些类型的数据我们是不需要做处理的，而 <code>isPlainObject</code> 的判断方式，只有我们定义的普通 <code>JSON</code> 对象才能满足。</p>
+<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">transformRequest</span> (<span style="color:#a6e22e">data</span>: <span style="color:#66d9ef">any</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">any</span> {
+  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">isPlainObject</span>(<span style="color:#a6e22e">data</span>)) {
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">stringify</span>(<span style="color:#a6e22e">data</span>)
+  }
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">data</span>
+}
+</code></pre></div><p><code>helpers/util.js</code>：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">isPlainObject</span> (<span style="color:#a6e22e">val</span>: <span style="color:#66d9ef">any</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">val</span> <span style="color:#a6e22e">is</span> Object {
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">toString</span>.<span style="color:#a6e22e">call</span>(<span style="color:#a6e22e">val</span>) <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;[object Object]&#39;</span>
+}
+</code></pre></div><p>这里为什么要使用 <code>isPlainObject</code> 函数判断，而不用之前的 <code>isObject</code> 函数呢，因为 <code>isObject</code> 的判断方式，对于 <code>FormData</code>、<code>ArrayBuffer</code> 这些类型，<code>isObject</code> 判断也为 <code>true</code>，但是这些类型的数据我们是不需要做处理的，而 <code>isPlainObject</code> 的判断方式，只有我们定义的普通 <code>JSON</code> 对象才能满足。</p>
 <p><code>helpers/url.ts</code>：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="k">if</span> <span class="p">(</span><span class="nx">isDate</span><span class="p">(</span><span class="nx">val</span><span class="p">))</span> <span class="p">{</span>
-  <span class="nx">val</span> <span class="o">=</span> <span class="nx">val</span><span class="p">.</span><span class="nx">toISOString</span><span class="p">()</span>
-<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">isPlainObject</span><span class="p">(</span><span class="nx">val</span><span class="p">))</span> <span class="p">{</span>
-  <span class="nx">val</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">val</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>对于上节课我们对请求参数值的判断，我们也应该用 <code>isPlainObject</code> 才更加合理。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">isDate</span>(<span style="color:#a6e22e">val</span>)) {
+  <span style="color:#a6e22e">val</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">val</span>.<span style="color:#a6e22e">toISOString</span>()
+} <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">isPlainObject</span>(<span style="color:#a6e22e">val</span>)) {
+  <span style="color:#a6e22e">val</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">stringify</span>(<span style="color:#a6e22e">val</span>)
+}
+</code></pre></div><p>对于上节课我们对请求参数值的判断，我们也应该用 <code>isPlainObject</code> 才更加合理。</p>
 <p><code>helpers/util.js</code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="c1">// export function isObject (val: any): val is Object {
-</span><span class="c1">//   return val !== null &amp;&amp; typeof val === &#39;object&#39;
-</span><span class="c1">// }
-</span></code></pre></td></tr></table>
-</div>
-</div><p>既然现在 <code>isObject</code> 方法不再使用，我们先将其注释。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#75715e">// export function isObject (val: any): val is Object {
+</span><span style="color:#75715e">//   return val !== null &amp;&amp; typeof val === &#39;object&#39;
+</span><span style="color:#75715e">// }
+</span></code></pre></div><p>既然现在 <code>isObject</code> 方法不再使用，我们先将其注释。</p>
 <h2 id="实现请求-body-处理逻辑">实现请求 body 处理逻辑</h2>
 <p><code>index.ts</code>：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="p">{</span> <span class="nx">transformRequest</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;./helpers/data&#39;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">transformRequest</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;./helpers/data&#39;</span>
 
-<span class="sb">```typescript
-</span><span class="sb">function processConfig (config: AxiosRequestConfig): void {
-</span><span class="sb">  config.url = transformURL(config)
-</span><span class="sb">  config.data = transformRequestData(config)
-</span><span class="sb">}
-</span><span class="sb">
-</span><span class="sb">function transformRequestData (config: AxiosRequestConfig): any {
-</span><span class="sb">  return transformRequest(config.data)
-</span><span class="sb">}
-</span></code></pre></td></tr></table>
-</div>
-</div><p>我们定义了 <code>transformRequestData</code> 函数，去转换请求 <code>body</code> 的数据，内部调用了我们刚刚实现的的 <code>transformRequest</code> 方法。</p>
+<span style="color:#e6db74">```typescript
+</span><span style="color:#e6db74">function processConfig (config: AxiosRequestConfig): void {
+</span><span style="color:#e6db74">  config.url = transformURL(config)
+</span><span style="color:#e6db74">  config.data = transformRequestData(config)
+</span><span style="color:#e6db74">}
+</span><span style="color:#e6db74">
+</span><span style="color:#e6db74">function transformRequestData (config: AxiosRequestConfig): any {
+</span><span style="color:#e6db74">  return transformRequest(config.data)
+</span><span style="color:#e6db74">}
+</span></code></pre></div><p>我们定义了 <code>transformRequestData</code> 函数，去转换请求 <code>body</code> 的数据，内部调用了我们刚刚实现的的 <code>transformRequest</code> 方法。</p>
 <p>然后我们在 <code>processConfig</code> 内部添加了这段逻辑，在处理完 url 后接着对 <code>config</code> 中的 <code>data</code> 做处理。</p>
 <h2 id="编写-demo">编写 demo</h2>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="nx">axios</span><span class="p">({</span>
-  <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span>
-  <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;/base/post&#39;</span><span class="p">,</span>
-  <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
-    <span class="nx">a</span>: <span class="kt">1</span><span class="p">,</span>
-    <span class="nx">b</span>: <span class="kt">2</span>
-  <span class="p">}</span>
-<span class="p">})</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#a6e22e">axios</span>({
+  <span style="color:#a6e22e">method</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;post&#39;</span>,
+  <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;/base/post&#39;</span>,
+  <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> {
+    <span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">1</span>,
+    <span style="color:#a6e22e">b</span>: <span style="color:#66d9ef">2</span>
+  }
+})
 
-<span class="kr">const</span> <span class="nx">arr</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Int32Array</span><span class="p">([</span><span class="mi">21</span><span class="p">,</span> <span class="mi">31</span><span class="p">])</span>
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">arr</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Int32Array</span>([<span style="color:#ae81ff">21</span>, <span style="color:#ae81ff">31</span>])
 
-<span class="nx">axios</span><span class="p">({</span>
-  <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span>
-  <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;/base/buffer&#39;</span><span class="p">,</span>
-  <span class="nx">data</span>: <span class="kt">arr</span>
-<span class="p">})</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>我们在 <code>examples/base/app.ts</code> 添加 2 段代码，第一个 post 请求的 <code>data</code> 是一个普通对象，第二个请求的 <code>data</code> 是一个 <code>Int32Array</code> 类型的数据，它是可以直接传给 <code>XMLHttpRequest</code> 对象的 <code>send</code> 方法的。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">router</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/base/post&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">)</span>
-<span class="p">})</span>
+<span style="color:#a6e22e">axios</span>({
+  <span style="color:#a6e22e">method</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;post&#39;</span>,
+  <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;/base/buffer&#39;</span>,
+  <span style="color:#a6e22e">data</span>: <span style="color:#66d9ef">arr</span>
+})
+</code></pre></div><p>我们在 <code>examples/base/app.ts</code> 添加 2 段代码，第一个 post 请求的 <code>data</code> 是一个普通对象，第二个请求的 <code>data</code> 是一个 <code>Int32Array</code> 类型的数据，它是可以直接传给 <code>XMLHttpRequest</code> 对象的 <code>send</code> 方法的。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">router</span>.<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/base/post&#39;</span>, <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) {
+  <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">json</span>(<span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">body</span>)
+})
 
-<span class="nx">router</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/base/buffer&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
-  <span class="kd">let</span> <span class="nx">msg</span> <span class="o">=</span> <span class="p">[]</span>
-  <span class="nx">req</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">chunk</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nx">chunk</span><span class="p">)</span> <span class="p">{</span>
-      <span class="nx">msg</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">chunk</span><span class="p">)</span>
-    <span class="p">}</span>
-  <span class="p">})</span>
-  <span class="nx">req</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
-    <span class="kd">let</span> <span class="nx">buf</span> <span class="o">=</span> <span class="nx">Buffer</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">msg</span><span class="p">)</span>
-    <span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="nx">buf</span><span class="p">.</span><span class="nx">toJSON</span><span class="p">())</span>
-  <span class="p">})</span>
-<span class="p">})</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>我们接着在 <code>examples/server.js</code> 中添加 2 个路由，分别针对这俩种请求，返回请求传入的数据。</p>
+<span style="color:#a6e22e">router</span>.<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/base/buffer&#39;</span>, <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) {
+  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">msg</span> <span style="color:#f92672">=</span> []
+  <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">on</span>(<span style="color:#e6db74">&#39;data&#39;</span>, (<span style="color:#a6e22e">chunk</span>) =&gt; {
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">chunk</span>) {
+      <span style="color:#a6e22e">msg</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">chunk</span>)
+    }
+  })
+  <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">on</span>(<span style="color:#e6db74">&#39;end&#39;</span>, () =&gt; {
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">buf</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Buffer</span>.<span style="color:#a6e22e">concat</span>(<span style="color:#a6e22e">msg</span>)
+    <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">json</span>(<span style="color:#a6e22e">buf</span>.<span style="color:#a6e22e">toJSON</span>())
+  })
+})
+</code></pre></div><p>我们接着在 <code>examples/server.js</code> 中添加 2 个路由，分别针对这俩种请求，返回请求传入的数据。</p>
 <p>然后我们打开浏览器运行 demo，看一下结果，我们发现 <code>/base/buffer</code> 的请求是可以拿到数据，但是 <code>base/post</code> 请求的 response 里却返回的是一个空对象，这是什么原因呢？</p>
 <p>实际上是因为我们虽然执行 <code>send</code> 方法的时候把普通对象 <code>data</code> 转换成一个 <code>JSON</code> 字符串，但是我们请求<code>header</code> 的 <code>Content-Type</code> 是 <code>text/plain;charset=UTF-8</code>，导致了服务端接受到请求并不能正确解析请求 <code>body</code> 的数据。</p>
 <p>知道这个问题后，下面一节课我们来实现对请求 <code>header</code> 的处理。</p>
@@ -552,7 +436,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
@@ -602,5 +486,6 @@ input.PC_MARK1:focus{
   <script  src="/custom/img/lazyload.min.js"></script>
   <script defer="defer" async src="/custom/post/back_btn.js"></script>
   
+
 </body>
 </html>

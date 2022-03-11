@@ -35,7 +35,7 @@
 
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
-<link href="/sass/main.min.755a55554eacedfc972c3c8b6de9579c880c97221e583f6731ac7117264918fb.css" rel="stylesheet"> 
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
@@ -50,7 +50,7 @@
 <meta itemprop="description" content="clickhouse相关的引擎 tinylog mysql 引擎 replaceingMerge Tree SummingMergeTree 引擎 AggregatingMergeTree 引擎 CK 引擎之CollapsingMergeTree 引擎 CK 引擎之多版本折叠树引擎 &laquo;&laquo;&laquo;&lt; HEAD clickhouse 的引擎">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="2290">
+<meta itemprop="wordCount" content="2261">
 
 
 
@@ -186,6 +186,8 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-14 </span>
         
+          <span class="more-meta"> 约 2261 字 </span>
+          <span class="more-meta"> 预计阅读 5 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -260,35 +262,18 @@ clickhouse 的引擎是这个数据库的一大特色</p>
 <p>最重要的是这个，一个系列，合并树家族</p>
 <p>replaceingMerge Tree，SummingMergeTree  都是他的衍生引擎</p>
 <p><a href="https://www.bilibili.com/video/BV1Yh411z7os?p=7">参考教程</a></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">create</span> <span class="k">table</span> <span class="n">t_order_mt</span> <span class="p">(</span>
-	<span class="n">id</span> <span class="n">UInt32</span><span class="p">,</span>
-    <span class="n">sku_id</span> <span class="n">String</span><span class="p">,</span>
-    <span class="n">total_amounte</span> <span class="nb">Decimal</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span>
-    <span class="n">create_time</span> <span class="n">Datetime</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">create</span> <span style="color:#66d9ef">table</span> t_order_mt (
+	id UInt32,
+    sku_id String,
+    total_amounte Decimal(<span style="color:#ae81ff">16</span>,<span style="color:#ae81ff">2</span>),
+    create_time Datetime
 
-<span class="p">)</span> <span class="n">engine</span> <span class="o">=</span> <span class="n">MergeTree</span>
-<span class="n">partition</span> <span class="k">by</span> <span class="n">toYYYYMMDD</span><span class="p">(</span><span class="n">create_time</span><span class="p">)</span>
-<span class="k">primary</span> <span class="k">key</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
-<span class="k">order</span> <span class="k">by</span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="n">sku_id</span><span class="p">);</span>
+) engine <span style="color:#f92672">=</span> MergeTree
+partition <span style="color:#66d9ef">by</span> toYYYYMMDD(create_time)
+<span style="color:#66d9ef">primary</span> <span style="color:#66d9ef">key</span>(id)
+<span style="color:#66d9ef">order</span> <span style="color:#66d9ef">by</span>(id,sku_id);
 
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="数据partitioning">数据Partitioning</h3>
+</code></pre></div><h3 id="数据partitioning">数据Partitioning</h3>
 <p>ClickHouse支持PARTITION BY子句，在建表时可以指定按照任意合法表达式进行<a href="https://www.zhihu.com/search?q=%E6%95%B0%E6%8D%AE%E5%88%86%E5%8C%BA&amp;search_source=Entity&amp;hybrid_search_source=Entity&amp;hybrid_search_extra=%7B%22sourceType%22%3A%22article%22%2C%22sourceId%22%3A98135840%7D">数据分区</a>操作，比如通过toYYYYMM()将数据按月进行分区、toMonday()将数据按照周几进行分区、对Enum类型的列直接每种取值作为一个分区等。</p>
 <p>数据Partition在ClickHouse中主要有两方面应用：</p>
 <ul>
@@ -319,35 +304,18 @@ clickhouse 的引擎是这个数据库的一大特色</p>
 <h3 id="列-ttl">列 TTL</h3>
 <p>当列中的值过期时, ClickHouse会将它们替换成该列数据类型的默认值。如果数据片段中列的所有值均已过期，则ClickHouse 会从文件系统中的数据片段中删除此列。</p>
 <p><code>TTL</code>子句不能被用于主键字段。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">example_table</span>
-<span class="p">(</span>
-    <span class="n">d</span> <span class="n">DateTime</span><span class="p">,</span>
-    <span class="n">a</span> <span class="nb">Int</span> <span class="n">TTL</span> <span class="n">d</span> <span class="o">+</span> <span class="nb">INTERVAL</span> <span class="mi">1</span> <span class="k">MONTH</span><span class="p">,</span>
-    <span class="n">b</span> <span class="nb">Int</span> <span class="n">TTL</span> <span class="n">d</span> <span class="o">+</span> <span class="nb">INTERVAL</span> <span class="mi">1</span> <span class="k">MONTH</span><span class="p">,</span>
-    <span class="k">c</span> <span class="n">String</span>
-<span class="p">)</span>
-<span class="n">ENGINE</span> <span class="o">=</span> <span class="n">MergeTree</span>
-<span class="n">PARTITION</span> <span class="k">BY</span> <span class="n">toYYYYMM</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-<span class="k">ORDER</span> <span class="k">BY</span> <span class="n">d</span><span class="p">;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">CREATE</span> <span style="color:#66d9ef">TABLE</span> example_table
+(
+    d DateTime,
+    a Int TTL d <span style="color:#f92672">+</span> INTERVAL <span style="color:#ae81ff">1</span> <span style="color:#66d9ef">MONTH</span>,
+    b Int TTL d <span style="color:#f92672">+</span> INTERVAL <span style="color:#ae81ff">1</span> <span style="color:#66d9ef">MONTH</span>,
+    <span style="color:#66d9ef">c</span> String
+)
+ENGINE <span style="color:#f92672">=</span> MergeTree
+PARTITION <span style="color:#66d9ef">BY</span> toYYYYMM(d)
+<span style="color:#66d9ef">ORDER</span> <span style="color:#66d9ef">BY</span> d;
 
-</code></pre></td></tr></table>
-</div>
-</div><h2 id="mergetree合并树家族引擎">MergeTree合并树家族引擎</h2>
+</code></pre></div><h2 id="mergetree合并树家族引擎">MergeTree合并树家族引擎</h2>
 <h3 id="replacingmergetree">ReplacingMergeTree</h3>
 <p>该引擎和MergeTree的不同之处在于它会删除具有相同主键的重复项。</p>
 <p>在数据合并的时候会对主键进行去重，合并会在后台执行，执行时间未知，因此你无法预先做出计划</p>
@@ -356,34 +324,15 @@ clickhouse 的引擎是这个数据库的一大特色</p>
 <h3 id="aggregatemergetree">AggregateMergeTree</h3>
 <p>该引擎改变了数据片段的合并逻辑,ClickHouse会将相同主键的所有行(在一个数据片段内)替换为单个存储一系列的聚合函数状态的行。可以使用该引擎来做增量数据统计聚合,包括物化视图的数据聚合。
 <strong>AggregateMergeTree</strong>引擎的表不能直接使用insert来查询写入数据。一般用 <strong>insert select</strong> 来写入数据,常用于该引擎做增量数据统计聚合,<strong>包括物化视图的数据聚合</strong>。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">create</span> <span class="k">table</span> <span class="n">arr_table_base</span> <span class="p">(</span><span class="n">id</span> <span class="n">String</span><span class="p">,</span> <span class="n">city</span> <span class="n">String</span><span class="p">,</span> <span class="n">code</span> <span class="n">String</span><span class="p">,</span><span class="n">value</span> <span class="n">UInt32</span><span class="p">)</span> <span class="n">engine</span><span class="o">=</span><span class="n">MergeTree</span> <span class="n">partition</span> <span class="k">by</span> <span class="n">city</span> <span class="k">order</span> <span class="k">by</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="n">city</span><span class="p">);</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">create</span> <span style="color:#66d9ef">table</span> arr_table_base (id String, city String, code String,value UInt32) engine<span style="color:#f92672">=</span>MergeTree partition <span style="color:#66d9ef">by</span> city <span style="color:#66d9ef">order</span> <span style="color:#66d9ef">by</span> (id,city);
 
-</code></pre></td></tr></table>
-</div>
-</div><p>创建物化视图</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">create</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">agg_view</span> <span class="n">engine</span><span class="o">=</span><span class="n">AggregatingMergeTree</span><span class="p">()</span> <span class="n">partition</span> <span class="k">by</span>
-<span class="n">city</span> <span class="k">order</span> <span class="k">by</span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="n">city</span><span class="p">)</span>
-<span class="k">as</span> <span class="k">select</span> <span class="n">id</span><span class="p">,</span><span class="n">city</span><span class="p">,</span><span class="n">uniqState</span><span class="p">(</span><span class="n">code</span><span class="p">)</span> <span class="k">as</span> <span class="n">code</span><span class="p">,</span>
-<span class="n">sumState</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">as</span> <span class="n">value</span> <span class="k">from</span> <span class="n">arr_table_base</span> <span class="k">group</span> <span class="k">by</span> <span class="n">id</span><span class="p">,</span><span class="n">city</span><span class="p">;</span>
+</code></pre></div><p>创建物化视图</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">create</span> materialized <span style="color:#66d9ef">view</span> agg_view engine<span style="color:#f92672">=</span>AggregatingMergeTree() partition <span style="color:#66d9ef">by</span>
+city <span style="color:#66d9ef">order</span> <span style="color:#66d9ef">by</span>(id,city)
+<span style="color:#66d9ef">as</span> <span style="color:#66d9ef">select</span> id,city,uniqState(code) <span style="color:#66d9ef">as</span> code,
+sumState(value) <span style="color:#66d9ef">as</span> value <span style="color:#66d9ef">from</span> arr_table_base <span style="color:#66d9ef">group</span> <span style="color:#66d9ef">by</span> id,city;
 
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="collapsingmergetree">CollapsingMergeTree</h3>
+</code></pre></div><h3 id="collapsingmergetree">CollapsingMergeTree</h3>
 <p>CollapsingMergeTree会异步的删除特定列Sign有1和-1的值以外,其余所有字段的值都相等的成对的行。没有成对的行会被保留。该引擎可以降低存储量提高select查询效率。CollapsingMergeTree引擎有个状态列sign,这个值为1是”状态“行,-1为”取消“行。
 对于数据而言只关心状态列为状态的数据,不关心状态列为取消的数据。</p>
 
@@ -511,7 +460,7 @@ clickhouse 的引擎是这个数据库的一大特色</p>
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
@@ -561,5 +510,6 @@ clickhouse 的引擎是这个数据库的一大特色</p>
   <script  src="/custom/img/lazyload.min.js"></script>
   <script defer="defer" async src="/custom/post/back_btn.js"></script>
   
+
 </body>
 </html>

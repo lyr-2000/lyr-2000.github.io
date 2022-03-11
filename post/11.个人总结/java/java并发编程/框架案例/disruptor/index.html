@@ -35,7 +35,7 @@
 
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
-<link href="/sass/main.min.755a55554eacedfc972c3c8b6de9579c880c97221e583f6731ac7117264918fb.css" rel="stylesheet"> 
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
@@ -50,7 +50,7 @@
 <meta itemprop="description" content="disruptor 框架介绍 ArrayBlockingQueue 和 LinkedBlockingQueue，它们都是基于 ReentrantLock 实现的，在高并发场景下，锁的效率并不高，那有没有更好的替代品呢？有，今天">
 <meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="3019">
+<meta itemprop="wordCount" content="2925">
 
 
 
@@ -186,6 +186,8 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
+          <span class="more-meta"> 约 2925 字 </span>
+          <span class="more-meta"> 预计阅读 6 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -229,240 +231,116 @@ input.PC_MARK1:focus{
 <li>构建 Disruptor 对象除了要指定队列大小外，还需要传入一个 EventFactory，示例代码中传入的是<code>LongEvent::new</code>；</li>
 <li>消费 Disruptor 中的 Event 需要通过 handleEventsWith() 方法注册一个事件处理器，发布 Event 则需要通过 publishEvent() 方法。</li>
 </ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">// 自定义 Event
-</span><span class="c1"></span><span class="kd">class</span> <span class="nc">LongEvent</span> <span class="o">{</span>
-  <span class="kd">private</span> <span class="kt">long</span> <span class="n">value</span><span class="o">;</span>
-  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">set</span><span class="o">(</span><span class="kt">long</span> <span class="n">value</span><span class="o">)</span> <span class="o">{</span>
-    <span class="k">this</span><span class="o">.</span><span class="na">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">;</span>
-  <span class="o">}</span>
-<span class="o">}</span>
-<span class="c1">// 指定 RingBuffer 大小,
-</span><span class="c1">// 必须是 2 的 N 次方
-</span><span class="c1"></span><span class="kt">int</span> <span class="n">bufferSize</span> <span class="o">=</span> <span class="n">1024</span><span class="o">;</span>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 自定义 Event
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LongEvent</span> <span style="color:#f92672">{</span>
+  <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">long</span> value<span style="color:#f92672">;</span>
+  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">set</span><span style="color:#f92672">(</span><span style="color:#66d9ef">long</span> value<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">value</span> <span style="color:#f92672">=</span> value<span style="color:#f92672">;</span>
+  <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+<span style="color:#75715e">// 指定 RingBuffer 大小,
+</span><span style="color:#75715e">// 必须是 2 的 N 次方
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> bufferSize <span style="color:#f92672">=</span> 1024<span style="color:#f92672">;</span>
  
-<span class="c1">// 构建 Disruptor
-</span><span class="c1"></span><span class="n">Disruptor</span><span class="o">&lt;</span><span class="n">LongEvent</span><span class="o">&gt;</span> <span class="n">disruptor</span> 
-  <span class="o">=</span> <span class="k">new</span> <span class="n">Disruptor</span><span class="o">&lt;&gt;(</span>
-    <span class="n">LongEvent</span><span class="o">::</span><span class="k">new</span><span class="o">,</span>
-    <span class="n">bufferSize</span><span class="o">,</span>
-    <span class="n">DaemonThreadFactory</span><span class="o">.</span><span class="na">INSTANCE</span><span class="o">);</span>
+<span style="color:#75715e">// 构建 Disruptor
+</span><span style="color:#75715e"></span>Disruptor<span style="color:#f92672">&lt;</span>LongEvent<span style="color:#f92672">&gt;</span> disruptor 
+  <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Disruptor<span style="color:#f92672">&lt;&gt;(</span>
+    LongEvent<span style="color:#f92672">::</span><span style="color:#66d9ef">new</span><span style="color:#f92672">,</span>
+    bufferSize<span style="color:#f92672">,</span>
+    DaemonThreadFactory<span style="color:#f92672">.</span><span style="color:#a6e22e">INSTANCE</span><span style="color:#f92672">);</span>
  
-<span class="c1">// 注册事件处理器
-</span><span class="c1"></span><span class="n">disruptor</span><span class="o">.</span><span class="na">handleEventsWith</span><span class="o">(</span>
-  <span class="o">(</span><span class="n">event</span><span class="o">,</span> <span class="n">sequence</span><span class="o">,</span> <span class="n">endOfBatch</span><span class="o">)</span> <span class="o">-&gt;</span>
-    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;E: &#34;</span><span class="o">+</span><span class="n">event</span><span class="o">));</span>
+<span style="color:#75715e">// 注册事件处理器
+</span><span style="color:#75715e"></span>disruptor<span style="color:#f92672">.</span><span style="color:#a6e22e">handleEventsWith</span><span style="color:#f92672">(</span>
+  <span style="color:#f92672">(</span>event<span style="color:#f92672">,</span> sequence<span style="color:#f92672">,</span> endOfBatch<span style="color:#f92672">)</span> <span style="color:#f92672">-&gt;</span>
+    System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;E: &#34;</span><span style="color:#f92672">+</span>event<span style="color:#f92672">));</span>
  
-<span class="c1">// 启动 Disruptor
-</span><span class="c1"></span><span class="n">disruptor</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+<span style="color:#75715e">// 启动 Disruptor
+</span><span style="color:#75715e"></span>disruptor<span style="color:#f92672">.</span><span style="color:#a6e22e">start</span><span style="color:#f92672">();</span>
  
-<span class="c1">// 获取 RingBuffer
-</span><span class="c1"></span><span class="n">RingBuffer</span><span class="o">&lt;</span><span class="n">LongEvent</span><span class="o">&gt;</span> <span class="n">ringBuffer</span> 
-  <span class="o">=</span> <span class="n">disruptor</span><span class="o">.</span><span class="na">getRingBuffer</span><span class="o">();</span>
-<span class="c1">// 生产 Event
-</span><span class="c1"></span><span class="n">ByteBuffer</span> <span class="n">bb</span> <span class="o">=</span> <span class="n">ByteBuffer</span><span class="o">.</span><span class="na">allocate</span><span class="o">(</span><span class="n">8</span><span class="o">);</span>
-<span class="k">for</span> <span class="o">(</span><span class="kt">long</span> <span class="n">l</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="kc">true</span><span class="o">;</span> <span class="n">l</span><span class="o">++){</span>
-  <span class="n">bb</span><span class="o">.</span><span class="na">putLong</span><span class="o">(</span><span class="n">0</span><span class="o">,</span> <span class="n">l</span><span class="o">);</span>
-  <span class="c1">// 生产者生产消息
-</span><span class="c1"></span>  <span class="n">ringBuffer</span><span class="o">.</span><span class="na">publishEvent</span><span class="o">(</span>
-    <span class="o">(</span><span class="n">event</span><span class="o">,</span> <span class="n">sequence</span><span class="o">,</span> <span class="n">buffer</span><span class="o">)</span> <span class="o">-&gt;</span> 
-      <span class="n">event</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="n">buffer</span><span class="o">.</span><span class="na">getLong</span><span class="o">(</span><span class="n">0</span><span class="o">)),</span> <span class="n">bb</span><span class="o">);</span>
-  <span class="n">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="n">1000</span><span class="o">);</span>
-<span class="o">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><h2 id="ringbuffer-如何提升性能">RingBuffer 如何提升性能</h2>
+<span style="color:#75715e">// 获取 RingBuffer
+</span><span style="color:#75715e"></span>RingBuffer<span style="color:#f92672">&lt;</span>LongEvent<span style="color:#f92672">&gt;</span> ringBuffer 
+  <span style="color:#f92672">=</span> disruptor<span style="color:#f92672">.</span><span style="color:#a6e22e">getRingBuffer</span><span style="color:#f92672">();</span>
+<span style="color:#75715e">// 生产 Event
+</span><span style="color:#75715e"></span>ByteBuffer bb <span style="color:#f92672">=</span> ByteBuffer<span style="color:#f92672">.</span><span style="color:#a6e22e">allocate</span><span style="color:#f92672">(</span>8<span style="color:#f92672">);</span>
+<span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">long</span> l <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span> l<span style="color:#f92672">++){</span>
+  bb<span style="color:#f92672">.</span><span style="color:#a6e22e">putLong</span><span style="color:#f92672">(</span>0<span style="color:#f92672">,</span> l<span style="color:#f92672">);</span>
+  <span style="color:#75715e">// 生产者生产消息
+</span><span style="color:#75715e"></span>  ringBuffer<span style="color:#f92672">.</span><span style="color:#a6e22e">publishEvent</span><span style="color:#f92672">(</span>
+    <span style="color:#f92672">(</span>event<span style="color:#f92672">,</span> sequence<span style="color:#f92672">,</span> buffer<span style="color:#f92672">)</span> <span style="color:#f92672">-&gt;</span> 
+      event<span style="color:#f92672">.</span><span style="color:#a6e22e">set</span><span style="color:#f92672">(</span>buffer<span style="color:#f92672">.</span><span style="color:#a6e22e">getLong</span><span style="color:#f92672">(</span>0<span style="color:#f92672">)),</span> bb<span style="color:#f92672">);</span>
+  Thread<span style="color:#f92672">.</span><span style="color:#a6e22e">sleep</span><span style="color:#f92672">(</span>1000<span style="color:#f92672">);</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><h2 id="ringbuffer-如何提升性能">RingBuffer 如何提升性能</h2>
 <p>Java SDK 中 ArrayBlockingQueue 使用<strong>数组</strong>作为底层的数据存储，而 Disruptor 是使用<strong>RingBuffer</strong>作为数据存储。<strong>RingBuffer 本质上也是数组</strong>，所以仅仅将数据存储从数组换成 RingBuffer 并不能提升性能，但是 <strong>Disruptor 在 RingBuffer 的基础上还做了很多优化，其中一项优化就是和内存分配有关的。</strong></p>
 <p>下面我们再看看 Disruptor 是如何处理的。Disruptor 内部的 RingBuffer 也是用数组实现的，但是这个数组中的所有元素在初始化时是一次性全部创建的，所以这些元素的内存地址大概率是连续的，相关的代码如下所示。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-java" data-lang="java"><span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="n">0</span><span class="o">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">bufferSize</span><span class="o">;</span> <span class="n">i</span><span class="o">++){</span>
-  <span class="c1">//entries[] 就是 RingBuffer 内部的数组
-</span><span class="c1"></span>  <span class="c1">//eventFactory 就是前面示例代码中传入的 LongEvent::new
-</span><span class="c1"></span>  <span class="n">entries</span><span class="o">[</span><span class="n">BUFFER_PAD</span> <span class="o">+</span> <span class="n">i</span><span class="o">]</span> 
-    <span class="o">=</span> <span class="n">eventFactory</span><span class="o">.</span><span class="na">newInstance</span><span class="o">();</span>
-<span class="o">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>Disruptor 内部 RingBuffer 的结构可以简化成下图，那问题来了，<strong>数组中所有元素内存地址连续能提升性能吗</strong>？能！为什么呢？因为消费者线程在消费的时候，是<strong>遵循空间局部性原理</strong>的，<strong>消费完第 1 个元素，很快就会消费第 2 个元素；当消费第 1 个元素 E1 的时候，CPU 会把内存中 E1 后面的数据也加载进 Cache，如果 E1 和 E2 在内存中的地址是连续的，那么 E2 也就会被加载进 Cache 中，然后当消费第 2 个元素的时候，由于 E2 已经在 Cache 中了，==所以就不需要从内存中加载了==，这样就能大大提升性能。</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span>0<span style="color:#f92672">;</span> i<span style="color:#f92672">&lt;</span>bufferSize<span style="color:#f92672">;</span> i<span style="color:#f92672">++){</span>
+  <span style="color:#75715e">//entries[] 就是 RingBuffer 内部的数组
+</span><span style="color:#75715e"></span>  <span style="color:#75715e">//eventFactory 就是前面示例代码中传入的 LongEvent::new
+</span><span style="color:#75715e"></span>  entries<span style="color:#f92672">[</span>BUFFER_PAD <span style="color:#f92672">+</span> i<span style="color:#f92672">]</span> 
+    <span style="color:#f92672">=</span> eventFactory<span style="color:#f92672">.</span><span style="color:#a6e22e">newInstance</span><span style="color:#f92672">();</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>Disruptor 内部 RingBuffer 的结构可以简化成下图，那问题来了，<strong>数组中所有元素内存地址连续能提升性能吗</strong>？能！为什么呢？因为消费者线程在消费的时候，是<strong>遵循空间局部性原理</strong>的，<strong>消费完第 1 个元素，很快就会消费第 2 个元素；当消费第 1 个元素 E1 的时候，CPU 会把内存中 E1 后面的数据也加载进 Cache，如果 E1 和 E2 在内存中的地址是连续的，那么 E2 也就会被加载进 Cache 中，然后当消费第 2 个元素的时候，由于 E2 已经在 Cache 中了，==所以就不需要从内存中加载了==，这样就能大大提升性能。</strong></p>
 <p>除此之外，在 Disruptor 中，生产者线程通过 publishEvent() 发布 Event 的时候，并不是创建一个新的 Event，而是通过 event.set() 方法修改 Event， 也就是说 RingBuffer 创建的 Event 是可以循环利用的，这样还能避免频繁创建、删除 Event 导致的频繁 GC 问题。</p>
 <h2 id="如何避免伪共享">如何避免“伪共享”</h2>
 <p>高效利用 Cache，能够大大提升性能，所以要努力构建能够高效利用 Cache 的内存结构。而从另外一个角度看，努力避免不能高效利用 Cache 的内存结构也同样重要。</p>
 <p>有一种叫做“伪共享（False sharing）”的内存布局就会使 Cache 失效，那什么是“伪共享”呢？</p>
 <p>伪共享和 CPU 内部的 Cache 有关，Cache 内部是按照缓存行（Cache Line）管理的，缓存行的大小通常是 64 个字节；CPU 从内存中加载数据 X，会同时加载 X 后面（64-size(X)）个字节的数据。下面的示例代码出自 Java SDK 的 ArrayBlockingQueue，其内部维护了 4 个成员变量，分别是队列数组 items、出队索引 takeIndex、入队索引 putIndex 以及队列中的元素总数 count。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-java" data-lang="java"><span class="cm">/** 队列数组 */</span>
-<span class="kd">final</span> <span class="n">Object</span><span class="o">[]</span> <span class="n">items</span><span class="o">;</span>
-<span class="cm">/** 出队索引 */</span>
-<span class="kt">int</span> <span class="n">takeIndex</span><span class="o">;</span>
-<span class="cm">/** 入队索引 */</span>
-<span class="kt">int</span> <span class="n">putIndex</span><span class="o">;</span>
-<span class="cm">/** 队列中元素总数 */</span>
-<span class="kt">int</span> <span class="n">count</span><span class="o">;</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>ArrayBlockingQueue 的入队和出队操作是用锁来保证互斥的，所以入队和出队不会同时发生。<strong>如果允许入队和出队同时发生，那就会导致线程 A 和线程 B 争用同一个缓存行</strong>，这样也会<strong>导致性能问题</strong>。所以为了更好地利用缓存，我们<strong>必须避免伪共享，那如何避免呢</strong>？</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/** 队列数组 */</span>
+<span style="color:#66d9ef">final</span> Object<span style="color:#f92672">[]</span> items<span style="color:#f92672">;</span>
+<span style="color:#75715e">/** 出队索引 */</span>
+<span style="color:#66d9ef">int</span> takeIndex<span style="color:#f92672">;</span>
+<span style="color:#75715e">/** 入队索引 */</span>
+<span style="color:#66d9ef">int</span> putIndex<span style="color:#f92672">;</span>
+<span style="color:#75715e">/** 队列中元素总数 */</span>
+<span style="color:#66d9ef">int</span> count<span style="color:#f92672">;</span>
+</code></pre></div><p>ArrayBlockingQueue 的入队和出队操作是用锁来保证互斥的，所以入队和出队不会同时发生。<strong>如果允许入队和出队同时发生，那就会导致线程 A 和线程 B 争用同一个缓存行</strong>，这样也会<strong>导致性能问题</strong>。所以为了更好地利用缓存，我们<strong>必须避免伪共享，那如何避免呢</strong>？</p>
 <p>方案很简单，<strong>每个变量独占一个缓存行、不共享缓存行</strong>就可以了，具体技术是<strong>缓存行填充</strong>。比如想让 takeIndex 独占一个缓存行，可以在 takeIndex 的前后各填充 56 个字节，这样就一定能保证 takeIndex 独占一个缓存行。下面的示例代码出自 Disruptor，Sequence 对象中的 value 属性就能避免伪共享，因为这个属性前后都填充了 56 个字节。Disruptor 中很多对象，例如 RingBuffer、RingBuffer <strong>内部的数组都用到了这种填充技术来避免伪共享。</strong></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">// 前：填充 56 字节
-</span><span class="c1"></span><span class="kd">class</span> <span class="nc">LhsPadding</span><span class="o">{</span>
-    <span class="kt">long</span> <span class="n">p1</span><span class="o">,</span> <span class="n">p2</span><span class="o">,</span> <span class="n">p3</span><span class="o">,</span> <span class="n">p4</span><span class="o">,</span> <span class="n">p5</span><span class="o">,</span> <span class="n">p6</span><span class="o">,</span> <span class="n">p7</span><span class="o">;</span>
-<span class="o">}</span>
-<span class="kd">class</span> <span class="nc">Value</span> <span class="kd">extends</span> <span class="n">LhsPadding</span><span class="o">{</span>
-    <span class="kd">volatile</span> <span class="kt">long</span> <span class="n">value</span><span class="o">;</span>
-<span class="o">}</span>
-<span class="c1">// 后：填充 56 字节
-</span><span class="c1"></span><span class="kd">class</span> <span class="nc">RhsPadding</span> <span class="kd">extends</span> <span class="n">Value</span><span class="o">{</span>
-    <span class="kt">long</span> <span class="n">p9</span><span class="o">,</span> <span class="n">p10</span><span class="o">,</span> <span class="n">p11</span><span class="o">,</span> <span class="n">p12</span><span class="o">,</span> <span class="n">p13</span><span class="o">,</span> <span class="n">p14</span><span class="o">,</span> <span class="n">p15</span><span class="o">;</span>
-<span class="o">}</span>
-<span class="kd">class</span> <span class="nc">Sequence</span> <span class="kd">extends</span> <span class="n">RhsPadding</span><span class="o">{</span>
-  <span class="c1">// 省略实现
-</span><span class="c1"></span><span class="o">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><h2 id="disruptor-中的无锁算法">Disruptor 中的无锁算法</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 前：填充 56 字节
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LhsPadding</span><span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">long</span> p1<span style="color:#f92672">,</span> p2<span style="color:#f92672">,</span> p3<span style="color:#f92672">,</span> p4<span style="color:#f92672">,</span> p5<span style="color:#f92672">,</span> p6<span style="color:#f92672">,</span> p7<span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Value</span> <span style="color:#66d9ef">extends</span> LhsPadding<span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">volatile</span> <span style="color:#66d9ef">long</span> value<span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+<span style="color:#75715e">// 后：填充 56 字节
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">RhsPadding</span> <span style="color:#66d9ef">extends</span> Value<span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">long</span> p9<span style="color:#f92672">,</span> p10<span style="color:#f92672">,</span> p11<span style="color:#f92672">,</span> p12<span style="color:#f92672">,</span> p13<span style="color:#f92672">,</span> p14<span style="color:#f92672">,</span> p15<span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Sequence</span> <span style="color:#66d9ef">extends</span> RhsPadding<span style="color:#f92672">{</span>
+  <span style="color:#75715e">// 省略实现
+</span><span style="color:#75715e"></span><span style="color:#f92672">}</span>
+</code></pre></div><h2 id="disruptor-中的无锁算法">Disruptor 中的无锁算法</h2>
 <p>ArrayBlockingQueue 是利用管程实现的，中规中矩，生产、消费操作都需要加锁，实现起来简单，但是性能并不十分理想。Disruptor 采用的是无锁算法，很复杂，但是核心无非是生产和消费两个操作。Disruptor 中最复杂的是入队操作，所以我们重点来看看入队操作是如何实现的。</p>
 <p>对于入队操作，最关键的要求是不能覆盖没有消费的元素；对于出队操作，最关键的要求是不能读取没有写入的元素，所以 Disruptor 中也一定会维护类似出队索引和入队索引这样两个关键变量。Disruptor 中的 RingBuffer 维护了入队索引，但是并没有维护出队索引，这是因为在 Disruptor 中多个消费者可以同时消费，每个消费者都会有一个出队索引，所以 RingBuffer 的出队索引是所有消费者里面最小的那一个。</p>
 <p>下面是 Disruptor 生产者入队操作的核心代码，看上去很复杂，其实逻辑很简单：如果没有足够的空余位置，就出让 CPU 使用权，然后重新计算；反之则用 CAS 设置入队索引。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">// 生产者获取 n 个写入位置
-</span><span class="c1"></span><span class="k">do</span> <span class="o">{</span>
-  <span class="c1">//cursor 类似于入队索引，指的是上次生产到这里
-</span><span class="c1"></span>  <span class="n">current</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
-  <span class="c1">// 目标是在生产 n 个
-</span><span class="c1"></span>  <span class="n">next</span> <span class="o">=</span> <span class="n">current</span> <span class="o">+</span> <span class="n">n</span><span class="o">;</span>
-  <span class="c1">// 减掉一个循环
-</span><span class="c1"></span>  <span class="kt">long</span> <span class="n">wrapPoint</span> <span class="o">=</span> <span class="n">next</span> <span class="o">-</span> <span class="n">bufferSize</span><span class="o">;</span>
-  <span class="c1">// 获取上一次的最小消费位置
-</span><span class="c1"></span>  <span class="kt">long</span> <span class="n">cachedGatingSequence</span> <span class="o">=</span> <span class="n">gatingSequenceCache</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
-  <span class="c1">// 没有足够的空余位置
-</span><span class="c1"></span>  <span class="k">if</span> <span class="o">(</span><span class="n">wrapPoint</span><span class="o">&gt;</span><span class="n">cachedGatingSequence</span> <span class="o">||</span> <span class="n">cachedGatingSequence</span><span class="o">&gt;</span><span class="n">current</span><span class="o">){</span>
-    <span class="c1">// 重新计算所有消费者里面的最小值位置
-</span><span class="c1"></span>    <span class="kt">long</span> <span class="n">gatingSequence</span> <span class="o">=</span> <span class="n">Util</span><span class="o">.</span><span class="na">getMinimumSequence</span><span class="o">(</span>
-        <span class="n">gatingSequences</span><span class="o">,</span> <span class="n">current</span><span class="o">);</span>
-    <span class="c1">// 仍然没有足够的空余位置，出让 CPU 使用权，重新执行下一循环
-</span><span class="c1"></span>    <span class="k">if</span> <span class="o">(</span><span class="n">wrapPoint</span> <span class="o">&gt;</span> <span class="n">gatingSequence</span><span class="o">){</span>
-      <span class="n">LockSupport</span><span class="o">.</span><span class="na">parkNanos</span><span class="o">(</span><span class="n">1</span><span class="o">);</span>
-      <span class="k">continue</span><span class="o">;</span>
-    <span class="o">}</span>
-    <span class="c1">// 从新设置上一次的最小消费位置
-</span><span class="c1"></span>    <span class="n">gatingSequenceCache</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="n">gatingSequence</span><span class="o">);</span>
-  <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">cursor</span><span class="o">.</span><span class="na">compareAndSet</span><span class="o">(</span><span class="n">current</span><span class="o">,</span> <span class="n">next</span><span class="o">)){</span>
-    <span class="c1">// 获取写入位置成功，跳出循环
-</span><span class="c1"></span>    <span class="k">break</span><span class="o">;</span>
-  <span class="o">}</span>
-<span class="o">}</span> <span class="k">while</span> <span class="o">(</span><span class="kc">true</span><span class="o">);</span>
-</code></pre></td></tr></table>
-</div>
-</div><h2 id="总结">总结</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 生产者获取 n 个写入位置
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">do</span> <span style="color:#f92672">{</span>
+  <span style="color:#75715e">//cursor 类似于入队索引，指的是上次生产到这里
+</span><span style="color:#75715e"></span>  current <span style="color:#f92672">=</span> cursor<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">();</span>
+  <span style="color:#75715e">// 目标是在生产 n 个
+</span><span style="color:#75715e"></span>  next <span style="color:#f92672">=</span> current <span style="color:#f92672">+</span> n<span style="color:#f92672">;</span>
+  <span style="color:#75715e">// 减掉一个循环
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">long</span> wrapPoint <span style="color:#f92672">=</span> next <span style="color:#f92672">-</span> bufferSize<span style="color:#f92672">;</span>
+  <span style="color:#75715e">// 获取上一次的最小消费位置
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">long</span> cachedGatingSequence <span style="color:#f92672">=</span> gatingSequenceCache<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">();</span>
+  <span style="color:#75715e">// 没有足够的空余位置
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>wrapPoint<span style="color:#f92672">&gt;</span>cachedGatingSequence <span style="color:#f92672">||</span> cachedGatingSequence<span style="color:#f92672">&gt;</span>current<span style="color:#f92672">){</span>
+    <span style="color:#75715e">// 重新计算所有消费者里面的最小值位置
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">long</span> gatingSequence <span style="color:#f92672">=</span> Util<span style="color:#f92672">.</span><span style="color:#a6e22e">getMinimumSequence</span><span style="color:#f92672">(</span>
+        gatingSequences<span style="color:#f92672">,</span> current<span style="color:#f92672">);</span>
+    <span style="color:#75715e">// 仍然没有足够的空余位置，出让 CPU 使用权，重新执行下一循环
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>wrapPoint <span style="color:#f92672">&gt;</span> gatingSequence<span style="color:#f92672">){</span>
+      LockSupport<span style="color:#f92672">.</span><span style="color:#a6e22e">parkNanos</span><span style="color:#f92672">(</span>1<span style="color:#f92672">);</span>
+      <span style="color:#66d9ef">continue</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+    <span style="color:#75715e">// 从新设置上一次的最小消费位置
+</span><span style="color:#75715e"></span>    gatingSequenceCache<span style="color:#f92672">.</span><span style="color:#a6e22e">set</span><span style="color:#f92672">(</span>gatingSequence<span style="color:#f92672">);</span>
+  <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>cursor<span style="color:#f92672">.</span><span style="color:#a6e22e">compareAndSet</span><span style="color:#f92672">(</span>current<span style="color:#f92672">,</span> next<span style="color:#f92672">)){</span>
+    <span style="color:#75715e">// 获取写入位置成功，跳出循环
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">break</span><span style="color:#f92672">;</span>
+  <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span> <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">);</span>
+</code></pre></div><h2 id="总结">总结</h2>
 <p>Disruptor 在优化并发性能方面可谓是做到了极致，优化的思路大体是两个方面，一个是利用无锁算法避免锁的争用，另外一个则是将硬件（CPU）的性能发挥到极致。尤其是后者，在 Java 领域基本上属于经典之作了。</p>
 <p>发挥硬件的能力一般是 C 这种面向硬件的语言常干的事儿，C 语言领域经常通过调整内存布局优化内存占用，而 Java 领域则用的很少，原因在于 Java 可以智能地优化内存布局，内存布局对 Java 程序员的透明的。这种智能的优化大部分场景是很友好的，但是如果你想通过填充方式避免伪共享就必须绕过这种优化，关于这方面 Disruptor 提供了经典的实现，你可以参考。</p>
 <p>由于伪共享问题如此重要，所以 Java 也开始重视它了，比如 Java 8 中，提供了避免伪共享的注解：<code>@sun.misc.Contended</code>，通过这个注解就能轻松避免伪共享（需要设置 JVM 参数<code> -XX:-RestrictContended</code>）。不过避免<strong>伪共享是以牺牲内存</strong>为代价的，所以具体使用的时候还是需要仔细斟酌。</p>
@@ -587,7 +465,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
@@ -637,5 +515,6 @@ input.PC_MARK1:focus{
   <script  src="/custom/img/lazyload.min.js"></script>
   <script defer="defer" async src="/custom/post/back_btn.js"></script>
   
+
 </body>
 </html>
