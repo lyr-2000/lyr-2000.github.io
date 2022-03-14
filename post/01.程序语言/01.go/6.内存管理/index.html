@@ -51,7 +51,7 @@
 <meta itemprop="description" content="6.内存管理 ​ 程序中的数据和变量都会被分配到程序所在的虚拟内存中，内存空间包含两个重要区域：栈区（Stack）和堆区（Heap）。函数调用的">
 <meta itemprop="datePublished" content="2022-03-12T00:52:48&#43;08:00" />
 <meta itemprop="dateModified" content="2022-03-12T00:52:48&#43;08:00" />
-<meta itemprop="wordCount" content="8169">
+<meta itemprop="wordCount" content="8953">
 <meta itemprop="image" content="https://tva2.sinaimg.cn/large/0072Vf1pgy1foxlo645aaj31hc0u07h7.jpg">
 
 
@@ -77,6 +77,8 @@
   <div>
     <button class="button pink back">back</button>
     <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
   </div>
   <div id="mobile-navbar" class="mobile-navbar">
   <div class="mobile-header-logo">
@@ -195,8 +197,8 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/01.go/"> 01.Go </a>
             </div>
-          <span class="more-meta"> 约 8169 字 </span>
-          <span class="more-meta"> 预计阅读 17 分钟 </span>
+          <span class="more-meta"> 约 8953 字 </span>
+          <span class="more-meta"> 预计阅读 18 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -232,6 +234,8 @@ input.PC_MARK1:focus{
             <li><a href="#逃逸分析-1">逃逸分析</a></li>
           </ul>
         </li>
+        <li><a href="#内存对齐">内存对齐</a></li>
+        <li><a href="#cpu缓存优化">cpu缓存优化</a></li>
       </ul>
     </li>
   </ul>
@@ -709,6 +713,81 @@ input.PC_MARK1:focus{
 </code></pre></div><p>参考:</p>
 <p><a href="https://segmentfault.com/a/1190000020086727">深入理解Go-逃逸分析 - SegmentFault 思否</a></p>
 <p><a href="https://zhuanlan.zhihu.com/p/91559562">golang 逃逸分析详解 - 知乎 (zhihu.com)</a></p>
+<h2 id="内存对齐">内存对齐</h2>
+<p><a href="https://www.bilibili.com/video/BV1Vt4y1m7DP?from=search&amp;seid=456871147342157458&amp;spm_id_from=333.337.0.0">参考视频</a></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">T1</span> <span style="color:#66d9ef">struct</span> {
+        <span style="color:#a6e22e">a</span> <span style="color:#66d9ef">int8</span>
+        <span style="color:#a6e22e">b</span> <span style="color:#66d9ef">int64</span>
+        <span style="color:#a6e22e">c</span> <span style="color:#66d9ef">int16</span>
+}
+
+<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">T2</span> <span style="color:#66d9ef">struct</span> {
+        <span style="color:#a6e22e">a</span> <span style="color:#66d9ef">int8</span>
+        <span style="color:#a6e22e">c</span> <span style="color:#66d9ef">int16</span>
+        <span style="color:#a6e22e">b</span> <span style="color:#66d9ef">int64</span>
+}
+</code></pre></div><p>在 64 bit 平台上，T1 占用 24 bytes，T2 占用 16 bytes 大小；<strong>不同的字段顺序，最终决定 struct 的内存大小，所以有时候合理的字段顺序可以减少内存的开销</strong>。</p>
+<p>64位的平台上，我们每次读取都是按字节来读取的，一个字节就是8位，比如我们的T1，在64位系统就会因为padding导致多占用了内存，<strong>而T2因为内存对其了，所以比上面少了8个字节</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_03_12_17_39_23image-20220312173923350.png" alt="image-20220312173923350"></p>
+<p>内存对齐主要用在下面这几个地方</p>
+<ul>
+<li>
+<p>你正在编写的代码在性能（CPU、Memory）方面有一定的要求</p>
+</li>
+<li>
+<p>你正在处理向量方面的指令</p>
+</li>
+<li>
+<p>某些硬件平台（ARM）体系不支持未对齐的内存访问</p>
+</li>
+<li>
+<p>平台（移植性）原因：不是所有的硬件平台都能够访问任意地址上的任意数据。例如：特定的硬件平台只允许在特定地址获取特定类型的数据，否则会导致异常情况</p>
+</li>
+<li>
+<p>性能原因：若访问未对齐的内存，将会导致 CPU 进行两次内存访问，并且要花费额外的时钟周期来处理对齐及运算。而本身就对齐的内存仅需要一次访问就可以完成读取动作</p>
+</li>
+</ul>
+<h2 id="cpu缓存优化">cpu缓存优化</h2>
+<p>在上述的代码中，有两个6400*6400的初始化数组矩阵A和B，将A和B的元素进行相加，第一种方式是对应行列坐标相加，即<code>matrixA[i][j] = matrixA[i][j] + matrixB[i][j]</code>，第二种方式是对称行列坐标相加，即<code>matrixA[i][j] = matrixA[i][j] + matrixB[j][i]</code>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">createMatrix</span>(<span style="color:#a6e22e">size</span> <span style="color:#66d9ef">int</span>) [][]<span style="color:#66d9ef">int64</span> {
+    <span style="color:#a6e22e">matrix</span> <span style="color:#f92672">:=</span> make([][]<span style="color:#66d9ef">int64</span>, <span style="color:#a6e22e">size</span>)
+    <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#a6e22e">size</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
+        <span style="color:#a6e22e">matrix</span>[<span style="color:#a6e22e">i</span>] = make([]<span style="color:#66d9ef">int64</span>, <span style="color:#a6e22e">size</span>)
+    }
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">matrix</span>
+}
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">matrixLength</span> = <span style="color:#ae81ff">6400</span>
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">BenchmarkMatrixCombination</span>(<span style="color:#a6e22e">b</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">testing</span>.<span style="color:#a6e22e">B</span>) {
+    <span style="color:#a6e22e">matrixA</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">createMatrix</span>(<span style="color:#a6e22e">matrixLength</span>)
+    <span style="color:#a6e22e">matrixB</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">createMatrix</span>(<span style="color:#a6e22e">matrixLength</span>)
+
+    <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">n</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">n</span> &lt; <span style="color:#a6e22e">b</span>.<span style="color:#a6e22e">N</span>; <span style="color:#a6e22e">n</span><span style="color:#f92672">++</span> {
+        <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#a6e22e">matrixLength</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
+            <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">j</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">j</span> &lt; <span style="color:#a6e22e">matrixLength</span>; <span style="color:#a6e22e">j</span><span style="color:#f92672">++</span> {
+                <span style="color:#a6e22e">matrixA</span>[<span style="color:#a6e22e">i</span>][<span style="color:#a6e22e">j</span>] = <span style="color:#a6e22e">matrixA</span>[<span style="color:#a6e22e">i</span>][<span style="color:#a6e22e">j</span>] <span style="color:#f92672">+</span> <span style="color:#a6e22e">matrixB</span>[<span style="color:#a6e22e">i</span>][<span style="color:#a6e22e">j</span>]
+            }
+        }
+    }
+}
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">BenchmarkMatrixReversedCombination</span>(<span style="color:#a6e22e">b</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">testing</span>.<span style="color:#a6e22e">B</span>) {
+    <span style="color:#a6e22e">matrixA</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">createMatrix</span>(<span style="color:#a6e22e">matrixLength</span>)
+    <span style="color:#a6e22e">matrixB</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">createMatrix</span>(<span style="color:#a6e22e">matrixLength</span>)
+
+    <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">n</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">n</span> &lt; <span style="color:#a6e22e">b</span>.<span style="color:#a6e22e">N</span>; <span style="color:#a6e22e">n</span><span style="color:#f92672">++</span> {
+        <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#a6e22e">matrixLength</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
+            <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">j</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">j</span> &lt; <span style="color:#a6e22e">matrixLength</span>; <span style="color:#a6e22e">j</span><span style="color:#f92672">++</span> {
+                <span style="color:#a6e22e">matrixA</span>[<span style="color:#a6e22e">i</span>][<span style="color:#a6e22e">j</span>] = <span style="color:#a6e22e">matrixA</span>[<span style="color:#a6e22e">i</span>][<span style="color:#a6e22e">j</span>] <span style="color:#f92672">+</span> <span style="color:#a6e22e">matrixB</span>[<span style="color:#a6e22e">j</span>][<span style="color:#a6e22e">i</span>]
+            }
+        }
+    }
+}
+
+</code></pre></div><pre><code>BenchmarkMatrixCombination-8                     16      67211689 ns/op
+BenchmarkMatrixReversedCombination-8              3     480798925 ns/op
+</code></pre><p>两种相加方式，<strong>性能差异竟然接近十倍。</strong></p>
+<p>当粉红色圆圈遍历完第一列时，处理器将相应的所有存储行都存储到L1中去了。因此，对矩形块其他元素的遍历就是直接从L1里访问了，这能明显提高访问速度。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_03_12_17_47_35image-20220312174735800.png" alt="image-20220312174735800"></p>
+<p><a href="https://segmentfault.com/a/1190000038957418">参考博客</a></p>
 
     </div>
 

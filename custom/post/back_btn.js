@@ -18,7 +18,21 @@
     go.on('click', function () {
       window.history.forward();
     });
+    var top = $('.button.topUrl');
+    top.on('click',function() {
+      var a = window.location.href;
+      a = decodeURI(a)
+      if(a==window.location.origin||a==window.location.origin+'/') {
+        return;//is top
+      }
+      let ed = a.lastIndexOf('/')
+      if (ed == a.length || ed == a.length-1) {
+        a = a.substring(0,a.length-1)
+      }
+      let ne = a.substring(0,a.lastIndexOf('/'));
+      window.location.href = ne;
 
+    });
     document.addEventListener('keydown', function (e) {
       if (e.shiftKey) {
         if (e.key == 'ArrowLeft') {
@@ -28,7 +42,10 @@
         } else if (e.key == 'ArrowRight') {
           //right key 
           go.trigger('click')
-        }
+      
+        }else if(e.key == 'ArrowUp') {
+          top.trigger('click')
+        } 
       }
 
     })
