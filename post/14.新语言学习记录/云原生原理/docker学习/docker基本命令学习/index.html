@@ -50,7 +50,7 @@
 <meta itemprop="description" content="Docker 参考教程 参考菜鸟教程 docker run 的 参数记录 参数 解释 -a stdin: 指定标准输入输出内容类型，可选 STDIN/STDOUT/STDERR 三项； -d 后台运行容器，并返回容器ID； -p 指定端口映射， 格式为">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="699">
+<meta itemprop="wordCount" content="772">
 
 
 
@@ -188,7 +188,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-14 </span>
         
-          <span class="more-meta"> 约 699 字 </span>
+          <span class="more-meta"> 约 772 字 </span>
           <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -210,6 +210,7 @@ input.PC_MARK1:focus{
             <li><a href="#使用示例">使用示例</a></li>
           </ul>
         </li>
+        <li><a href="#容器操作">容器操作</a></li>
       </ul>
     </li>
   </ul>
@@ -329,7 +330,25 @@ docker run -p 80:80 -v /data:/data -d nginx:latest
 </code></pre></div><p>显然，<strong>&ndash;rm</strong> 选项不能与 <strong>-d</strong> 同时使用（或者说同时使用没有意义），即只能自动清理 foreground 容器，不能自动清理detached容器。</p>
 <p>注意，<strong>&ndash;rm</strong> 选项也会清理容器的匿名data volumes。</p>
 <p>所以，执行 <strong>docker run</strong> 命令带 <strong>&ndash;rm</strong>命令选项，等价于在容器退出后，执行 <strong>docker rm -v</strong>。</p>
+<h2 id="容器操作">容器操作</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># 查看容器细节</span>
+docker inspect &lt;containerid&gt;
+<span style="color:#75715e">#进入容器</span>
+docker attach
+<span style="color:#75715e"># 通过nsenter 查看</span>
+pid<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>docker inpect --format <span style="color:#e6db74">&#34;{{.State.Pid}}&#34;</span> &lt;container&gt;<span style="color:#66d9ef">)</span>
 
+<span style="color:#75715e"># 查看容器namespace</span>
+nsenter --target $pid --mount --uts --ipc --net --pid
+
+<span style="color:#75715e">#拷贝文件至容器内</span>
+docker cp file1 &lt;containerid&gt;:/file-to-path
+
+
+
+
+
+</code></pre></div>
     </div>
 
     <div class="post-copyright">

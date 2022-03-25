@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>linux control groups(cgroups) - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="linux control groups(cgroups) ​ cgroup配置目录 struct task_struct { #ifdef CONFIG_CGROUPS struct css_set __rcu *cgroups; struct list_head cg_list; #endif } struct css_set { /* * Set of subsystem states, one for each subsystem. This array is * immutable after creation apart from the init_css_set during * subsystem registration (at boot time). */ struct cgroup_subsys_state *subsys[CGROUP_SUBSYS_COUNT]; }; cgroups 实现了对资" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/docker%E5%AD%A6%E4%B9%A0/linux-control-groupscgroups/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="linux control groups(cgroups)" />
+<meta property="og:description" content="linux control groups(cgroups) ​ cgroup配置目录 struct task_struct { #ifdef CONFIG_CGROUPS struct css_set __rcu *cgroups; struct list_head cg_list; #endif } struct css_set { /* * Set of subsystem states, one for each subsystem. This array is * immutable after creation apart from the init_css_set during * subsystem registration (at boot time). */ struct cgroup_subsys_state *subsys[CGROUP_SUBSYS_COUNT]; }; cgroups 实现了对资" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/docker%E5%AD%A6%E4%B9%A0/linux-control-groupscgroups/" />
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/0072Vf1pgy1foxkcvihg7j31kw0w0e6f.jpg" />
+<meta property="article:published_time" content="2022-03-18T16:47:48+08:00" />
+<meta property="article:modified_time" content="2022-03-18T16:47:48+08:00" />
+<meta itemprop="name" content="linux control groups(cgroups)">
+<meta itemprop="description" content="linux control groups(cgroups) ​ cgroup配置目录 struct task_struct { #ifdef CONFIG_CGROUPS struct css_set __rcu *cgroups; struct list_head cg_list; #endif } struct css_set { /* * Set of subsystem states, one for each subsystem. This array is * immutable after creation apart from the init_css_set during * subsystem registration (at boot time). */ struct cgroup_subsys_state *subsys[CGROUP_SUBSYS_COUNT]; }; cgroups 实现了对资">
+<meta itemprop="datePublished" content="2022-03-18T16:47:48&#43;08:00" />
+<meta itemprop="dateModified" content="2022-03-18T16:47:48&#43;08:00" />
+<meta itemprop="wordCount" content="1032">
+<meta itemprop="image" content="https://tva1.sinaimg.cn/large/0072Vf1pgy1foxkcvihg7j31kw0w0e6f.jpg">
+
+
+
+<meta itemprop="keywords" content="Docker学习," /><meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://tva1.sinaimg.cn/large/0072Vf1pgy1foxkcvihg7j31kw0w0e6f.jpg"/>
+
+<meta name="twitter:title" content="linux control groups(cgroups)"/>
+<meta name="twitter:description" content="linux control groups(cgroups) ​ cgroup配置目录 struct task_struct { #ifdef CONFIG_CGROUPS struct css_set __rcu *cgroups; struct list_head cg_list; #endif } struct css_set { /* * Set of subsystem states, one for each subsystem. This array is * immutable after creation apart from the init_css_set during * subsystem registration (at boot time). */ struct cgroup_subsys_state *subsys[CGROUP_SUBSYS_COUNT]; }; cgroups 实现了对资"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body>
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+<link rel="stylesheet" href="/custom/css/post.css">
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	<div class="customByLyr">
+  
+			<img class="lazyload"  draggable="false"  data-original="https://tva1.sinaimg.cn/large/0072Vf1pgy1foxkcvihg7j31kw0w0e6f.jpg" />
+		</div>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">linux control groups(cgroups)</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-03-18 </span>
+        <div class="post-category">
+            <a href="/categories/docker%E5%AD%A6%E4%B9%A0/"> Docker学习 </a>
+            </div>
+          <span class="more-meta"> 约 1032 字 </span>
+          <span class="more-meta"> 预计阅读 3 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#linux-control-groupscgroups">linux control groups(cgroups)</a>
+      <ul>
+        <li><a href="#cgroup配置目录">cgroup配置目录</a></li>
+        <li><a href="#cpu子系统">cpu子系统</a></li>
+        <li><a href="#使用cpu子系统示例">使用cpu子系统示例</a>
+          <ul>
+            <li><a href="#测试代码">测试代码</a></li>
+            <li><a href="#结果演示">结果演示</a></li>
+          </ul>
+        </li>
+        <li><a href="#cpuacct-子系统">cpuacct 子系统</a></li>
+        <li><a href="#memory-子系统">memory 子系统</a>
+          <ul>
+            <li><a href="#memory子系统使用示例">memory子系统使用示例</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h1 id="linux-control-groupscgroups">linux control groups(cgroups)</h1>
+<p>​</p>
+<h2 id="cgroup配置目录">cgroup配置目录</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">task_struct</span>
+{
+<span style="color:#75715e">#ifdef CONFIG_CGROUPS
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">css_set</span> __rcu <span style="color:#f92672">*</span>cgroups;
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">list_head</span> cg_list;
+<span style="color:#75715e">#endif
+</span><span style="color:#75715e"></span>}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">css_set</span> {
+<span style="color:#75715e">/*
+</span><span style="color:#75715e">* Set of subsystem states, one for each subsystem. This array is
+</span><span style="color:#75715e">* immutable after creation apart from the init_css_set during
+</span><span style="color:#75715e">* subsystem registration (at boot time).
+</span><span style="color:#75715e">*/</span>
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">cgroup_subsys_state</span> <span style="color:#f92672">*</span>subsys[CGROUP_SUBSYS_COUNT];
+};
+</code></pre></div><p>cgroups 实现了对资源的配额和度量</p>
+<table>
+<thead>
+<tr>
+<th>目录</th>
+<th>用处</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>blkio</td>
+<td>这个子系统设置限制每个块设备的输入输出控制。例如:磁盘，光盘以及 USB 等等。</td>
+</tr>
+<tr>
+<td>CPU</td>
+<td>这个子系统使用调度程序为 cgroup 任务提供 CPU 的访问。</td>
+</tr>
+<tr>
+<td>cpuacct</td>
+<td>产生 cgroup 任务的 CPU 资源报告</td>
+</tr>
+<tr>
+<td>cpuset</td>
+<td>如果是多核心的 CPU，这个子系统会为 cgroup 任务分配单独的 CPU 和内存。</td>
+</tr>
+<tr>
+<td>devices</td>
+<td>允许或拒绝 cgroup 任务对设备的访问。</td>
+</tr>
+<tr>
+<td></td>
+<td>这个子系统设定 cgroup 中任务使用的内存限制，并自动生成内存资源使用报告。 【设置太小，小心程序oom】</td>
+</tr>
+</tbody>
+</table>
+<p><a href="https://www.cnblogs.com/wuchangblog/p/13937715.html">参考文章</a></p>
+<p><a href="https://blog.csdn.net/cl2010abc/article/details/104595426?spm=1001.2101.3001.6650.3&amp;utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-3.pc_relevant_antiscanv2&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-3.pc_relevant_antiscanv2&amp;utm_relevant_index=6">参考csdn文章</a></p>
+<h2 id="cpu子系统">cpu子系统</h2>
+<table>
+<thead>
+<tr>
+<th>名字</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cpu.shares</td>
+<td>可以让出获得cpu使用时间的相对值</td>
+</tr>
+<tr>
+<td>cpu.cfs_period_us</td>
+<td>cfs_period_us用来配置 时间周期长度，单位为us(微秒)</td>
+</tr>
+<tr>
+<td>cpu.stat</td>
+<td>Cgrou 内的进程使用的CPU时间统计</td>
+</tr>
+<tr>
+<td>nr_periods</td>
+<td>经过cpu.cfs_period_us的时间周期数量</td>
+</tr>
+<tr>
+<td>nr_throttled</td>
+<td>在经过周期内，有多少次因为进程在指定的时间周期内用光了配额时间而受到限制</td>
+</tr>
+<tr>
+<td>throttled_time</td>
+<td>cgroup中的进程被限制使用CPU的总用时，单位是ns</td>
+</tr>
+</tbody>
+</table>
+<h2 id="使用cpu子系统示例">使用cpu子系统示例</h2>
+<h3 id="测试代码">测试代码</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+	<span style="color:#75715e">//两个协程空轮询
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">go</span> <span style="color:#66d9ef">func</span>() {
+		<span style="color:#66d9ef">for</span> {
+		}
+	}()
+	<span style="color:#66d9ef">for</span> {
+
+	}
+
+}
+
+</code></pre></div><h3 id="结果演示">结果演示</h3>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_03_18_20_43_11image-20220318204307958.png" alt="image-20220318204307958"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_03_18_20_43_45image-20220318204345384.png" alt="image-20220318204345384"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_03_18_20_46_46image-20220318204644353.png" alt="image-20220318204644353"></p>
+<h2 id="cpuacct-子系统">cpuacct 子系统</h2>
+<p>用于统计Cgroup及其子 Cgroup下进程的CPU使用情况</p>
+<ul>
+<li>cpuacct.usage
+<ul>
+<li>包含该Cgroup及其子Cgroup下进程使用CPU的时间，单位 是 ns(纳秒)</li>
+</ul>
+</li>
+<li>cpuacct.stat
+<ul>
+<li>包含该Cgroup及其子Cgroup下进程使用的CPU时间，以及用户态和内核态的时间</li>
+</ul>
+</li>
+</ul>
+<h2 id="memory-子系统">memory 子系统</h2>
+<table>
+<thead>
+<tr>
+<th>目录</th>
+<th>用处</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>memory.usage_in_bytes</td>
+<td>cgroup下进程使用的内存，包含cgroup及其子cgroup下的进程使用的内存</td>
+</tr>
+<tr>
+<td>memory.max_usage_in_bytes</td>
+<td>cgroup下进程使用内存的最大值，包含子cgroup的内存使用量</td>
+</tr>
+<tr>
+<td>memory.limit_in_bytes</td>
+<td>设置进程最多能使用的内存，-1 表示不作限制</td>
+</tr>
+<tr>
+<td>memory.soft_limit_in_bytes</td>
+<td>不会阻止进程使用超过限额的内存，只是在系统内存足够时候会优先回收超过限额的内存，使之向限定值靠拢</td>
+</tr>
+<tr>
+<td>memory.oom_control</td>
+<td>设置是否在Cgroup中使用 OOM (out of memory ) killer ,默认使用。当属于该cgroup的进程使用的内存超过最大的限定时候，会立刻被killer处理</td>
+</tr>
+</tbody>
+</table>
+<p>soft_limit_in_bytes 的使用情况:</p>
+<p><strong>内存不够也可能将部分内存交换到硬盘上去，page cache本身也占用内存，这种情况，</strong></p>
+<h3 id="memory子系统使用示例">memory子系统使用示例</h3>
+<p>• Memory 子系统练习
+• 在 cgroup memory 子系统目录中创建目录结构
+<code>cd /sys/fs/cgroup/memory</code>
+<code>mkdir memorydemo</code>
+<code>cd memorydemo</code>
+• 运行 malloc（在linux机器make build）
+• 查看内存使用情况
+<code>watch 'ps -aux|grep $程序名字|grep -v grep</code>
+• 通过 cgroup 限制 memory
+• 把进程添加到cgroup进程配置组</p>
+<p><code>echo ps -ef|grep $程序名字 |grep -v grep|awk '{print $2}' &gt; cgroup.procs</code>
+• 设置<code>memory.limit_in_bytes</code>
+echo 104960000 &gt; memory.limit_in_bytes
+• 等待进程被 oom kill</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-03-18
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/docker%E5%AD%A6%E4%B9%A0/">Docker学习</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/docker%E5%AD%A6%E4%B9%A0/docker-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">docker 文件系统</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/docker%E5%AD%A6%E4%B9%A0/linux-namespace%E8%AF%A6%E8%A7%A3/">
+            <span class="next-text nav-default">linux namespace详解</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-03-18 16:47:48 \u002b0800 \u002b0800',
+        title: 'linux control groups(cgroups)',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-08-01 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+
+
+
+<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script defer="defer" async src="/js/custom/docsearch.min.js" ></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+  <script  src="/custom/img/lazyload.min.js"></script>
+  <script defer="defer" async src="/custom/post/back_btn.js"></script>
+  
+
+</body>
+</html>
