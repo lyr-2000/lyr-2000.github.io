@@ -50,7 +50,7 @@
 <meta itemprop="description" content="主从复制 将主数据库中的DDL和DML操作通过二进制日志（BINLOG）传输到从数据库上，然后将这些日志重新执行（重做）；从而使得从数据库的数">
 <meta itemprop="datePublished" content="2021-03-21T19:43:11&#43;00:00" />
 <meta itemprop="dateModified" content="2021-03-21T19:43:11&#43;00:00" />
-<meta itemprop="wordCount" content="886">
+<meta itemprop="wordCount" content="900">
 
 
 
@@ -191,7 +191,7 @@ input.PC_MARK1:focus{
             <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"> 数据库 </a>
             <a href="/categories/mysql/"> MySQL </a>
             </div>
-          <span class="more-meta"> 约 886 字 </span>
+          <span class="more-meta"> 约 900 字 </span>
           <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -255,21 +255,41 @@ input.PC_MARK1:focus{
 </ol>
 <h2 id="数据恢复">数据恢复</h2>
 <p>MySQL的binlog日志是MySQL日志中非常重要的一种日志，记录了数据库所有的DML操作。<strong>通过binlog日志我们可以进行数据库的读写分离、数据增量备份以及服务器宕机时的数据恢复。</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#f92672">#</span> <span style="color:#960050;background-color:#1e0010">根据位置导出</span> <span style="color:#66d9ef">SQL</span> <span style="color:#960050;background-color:#1e0010">文件</span>
-mysqlbinlog <span style="color:#75715e">--no-defaults --base64-output=decode-rows -v \
-</span><span style="color:#75715e"></span> <span style="color:#75715e">--start-position &#34;2508132&#34; --stop-position &#34;2511004&#34; \
-</span><span style="color:#75715e"></span> <span style="color:#75715e">--database test_binlog  mysql-bin.000034 \
-</span><span style="color:#75715e"></span> <span style="color:#f92672">&gt;</span> <span style="color:#f92672">/</span>home<span style="color:#f92672">/</span>mysql_backup<span style="color:#f92672">/</span>test_binlog_step1.<span style="color:#66d9ef">sql</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="o">#</span> <span class="err">根据位置导出</span> <span class="k">SQL</span> <span class="err">文件</span>
+<span class="n">mysqlbinlog</span> <span class="c1">--no-defaults --base64-output=decode-rows -v \
+</span><span class="c1"></span> <span class="c1">--start-position &#34;2508132&#34; --stop-position &#34;2511004&#34; \
+</span><span class="c1"></span> <span class="c1">--database test_binlog  mysql-bin.000034 \
+</span><span class="c1"></span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">mysql_backup</span><span class="o">/</span><span class="n">test_binlog_step1</span><span class="p">.</span><span class="k">sql</span>
  
-mysqlbinlog <span style="color:#75715e">--no-defaults --base64-output=decode-rows -v \
-</span><span style="color:#75715e"></span> <span style="color:#75715e">--start-position &#34;2508813&#34; --stop-position &#34;2509187&#34; \
-</span><span style="color:#75715e"></span> <span style="color:#75715e">--database test_binlog  mysql-bin.000034 \
-</span><span style="color:#75715e"></span> <span style="color:#f92672">&gt;</span> <span style="color:#f92672">/</span>home<span style="color:#f92672">/</span>mysql_backup<span style="color:#f92672">/</span>test_binlog_step2.<span style="color:#66d9ef">sql</span>
+<span class="n">mysqlbinlog</span> <span class="c1">--no-defaults --base64-output=decode-rows -v \
+</span><span class="c1"></span> <span class="c1">--start-position &#34;2508813&#34; --stop-position &#34;2509187&#34; \
+</span><span class="c1"></span> <span class="c1">--database test_binlog  mysql-bin.000034 \
+</span><span class="c1"></span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">mysql_backup</span><span class="o">/</span><span class="n">test_binlog_step2</span><span class="p">.</span><span class="k">sql</span>
 
-<span style="color:#f92672">#</span> <span style="color:#960050;background-color:#1e0010">使用</span> mysql <span style="color:#960050;background-color:#1e0010">进行恢复</span>
-mysql <span style="color:#f92672">-</span>u cisco <span style="color:#f92672">-</span>p <span style="color:#f92672">&lt;</span> <span style="color:#f92672">/</span>home<span style="color:#f92672">/</span>mysql_backup<span style="color:#f92672">/</span>test_binlog_step1.<span style="color:#66d9ef">sql</span>
-mysql <span style="color:#f92672">-</span>u cisco <span style="color:#f92672">-</span>p <span style="color:#f92672">&lt;</span> <span style="color:#f92672">/</span>home<span style="color:#f92672">/</span>mysql_backup<span style="color:#f92672">/</span>test_binlog_step2.<span style="color:#66d9ef">sql</span>
-</code></pre></div><p><a href="https://www.cnblogs.com/michael9/p/11923483.html">MySQL 5.7 - 通过 BINLOG 恢复数据 - 来份锅包肉 - 博客园 (cnblogs.com)</a></p>
+<span class="o">#</span> <span class="err">使用</span> <span class="n">mysql</span> <span class="err">进行恢复</span>
+<span class="n">mysql</span> <span class="o">-</span><span class="n">u</span> <span class="n">cisco</span> <span class="o">-</span><span class="n">p</span> <span class="o">&lt;</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">mysql_backup</span><span class="o">/</span><span class="n">test_binlog_step1</span><span class="p">.</span><span class="k">sql</span>
+<span class="n">mysql</span> <span class="o">-</span><span class="n">u</span> <span class="n">cisco</span> <span class="o">-</span><span class="n">p</span> <span class="o">&lt;</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">mysql_backup</span><span class="o">/</span><span class="n">test_binlog_step2</span><span class="p">.</span><span class="k">sql</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><a href="https://www.cnblogs.com/michael9/p/11923483.html">MySQL 5.7 - 通过 BINLOG 恢复数据 - 来份锅包肉 - 博客园 (cnblogs.com)</a></p>
 
     </div>
 
@@ -397,7 +417,7 @@ mysql <span style="color:#f92672">-</span>u cisco <span style="color:#f92672">-<
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

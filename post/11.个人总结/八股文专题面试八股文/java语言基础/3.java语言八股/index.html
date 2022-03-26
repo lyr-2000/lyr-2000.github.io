@@ -50,7 +50,7 @@
 <meta itemprop="description" content="重新 equals 一定要重新 hashCode 并发编程三要素 原子性，不可分割 有序性， 程序执行顺序和代码顺序保持一致 可见性【可用性】， 一个线程对共享变量的修改，另一个线程">
 <meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="2243">
+<meta itemprop="wordCount" content="2326">
 
 
 
@@ -188,7 +188,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
-          <span class="more-meta"> 约 2243 字 </span>
+          <span class="more-meta"> 约 2326 字 </span>
           <span class="more-meta"> 预计阅读 5 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -247,23 +247,45 @@ input.PC_MARK1:focus{
 <p>但是 ArrayList 不会自动缩容，要手动调用 trimToSize(), remove和 clear 都不会自动改变elementData的长度，</p>
 <p>只会将对应元素设置为 null，以便垃圾收集器回收掉不使用的元素，节省内存</p>
 <p>注意ArrayList 是 1.5倍库容，hashMap 2倍</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/**
-</span><span style="color:#75715e">     * Trims the capacity of this &lt;tt&gt;ArrayList&lt;/tt&gt; instance to be the
-</span><span style="color:#75715e">     * list&#39;s current size.  An application can use this operation to minimize
-</span><span style="color:#75715e">     * the storage of an &lt;tt&gt;ArrayList&lt;/tt&gt; instance.
-</span><span style="color:#75715e">     */</span>
-    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">trimToSize</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-        modCount<span style="color:#f92672">++;</span>
-        <span style="color:#75715e">//判断当前容量与数组长度的大小关系
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>size <span style="color:#f92672">&lt;</span> elementData<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        	<span style="color:#75715e">//如果size小于elementData.length，则将数组拷贝到长度为size的数组中，如果size==0，则将elementData 置为空数组，{}
-</span><span style="color:#75715e"></span>            elementData <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>size <span style="color:#f92672">==</span> 0<span style="color:#f92672">)</span>
-              <span style="color:#f92672">?</span> EMPTY_ELEMENTDATA
-              <span style="color:#f92672">:</span> Arrays<span style="color:#f92672">.</span><span style="color:#a6e22e">copyOf</span><span style="color:#f92672">(</span>elementData<span style="color:#f92672">,</span> size<span style="color:#f92672">);</span>
-        <span style="color:#f92672">}</span>
-    <span style="color:#f92672">}</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="cm">/**
+</span><span class="cm">     * Trims the capacity of this &lt;tt&gt;ArrayList&lt;/tt&gt; instance to be the
+</span><span class="cm">     * list&#39;s current size.  An application can use this operation to minimize
+</span><span class="cm">     * the storage of an &lt;tt&gt;ArrayList&lt;/tt&gt; instance.
+</span><span class="cm">     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">trimToSize</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">modCount</span><span class="o">++;</span>
+        <span class="c1">//判断当前容量与数组长度的大小关系
+</span><span class="c1"></span>        <span class="k">if</span> <span class="o">(</span><span class="n">size</span> <span class="o">&lt;</span> <span class="n">elementData</span><span class="o">.</span><span class="na">length</span><span class="o">)</span> <span class="o">{</span>
+        	<span class="c1">//如果size小于elementData.length，则将数组拷贝到长度为size的数组中，如果size==0，则将elementData 置为空数组，{}
+</span><span class="c1"></span>            <span class="n">elementData</span> <span class="o">=</span> <span class="o">(</span><span class="n">size</span> <span class="o">==</span> <span class="n">0</span><span class="o">)</span>
+              <span class="o">?</span> <span class="n">EMPTY_ELEMENTDATA</span>
+              <span class="o">:</span> <span class="n">Arrays</span><span class="o">.</span><span class="na">copyOf</span><span class="o">(</span><span class="n">elementData</span><span class="o">,</span> <span class="n">size</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
 
-</code></pre></div><h2 id="concurrenthashmap-扩容机制">concurrentHashMap 扩容机制</h2>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="concurrenthashmap-扩容机制">concurrentHashMap 扩容机制</h2>
 <p>数组的长度大于等于64 并且 链表长度大于8 转到 红黑树，</p>
 <p>红黑树节点数量小于 6 转为链表</p>
 <h3 id="golangjava--python的垃圾回收机制">golang，java ， python的垃圾回收机制</h3>
@@ -300,75 +322,154 @@ golang 的垃圾回收(GC)是基于标记清扫算法，这种算法需要进行
 <p>当JDK提供的类加载器实现无法满足我们的需求时，才需要自己实现类加载器。</p>
 <p>现有应用场景：OSGi、代码热部署等领域。</p>
 <p>另外，根据上述类加载器的作用，可能有以下几个场景需要自己实现类加载器 <em>当需要在自定义的目录中查找class文件时（或网络获取）</em> class被类加载器加载前的加解密（代码加密领域）</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#f92672">package</span> com.lordx.sprintbootdemo.classloader<span style="color:#f92672">;</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="nn">com.lordx.sprintbootdemo.classloader</span><span class="o">;</span>
 
-<span style="color:#f92672">import</span> java.io.ByteArrayOutputStream<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> java.io.File<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> java.io.FileInputStream<span style="color:#f92672">;</span>
-<span style="color:#f92672">import</span> java.io.InputStream<span style="color:#f92672">;</span>
+<span class="kn">import</span> <span class="nn">java.io.ByteArrayOutputStream</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.io.File</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.io.FileInputStream</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.io.InputStream</span><span class="o">;</span>
 
-<span style="color:#75715e">/**
-</span><span style="color:#75715e"> * 自定义ClassLoader
-</span><span style="color:#75715e"> * 功能：可自定义class文件的扫描路径
-</span><span style="color:#75715e"> * @author zhiminxu 
-</span><span style="color:#75715e"> */</span>
-<span style="color:#75715e">// 继承ClassLoader，获取基础功能
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">TestClassLoader</span> <span style="color:#66d9ef">extends</span> ClassLoader <span style="color:#f92672">{</span>
+<span class="cm">/**
+</span><span class="cm"> * 自定义ClassLoader
+</span><span class="cm"> * 功能：可自定义class文件的扫描路径
+</span><span class="cm"> * @author zhiminxu 
+</span><span class="cm"> */</span>
+<span class="c1">// 继承ClassLoader，获取基础功能
+</span><span class="c1"></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">TestClassLoader</span> <span class="kd">extends</span> <span class="n">ClassLoader</span> <span class="o">{</span>
 
-    <span style="color:#75715e">// 自定义的class扫描路径
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> String classPath<span style="color:#f92672">;</span>
+    <span class="c1">// 自定义的class扫描路径
+</span><span class="c1"></span>    <span class="kd">private</span> <span class="n">String</span> <span class="n">classPath</span><span class="o">;</span>
 
-    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">TestClassLoader</span><span style="color:#f92672">(</span>String classPath<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">classPath</span> <span style="color:#f92672">=</span> classPath<span style="color:#f92672">;</span>
-    <span style="color:#f92672">}</span>
+    <span class="kd">public</span> <span class="nf">TestClassLoader</span><span class="o">(</span><span class="n">String</span> <span class="n">classPath</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">classPath</span> <span class="o">=</span> <span class="n">classPath</span><span class="o">;</span>
+    <span class="o">}</span>
 
-    <span style="color:#75715e">// 覆写ClassLoader的findClass方法
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">protected</span> Class<span style="color:#f92672">&lt;?&gt;</span> findClass<span style="color:#f92672">(</span>String name<span style="color:#f92672">)</span> <span style="color:#66d9ef">throws</span> ClassNotFoundException <span style="color:#f92672">{</span>
-        <span style="color:#75715e">// getDate方法会根据自定义的路径扫描class，并返回class的字节
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">byte</span><span style="color:#f92672">[]</span> classData <span style="color:#f92672">=</span> getDate<span style="color:#f92672">(</span>name<span style="color:#f92672">);</span>
-        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>classData <span style="color:#f92672">==</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-            <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> ClassNotFoundException<span style="color:#f92672">();</span>
-        <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
-            <span style="color:#75715e">// 生成class实例
-</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">return</span> defineClass<span style="color:#f92672">(</span>name<span style="color:#f92672">,</span> classData<span style="color:#f92672">,</span> 0<span style="color:#f92672">,</span> classData<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">);</span>
-        <span style="color:#f92672">}</span>
-    <span style="color:#f92672">}</span>
+    <span class="c1">// 覆写ClassLoader的findClass方法
+</span><span class="c1"></span>    <span class="kd">protected</span> <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">findClass</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ClassNotFoundException</span> <span class="o">{</span>
+        <span class="c1">// getDate方法会根据自定义的路径扫描class，并返回class的字节
+</span><span class="c1"></span>        <span class="kt">byte</span><span class="o">[]</span> <span class="n">classData</span> <span class="o">=</span> <span class="n">getDate</span><span class="o">(</span><span class="n">name</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">classData</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="n">ClassNotFoundException</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="c1">// 生成class实例
+</span><span class="c1"></span>            <span class="k">return</span> <span class="n">defineClass</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="n">classData</span><span class="o">,</span> <span class="n">0</span><span class="o">,</span> <span class="n">classData</span><span class="o">.</span><span class="na">length</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
 
 
-    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">byte</span><span style="color:#f92672">[]</span> <span style="color:#a6e22e">getDate</span><span style="color:#f92672">(</span>String name<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        <span style="color:#75715e">// 拼接目标class文件路径
-</span><span style="color:#75715e"></span>        String path <span style="color:#f92672">=</span> classPath <span style="color:#f92672">+</span> File<span style="color:#f92672">.</span><span style="color:#a6e22e">separatorChar</span> <span style="color:#f92672">+</span> name<span style="color:#f92672">.</span><span style="color:#a6e22e">replace</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;.&#39;</span><span style="color:#f92672">,</span> File<span style="color:#f92672">.</span><span style="color:#a6e22e">separatorChar</span><span style="color:#f92672">)</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;.class&#34;</span><span style="color:#f92672">;</span>
-        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
-            InputStream is <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> FileInputStream<span style="color:#f92672">(</span>path<span style="color:#f92672">);</span>
-            ByteArrayOutputStream stream <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> ByteArrayOutputStream<span style="color:#f92672">();</span>
-            <span style="color:#66d9ef">byte</span><span style="color:#f92672">[]</span> buffer <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#66d9ef">byte</span><span style="color:#f92672">[</span>2048<span style="color:#f92672">];</span>
-            <span style="color:#66d9ef">int</span> num <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span>
-            <span style="color:#66d9ef">while</span> <span style="color:#f92672">((</span>num <span style="color:#f92672">=</span> is<span style="color:#f92672">.</span><span style="color:#a6e22e">read</span><span style="color:#f92672">(</span>buffer<span style="color:#f92672">))</span> <span style="color:#f92672">!=</span> <span style="color:#f92672">-</span>1<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-                stream<span style="color:#f92672">.</span><span style="color:#a6e22e">write</span><span style="color:#f92672">(</span>buffer<span style="color:#f92672">,</span> 0 <span style="color:#f92672">,</span>num<span style="color:#f92672">);</span>
-            <span style="color:#f92672">}</span>
-            <span style="color:#66d9ef">return</span> stream<span style="color:#f92672">.</span><span style="color:#a6e22e">toByteArray</span><span style="color:#f92672">();</span>
-        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-            e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
-        <span style="color:#f92672">}</span>
-        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
-    <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><h4 id="使用方法">使用方法</h4>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#f92672">package</span> com.lordx.sprintbootdemo.classloader<span style="color:#f92672">;</span>
+    <span class="kd">private</span> <span class="kt">byte</span><span class="o">[]</span> <span class="nf">getDate</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// 拼接目标class文件路径
+</span><span class="c1"></span>        <span class="n">String</span> <span class="n">path</span> <span class="o">=</span> <span class="n">classPath</span> <span class="o">+</span> <span class="n">File</span><span class="o">.</span><span class="na">separatorChar</span> <span class="o">+</span> <span class="n">name</span><span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="sc">&#39;.&#39;</span><span class="o">,</span> <span class="n">File</span><span class="o">.</span><span class="na">separatorChar</span><span class="o">)</span> <span class="o">+</span> <span class="s">&#34;.class&#34;</span><span class="o">;</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">InputStream</span> <span class="n">is</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FileInputStream</span><span class="o">(</span><span class="n">path</span><span class="o">);</span>
+            <span class="n">ByteArrayOutputStream</span> <span class="n">stream</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ByteArrayOutputStream</span><span class="o">();</span>
+            <span class="kt">byte</span><span class="o">[]</span> <span class="n">buffer</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="n">2048</span><span class="o">];</span>
+            <span class="kt">int</span> <span class="n">num</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+            <span class="k">while</span> <span class="o">((</span><span class="n">num</span> <span class="o">=</span> <span class="n">is</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buffer</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="n">1</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">stream</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">buffer</span><span class="o">,</span> <span class="n">0</span> <span class="o">,</span><span class="n">num</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="k">return</span> <span class="n">stream</span><span class="o">.</span><span class="na">toByteArray</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="使用方法">使用方法</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="nn">com.lordx.sprintbootdemo.classloader</span><span class="o">;</span>
 
-<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyClassLoader</span> <span style="color:#f92672">{</span>
-    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">main</span><span style="color:#f92672">(</span>String<span style="color:#f92672">[]</span> args<span style="color:#f92672">)</span> <span style="color:#66d9ef">throws</span> ClassNotFoundException <span style="color:#f92672">{</span>
-        <span style="color:#75715e">// 自定义class类路径
-</span><span style="color:#75715e"></span>        String classPath <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;/Users/zhiminxu/developer/classloader&#34;</span><span style="color:#f92672">;</span>
-        <span style="color:#75715e">// 自定义的类加载器实现：TestClassLoader
-</span><span style="color:#75715e"></span>        TestClassLoader testClassLoader <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> TestClassLoader<span style="color:#f92672">(</span>classPath<span style="color:#f92672">);</span>
-        <span style="color:#75715e">// 通过自定义类加载器加载
-</span><span style="color:#75715e"></span>        Class<span style="color:#f92672">&lt;?&gt;</span> object <span style="color:#f92672">=</span> testClassLoader<span style="color:#f92672">.</span><span style="color:#a6e22e">loadClass</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;ClassLoaderTest&#34;</span><span style="color:#f92672">);</span>
-        <span style="color:#75715e">// 这里的打印应该是我们自定义的类加载器：TestClassLoader
-</span><span style="color:#75715e"></span>        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>object<span style="color:#f92672">.</span><span style="color:#a6e22e">getClassLoader</span><span style="color:#f92672">());</span>
-    <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyClassLoader</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">ClassNotFoundException</span> <span class="o">{</span>
+        <span class="c1">// 自定义class类路径
+</span><span class="c1"></span>        <span class="n">String</span> <span class="n">classPath</span> <span class="o">=</span> <span class="s">&#34;/Users/zhiminxu/developer/classloader&#34;</span><span class="o">;</span>
+        <span class="c1">// 自定义的类加载器实现：TestClassLoader
+</span><span class="c1"></span>        <span class="n">TestClassLoader</span> <span class="n">testClassLoader</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TestClassLoader</span><span class="o">(</span><span class="n">classPath</span><span class="o">);</span>
+        <span class="c1">// 通过自定义类加载器加载
+</span><span class="c1"></span>        <span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">object</span> <span class="o">=</span> <span class="n">testClassLoader</span><span class="o">.</span><span class="na">loadClass</span><span class="o">(</span><span class="s">&#34;ClassLoaderTest&#34;</span><span class="o">);</span>
+        <span class="c1">// 这里的打印应该是我们自定义的类加载器：TestClassLoader
+</span><span class="c1"></span>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">object</span><span class="o">.</span><span class="na">getClassLoader</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div>
     </div>
 
     <div class="post-copyright">
@@ -493,7 +594,7 @@ golang 的垃圾回收(GC)是基于标记清扫算法，这种算法需要进行
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

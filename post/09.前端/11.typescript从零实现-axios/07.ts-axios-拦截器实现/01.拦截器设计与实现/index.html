@@ -50,7 +50,7 @@
 <meta itemprop="description" content="拦截器设计与实现 需求分析 我们希望能对请求的发送和响应做拦截，也就是在发送请求之前和接收到响应之后做一些额外逻辑。 我们希望设计的拦截器的使用方">
 <meta itemprop="datePublished" content="2020-01-05T10:56:02&#43;00:00" />
 <meta itemprop="dateModified" content="2020-01-05T10:56:02&#43;00:00" />
-<meta itemprop="wordCount" content="2013">
+<meta itemprop="wordCount" content="2189">
 
 
 
@@ -191,7 +191,7 @@ input.PC_MARK1:focus{
             <a href="/categories/typescript-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/"> 《TypeScript 从零实现 axios》 </a>
             <a href="/categories/ts-axios-%E6%8B%A6%E6%88%AA%E5%99%A8%E5%AE%9E%E7%8E%B0/"> ts-axios 拦截器实现 </a>
             </div>
-          <span class="more-meta"> 约 2013 字 </span>
+          <span class="more-meta"> 约 2189 字 </span>
           <span class="more-meta"> 预计阅读 5 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -226,36 +226,80 @@ input.PC_MARK1:focus{
 <h2 id="需求分析">需求分析</h2>
 <p>我们希望能对请求的发送和响应做拦截，也就是在发送请求之前和接收到响应之后做一些额外逻辑。</p>
 <p>我们希望设计的拦截器的使用方式如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#75715e">// 添加一个请求拦截器
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">use</span>(<span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">config</span>) {
-  <span style="color:#75715e">// 在发送请求之前可以做一些事情
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">config</span>;
-}, <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">error</span>) {
-  <span style="color:#75715e">// 处理请求错误
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">Promise</span>.<span style="color:#a6e22e">reject</span>(<span style="color:#a6e22e">error</span>);
-});
-<span style="color:#75715e">// 添加一个响应拦截器
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">use</span>(<span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">response</span>) {
-  <span style="color:#75715e">// 处理响应数据
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">response</span>;
-}, <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">error</span>) {
-  <span style="color:#75715e">// 处理响应错误
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">Promise</span>.<span style="color:#a6e22e">reject</span>(<span style="color:#a6e22e">error</span>);
-});
-</code></pre></div><p>在 <code>axios</code> 对象上有一个 <code>interceptors</code> 对象属性，该属性又有 <code>request</code> 和 <code>response</code> 2 个属性，它们都有一个 <code>use</code> 方法，<code>use</code> 方法支持 2 个参数，第一个参数类似 Promise 的 <code>resolve</code> 函数，第二个参数类似 Promise 的 <code>reject</code> 函数。我们可以在 <code>resolve</code> 函数和 <code>reject</code> 函数中执行同步代码或者是异步代码逻辑。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="c1">// 添加一个请求拦截器
+</span><span class="c1"></span><span class="nx">axios</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">config</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// 在发送请求之前可以做一些事情
+</span><span class="c1"></span>  <span class="k">return</span> <span class="nx">config</span><span class="p">;</span>
+<span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// 处理请求错误
+</span><span class="c1"></span>  <span class="k">return</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
+<span class="p">});</span>
+<span class="c1">// 添加一个响应拦截器
+</span><span class="c1"></span><span class="nx">axios</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// 处理响应数据
+</span><span class="c1"></span>  <span class="k">return</span> <span class="nx">response</span><span class="p">;</span>
+<span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// 处理响应错误
+</span><span class="c1"></span>  <span class="k">return</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在 <code>axios</code> 对象上有一个 <code>interceptors</code> 对象属性，该属性又有 <code>request</code> 和 <code>response</code> 2 个属性，它们都有一个 <code>use</code> 方法，<code>use</code> 方法支持 2 个参数，第一个参数类似 Promise 的 <code>resolve</code> 函数，第二个参数类似 Promise 的 <code>reject</code> 函数。我们可以在 <code>resolve</code> 函数和 <code>reject</code> 函数中执行同步代码或者是异步代码逻辑。</p>
 <p>并且我们是可以添加多个拦截器的，拦截器的执行顺序是链式依次执行的方式。对于 <code>request</code> 拦截器，后添加的拦截器会在请求前的过程中先执行；对于 <code>response</code> 拦截器，先添加的拦截器会在响应后先执行。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">config</span> <span style="color:#f92672">=&gt;</span> {
-  <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">headers</span>.<span style="color:#a6e22e">test</span> <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#39;1&#39;</span>
-  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">config</span>
-})
-<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">config</span> <span style="color:#f92672">=&gt;</span> {
-  <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">headers</span>.<span style="color:#a6e22e">test</span> <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#39;2&#39;</span>
-  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">config</span>
-})
-</code></pre></div><p>此外，我们也可以支持删除某个拦截器，如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">myInterceptor</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">use</span>(<span style="color:#66d9ef">function</span> () {<span style="color:#75715e">/*...*/</span>})
-<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">eject</span>(<span style="color:#a6e22e">myInterceptor</span>)
-</code></pre></div><h2 id="整体设计">整体设计</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="nx">axios</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">config</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">test</span> <span class="o">+=</span> <span class="s1">&#39;1&#39;</span>
+  <span class="k">return</span> <span class="nx">config</span>
+<span class="p">})</span>
+<span class="nx">axios</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">config</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">test</span> <span class="o">+=</span> <span class="s1">&#39;2&#39;</span>
+  <span class="k">return</span> <span class="nx">config</span>
+<span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>此外，我们也可以支持删除某个拦截器，如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">const</span> <span class="nx">myInterceptor</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span><span class="cm">/*...*/</span><span class="p">})</span>
+<span class="nx">axios</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">eject</span><span class="p">(</span><span class="nx">myInterceptor</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="整体设计">整体设计</h2>
 <p>我们先用一张图来展示一下拦截器工作流程：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/xugaoyi/image_store/blog/20200105110744.png" alt="interceptor" title="interceptor"></p>
 <p>整个过程是一个链式调用的方式，并且每个拦截器都可以支持同步和异步处理，我们自然而然地就联想到使用 Promise 链的方式来实现整个调用过程。</p>
@@ -267,174 +311,360 @@ input.PC_MARK1:focus{
 <p>根据上述分析，我们先来定义一下拦截器管理对象对外的接口。</p>
 <h3 id="接口定义">接口定义</h3>
 <p><code>types/index.ts</code>：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">AxiosInterceptorManager</span>&lt;<span style="color:#f92672">T</span>&gt; {
-  <span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">resolved</span>: <span style="color:#66d9ef">ResolvedFn</span>&lt;<span style="color:#f92672">T</span>&gt;, <span style="color:#a6e22e">rejected?</span>: <span style="color:#66d9ef">RejectedFn</span>)<span style="color:#f92672">:</span> <span style="color:#66d9ef">number</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="kr">interface</span> <span class="nx">AxiosInterceptorManager</span><span class="p">&lt;</span><span class="nt">T</span><span class="p">&gt;</span> <span class="p">{</span>
+  <span class="nx">use</span><span class="p">(</span><span class="nx">resolved</span>: <span class="kt">ResolvedFn</span><span class="p">&lt;</span><span class="nt">T</span><span class="p">&gt;,</span> <span class="nx">rejected?</span>: <span class="kt">RejectedFn</span><span class="p">)</span><span class="o">:</span> <span class="kt">number</span>
 
-  <span style="color:#a6e22e">eject</span>(<span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">number</span>)<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span>
-}
+  <span class="nx">eject</span><span class="p">(</span><span class="nx">id</span>: <span class="kt">number</span><span class="p">)</span><span class="o">:</span> <span class="k">void</span>
+<span class="p">}</span>
 
-<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">ResolvedFn</span>&lt;<span style="color:#f92672">T</span><span style="color:#960050;background-color:#1e0010">=</span><span style="color:#a6e22e">any</span>&gt; {
-  (<span style="color:#a6e22e">val</span>: <span style="color:#66d9ef">T</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">T</span> <span style="color:#f92672">|</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">T</span>&gt;
-}
+<span class="kr">export</span> <span class="kr">interface</span> <span class="nx">ResolvedFn</span><span class="p">&lt;</span><span class="nt">T</span><span class="err">=</span><span class="na">any</span><span class="p">&gt;</span> <span class="p">{</span>
+  <span class="p">(</span><span class="nx">val</span>: <span class="kt">T</span><span class="p">)</span><span class="o">:</span> <span class="nx">T</span> <span class="o">|</span> <span class="nx">Promise</span><span class="p">&lt;</span><span class="nt">T</span><span class="p">&gt;</span>
+<span class="p">}</span>
 
-<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">RejectedFn</span> {
-  (<span style="color:#a6e22e">error</span>: <span style="color:#66d9ef">any</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">any</span>
-}
-</code></pre></div><p>这里我们定义了 <code>AxiosInterceptorManager</code> 泛型接口，因为对于 <code>resolve</code> 函数的参数，请求拦截器和响应拦截器是不同的。</p>
+<span class="kr">export</span> <span class="kr">interface</span> <span class="nx">RejectedFn</span> <span class="p">{</span>
+  <span class="p">(</span><span class="nx">error</span>: <span class="kt">any</span><span class="p">)</span><span class="o">:</span> <span class="nx">any</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这里我们定义了 <code>AxiosInterceptorManager</code> 泛型接口，因为对于 <code>resolve</code> 函数的参数，请求拦截器和响应拦截器是不同的。</p>
 <h3 id="代码实现">代码实现</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">ResolvedFn</span>, <span style="color:#a6e22e">RejectedFn</span> } <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;../types&#39;</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="p">{</span> <span class="nx">ResolvedFn</span><span class="p">,</span> <span class="nx">RejectedFn</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;../types&#39;</span>
 
-<span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">Interceptor</span>&lt;<span style="color:#f92672">T</span>&gt; {
-  <span style="color:#a6e22e">resolved</span>: <span style="color:#66d9ef">ResolvedFn</span>&lt;<span style="color:#f92672">T</span>&gt;
-  <span style="color:#a6e22e">rejected?</span>: <span style="color:#66d9ef">RejectedFn</span>
-}
+<span class="kr">interface</span> <span class="nx">Interceptor</span><span class="p">&lt;</span><span class="nt">T</span><span class="p">&gt;</span> <span class="p">{</span>
+  <span class="nx">resolved</span>: <span class="kt">ResolvedFn</span><span class="p">&lt;</span><span class="nt">T</span><span class="p">&gt;</span>
+  <span class="nx">rejected?</span>: <span class="kt">RejectedFn</span>
+<span class="p">}</span>
 
-<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">InterceptorManager</span>&lt;<span style="color:#f92672">T</span>&gt; {
-  <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">interceptors</span>: <span style="color:#66d9ef">Array</span>&lt;<span style="color:#f92672">Interceptor</span><span style="color:#960050;background-color:#1e0010">&lt;</span><span style="color:#a6e22e">T</span>&gt; <span style="color:#f92672">|</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">&gt;</span>
+<span class="kr">export</span> <span class="k">default</span> <span class="kr">class</span> <span class="nx">InterceptorManager</span><span class="p">&lt;</span><span class="nt">T</span><span class="p">&gt;</span> <span class="p">{</span>
+  <span class="kr">private</span> <span class="nx">interceptors</span>: <span class="kt">Array</span><span class="p">&lt;</span><span class="nt">Interceptor</span><span class="err">&lt;</span><span class="na">T</span><span class="p">&gt;</span> <span class="o">|</span> <span class="kc">null</span><span class="o">&gt;</span>
 
-  <span style="color:#66d9ef">constructor</span>() {
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">interceptors</span> <span style="color:#f92672">=</span> []
-  }
+  <span class="kr">constructor</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">interceptors</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="p">}</span>
 
-  <span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">resolved</span>: <span style="color:#66d9ef">ResolvedFn</span>&lt;<span style="color:#f92672">T</span>&gt;, <span style="color:#a6e22e">rejected?</span>: <span style="color:#66d9ef">RejectedFn</span>)<span style="color:#f92672">:</span> <span style="color:#66d9ef">number</span> {
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">push</span>({
-      <span style="color:#a6e22e">resolved</span>,
-      <span style="color:#a6e22e">rejected</span>
-    })
-    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>
-  }
+  <span class="nx">use</span><span class="p">(</span><span class="nx">resolved</span>: <span class="kt">ResolvedFn</span><span class="p">&lt;</span><span class="nt">T</span><span class="p">&gt;,</span> <span class="nx">rejected?</span>: <span class="kt">RejectedFn</span><span class="p">)</span><span class="o">:</span> <span class="kt">number</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+      <span class="nx">resolved</span><span class="p">,</span>
+      <span class="nx">rejected</span>
+    <span class="p">})</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
+  <span class="p">}</span>
 
-  <span style="color:#a6e22e">forEach</span>(<span style="color:#a6e22e">fn</span><span style="color:#f92672">:</span> (<span style="color:#a6e22e">interceptor</span>: <span style="color:#66d9ef">Interceptor</span>&lt;<span style="color:#f92672">T</span>&gt;) <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">void</span>)<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">forEach</span>(<span style="color:#a6e22e">interceptor</span> <span style="color:#f92672">=&gt;</span> {
-      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">interceptor</span> <span style="color:#f92672">!==</span> <span style="color:#66d9ef">null</span>) {
-        <span style="color:#a6e22e">fn</span>(<span style="color:#a6e22e">interceptor</span>)
-      }
-    })
-  }
+  <span class="nx">forEach</span><span class="p">(</span><span class="nx">fn</span><span class="o">:</span> <span class="p">(</span><span class="nx">interceptor</span>: <span class="kt">Interceptor</span><span class="p">&lt;</span><span class="nt">T</span><span class="p">&gt;)</span> <span class="o">=&gt;</span> <span class="k">void</span><span class="p">)</span><span class="o">:</span> <span class="k">void</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">interceptor</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">interceptor</span> <span class="o">!==</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">fn</span><span class="p">(</span><span class="nx">interceptor</span><span class="p">)</span>
+      <span class="p">}</span>
+    <span class="p">})</span>
+  <span class="p">}</span>
 
-  <span style="color:#a6e22e">eject</span>(<span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">number</span>)<span style="color:#f92672">:</span> <span style="color:#66d9ef">void</span> {
-    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">interceptors</span>[<span style="color:#a6e22e">id</span>]) {
-      <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">interceptors</span>[<span style="color:#a6e22e">id</span>] <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span>
-    }
-  }
-}
-</code></pre></div><p>我们定义了一个 <code>InterceptorManager</code> 泛型类，内部维护了一个私有属性 <code>interceptors</code>，它是一个数组，用来存储拦截器。该类还对外提供了 3 个方法，其中 <code>use</code> 接口就是添加拦截器到 <code>interceptors</code> 中，并返回一个 <code>id</code> 用于删除；<code>forEach</code> 接口就是遍历 <code>interceptors</code> 用的，它支持传入一个函数，遍历过程中会调用该函数，并把每一个 <code>interceptor</code> 作为该函数的参数传入；<code>eject</code> 就是删除一个拦截器，通过传入拦截器的 <code>id</code> 删除。</p>
+  <span class="nx">eject</span><span class="p">(</span><span class="nx">id</span>: <span class="kt">number</span><span class="p">)</span><span class="o">:</span> <span class="k">void</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">[</span><span class="nx">id</span><span class="p">])</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span> <span class="o">=</span> <span class="kc">null</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>我们定义了一个 <code>InterceptorManager</code> 泛型类，内部维护了一个私有属性 <code>interceptors</code>，它是一个数组，用来存储拦截器。该类还对外提供了 3 个方法，其中 <code>use</code> 接口就是添加拦截器到 <code>interceptors</code> 中，并返回一个 <code>id</code> 用于删除；<code>forEach</code> 接口就是遍历 <code>interceptors</code> 用的，它支持传入一个函数，遍历过程中会调用该函数，并把每一个 <code>interceptor</code> 作为该函数的参数传入；<code>eject</code> 就是删除一个拦截器，通过传入拦截器的 <code>id</code> 删除。</p>
 <h2 id="链式调用实现">链式调用实现</h2>
 <blockquote>
 <p>本小节需要你对 Promise 掌握和理解，可以前往 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">mdn</a> 学习。</p>
 </blockquote>
 <p>当我们实现好拦截器管理类，接下来就是在 <code>Axios</code> 中定义一个 <code>interceptors</code> 属性，它的类型如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">Interceptors</span> {
-  <span style="color:#a6e22e">request</span>: <span style="color:#66d9ef">InterceptorManager</span>&lt;<span style="color:#f92672">AxiosRequestConfig</span>&gt;
-  <span style="color:#a6e22e">response</span>: <span style="color:#66d9ef">InterceptorManager</span>&lt;<span style="color:#f92672">AxiosResponse</span>&gt;
-}
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">interface</span> <span class="nx">Interceptors</span> <span class="p">{</span>
+  <span class="nx">request</span>: <span class="kt">InterceptorManager</span><span class="p">&lt;</span><span class="nt">AxiosRequestConfig</span><span class="p">&gt;</span>
+  <span class="nx">response</span>: <span class="kt">InterceptorManager</span><span class="p">&lt;</span><span class="nt">AxiosResponse</span><span class="p">&gt;</span>
+<span class="p">}</span>
 
-<span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Axios</span> {
-  <span style="color:#a6e22e">interceptors</span>: <span style="color:#66d9ef">Interceptors</span>
+<span class="kr">export</span> <span class="k">default</span> <span class="kr">class</span> <span class="nx">Axios</span> <span class="p">{</span>
+  <span class="nx">interceptors</span>: <span class="kt">Interceptors</span>
 
-  <span style="color:#66d9ef">constructor</span>() {
-    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">interceptors</span> <span style="color:#f92672">=</span> {
-      <span style="color:#a6e22e">request</span>: <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">InterceptorManager</span>&lt;<span style="color:#f92672">AxiosRequestConfig</span>&gt;(),
-      <span style="color:#a6e22e">response</span>: <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">InterceptorManager</span>&lt;<span style="color:#f92672">AxiosResponse</span>&gt;()
-    }
-  }
-}
-</code></pre></div><p><code>Interceptors</code> 类型拥有 2 个属性，一个请求拦截器管理类实例，一个是响应拦截器管理类实例。我们在实例化 <code>Axios</code> 类的时候，在它的构造器去初始化这个 <code>interceptors</code> 实例属性。</p>
+  <span class="kr">constructor</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">interceptors</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="nx">request</span>: <span class="kt">new</span> <span class="nx">InterceptorManager</span><span class="p">&lt;</span><span class="nt">AxiosRequestConfig</span><span class="p">&gt;(),</span>
+      <span class="nx">response</span>: <span class="kt">new</span> <span class="nx">InterceptorManager</span><span class="p">&lt;</span><span class="nt">AxiosResponse</span><span class="p">&gt;()</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><code>Interceptors</code> 类型拥有 2 个属性，一个请求拦截器管理类实例，一个是响应拦截器管理类实例。我们在实例化 <code>Axios</code> 类的时候，在它的构造器去初始化这个 <code>interceptors</code> 实例属性。</p>
 <p>接下来，我们修改 <code>request</code> 方法的逻辑，添加拦截器链式调用的逻辑：</p>
 <p><code>core/Axios.ts</code>：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">PromiseChain</span> {
-  <span style="color:#a6e22e">resolved</span>: <span style="color:#66d9ef">ResolvedFn</span> <span style="color:#f92672">|</span> ((<span style="color:#a6e22e">config</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">AxiosPromise</span>)
-  <span style="color:#a6e22e">rejected?</span>: <span style="color:#66d9ef">RejectedFn</span>
-}
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">interface</span> <span class="nx">PromiseChain</span> <span class="p">{</span>
+  <span class="nx">resolved</span>: <span class="kt">ResolvedFn</span> <span class="o">|</span> <span class="p">((</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">AxiosPromise</span><span class="p">)</span>
+  <span class="nx">rejected?</span>: <span class="kt">RejectedFn</span>
+<span class="p">}</span>
 
-<span style="color:#a6e22e">request</span>(<span style="color:#a6e22e">url</span>: <span style="color:#66d9ef">any</span>, <span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">any</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosPromise</span> {
-  <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">typeof</span> <span style="color:#a6e22e">url</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;string&#39;</span>) {
-    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">config</span>) {
-      <span style="color:#a6e22e">config</span> <span style="color:#f92672">=</span> {}
-    }
-    <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">url</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">url</span>
-  } <span style="color:#66d9ef">else</span> {
-    <span style="color:#a6e22e">config</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">url</span>
-  }
+<span class="nx">request</span><span class="p">(</span><span class="nx">url</span>: <span class="kt">any</span><span class="p">,</span> <span class="nx">config?</span>: <span class="kt">any</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosPromise</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">url</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">config</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">config</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="p">}</span>
+    <span class="nx">config</span><span class="p">.</span><span class="nx">url</span> <span class="o">=</span> <span class="nx">url</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">config</span> <span class="o">=</span> <span class="nx">url</span>
+  <span class="p">}</span>
 
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">chain</span>: <span style="color:#66d9ef">PromiseChain</span>[] <span style="color:#f92672">=</span> [{
-    <span style="color:#a6e22e">resolved</span>: <span style="color:#66d9ef">dispatchRequest</span>,
-    <span style="color:#a6e22e">rejected</span>: <span style="color:#66d9ef">undefined</span>
-  }]
+  <span class="kr">const</span> <span class="nx">chain</span>: <span class="kt">PromiseChain</span><span class="p">[]</span> <span class="o">=</span> <span class="p">[{</span>
+    <span class="nx">resolved</span>: <span class="kt">dispatchRequest</span><span class="p">,</span>
+    <span class="nx">rejected</span>: <span class="kt">undefined</span>
+  <span class="p">}]</span>
 
-  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">forEach</span>(<span style="color:#a6e22e">interceptor</span> <span style="color:#f92672">=&gt;</span> {
-    <span style="color:#a6e22e">chain</span>.<span style="color:#a6e22e">unshift</span>(<span style="color:#a6e22e">interceptor</span>)
-  })
+  <span class="k">this</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">interceptor</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">chain</span><span class="p">.</span><span class="nx">unshift</span><span class="p">(</span><span class="nx">interceptor</span><span class="p">)</span>
+  <span class="p">})</span>
 
-  <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">forEach</span>(<span style="color:#a6e22e">interceptor</span> <span style="color:#f92672">=&gt;</span> {
-    <span style="color:#a6e22e">chain</span>.<span style="color:#a6e22e">push</span>(<span style="color:#a6e22e">interceptor</span>)
-  })
+  <span class="k">this</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">interceptor</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">chain</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">interceptor</span><span class="p">)</span>
+  <span class="p">})</span>
 
-  <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">promise</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Promise</span>.<span style="color:#a6e22e">resolve</span>(<span style="color:#a6e22e">config</span>)
+  <span class="kd">let</span> <span class="nx">promise</span> <span class="o">=</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span>
 
-  <span style="color:#66d9ef">while</span> (<span style="color:#a6e22e">chain</span>.<span style="color:#a6e22e">length</span>) {
-    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">resolved</span>, <span style="color:#a6e22e">rejected</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">chain</span>.<span style="color:#a6e22e">shift</span>()<span style="color:#f92672">!</span>
-    <span style="color:#a6e22e">promise</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">promise</span>.<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">resolved</span>, <span style="color:#a6e22e">rejected</span>)
-  }
+  <span class="k">while</span> <span class="p">(</span><span class="nx">chain</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">{</span> <span class="nx">resolved</span><span class="p">,</span> <span class="nx">rejected</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">chain</span><span class="p">.</span><span class="nx">shift</span><span class="p">()</span><span class="o">!</span>
+    <span class="nx">promise</span> <span class="o">=</span> <span class="nx">promise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">resolved</span><span class="p">,</span> <span class="nx">rejected</span><span class="p">)</span>
+  <span class="p">}</span>
 
-  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">promise</span>
-}
-</code></pre></div><p>首先，构造一个 <code>PromiseChain</code> 类型的数组 <code>chain</code>，并把 <code>dispatchRequest</code> 函数赋值给 <code>resolved</code> 属性；接着先遍历请求拦截器插入到 <code>chain</code> 的前面；然后再遍历响应拦截器插入到 <code>chain</code> 后面。</p>
+  <span class="k">return</span> <span class="nx">promise</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>首先，构造一个 <code>PromiseChain</code> 类型的数组 <code>chain</code>，并把 <code>dispatchRequest</code> 函数赋值给 <code>resolved</code> 属性；接着先遍历请求拦截器插入到 <code>chain</code> 的前面；然后再遍历响应拦截器插入到 <code>chain</code> 后面。</p>
 <p>接下来定义一个已经 resolve 的 <code>promise</code>，循环这个 <code>chain</code>，拿到每个拦截器对象，把它们的 <code>resolved</code> 函数和 <code>rejected</code> 函数添加到 <code>promise.then</code> 的参数中，这样就相当于通过 Promise 的链式调用方式，实现了拦截器一层层的链式调用的效果。</p>
 <p>注意我们拦截器的执行顺序，对于请求拦截器，先执行后添加的，再执行先添加的；而对于响应拦截器，先执行先添加的，后执行后添加的。</p>
 <h2 id="demo-编写">demo 编写</h2>
 <p>在 <code>examples</code> 目录下创建 <code>interceptor</code> 目录，在 <code>interceptor</code> 目录下创建 <code>index.html</code>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html"><span style="color:#75715e">&lt;!DOCTYPE html&gt;</span>
-&lt;<span style="color:#f92672">html</span> <span style="color:#a6e22e">lang</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;en&#34;</span>&gt;
-  &lt;<span style="color:#f92672">head</span>&gt;
-    &lt;<span style="color:#f92672">meta</span> <span style="color:#a6e22e">charset</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;utf-8&#34;</span>&gt;
-    &lt;<span style="color:#f92672">title</span>&gt;Interceptor example&lt;/<span style="color:#f92672">title</span>&gt;
-  &lt;/<span style="color:#f92672">head</span>&gt;
-  &lt;<span style="color:#f92672">body</span>&gt;
-    &lt;<span style="color:#f92672">script</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/__build__/interceptor.js&#34;</span>&gt;&lt;/<span style="color:#f92672">script</span>&gt;
-  &lt;/<span style="color:#f92672">body</span>&gt;
-&lt;/<span style="color:#f92672">html</span>&gt;
-</code></pre></div><p>接着创建 <code>app.ts</code> 作为入口文件：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">import</span> <span style="color:#a6e22e">axios</span> <span style="color:#a6e22e">from</span> <span style="color:#e6db74">&#39;../../src/index&#39;</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-html" data-lang="html"><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&#34;en&#34;</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&#34;utf-8&#34;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>Interceptor example<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&#34;/__build__/interceptor.js&#34;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>接着创建 <code>app.ts</code> 作为入口文件：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">import</span> <span class="nx">axios</span> <span class="nx">from</span> <span class="s1">&#39;../../src/index&#39;</span>
 
-<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">config</span> <span style="color:#f92672">=&gt;</span> {
-  <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">headers</span>.<span style="color:#a6e22e">test</span> <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#39;1&#39;</span>
-  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">config</span>
-})
-<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">config</span> <span style="color:#f92672">=&gt;</span> {
-  <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">headers</span>.<span style="color:#a6e22e">test</span> <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#39;2&#39;</span>
-  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">config</span>
-})
-<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">config</span> <span style="color:#f92672">=&gt;</span> {
-  <span style="color:#a6e22e">config</span>.<span style="color:#a6e22e">headers</span>.<span style="color:#a6e22e">test</span> <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#39;3&#39;</span>
-  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">config</span>
-})
+<span class="nx">axios</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">config</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">test</span> <span class="o">+=</span> <span class="s1">&#39;1&#39;</span>
+  <span class="k">return</span> <span class="nx">config</span>
+<span class="p">})</span>
+<span class="nx">axios</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">config</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">test</span> <span class="o">+=</span> <span class="s1">&#39;2&#39;</span>
+  <span class="k">return</span> <span class="nx">config</span>
+<span class="p">})</span>
+<span class="nx">axios</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">config</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">test</span> <span class="o">+=</span> <span class="s1">&#39;3&#39;</span>
+  <span class="k">return</span> <span class="nx">config</span>
+<span class="p">})</span>
 
-<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">res</span> <span style="color:#f92672">=&gt;</span> {
-  <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">data</span> <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#39;1&#39;</span>
-  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">res</span>
-})
-<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">interceptor</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">res</span> <span style="color:#f92672">=&gt;</span> {
-  <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">data</span> <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#39;2&#39;</span>
-  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">res</span>
-})
-<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">res</span> <span style="color:#f92672">=&gt;</span> {
-  <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">data</span> <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#39;3&#39;</span>
-  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">res</span>
-})
+<span class="nx">axios</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">res</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">res</span><span class="p">.</span><span class="nx">data</span> <span class="o">+=</span> <span class="s1">&#39;1&#39;</span>
+  <span class="k">return</span> <span class="nx">res</span>
+<span class="p">})</span>
+<span class="kd">let</span> <span class="nx">interceptor</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">res</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">res</span><span class="p">.</span><span class="nx">data</span> <span class="o">+=</span> <span class="s1">&#39;2&#39;</span>
+  <span class="k">return</span> <span class="nx">res</span>
+<span class="p">})</span>
+<span class="nx">axios</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">res</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">res</span><span class="p">.</span><span class="nx">data</span> <span class="o">+=</span> <span class="s1">&#39;3&#39;</span>
+  <span class="k">return</span> <span class="nx">res</span>
+<span class="p">})</span>
 
-<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">interceptors</span>.<span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">eject</span>(<span style="color:#a6e22e">interceptor</span>)
+<span class="nx">axios</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">eject</span><span class="p">(</span><span class="nx">interceptor</span><span class="p">)</span>
 
-<span style="color:#a6e22e">axios</span>({
-  <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;/interceptor/get&#39;</span>,
-  <span style="color:#a6e22e">method</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;get&#39;</span>,
-  <span style="color:#a6e22e">headers</span><span style="color:#f92672">:</span> {
-    <span style="color:#a6e22e">test</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;&#39;</span>
-  }
-}).<span style="color:#a6e22e">then</span>((<span style="color:#a6e22e">res</span>) <span style="color:#f92672">=&gt;</span> {
-  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">data</span>)
-})
-</code></pre></div><p>该 demo 我们添加了 3 个请求拦截器，添加了 3 个响应拦截器并删除了第二个。运行该 demo 我们通过浏览器访问，我们发送的请求添加了一个 <code>test</code> 的请求 header，它的值是 <code>321</code>；我们的响应数据返回的是 <code>hello</code>，经过响应拦截器的处理，最终我们输出的数据是 <code>hello13</code>。</p>
+<span class="nx">axios</span><span class="p">({</span>
+  <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;/interceptor/get&#39;</span><span class="p">,</span>
+  <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;get&#39;</span><span class="p">,</span>
+  <span class="nx">headers</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">test</span><span class="o">:</span> <span class="s1">&#39;&#39;</span>
+  <span class="p">}</span>
+<span class="p">}).</span><span class="nx">then</span><span class="p">((</span><span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">data</span><span class="p">)</span>
+<span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>该 demo 我们添加了 3 个请求拦截器，添加了 3 个响应拦截器并删除了第二个。运行该 demo 我们通过浏览器访问，我们发送的请求添加了一个 <code>test</code> 的请求 header，它的值是 <code>321</code>；我们的响应数据返回的是 <code>hello</code>，经过响应拦截器的处理，最终我们输出的数据是 <code>hello13</code>。</p>
 <p>至此，我们给 <code>ts-axios</code> 实现了拦截器功能，它是一个非常实用的功能，在实际工作中我们可以利用它做一些需求如登录权限认证。</p>
 <p>我们目前通过 <code>axios</code> 发送请求，往往会传入一堆配置，但是我们也希望 <code>ts-axios</code> 本身也会有一些默认配置，我们把用户传入的自定义配置和默认配置做一层合并。其实，大部分的 JS 库都是类似的玩法。下面一章我们就来实现这个 feature。</p>
 
@@ -556,7 +786,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

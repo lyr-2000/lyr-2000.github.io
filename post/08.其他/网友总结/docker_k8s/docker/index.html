@@ -50,7 +50,7 @@
 <meta itemprop="description" content="Docker Docker 组件 组件 Docker Daemon（Dockerd）：Docker容器管理的守护进程，负责和Docker client交互，并管理Docker镜像、容">
 <meta itemprop="datePublished" content="2021-08-14T22:43:02&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:43:02&#43;08:00" />
-<meta itemprop="wordCount" content="18131">
+<meta itemprop="wordCount" content="19036">
 
 
 
@@ -188,8 +188,8 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-14 </span>
         
-          <span class="more-meta"> 约 18131 字 </span>
-          <span class="more-meta"> 预计阅读 37 分钟 </span>
+          <span class="more-meta"> 约 19036 字 </span>
+          <span class="more-meta"> 预计阅读 38 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -245,333 +245,665 @@ input.PC_MARK1:focus{
 (3)dockerd准备OCI（Open Containers Initiative）需要的bundle的config.json配置文件<br>
 (4)dockerd准备IO文件，用来和容器之间进行通信，比如这里的init-stdin文件用来向容器的stdin中写数据，init-stdout用来接收容器的stdout输出</li>
 </ol>
-<pre><code># 路径：/run/docker/libcontainerd/&lt;contain-id&gt;
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span><span class="lnt">166
+</span><span class="lnt">167
+</span><span class="lnt">168
+</span><span class="lnt">169
+</span><span class="lnt">170
+</span><span class="lnt">171
+</span><span class="lnt">172
+</span><span class="lnt">173
+</span><span class="lnt">174
+</span><span class="lnt">175
+</span><span class="lnt">176
+</span><span class="lnt">177
+</span><span class="lnt">178
+</span><span class="lnt">179
+</span><span class="lnt">180
+</span><span class="lnt">181
+</span><span class="lnt">182
+</span><span class="lnt">183
+</span><span class="lnt">184
+</span><span class="lnt">185
+</span><span class="lnt">186
+</span><span class="lnt">187
+</span><span class="lnt">188
+</span><span class="lnt">189
+</span><span class="lnt">190
+</span><span class="lnt">191
+</span><span class="lnt">192
+</span><span class="lnt">193
+</span><span class="lnt">194
+</span><span class="lnt">195
+</span><span class="lnt">196
+</span><span class="lnt">197
+</span><span class="lnt">198
+</span><span class="lnt">199
+</span><span class="lnt">200
+</span><span class="lnt">201
+</span><span class="lnt">202
+</span><span class="lnt">203
+</span><span class="lnt">204
+</span><span class="lnt">205
+</span><span class="lnt">206
+</span><span class="lnt">207
+</span><span class="lnt">208
+</span><span class="lnt">209
+</span><span class="lnt">210
+</span><span class="lnt">211
+</span><span class="lnt">212
+</span><span class="lnt">213
+</span><span class="lnt">214
+</span><span class="lnt">215
+</span><span class="lnt">216
+</span><span class="lnt">217
+</span><span class="lnt">218
+</span><span class="lnt">219
+</span><span class="lnt">220
+</span><span class="lnt">221
+</span><span class="lnt">222
+</span><span class="lnt">223
+</span><span class="lnt">224
+</span><span class="lnt">225
+</span><span class="lnt">226
+</span><span class="lnt">227
+</span><span class="lnt">228
+</span><span class="lnt">229
+</span><span class="lnt">230
+</span><span class="lnt">231
+</span><span class="lnt">232
+</span><span class="lnt">233
+</span><span class="lnt">234
+</span><span class="lnt">235
+</span><span class="lnt">236
+</span><span class="lnt">237
+</span><span class="lnt">238
+</span><span class="lnt">239
+</span><span class="lnt">240
+</span><span class="lnt">241
+</span><span class="lnt">242
+</span><span class="lnt">243
+</span><span class="lnt">244
+</span><span class="lnt">245
+</span><span class="lnt">246
+</span><span class="lnt">247
+</span><span class="lnt">248
+</span><span class="lnt">249
+</span><span class="lnt">250
+</span><span class="lnt">251
+</span><span class="lnt">252
+</span><span class="lnt">253
+</span><span class="lnt">254
+</span><span class="lnt">255
+</span><span class="lnt">256
+</span><span class="lnt">257
+</span><span class="lnt">258
+</span><span class="lnt">259
+</span><span class="lnt">260
+</span><span class="lnt">261
+</span><span class="lnt">262
+</span><span class="lnt">263
+</span><span class="lnt">264
+</span><span class="lnt">265
+</span><span class="lnt">266
+</span><span class="lnt">267
+</span><span class="lnt">268
+</span><span class="lnt">269
+</span><span class="lnt">270
+</span><span class="lnt">271
+</span><span class="lnt">272
+</span><span class="lnt">273
+</span><span class="lnt">274
+</span><span class="lnt">275
+</span><span class="lnt">276
+</span><span class="lnt">277
+</span><span class="lnt">278
+</span><span class="lnt">279
+</span><span class="lnt">280
+</span><span class="lnt">281
+</span><span class="lnt">282
+</span><span class="lnt">283
+</span><span class="lnt">284
+</span><span class="lnt">285
+</span><span class="lnt">286
+</span><span class="lnt">287
+</span><span class="lnt">288
+</span><span class="lnt">289
+</span><span class="lnt">290
+</span><span class="lnt">291
+</span><span class="lnt">292
+</span><span class="lnt">293
+</span><span class="lnt">294
+</span><span class="lnt">295
+</span><span class="lnt">296
+</span><span class="lnt">297
+</span><span class="lnt">298
+</span><span class="lnt">299
+</span><span class="lnt">300
+</span><span class="lnt">301
+</span><span class="lnt">302
+</span><span class="lnt">303
+</span><span class="lnt">304
+</span><span class="lnt">305
+</span><span class="lnt">306
+</span><span class="lnt">307
+</span><span class="lnt">308
+</span><span class="lnt">309
+</span><span class="lnt">310
+</span><span class="lnt">311
+</span><span class="lnt">312
+</span><span class="lnt">313
+</span><span class="lnt">314
+</span><span class="lnt">315
+</span><span class="lnt">316
+</span><span class="lnt">317
+</span><span class="lnt">318
+</span><span class="lnt">319
+</span><span class="lnt">320
+</span><span class="lnt">321
+</span><span class="lnt">322
+</span><span class="lnt">323
+</span><span class="lnt">324
+</span><span class="lnt">325
+</span><span class="lnt">326
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># 路径：/run/docker/libcontainerd/&lt;contain-id&gt;
 # ls 841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45
 config.json  init-stderr  init-stdin   init-stdout
 {
-    &quot;ociVersion&quot;:&quot;1.0.0-rc2-dev&quot;,   # 对应的OCI（Open Containers Initiative）标准版本
-    &quot;platform&quot;:{    # 平台信息amd64 + Linux
-        &quot;os&quot;:&quot;linux&quot;,
-        &quot;arch&quot;:&quot;amd64&quot;
+    &#34;ociVersion&#34;:&#34;1.0.0-rc2-dev&#34;,   # 对应的OCI（Open Containers Initiative）标准版本
+    &#34;platform&#34;:{    # 平台信息amd64 + Linux
+        &#34;os&#34;:&#34;linux&#34;,
+        &#34;arch&#34;:&#34;amd64&#34;
     },
-    &quot;process&quot;:{ # 容器启动后执行什么命令
-        &quot;user&quot;:{
-            &quot;uid&quot;:0,
-            &quot;gid&quot;:0
+    &#34;process&#34;:{ # 容器启动后执行什么命令
+        &#34;user&#34;:{
+            &#34;uid&#34;:0,
+            &#34;gid&#34;:0
         },
-        &quot;args&quot;:[
-            &quot;/bin/sh&quot;,
-            &quot;-c&quot;,
-            &quot;while true; do echo hello world; sleep 1;done&quot;
+        &#34;args&#34;:[
+            &#34;/bin/sh&#34;,
+            &#34;-c&#34;,
+            &#34;while true; do echo hello world; sleep 1;done&#34;
         ],
-        &quot;env&quot;:[
-            &quot;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&quot;,
-            &quot;HOSTNAME=841e5bfba826&quot;
+        &#34;env&#34;:[
+            &#34;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#34;,
+            &#34;HOSTNAME=841e5bfba826&#34;
         ],
-        &quot;cwd&quot;:&quot;/&quot;,
+        &#34;cwd&#34;:&#34;/&#34;,
     },
-    &quot;root&quot;:{    # 根文件系统的位置
-        &quot;path&quot;:&quot;/var/lib/docker/overlay2/f53b4402bfca2b8b71bbdf12b85ce5364474b13a6664efd187e16aa5a467452d/merged&quot;
+    &#34;root&#34;:{    # 根文件系统的位置
+        &#34;path&#34;:&#34;/var/lib/docker/overlay2/f53b4402bfca2b8b71bbdf12b85ce5364474b13a6664efd187e16aa5a467452d/merged&#34;
     },
-    &quot;hostname&quot;:&quot;841e5bfba826&quot;,  # 容器的主机名
-    &quot;mounts&quot;:[  # 需要挂载哪些目录到容器里面
+    &#34;hostname&#34;:&#34;841e5bfba826&#34;,  # 容器的主机名
+    &#34;mounts&#34;:[  # 需要挂载哪些目录到容器里面
         {
-            &quot;destination&quot;:&quot;/proc&quot;,
-            &quot;type&quot;:&quot;proc&quot;,
-            &quot;source&quot;:&quot;proc&quot;,
-            &quot;options&quot;:[
-                &quot;nosuid&quot;,
-                &quot;noexec&quot;,
-                &quot;nodev&quot;
+            &#34;destination&#34;:&#34;/proc&#34;,
+            &#34;type&#34;:&#34;proc&#34;,
+            &#34;source&#34;:&#34;proc&#34;,
+            &#34;options&#34;:[
+                &#34;nosuid&#34;,
+                &#34;noexec&#34;,
+                &#34;nodev&#34;
             ]
         },
         {
-            &quot;destination&quot;:&quot;/dev&quot;,
-            &quot;type&quot;:&quot;tmpfs&quot;,
-            &quot;source&quot;:&quot;tmpfs&quot;,
-            &quot;options&quot;:[
-                &quot;nosuid&quot;,
-                &quot;strictatime&quot;,
-                &quot;mode=755&quot;
+            &#34;destination&#34;:&#34;/dev&#34;,
+            &#34;type&#34;:&#34;tmpfs&#34;,
+            &#34;source&#34;:&#34;tmpfs&#34;,
+            &#34;options&#34;:[
+                &#34;nosuid&#34;,
+                &#34;strictatime&#34;,
+                &#34;mode=755&#34;
             ]
         },
         {
-            &quot;destination&quot;:&quot;/dev/pts&quot;,
-            &quot;type&quot;:&quot;devpts&quot;,
-            &quot;source&quot;:&quot;devpts&quot;,
-            &quot;options&quot;:[
-                &quot;nosuid&quot;,
-                &quot;noexec&quot;,
-                &quot;newinstance&quot;,
-                &quot;ptmxmode=0666&quot;,
-                &quot;mode=0620&quot;,
-                &quot;gid=5&quot;
+            &#34;destination&#34;:&#34;/dev/pts&#34;,
+            &#34;type&#34;:&#34;devpts&#34;,
+            &#34;source&#34;:&#34;devpts&#34;,
+            &#34;options&#34;:[
+                &#34;nosuid&#34;,
+                &#34;noexec&#34;,
+                &#34;newinstance&#34;,
+                &#34;ptmxmode=0666&#34;,
+                &#34;mode=0620&#34;,
+                &#34;gid=5&#34;
             ]
         },
         {
-            &quot;destination&quot;:&quot;/sys&quot;,
-            &quot;type&quot;:&quot;sysfs&quot;,
-            &quot;source&quot;:&quot;sysfs&quot;,
-            &quot;options&quot;:[
-                &quot;nosuid&quot;,
-                &quot;noexec&quot;,
-                &quot;nodev&quot;,
-                &quot;ro&quot;
+            &#34;destination&#34;:&#34;/sys&#34;,
+            &#34;type&#34;:&#34;sysfs&#34;,
+            &#34;source&#34;:&#34;sysfs&#34;,
+            &#34;options&#34;:[
+                &#34;nosuid&#34;,
+                &#34;noexec&#34;,
+                &#34;nodev&#34;,
+                &#34;ro&#34;
             ]
         },
         {
-            &quot;destination&quot;:&quot;/sys/fs/cgroup&quot;,
-            &quot;type&quot;:&quot;cgroup&quot;,
-            &quot;source&quot;:&quot;cgroup&quot;,
-            &quot;options&quot;:[
-                &quot;ro&quot;,
-                &quot;nosuid&quot;,
-                &quot;noexec&quot;,
-                &quot;nodev&quot;
+            &#34;destination&#34;:&#34;/sys/fs/cgroup&#34;,
+            &#34;type&#34;:&#34;cgroup&#34;,
+            &#34;source&#34;:&#34;cgroup&#34;,
+            &#34;options&#34;:[
+                &#34;ro&#34;,
+                &#34;nosuid&#34;,
+                &#34;noexec&#34;,
+                &#34;nodev&#34;
             ]
         },
         {
-            &quot;destination&quot;:&quot;/dev/mqueue&quot;,
-            &quot;type&quot;:&quot;mqueue&quot;,
-            &quot;source&quot;:&quot;mqueue&quot;,
-            &quot;options&quot;:[
-                &quot;nosuid&quot;,
-                &quot;noexec&quot;,
-                &quot;nodev&quot;
+            &#34;destination&#34;:&#34;/dev/mqueue&#34;,
+            &#34;type&#34;:&#34;mqueue&#34;,
+            &#34;source&#34;:&#34;mqueue&#34;,
+            &#34;options&#34;:[
+                &#34;nosuid&#34;,
+                &#34;noexec&#34;,
+                &#34;nodev&#34;
             ]
         },
         {
-            &quot;destination&quot;:&quot;/etc/resolv.conf&quot;,
-            &quot;type&quot;:&quot;bind&quot;,
-            &quot;source&quot;:&quot;/var/lib/docker/containers/841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45/resolv.conf&quot;,
-            &quot;options&quot;:[
-                &quot;rbind&quot;,
-                &quot;rprivate&quot;
+            &#34;destination&#34;:&#34;/etc/resolv.conf&#34;,
+            &#34;type&#34;:&#34;bind&#34;,
+            &#34;source&#34;:&#34;/var/lib/docker/containers/841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45/resolv.conf&#34;,
+            &#34;options&#34;:[
+                &#34;rbind&#34;,
+                &#34;rprivate&#34;
             ]
         },
         {
-            &quot;destination&quot;:&quot;/etc/hostname&quot;,
-            &quot;type&quot;:&quot;bind&quot;,
-            &quot;source&quot;:&quot;/var/lib/docker/containers/841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45/hostname&quot;,
-            &quot;options&quot;:[
-                &quot;rbind&quot;,
-                &quot;rprivate&quot;
+            &#34;destination&#34;:&#34;/etc/hostname&#34;,
+            &#34;type&#34;:&#34;bind&#34;,
+            &#34;source&#34;:&#34;/var/lib/docker/containers/841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45/hostname&#34;,
+            &#34;options&#34;:[
+                &#34;rbind&#34;,
+                &#34;rprivate&#34;
             ]
         },
         {
-            &quot;destination&quot;:&quot;/etc/hosts&quot;,
-            &quot;type&quot;:&quot;bind&quot;,
-            &quot;source&quot;:&quot;/var/lib/docker/containers/841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45/hosts&quot;,
-            &quot;options&quot;:[
-                &quot;rbind&quot;,
-                &quot;rprivate&quot;
+            &#34;destination&#34;:&#34;/etc/hosts&#34;,
+            &#34;type&#34;:&#34;bind&#34;,
+            &#34;source&#34;:&#34;/var/lib/docker/containers/841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45/hosts&#34;,
+            &#34;options&#34;:[
+                &#34;rbind&#34;,
+                &#34;rprivate&#34;
             ]
         },
         {
-            &quot;destination&quot;:&quot;/dev/shm&quot;,
-            &quot;type&quot;:&quot;bind&quot;,
-            &quot;source&quot;:&quot;/var/lib/docker/containers/841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45/shm&quot;,
-            &quot;options&quot;:[
-                &quot;rbind&quot;,
-                &quot;rprivate&quot;
+            &#34;destination&#34;:&#34;/dev/shm&#34;,
+            &#34;type&#34;:&#34;bind&#34;,
+            &#34;source&#34;:&#34;/var/lib/docker/containers/841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45/shm&#34;,
+            &#34;options&#34;:[
+                &#34;rbind&#34;,
+                &#34;rprivate&#34;
             ]
         }
     ],
-    &quot;hooks&quot;:{   # 配置容器运行生命周期中会调用的hooks，包括prestart、poststart和poststop
-        &quot;prestart&quot;:[
+    &#34;hooks&#34;:{   # 配置容器运行生命周期中会调用的hooks，包括prestart、poststart和poststop
+        &#34;prestart&#34;:[
             {
-                &quot;path&quot;:&quot;/usr/bin/dockerd&quot;,
-                &quot;args&quot;:[
-                    &quot;libnetwork-setkey&quot;,
-                    &quot;841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45&quot;,
-                    &quot;dece008273ed62d59111645b342a211dcef57d350f6910fa0350e50365ee99e7&quot;
+                &#34;path&#34;:&#34;/usr/bin/dockerd&#34;,
+                &#34;args&#34;:[
+                    &#34;libnetwork-setkey&#34;,
+                    &#34;841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45&#34;,
+                    &#34;dece008273ed62d59111645b342a211dcef57d350f6910fa0350e50365ee99e7&#34;
                 ]
             }
         ]
     },
-    &quot;linux&quot;:{
-        &quot;resources&quot;:{
-            &quot;devices&quot;:[ # 设置哪些设备可以在容器内被访问到，/dev/null、/dev/zero、/dev/full、/dev/random、/dev/urandom、/dev/tty、/dev/console、/dev/ptmx
+    &#34;linux&#34;:{
+        &#34;resources&#34;:{
+            &#34;devices&#34;:[ # 设置哪些设备可以在容器内被访问到，/dev/null、/dev/zero、/dev/full、/dev/random、/dev/urandom、/dev/tty、/dev/console、/dev/ptmx
                 {
-                    &quot;allow&quot;:false,
-                    &quot;access&quot;:&quot;rwm&quot;
+                    &#34;allow&#34;:false,
+                    &#34;access&#34;:&#34;rwm&#34;
                 },
                 {
-                    &quot;allow&quot;:true,
-                    &quot;type&quot;:&quot;c&quot;,
-                    &quot;major&quot;:1,
-                    &quot;minor&quot;:5,
-                    &quot;access&quot;:&quot;rwm&quot;
+                    &#34;allow&#34;:true,
+                    &#34;type&#34;:&#34;c&#34;,
+                    &#34;major&#34;:1,
+                    &#34;minor&#34;:5,
+                    &#34;access&#34;:&#34;rwm&#34;
                 },
                 {
-                    &quot;allow&quot;:true,
-                    &quot;type&quot;:&quot;c&quot;,
-                    &quot;major&quot;:1,
-                    &quot;minor&quot;:3,
-                    &quot;access&quot;:&quot;rwm&quot;
+                    &#34;allow&#34;:true,
+                    &#34;type&#34;:&#34;c&#34;,
+                    &#34;major&#34;:1,
+                    &#34;minor&#34;:3,
+                    &#34;access&#34;:&#34;rwm&#34;
                 },
                 {
-                    &quot;allow&quot;:true,
-                    &quot;type&quot;:&quot;c&quot;,
-                    &quot;major&quot;:1,
-                    &quot;minor&quot;:9,
-                    &quot;access&quot;:&quot;rwm&quot;
+                    &#34;allow&#34;:true,
+                    &#34;type&#34;:&#34;c&#34;,
+                    &#34;major&#34;:1,
+                    &#34;minor&#34;:9,
+                    &#34;access&#34;:&#34;rwm&#34;
                 },
                 {
-                    &quot;allow&quot;:true,
-                    &quot;type&quot;:&quot;c&quot;,
-                    &quot;major&quot;:1,
-                    &quot;minor&quot;:8,
-                    &quot;access&quot;:&quot;rwm&quot;
+                    &#34;allow&#34;:true,
+                    &#34;type&#34;:&#34;c&#34;,
+                    &#34;major&#34;:1,
+                    &#34;minor&#34;:8,
+                    &#34;access&#34;:&#34;rwm&#34;
                 },
                 {
-                    &quot;allow&quot;:true,
-                    &quot;type&quot;:&quot;c&quot;,
-                    &quot;major&quot;:5,
-                    &quot;minor&quot;:0,
-                    &quot;access&quot;:&quot;rwm&quot;
+                    &#34;allow&#34;:true,
+                    &#34;type&#34;:&#34;c&#34;,
+                    &#34;major&#34;:5,
+                    &#34;minor&#34;:0,
+                    &#34;access&#34;:&#34;rwm&#34;
                 },
                 {
-                    &quot;allow&quot;:true,
-                    &quot;type&quot;:&quot;c&quot;,
-                    &quot;major&quot;:5,
-                    &quot;minor&quot;:1,
-                    &quot;access&quot;:&quot;rwm&quot;
+                    &#34;allow&#34;:true,
+                    &#34;type&#34;:&#34;c&#34;,
+                    &#34;major&#34;:5,
+                    &#34;minor&#34;:1,
+                    &#34;access&#34;:&#34;rwm&#34;
                 },
                 {
-                    &quot;allow&quot;:false,
-                    &quot;type&quot;:&quot;c&quot;,
-                    &quot;major&quot;:10,
-                    &quot;minor&quot;:229,
-                    &quot;access&quot;:&quot;rwm&quot;
+                    &#34;allow&#34;:false,
+                    &#34;type&#34;:&#34;c&#34;,
+                    &#34;major&#34;:10,
+                    &#34;minor&#34;:229,
+                    &#34;access&#34;:&#34;rwm&#34;
                 }
             ],
-            &quot;disableOOMKiller&quot;:false,
-            &quot;oomScoreAdj&quot;:0,
-            &quot;memory&quot;:{
-                &quot;swappiness&quot;:18446744073709551615
+            &#34;disableOOMKiller&#34;:false,
+            &#34;oomScoreAdj&#34;:0,
+            &#34;memory&#34;:{
+                &#34;swappiness&#34;:18446744073709551615
             },
-            &quot;cpu&quot;:{
+            &#34;cpu&#34;:{
 
             },
-            &quot;pids&quot;:{
-                &quot;limit&quot;:0
+            &#34;pids&#34;:{
+                &#34;limit&#34;:0
             },
-            &quot;blockIO&quot;:{
-                &quot;blkioWeight&quot;:0
+            &#34;blockIO&#34;:{
+                &#34;blkioWeight&#34;:0
             }
         },
-        &quot;cgroupsPath&quot;:&quot;/docker/841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45&quot;,   # cgroup的路径
-        &quot;namespaces&quot;:[  # namespace相关的配置
+        &#34;cgroupsPath&#34;:&#34;/docker/841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45&#34;,   # cgroup的路径
+        &#34;namespaces&#34;:[  # namespace相关的配置
             {
-                &quot;type&quot;:&quot;mount&quot;
+                &#34;type&#34;:&#34;mount&#34;
             },
             {
-                &quot;type&quot;:&quot;network&quot;
+                &#34;type&#34;:&#34;network&#34;
             },
             {
-                &quot;type&quot;:&quot;uts&quot;
+                &#34;type&#34;:&#34;uts&#34;
             },
             {
-                &quot;type&quot;:&quot;pid&quot;
+                &#34;type&#34;:&#34;pid&#34;
             },
             {
-                &quot;type&quot;:&quot;ipc&quot;
+                &#34;type&#34;:&#34;ipc&#34;
             }
         ],
-        &quot;seccomp&quot;:{ # 和安全相关的配置
-            &quot;defaultAction&quot;:&quot;SCMP_ACT_ERRNO&quot;,
-            &quot;architectures&quot;:[
-                &quot;SCMP_ARCH_X86_64&quot;,
-                &quot;SCMP_ARCH_X86&quot;,
-                &quot;SCMP_ARCH_X32&quot;
+        &#34;seccomp&#34;:{ # 和安全相关的配置
+            &#34;defaultAction&#34;:&#34;SCMP_ACT_ERRNO&#34;,
+            &#34;architectures&#34;:[
+                &#34;SCMP_ARCH_X86_64&#34;,
+                &#34;SCMP_ARCH_X86&#34;,
+                &#34;SCMP_ARCH_X32&#34;
             ],
-            &quot;syscalls&quot;:[    # 调整容器运行时的kernel参数，主要是一些网络参数，因为每个network namespace都有自己的协议栈，所以可以修改自己协议栈的参数而不影响别人
+            &#34;syscalls&#34;:[    # 调整容器运行时的kernel参数，主要是一些网络参数，因为每个network namespace都有自己的协议栈，所以可以修改自己协议栈的参数而不影响别人
                 {
-                    &quot;name&quot;:&quot;accept&quot;,
-                    &quot;action&quot;:&quot;SCMP_ACT_ALLOW&quot;
+                    &#34;name&#34;:&#34;accept&#34;,
+                    &#34;action&#34;:&#34;SCMP_ACT_ALLOW&#34;
                 },
                 {
-                    &quot;name&quot;:&quot;bind&quot;,
-                    &quot;action&quot;:&quot;SCMP_ACT_ALLOW&quot;
+                    &#34;name&#34;:&#34;bind&#34;,
+                    &#34;action&#34;:&#34;SCMP_ACT_ALLOW&#34;
                 },
                 {
-                    &quot;name&quot;:&quot;chmod&quot;,
-                    &quot;action&quot;:&quot;SCMP_ACT_ALLOW&quot;
+                    &#34;name&#34;:&#34;chmod&#34;,
+                    &#34;action&#34;:&#34;SCMP_ACT_ALLOW&#34;
                 },
                 {
-                    &quot;name&quot;:&quot;chown&quot;,
-                    &quot;action&quot;:&quot;SCMP_ACT_ALLOW&quot;
+                    &#34;name&#34;:&#34;chown&#34;,
+                    &#34;action&#34;:&#34;SCMP_ACT_ALLOW&#34;
                 },
                 {
-                    &quot;name&quot;:&quot;close&quot;,
-                    &quot;action&quot;:&quot;SCMP_ACT_ALLOW&quot;
+                    &#34;name&#34;:&#34;close&#34;,
+                    &#34;action&#34;:&#34;SCMP_ACT_ALLOW&#34;
                 },
                 {
-                    &quot;name&quot;:&quot;connect&quot;,
-                    &quot;action&quot;:&quot;SCMP_ACT_ALLOW&quot;
+                    &#34;name&#34;:&#34;connect&#34;,
+                    &#34;action&#34;:&#34;SCMP_ACT_ALLOW&#34;
                 },
                 {
-                    &quot;name&quot;:&quot;exit&quot;,
-                    &quot;action&quot;:&quot;SCMP_ACT_ALLOW&quot;
+                    &#34;name&#34;:&#34;exit&#34;,
+                    &#34;action&#34;:&#34;SCMP_ACT_ALLOW&#34;
                 },
                 {
-                    &quot;name&quot;:&quot;fork&quot;,
-                    &quot;action&quot;:&quot;SCMP_ACT_ALLOW&quot;
+                    &#34;name&#34;:&#34;fork&#34;,
+                    &#34;action&#34;:&#34;SCMP_ACT_ALLOW&#34;
                 },
                 {
-                    &quot;name&quot;:&quot;listen&quot;,
-                    &quot;action&quot;:&quot;SCMP_ACT_ALLOW&quot;
+                    &#34;name&#34;:&#34;listen&#34;,
+                    &#34;action&#34;:&#34;SCMP_ACT_ALLOW&#34;
                 },
                 {
-                    &quot;name&quot;:&quot;recv&quot;,
-                    &quot;action&quot;:&quot;SCMP_ACT_ALLOW&quot;
+                    &#34;name&#34;:&#34;recv&#34;,
+                    &#34;action&#34;:&#34;SCMP_ACT_ALLOW&#34;
                 },
                 {
-                    &quot;name&quot;:&quot;socket&quot;,
-                    &quot;action&quot;:&quot;SCMP_ACT_ALLOW&quot;,
-                    &quot;args&quot;:[
+                    &#34;name&#34;:&#34;socket&#34;,
+                    &#34;action&#34;:&#34;SCMP_ACT_ALLOW&#34;,
+                    &#34;args&#34;:[
                         {
-                            &quot;index&quot;:0,
-                            &quot;value&quot;:1,
-                            &quot;valueTwo&quot;:0,
-                            &quot;op&quot;:&quot;SCMP_CMP_EQ&quot;
+                            &#34;index&#34;:0,
+                            &#34;value&#34;:1,
+                            &#34;valueTwo&#34;:0,
+                            &#34;op&#34;:&#34;SCMP_CMP_EQ&#34;
                         }
                     ]
                 },
                 {
-                    &quot;name&quot;:&quot;clone&quot;,
-                    &quot;action&quot;:&quot;SCMP_ACT_ALLOW&quot;,
-                    &quot;args&quot;:[
+                    &#34;name&#34;:&#34;clone&#34;,
+                    &#34;action&#34;:&#34;SCMP_ACT_ALLOW&#34;,
+                    &#34;args&#34;:[
                         {
-                            &quot;index&quot;:0,
-                            &quot;value&quot;:2080505856,
-                            &quot;valueTwo&quot;:0,
-                            &quot;op&quot;:&quot;SCMP_CMP_MASKED_EQ&quot;
+                            &#34;index&#34;:0,
+                            &#34;value&#34;:2080505856,
+                            &#34;valueTwo&#34;:0,
+                            &#34;op&#34;:&#34;SCMP_CMP_MASKED_EQ&#34;
                         }
                     ]
                 },
             ]
         },
-        &quot;maskedPaths&quot;:[ # 设置容器内的哪些目录对用户不可见
-            &quot;/proc/kcore&quot;,
-            &quot;/proc/latency_stats&quot;,
-            &quot;/proc/timer_list&quot;,
-            &quot;/proc/timer_stats&quot;,
-            &quot;/proc/sched_debug&quot;,
-            &quot;/sys/firmware&quot;
+        &#34;maskedPaths&#34;:[ # 设置容器内的哪些目录对用户不可见
+            &#34;/proc/kcore&#34;,
+            &#34;/proc/latency_stats&#34;,
+            &#34;/proc/timer_list&#34;,
+            &#34;/proc/timer_stats&#34;,
+            &#34;/proc/sched_debug&#34;,
+            &#34;/sys/firmware&#34;
         ],
-        &quot;readonlyPaths&quot;:[   # 设置容器内的哪些目录是只读的
-            &quot;/proc/asound&quot;,
-            &quot;/proc/bus&quot;,
-            &quot;/proc/fs&quot;,
-            &quot;/proc/irq&quot;,
-            &quot;/proc/sys&quot;,
-            &quot;/proc/sysrq-trigger&quot;
+        &#34;readonlyPaths&#34;:[   # 设置容器内的哪些目录是只读的
+            &#34;/proc/asound&#34;,
+            &#34;/proc/bus&#34;,
+            &#34;/proc/fs&#34;,
+            &#34;/proc/irq&#34;,
+            &#34;/proc/sys&#34;,
+            &#34;/proc/sysrq-trigger&#34;
         ]
     }
 }
-</code></pre><ol start="2">
+</code></pre></td></tr></table>
+</div>
+</div><ol start="2">
 <li>docker-containerd：<br>
 (1)dockerd通过grpc给containerd发送请求，通知containerd启动容器<br>
 (2)docker-containerd创建control、exit、process.json这三个文件<br>
@@ -581,7 +913,20 @@ config.json  init-stderr  init-stdin   init-stdout
 (6)调用runc的start命令启动容器<br>
 (7)监听容器的OOM事件和容器退出事件以便作出响应，OOM事件通过group.event_control（fd）进行监听，容器退出事件通过exit管道（pipe）来实现（在shim进程退出时，close 掉 exit 文件）</li>
 </ol>
-<pre><code># 路径：/run/docker/libcontainerd/containerd/&lt;contain-id&gt;/init
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># 路径：/run/docker/libcontainerd/containerd/&lt;contain-id&gt;/init
 # ls 841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45/init
 control：用来往shim发送控制命令，包括关闭stdin和调整终端的窗口大小
 log.json：runc如果运行失败的话，会写日志到这个文件
@@ -590,7 +935,9 @@ starttime：记录容器的启动时间
 exit：shim进程退出的时候，会关闭该管道，然后containerd就会收到通知，做一些清理工作
 pid：容器启动后，runc会将容器中第一个进程的pid写到这个文件中
 shim-log.json：shim进程执行失败的话，会写日志到这个文件
-</code></pre><ol start="3">
+</code></pre></td></tr></table>
+</div>
+</div><ol start="3">
 <li>docker-containerd-shim：<br>
 (1)shim进程被containerd启动之后，第一步是设置子孙进程成为孤儿进程后由shim进程接管，即shim将变成孤儿进程的父进程，这样就保证容器里的第一个进程不会因为runc进程的退出而被init进程接管（）<br>
 (2)调用runc create命令创建容器，shim直接通过指定的三个参数：容器id，boundle目录（containerd的对应某个容器生成的目，一般位于：/var/run/docker/libcontainerd/containerID），运行是二进制（默认为runc）来调用runc的api创建一个容器（比如创建容器：最后拼装的命令如下：runc create &hellip;），docker-shim 允许 RunC 在启动容器之后退出，同时即使在 containerd 和 dockerd 都挂掉的情况下，容器的标准 IO 和其它的文件描述符也都是可用的，有了 docker-shim 就可以在不中断容器运行的情况下升级或重启 dockerd，容器创建成功后，runc会将容器的第一个进程的pid写入上面containerd目录下的pid文件中，这样containerd进程就知道容器创建成功后会调用runc start启动容器</li>
@@ -599,20 +946,39 @@ shim-log.json：shim进程执行失败的话，会写日志到这个文件
 (2)创建容器runc init：runc会根据参数中传入的bundle目录名称以及容器ID创建容器<br>
 (3)启动容器runc start：启动配置文件中指定的相应进程</li>
 </ol>
-<pre><code># 路径：/run/docker/libcontainerd/containerd/&lt;contain-id&gt;/state.json
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># 路径：/run/docker/libcontainerd/containerd/&lt;contain-id&gt;/state.json
 # cat 841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45/state.json
 {
-    &quot;bundle&quot;:&quot;/var/run/docker/libcontainerd/841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45&quot;,
-    &quot;labels&quot;:null,
-    &quot;stdin&quot;:&quot;&quot;,
-    &quot;stdout&quot;:&quot;&quot;,
-    &quot;stderr&quot;:&quot;&quot;,
-    &quot;runtime&quot;:&quot;docker-runc&quot;,
-    &quot;runtimeArgs&quot;:null,
-    &quot;shim&quot;:&quot;docker-containerd-shim&quot;,
-    &quot;noPivotRoot&quot;:false
+    &#34;bundle&#34;:&#34;/var/run/docker/libcontainerd/841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45&#34;,
+    &#34;labels&#34;:null,
+    &#34;stdin&#34;:&#34;&#34;,
+    &#34;stdout&#34;:&#34;&#34;,
+    &#34;stderr&#34;:&#34;&#34;,
+    &#34;runtime&#34;:&#34;docker-runc&#34;,
+    &#34;runtimeArgs&#34;:null,
+    &#34;shim&#34;:&#34;docker-containerd-shim&#34;,
+    &#34;noPivotRoot&#34;:false
 }
-</code></pre><ul>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
 <li>**从 docker 到 RunC **</li>
 </ul>
 <ol>
@@ -623,8 +989,15 @@ shim-log.json：shim进程执行失败的话，会写日志到这个文件
 <li>docker-runc &lt;&ndash;&gt; hello：runc进程打开容器的配置文件，找到rootfs的位置，并启动配置文件中指定的相应进程，在hello-world的这个例子中，runc会启动容器中的hello程序</li>
 <li>进程间关系：runc将容器启动起来后，runc进程就退出了，于是容器里面的第一个进程（hello）的父进程就变成了docker-containerd-shim，进程树的关系如下：</li>
 </ol>
-<pre><code>systemd───dockerd───docker-containerd───docker-containerd-shim───hello
-</code></pre><ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">systemd───dockerd───docker-containerd───docker-containerd-shim───hello
+</code></pre></td></tr></table>
+</div>
+</div><ul>
 <li><strong>Docker Daemon</strong></li>
 </ul>
 <ol>
@@ -795,7 +1168,99 @@ runC工作原理：Docker通过调用libcontainer包对namespaces、cgroups、ca
 <ul>
 <li><strong>Linux 系统调用</strong></li>
 </ul>
-<pre><code>/* CLONE_NEWUTS UTS namespaces */
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">/* CLONE_NEWUTS UTS namespaces */
 /* CLONE_NEWIPC IPC namespaces */
 /* CLONE_NEWPID PID namespaces */
 /* CLONE_NEWNS Mount namespaces */
@@ -805,75 +1270,75 @@ runC工作原理：Docker通过调用libcontainer包对namespaces、cgroups、ca
 static char container_stack[STACK_SIZE];
  
 char* const container_args[] = {
-    &quot;/bin/bash&quot;,
+    &#34;/bin/bash&#34;,
     NULL
 };
  
 int container_main(void* arg)
 {
     /* 查看子进程的PID，输出子进程的 pid 为 1 */
-    printf(&quot;Container [%5d] - inside the container!\n&quot;, getpid());
+    printf(&#34;Container [%5d] - inside the container!\n&#34;, getpid());
     /* 设置 hostname */
-    sethostname(&quot;container&quot;,10);
+    sethostname(&#34;container&#34;,10);
     
-    //remount &quot;/proc&quot; to make sure the &quot;top&quot; and &quot;ps&quot; show container's information
-    if (mount(&quot;proc&quot;, &quot;rootfs/proc&quot;, &quot;proc&quot;, 0, NULL) !=0 ) {
-        perror(&quot;proc&quot;);
+    //remount &#34;/proc&#34; to make sure the &#34;top&#34; and &#34;ps&#34; show container&#39;s information
+    if (mount(&#34;proc&#34;, &#34;rootfs/proc&#34;, &#34;proc&#34;, 0, NULL) !=0 ) {
+        perror(&#34;proc&#34;);
     }
-    if (mount(&quot;sysfs&quot;, &quot;rootfs/sys&quot;, &quot;sysfs&quot;, 0, NULL)!=0) {
-        perror(&quot;sys&quot;);
+    if (mount(&#34;sysfs&#34;, &#34;rootfs/sys&#34;, &#34;sysfs&#34;, 0, NULL)!=0) {
+        perror(&#34;sys&#34;);
     }
-    if (mount(&quot;none&quot;, &quot;rootfs/tmp&quot;, &quot;tmpfs&quot;, 0, NULL)!=0) {
-        perror(&quot;tmp&quot;);
+    if (mount(&#34;none&#34;, &#34;rootfs/tmp&#34;, &#34;tmpfs&#34;, 0, NULL)!=0) {
+        perror(&#34;tmp&#34;);
     }
-    if (mount(&quot;udev&quot;, &quot;rootfs/dev&quot;, &quot;devtmpfs&quot;, 0, NULL)!=0) {
-        perror(&quot;dev&quot;);
+    if (mount(&#34;udev&#34;, &#34;rootfs/dev&#34;, &#34;devtmpfs&#34;, 0, NULL)!=0) {
+        perror(&#34;dev&#34;);
     }
-    if (mount(&quot;devpts&quot;, &quot;rootfs/dev/pts&quot;, &quot;devpts&quot;, 0, NULL)!=0) {
-        perror(&quot;dev/pts&quot;);
+    if (mount(&#34;devpts&#34;, &#34;rootfs/dev/pts&#34;, &#34;devpts&#34;, 0, NULL)!=0) {
+        perror(&#34;dev/pts&#34;);
     }
-    if (mount(&quot;shm&quot;, &quot;rootfs/dev/shm&quot;, &quot;tmpfs&quot;, 0, NULL)!=0) {
-        perror(&quot;dev/shm&quot;);
+    if (mount(&#34;shm&#34;, &#34;rootfs/dev/shm&#34;, &#34;tmpfs&#34;, 0, NULL)!=0) {
+        perror(&#34;dev/shm&#34;);
     }
-    if (mount(&quot;tmpfs&quot;, &quot;rootfs/run&quot;, &quot;tmpfs&quot;, 0, NULL)!=0) {
-        perror(&quot;run&quot;);
+    if (mount(&#34;tmpfs&#34;, &#34;rootfs/run&#34;, &#34;tmpfs&#34;, 0, NULL)!=0) {
+        perror(&#34;run&#34;);
     }
     /* 
      * 模仿Docker的从外向容器里mount相关的配置文件 
      * 你可以查看：/var/lib/docker/containers/&lt;container_id&gt;/目录，
      * 你会看到docker的这些文件的。
      */
-    if (mount(&quot;conf/hosts&quot;, &quot;rootfs/etc/hosts&quot;, &quot;none&quot;, MS_BIND, NULL)!=0 ||
-          mount(&quot;conf/hostname&quot;, &quot;rootfs/etc/hostname&quot;, &quot;none&quot;, MS_BIND, NULL)!=0 ||
-          mount(&quot;conf/resolv.conf&quot;, &quot;rootfs/etc/resolv.conf&quot;, &quot;none&quot;, MS_BIND, NULL)!=0 ) {
-        perror(&quot;conf&quot;);
+    if (mount(&#34;conf/hosts&#34;, &#34;rootfs/etc/hosts&#34;, &#34;none&#34;, MS_BIND, NULL)!=0 ||
+          mount(&#34;conf/hostname&#34;, &#34;rootfs/etc/hostname&#34;, &#34;none&#34;, MS_BIND, NULL)!=0 ||
+          mount(&#34;conf/resolv.conf&#34;, &#34;rootfs/etc/resolv.conf&#34;, &#34;none&#34;, MS_BIND, NULL)!=0 ) {
+        perror(&#34;conf&#34;);
     }
     /* 模仿docker run命令中的 -v, --volume=[] 参数干的事 */
-    if (mount(&quot;/tmp/t1&quot;, &quot;rootfs/mnt&quot;, &quot;none&quot;, MS_BIND, NULL)!=0) {
-        perror(&quot;mnt&quot;);
+    if (mount(&#34;/tmp/t1&#34;, &#34;rootfs/mnt&#34;, &#34;none&#34;, MS_BIND, NULL)!=0) {
+        perror(&#34;mnt&#34;);
     }
  
     /* chroot 隔离目录 */
-    if ( chdir(&quot;./rootfs&quot;) != 0 || chroot(&quot;./&quot;) != 0 ){
-        perror(&quot;chdir/chroot&quot;);
+    if ( chdir(&#34;./rootfs&#34;) != 0 || chroot(&#34;./&#34;) != 0 ){
+        perror(&#34;chdir/chroot&#34;);
     }
     
     /* 直接执行一个shell，以便我们观察这个进程空间里的资源是否被隔离了 */
     execv(container_args[0], container_args); 
-    printf(&quot;Something's wrong!\n&quot;);
+    printf(&#34;Something&#39;s wrong!\n&#34;);
     return 1;
 }
  
 int main()
 {
-    printf(&quot;Parent - start a container!\n&quot;);
+    printf(&#34;Parent - start a container!\n&#34;);
     /* 调用clone函数，其中传出一个函数，还有一个栈空间的（为什么传尾指针，因为栈是反着的） */
     
     int container_pid = clone(container_main, container_stack+STACK_SIZE, 
     SIGCHLD | CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWPID | CLONE_NEWNS, NULL);
     /* 等待子进程结束 */
     waitpid(container_pid, NULL, 0);
-    printf(&quot;Parent - container stopped!\n&quot;);
+    printf(&#34;Parent - container stopped!\n&#34;);
     return 0;
 }
 
@@ -883,46 +1348,170 @@ int main()
 # hchen@ubuntu:~/rootfs$ ls
 # bin  dev  etc  home  lib  lib64  mnt  opt  proc  root  run  sbin  sys  tmp  usr  var
 
-</code></pre><pre><code>/* CLONE_NEWUSER User namespaces */
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">/* CLONE_NEWUSER User namespaces */
 
 #define STACK_SIZE (1024 * 1024)
  
 static char container_stack[STACK_SIZE];
 char* const container_args[] = {
-    &quot;/bin/bash&quot;,
+    &#34;/bin/bash&#34;,
     NULL
 };
  
 int pipefd[2];
  
 void set_map(char* file, int inside_id, int outside_id, int len) {
-    FILE* mapfd = fopen(file, &quot;w&quot;);
+    FILE* mapfd = fopen(file, &#34;w&#34;);
     if (NULL == mapfd) {
-        perror(&quot;open file error&quot;);
+        perror(&#34;open file error&#34;);
         return;
     }
-    fprintf(mapfd, &quot;%d %d %d&quot;, inside_id, outside_id, len);
+    fprintf(mapfd, &#34;%d %d %d&#34;, inside_id, outside_id, len);
     fclose(mapfd);
 }
  
 void set_uid_map(pid_t pid, int inside_id, int outside_id, int len) {
     char file[256];
-    sprintf(file, &quot;/proc/%d/uid_map&quot;, pid);
+    sprintf(file, &#34;/proc/%d/uid_map&#34;, pid);
     set_map(file, inside_id, outside_id, len);
 }
  
 void set_gid_map(pid_t pid, int inside_id, int outside_id, int len) {
     char file[256];
-    sprintf(file, &quot;/proc/%d/gid_map&quot;, pid);
+    sprintf(file, &#34;/proc/%d/gid_map&#34;, pid);
     set_map(file, inside_id, outside_id, len);
 }
  
 int container_main(void* arg)
 {
  
-    printf(&quot;Container [%5d] - inside the container!\n&quot;, getpid());
+    printf(&#34;Container [%5d] - inside the container!\n&#34;, getpid());
  
-    printf(&quot;Container: eUID = %ld;  eGID = %ld, UID=%ld, GID=%ld\n&quot;,
+    printf(&#34;Container: eUID = %ld;  eGID = %ld, UID=%ld, GID=%ld\n&#34;,
             (long) geteuid(), (long) getegid(), (long) getuid(), (long) getgid());
  
     /* 等待父进程通知后再往下执行（进程间的同步） */
@@ -930,15 +1519,15 @@ int container_main(void* arg)
     close(pipefd[1]);
     read(pipefd[0], &amp;ch, 1);
  
-    printf(&quot;Container [%5d] - setup hostname!\n&quot;, getpid());
+    printf(&#34;Container [%5d] - setup hostname!\n&#34;, getpid());
     //set hostname
-    sethostname(&quot;container&quot;,10);
+    sethostname(&#34;container&#34;,10);
  
-    //remount &quot;/proc&quot; to make sure the &quot;top&quot; and &quot;ps&quot; show container's information
-    mount(&quot;proc&quot;, &quot;/proc&quot;, &quot;proc&quot;, 0, NULL);
+    //remount &#34;/proc&#34; to make sure the &#34;top&#34; and &#34;ps&#34; show container&#39;s information
+    mount(&#34;proc&#34;, &#34;/proc&#34;, &#34;proc&#34;, 0, NULL);
  
     execv(container_args[0], container_args);
-    printf(&quot;Something's wrong!\n&quot;);
+    printf(&#34;Something&#39;s wrong!\n&#34;);
     return 1;
 }
  
@@ -946,18 +1535,18 @@ int main()
 {
     const int gid=getgid(), uid=getuid();
  
-    printf(&quot;Parent: eUID = %ld;  eGID = %ld, UID=%ld, GID=%ld\n&quot;,
+    printf(&#34;Parent: eUID = %ld;  eGID = %ld, UID=%ld, GID=%ld\n&#34;,
             (long) geteuid(), (long) getegid(), (long) getuid(), (long) getgid());
  
     pipe(pipefd);
   
-    printf(&quot;Parent [%5d] - start a container!\n&quot;, getpid());
+    printf(&#34;Parent [%5d] - start a container!\n&#34;, getpid());
  
     int container_pid = clone(container_main, container_stack+STACK_SIZE, 
             CLONE_NEWUTS | CLONE_NEWPID | CLONE_NEWNS | CLONE_NEWUSER | SIGCHLD, NULL);
  
      
-    printf(&quot;Parent [%5d] - Container [%5d]!\n&quot;, getpid(), container_pid);
+    printf(&#34;Parent [%5d] - Container [%5d]!\n&#34;, getpid(), container_pid);
  
     //To map the uid/gid, 
     //   we need edit the /proc/PID/uid_map (or /proc/PID/gid_map) in parent
@@ -969,13 +1558,13 @@ int main()
     set_uid_map(container_pid, 0, uid, 1);
     set_gid_map(container_pid, 0, gid, 1);
  
-    printf(&quot;Parent [%5d] - user/group mapping done!\n&quot;, getpid());
+    printf(&#34;Parent [%5d] - user/group mapping done!\n&#34;, getpid());
  
     /* 通知子进程 */
     close(pipefd[1]);
  
     waitpid(container_pid, NULL, 0);
-    printf(&quot;Parent - container stopped!\n&quot;);
+    printf(&#34;Parent - container stopped!\n&#34;);
     return 0;
 }
 
@@ -1001,7 +1590,53 @@ uid=0(root) gid=0(root) groups=0(root),65534(nogroup)
 # ID-inside-ns 表示在容器显示的UID或GID
 # ID-outside-ns 表示容器外映射的真实的UID或GID
 # length 表示映射的范围，一般填1，表示一一对应
-</code></pre><pre><code>/* Docker Network Namespace */
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">/* Docker Network Namespace */
 
 ## 首先，我们先增加一个网桥lxcbr0，模仿docker0
 brctl addbr lxcbr0
@@ -1040,28 +1675,85 @@ ip netns exec ns1     ip route add default via 192.168.10.1
 # 在/etc/netns下创建network namespce名称为ns1的目录，
 # 然后为这个namespace设置resolv.conf，这样，容器内就可以访问域名了
 mkdir -p /etc/netns/ns1
-echo &quot;nameserver 8.8.8.8&quot; &gt; /etc/netns/ns1/resolv.conf
-</code></pre><ul>
+echo &#34;nameserver 8.8.8.8&#34; &gt; /etc/netns/ns1/resolv.conf
+</code></pre></td></tr></table>
+</div>
+</div><ul>
 <li><strong>Namespace 文件</strong></li>
 </ul>
-<pre><code>int container_main(void* arg)
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">int container_main(void* arg)
 {
     /* 查看子进程的PID，我们可以看到其输出子进程的 pid 为 1 */
-    printf(&quot;Container [%5d] - inside the container!\n&quot;, getpid());
-    sethostname(&quot;container&quot;,10);
+    printf(&#34;Container [%5d] - inside the container!\n&#34;, getpid());
+    sethostname(&#34;container&#34;,10);
     execv(container_args[0], container_args);
-    printf(&quot;Something's wrong!\n&quot;);
+    printf(&#34;Something&#39;s wrong!\n&#34;);
     return 1;
 }
  
 int main()
 {
-    printf(&quot;Parent [%5d] - start a container!\n&quot;, getpid());
+    printf(&#34;Parent [%5d] - start a container!\n&#34;, getpid());
     /*启用PID namespace - CLONE_NEWPID*/
     int container_pid = clone(container_main, container_stack+STACK_SIZE, 
             CLONE_NEWUTS | CLONE_NEWPID | SIGCHLD, NULL); 
     waitpid(container_pid, NULL, 0);
-    printf(&quot;Parent - container stopped!\n&quot;);
+    printf(&#34;Parent - container stopped!\n&#34;);
     return 0;
 }
 
@@ -1093,9 +1785,11 @@ int main()
 # 这些文件另一个作用：一旦这些文件被打开，只要其fd被占用着，那么就算PID所属的所有进程都已经结束，创建的namespace也会一直存在
 # int setns(int fd, int nstype) // 把某进程加入到某个namespace
 # 其中第一个参数fd就是一个open()系统调用打开了上述文件后返回的fd
-# fd = open(&quot;/proc/4600/ns/nts&quot;, O_RDONLY)  // 获取namespace文件描述符
+# fd = open(&#34;/proc/4600/ns/nts&#34;, O_RDONLY)  // 获取namespace文件描述符
 # setns(fd, 0); // 加入新的namespace
-</code></pre><blockquote>
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
 <p><a href="https://coolshell.cn/articles/17010.html">DOCKER基础技术：LINUX NAMESPACE（上）</a> <br>
 <a href="https://coolshell.cn/articles/17029.html">DOCKER基础技术：LINUX NAMESPACE（下）</a><br>
 <a href="https://www.cnblogs.com/sammyliu/p/5878973.html">Docker 使用 Linux namespace 隔离容器的运行环境</a></p>
@@ -1147,7 +1841,20 @@ int main()
 <ul>
 <li><strong>iptables 规则</strong></li>
 </ul>
-<pre><code># iptables 的 SNTA 规则，使得从容器离开去外界的网络包的源 IP 地址被转换为 Docker 主机的 IP 地址
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># iptables 的 SNTA 规则，使得从容器离开去外界的网络包的源 IP 地址被转换为 Docker 主机的 IP 地址
 # nat 表上 POSTROUTING 链上的有这么一条规则
 -A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE
 
@@ -1156,7 +1863,9 @@ int main()
 -A DOCKER ! -i docker0 -p tcp -m tcp --dport 3000 -j DNAT --to-destination 172.17.0.3:3000
 *filter
 -A DOCKER -d 172.17.0.3/32 ! -i docker0 -o docker0 -p tcp -m tcp --dport 3000 -j ACCEPT
-</code></pre><ul>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
 <li><strong>容器的 DNS 和主机名hostname</strong></li>
 </ul>
 <ol>
@@ -1180,20 +1889,48 @@ int main()
 <ul>
 <li><strong>CPU 限制</strong></li>
 </ul>
-<pre><code># 创建 cpu cgroup
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># 创建 cpu cgroup
 # mkdir /sys/fs/cgroup/cpu/test
 
 # 设置CPU利用率为50%
 # echo 50000 &gt; /sys/fs/cgroup/cpu/test/cpu.cfs_quota_us
 # 限制CPU只能使用2核和3核
-# echo \&quot;2,3\&quot; &gt; /sys/fs/cgroup/cpuset/test/cpuset.cpus
+# echo \&#34;2,3\&#34; &gt; /sys/fs/cgroup/cpuset/test/cpuset.cpus
 
 # 把进程pid加入cgroup中
 # echo [pid] &gt;&gt; /sys/fs/cgroup/cpu/test/tasks
-</code></pre><ul>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
 <li><strong>内存限制</strong></li>
 </ul>
-<pre><code># 创建 memory cgroup
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># 创建 memory cgroup
 # mkdir /sys/fs/cgroup/memory/test
 
 # 分配内存64k
@@ -1201,16 +1938,30 @@ int main()
 
 # 把进程pid加入cgroup中
 # echo [pid] &gt; /sys/fs/cgroup/memory/test/tasks
-</code></pre><ul>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
 <li><strong>磁盘I/O限制</strong></li>
 </ul>
-<pre><code># 创建 blkio cgroup
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># 创建 blkio cgroup
 # mkdir /sys/fs/cgroup/blkio/test
 
 # 把读IO限制到1MB/s
 # echo [设备号] 1048576  &gt; /sys/fs/cgroup/blkio/test/blkio.throttle.read_bps_device
 # echo [pid] &gt; /sys/fs/cgroup/blkio/test/tasks
-</code></pre><ul>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
 <li><strong>CGroup 的子系统</strong></li>
 </ul>
 <ol>
@@ -1226,7 +1977,22 @@ int main()
 <ul>
 <li><strong>Docker 对 cgroups 的使用</strong></li>
 </ul>
-<pre><code># Docker 启动一个容器后，会在 /sys/fs/cgroup 目录下的各个资源目录下生成以容器 ID 为名字的目录（group），在容器被 stopped 后，该目录被删除
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># Docker 启动一个容器后，会在 /sys/fs/cgroup 目录下的各个资源目录下生成以容器 ID 为名字的目录（group），在容器被 stopped 后，该目录被删除
 /sys/fs/cgroup/cpu/docker/03dd196f415276375f754d51ce29b418b170bd92d88c5e420d6901c32f93dc14
 
 # 运行命令 docker run -d --name web41 --cpu-quota 25000 --cpu-period 100 --cpu-shares 30 training/webapp python app.py 启动一个新的容器
@@ -1237,7 +2003,9 @@ root@devstack:/sys/fs/cgroup/cpu/docker/06bd180cd340f8288c18e8f0e01ade66d066058d
 3704
 root@devstack:/sys/fs/cgroup/cpu/docker/06bd180cd340f8288c18e8f0e01ade66d066058dd053ef46161eb682ab69ec24# cat cpu.cfs_period_us
 2000
-</code></pre><blockquote>
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
 <p><a href="https://coolshell.cn/articles/17049.html">DOCKER基础技术：LINUX CGROUP</a><br>
 <a href="https://www.cnblogs.com/sammyliu/p/5886833.html">Docker 容器使用 cgroups 限制资源使用</a></p>
 </blockquote>
@@ -1250,7 +2018,64 @@ root@devstack:/sys/fs/cgroup/cpu/docker/06bd180cd340f8288c18e8f0e01ade66d066058d
 <li>AUFS：一种Union File System，所谓UnionFS就是把不同物理位置的目录合并mount到同一个目录中</li>
 <li>命令：mount -t aufs -o dirs=./fruits:./vegetables none ./mnt</li>
 </ol>
-<pre><code>$ tree
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$ tree
 .
 ├── fruits
 │   ├── apple
@@ -1290,26 +2115,51 @@ mnt_carrots
 
 # 指定权限来mount aufs
 $ sudo mount -t aufs -o dirs=./fruits=rw:./vegetables=rw none ./mnt
-$ echo &quot;mnt_carrots&quot; &gt; ./mnt/carrots
+$ echo &#34;mnt_carrots&#34; &gt; ./mnt/carrots
 $ cat ./vegetables/carrots
 mnt_carrots
 $ cat ./fruits/carrots
 cat: ./fruits/carrots: No such file or directory
 
-$ echo &quot;mnt_tomato&quot; &gt; ./mnt/tomato
+$ echo &#34;mnt_tomato&#34; &gt; ./mnt/tomato
 $ cat ./fruits/tomato
 mnt_tomato
 $ cat ./vegetables/tomato
 I am a vegetable
 
 # 如果有重复的文件名，在mount命令行上，越往前的就优先级越高
-</code></pre><ol start="3">
+</code></pre></td></tr></table>
+</div>
+</div><ol start="3">
 <li>AUFS目录权限：<br>
 (1)rw表示可写可读read-write<br>
 (2)ro表示read-only，如果你不指权限，那么除了第一个外ro是默认值<br>
 (3)whiteout，如果在union中删除的某个文件，实际上是位于一个readonly的分支（目录）上，那么，在mount的union这个目录中你将看不到这个文件，但是read-only这个层上我们无法做任何的修改，所以，我们就需要对这个readonly目录里的文件作whiteout隐藏文件</li>
 </ol>
-<pre><code># AUFS的whiteout的实现是通过在上层的可写的目录下建立对应的whiteout隐藏文件来实现的
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># AUFS的whiteout的实现是通过在上层的可写的目录下建立对应的whiteout隐藏文件来实现的
 # tree
 .
 ├── fruits
@@ -1328,7 +2178,9 @@ apple  carrots  tomato
 # touch ./test/.wh.apple
 # ls ./mnt
 carrots  tomato
-</code></pre><ol start="4">
+</code></pre></td></tr></table>
+</div>
+</div><ol start="4">
 <li>相关术语：<br>
 (1)Branch是各个要被union起来的目录（上面使用的dirs的命令行参数），Branch根据被union的顺序形成一个stack，一般来说最上面的是可写的，下面的都是只读的，同时Branch的stack可以在被mount后进行修改<br>
 (2)Opaque的意思就是不允许任何下层的某个目录显示出来</li>
@@ -1406,18 +2258,41 @@ carrots  tomato
 (5)cache-id：由宿主机随即生成的一个uuid，根镜像层文件一一对应，用于宿主机标志和索引镜像层文件，指向真正存放layer文件的地方<br>
 而当 docker 将在宿主机上产生的新的镜像层上传到 registry 时，与新镜像层相关的宿主机上的元数据不会与镜像层一块打包上传，layer 主要存放了镜像层的 diff_id、size、cache-id 和 parent 等内容，实际的文件内容则是由存储驱动来管理，并可以通过 cache-id 在本地索引到</li>
 </ol>
-<pre><code># repository
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># repository
 # 路径：/var/lib/docker/image/overlay2
 # cat repositories.json
 
 {
-    &quot;Repositories&quot;:{
-        &quot;centos&quot;:{
-            &quot;centos:centos7&quot;:&quot;sha256:5e35e350aded98340bc8fcb0ba392d809c807bc3eb5c618d4a0674d98d88bccd&quot;,
-            &quot;centos@sha256:4a701376d03f6b39b8c2a8f4a8e499441b0d567f9ab9d58e4991de4472fb813c&quot;:&quot;sha256:5e35e350aded98340bc8fcb0ba392d809c807bc3eb5c618d4a0674d98d88bccd&quot;
+    &#34;Repositories&#34;:{
+        &#34;centos&#34;:{
+            &#34;centos:centos7&#34;:&#34;sha256:5e35e350aded98340bc8fcb0ba392d809c807bc3eb5c618d4a0674d98d88bccd&#34;,
+            &#34;centos@sha256:4a701376d03f6b39b8c2a8f4a8e499441b0d567f9ab9d58e4991de4472fb813c&#34;:&#34;sha256:5e35e350aded98340bc8fcb0ba392d809c807bc3eb5c618d4a0674d98d88bccd&#34;
         },
-        &quot;test&quot;:{
-            &quot;test:v1&quot;:&quot;sha256:b1ad2a43c99a3cca7344c126379d286738c9d01156e801c4ff0cb9ae418011e6&quot;
+        &#34;test&#34;:{
+            &#34;test:v1&#34;:&#34;sha256:b1ad2a43c99a3cca7344c126379d286738c9d01156e801c4ff0cb9ae418011e6&#34;
         }
     }
 }
@@ -1425,107 +2300,238 @@ sh-3.2# docker images --digests
 REPOSITORY          TAG                 DIGEST                                                                    IMAGE ID            CREATED             SIZE
 test                v1                  &lt;none&gt;                                                                    b1ad2a43c99a        5 days ago          203 MB
 centos              centos7             sha256:4a701376d03f6b39b8c2a8f4a8e499441b0d567f9ab9d58e4991de4472fb813c   5e35e350aded        4 months ago        203 MB
-</code></pre><pre><code># manifest 和 digest
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
+</span><span class="lnt">91
+</span><span class="lnt">92
+</span><span class="lnt">93
+</span><span class="lnt">94
+</span><span class="lnt">95
+</span><span class="lnt">96
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># manifest 和 digest
 # 路径：/var/lib/docker/image/overlay2/imagedb/content/sha256/&lt;Digest&gt;
 # cat 5e35e350aded98340bc8fcb0ba392d809c807bc3eb5c618d4a0674d98d88bccd
 
 {
-    &quot;architecture&quot;:&quot;amd64&quot;,
-    &quot;config&quot;:{
-        &quot;Hostname&quot;:&quot;&quot;,
-        &quot;Domainname&quot;:&quot;&quot;,
-        &quot;User&quot;:&quot;&quot;,
-        &quot;AttachStdin&quot;:false,
-        &quot;AttachStdout&quot;:false,
-        &quot;AttachStderr&quot;:false,
-        &quot;Tty&quot;:false,
-        &quot;OpenStdin&quot;:false,
-        &quot;StdinOnce&quot;:false,
-        &quot;Env&quot;:[
-            &quot;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&quot;
+    &#34;architecture&#34;:&#34;amd64&#34;,
+    &#34;config&#34;:{
+        &#34;Hostname&#34;:&#34;&#34;,
+        &#34;Domainname&#34;:&#34;&#34;,
+        &#34;User&#34;:&#34;&#34;,
+        &#34;AttachStdin&#34;:false,
+        &#34;AttachStdout&#34;:false,
+        &#34;AttachStderr&#34;:false,
+        &#34;Tty&#34;:false,
+        &#34;OpenStdin&#34;:false,
+        &#34;StdinOnce&#34;:false,
+        &#34;Env&#34;:[
+            &#34;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#34;
         ],
-        &quot;Cmd&quot;:[
-            &quot;/bin/bash&quot;
+        &#34;Cmd&#34;:[
+            &#34;/bin/bash&#34;
         ],
-        &quot;ArgsEscaped&quot;:true,
-        &quot;Image&quot;:&quot;sha256:a0232440f519e6fde80830ff51d9c6bf6ef628b844a826986f995c635baa4ff9&quot;,
-        &quot;Volumes&quot;:null,
-        &quot;WorkingDir&quot;:&quot;&quot;,
-        &quot;Entrypoint&quot;:null,
-        &quot;OnBuild&quot;:null,
-        &quot;Labels&quot;:{
-            &quot;org.label-schema.build-date&quot;:&quot;20191001&quot;,
-            &quot;org.label-schema.license&quot;:&quot;GPLv2&quot;,
-            &quot;org.label-schema.name&quot;:&quot;CentOS Base Image&quot;,
-            &quot;org.label-schema.schema-version&quot;:&quot;1.0&quot;,
-            &quot;org.label-schema.vendor&quot;:&quot;CentOS&quot;
+        &#34;ArgsEscaped&#34;:true,
+        &#34;Image&#34;:&#34;sha256:a0232440f519e6fde80830ff51d9c6bf6ef628b844a826986f995c635baa4ff9&#34;,
+        &#34;Volumes&#34;:null,
+        &#34;WorkingDir&#34;:&#34;&#34;,
+        &#34;Entrypoint&#34;:null,
+        &#34;OnBuild&#34;:null,
+        &#34;Labels&#34;:{
+            &#34;org.label-schema.build-date&#34;:&#34;20191001&#34;,
+            &#34;org.label-schema.license&#34;:&#34;GPLv2&#34;,
+            &#34;org.label-schema.name&#34;:&#34;CentOS Base Image&#34;,
+            &#34;org.label-schema.schema-version&#34;:&#34;1.0&#34;,
+            &#34;org.label-schema.vendor&#34;:&#34;CentOS&#34;
         }
     },
-    &quot;container&quot;:&quot;66db091183f2f98b5f52eace5d6d4d6662af823bd85640b2afa4d42ffbe9b03e&quot;,
-    &quot;container_config&quot;:{
-        &quot;Hostname&quot;:&quot;66db091183f2&quot;,
-        &quot;Domainname&quot;:&quot;&quot;,
-        &quot;User&quot;:&quot;&quot;,
-        &quot;AttachStdin&quot;:false,
-        &quot;AttachStdout&quot;:false,
-        &quot;AttachStderr&quot;:false,
-        &quot;Tty&quot;:false,
-        &quot;OpenStdin&quot;:false,
-        &quot;StdinOnce&quot;:false,
-        &quot;Env&quot;:[
-            &quot;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&quot;
+    &#34;container&#34;:&#34;66db091183f2f98b5f52eace5d6d4d6662af823bd85640b2afa4d42ffbe9b03e&#34;,
+    &#34;container_config&#34;:{
+        &#34;Hostname&#34;:&#34;66db091183f2&#34;,
+        &#34;Domainname&#34;:&#34;&#34;,
+        &#34;User&#34;:&#34;&#34;,
+        &#34;AttachStdin&#34;:false,
+        &#34;AttachStdout&#34;:false,
+        &#34;AttachStderr&#34;:false,
+        &#34;Tty&#34;:false,
+        &#34;OpenStdin&#34;:false,
+        &#34;StdinOnce&#34;:false,
+        &#34;Env&#34;:[
+            &#34;PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin&#34;
         ],
-        &quot;Cmd&quot;:[
-            &quot;/bin/sh&quot;,
-            &quot;-c&quot;,
-            &quot;#(nop) &quot;,
-            &quot;CMD [&quot;/bin/bash&quot;]&quot;
+        &#34;Cmd&#34;:[
+            &#34;/bin/sh&#34;,
+            &#34;-c&#34;,
+            &#34;#(nop) &#34;,
+            &#34;CMD [&#34;/bin/bash&#34;]&#34;
         ],
-        &quot;ArgsEscaped&quot;:true,
-        &quot;Image&quot;:&quot;sha256:a0232440f519e6fde80830ff51d9c6bf6ef628b844a826986f995c635baa4ff9&quot;,
-        &quot;Volumes&quot;:null,
-        &quot;WorkingDir&quot;:&quot;&quot;,
-        &quot;Entrypoint&quot;:null,
-        &quot;OnBuild&quot;:null,
-        &quot;Labels&quot;:{
-            &quot;org.label-schema.build-date&quot;:&quot;20191001&quot;,
-            &quot;org.label-schema.license&quot;:&quot;GPLv2&quot;,
-            &quot;org.label-schema.name&quot;:&quot;CentOS Base Image&quot;,
-            &quot;org.label-schema.schema-version&quot;:&quot;1.0&quot;,
-            &quot;org.label-schema.vendor&quot;:&quot;CentOS&quot;
+        &#34;ArgsEscaped&#34;:true,
+        &#34;Image&#34;:&#34;sha256:a0232440f519e6fde80830ff51d9c6bf6ef628b844a826986f995c635baa4ff9&#34;,
+        &#34;Volumes&#34;:null,
+        &#34;WorkingDir&#34;:&#34;&#34;,
+        &#34;Entrypoint&#34;:null,
+        &#34;OnBuild&#34;:null,
+        &#34;Labels&#34;:{
+            &#34;org.label-schema.build-date&#34;:&#34;20191001&#34;,
+            &#34;org.label-schema.license&#34;:&#34;GPLv2&#34;,
+            &#34;org.label-schema.name&#34;:&#34;CentOS Base Image&#34;,
+            &#34;org.label-schema.schema-version&#34;:&#34;1.0&#34;,
+            &#34;org.label-schema.vendor&#34;:&#34;CentOS&#34;
         }
     },
-    &quot;created&quot;:&quot;2019-11-12T00:20:33.943019377Z&quot;,
-    &quot;docker_version&quot;:&quot;18.06.1-ce&quot;,
-    &quot;history&quot;:[
+    &#34;created&#34;:&#34;2019-11-12T00:20:33.943019377Z&#34;,
+    &#34;docker_version&#34;:&#34;18.06.1-ce&#34;,
+    &#34;history&#34;:[
         {
-            &quot;created&quot;:&quot;2019-11-12T00:20:33.422734627Z&quot;,
-            &quot;created_by&quot;:&quot;/bin/sh -c #(nop) ADD file:45a381049c52b5664e5e911dead277b25fadbae689c0bb35be3c42dff0f2dffe in / &quot;
+            &#34;created&#34;:&#34;2019-11-12T00:20:33.422734627Z&#34;,
+            &#34;created_by&#34;:&#34;/bin/sh -c #(nop) ADD file:45a381049c52b5664e5e911dead277b25fadbae689c0bb35be3c42dff0f2dffe in / &#34;
         },
         {
-            &quot;created&quot;:&quot;2019-11-12T00:20:33.793796025Z&quot;,
-            &quot;created_by&quot;:&quot;/bin/sh -c #(nop)  LABEL org.label-schema.schema-version=1.0 org.label-schema.name=CentOS Base Image org.label-schema.vendor=CentOS org.label-schema.license=GPLv2 org.label-schema.build-date=20191001&quot;,
-            &quot;empty_layer&quot;:true
+            &#34;created&#34;:&#34;2019-11-12T00:20:33.793796025Z&#34;,
+            &#34;created_by&#34;:&#34;/bin/sh -c #(nop)  LABEL org.label-schema.schema-version=1.0 org.label-schema.name=CentOS Base Image org.label-schema.vendor=CentOS org.label-schema.license=GPLv2 org.label-schema.build-date=20191001&#34;,
+            &#34;empty_layer&#34;:true
         },
         {
-            &quot;created&quot;:&quot;2019-11-12T00:20:33.943019377Z&quot;,
-            &quot;created_by&quot;:&quot;/bin/sh -c #(nop)  CMD [&quot;/bin/bash&quot;]&quot;,
-            &quot;empty_layer&quot;:true
+            &#34;created&#34;:&#34;2019-11-12T00:20:33.943019377Z&#34;,
+            &#34;created_by&#34;:&#34;/bin/sh -c #(nop)  CMD [&#34;/bin/bash&#34;]&#34;,
+            &#34;empty_layer&#34;:true
         }
     ],
-    &quot;os&quot;:&quot;linux&quot;,
-    &quot;rootfs&quot;:{
-        &quot;type&quot;:&quot;layers&quot;,
-        &quot;diff_ids&quot;:[
-            &quot;sha256:77b174a6a187b610e4699546bd973a8d1e77663796e3724318a2a4b24cb07ea0&quot;
+    &#34;os&#34;:&#34;linux&#34;,
+    &#34;rootfs&#34;:{
+        &#34;type&#34;:&#34;layers&#34;,
+        &#34;diff_ids&#34;:[
+            &#34;sha256:77b174a6a187b610e4699546bd973a8d1e77663796e3724318a2a4b24cb07ea0&#34;
         ]
     }
 }
-</code></pre><pre><code># layer层
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># layer层
 # 路径：/var/lib/docker/image/overlay2/layerdb/sha256/&lt;chainID&gt;
 # ls 77b174a6a187b610e4699546bd973a8d1e77663796e3724318a2a4b24cb07ea0
 cache-id           diff               size               tar-split.json.gz
-</code></pre><pre><code># docker 镜像可读写层
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># docker 镜像可读写层
 # 路径：/var/lib/docker/image/overlay2/layerdb/mounts/&lt;container_id&gt;
 # ls 841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45
 init-id   mount-id  parent
@@ -1538,7 +2544,24 @@ f53b4402bfca2b8b71bbdf12b85ce5364474b13a6664efd187e16aa5a467452d/
 # cat parent 
 # image 的最上一层 layer 的 chain-id
 sha256:77b174a6a187b610e4699546bd973a8d1e77663796e3724318a2a4b24cb07ea0
-</code></pre><pre><code># docker 容器运行时配置文件
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># docker 容器运行时配置文件
 # 路径：/var/lib/docker/containers/&lt;container_id&gt;
 # ls 841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45
 841e5bfba8264f2a1fba8cc9af266b597f91573b95868e3fd0b1a86ce4a97d45-json.log        # 容器的日志文件，后续容器的stdout和stderr都会输出到这个目录
@@ -1549,7 +2572,9 @@ shm                 # 为容器分配的一个内存文件系统，后面会绑�
 checkpoints         # 通用的配置，如容器名称，要执行的命令等
 config.v2.json      # 主机相关的配置，跟操作系统平台有关，如cgroup的配置
 hostconfig.json     # 容器的checkpoint这个功能在当前版本还是experimental状态
-</code></pre><blockquote>
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
 <p><a href="https://coolshell.cn/articles/17061.html">DOCKER基础技术：AUFS</a><br>
 <a href="https://www.cnblogs.com/sammyliu/p/5931383.html">Docker 存储 - AUFS</a><br>
 <a href="https://blog.51cto.com/liuleis/2070461">Docker镜像结构原理</a><br>
@@ -1747,7 +2772,7 @@ hostconfig.json     # 容器的checkpoint这个功能在当前版本还是experi
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

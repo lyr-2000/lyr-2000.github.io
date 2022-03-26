@@ -50,7 +50,7 @@
 <meta itemprop="description" content="Git分支-变基 在 Git 中整合来自不同分支的修改主要有两种方法：merge 以及 rebase。 在本节中我们将学习什么是“变基”，怎样使用“变基”，">
 <meta itemprop="datePublished" content="2020-11-18T17:43:57&#43;00:00" />
 <meta itemprop="dateModified" content="2020-11-18T17:43:57&#43;00:00" />
-<meta itemprop="wordCount" content="4700">
+<meta itemprop="wordCount" content="4722">
 
 
 
@@ -190,7 +190,7 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/git%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"> 《Git》学习笔记 </a>
             </div>
-          <span class="more-meta"> 约 4700 字 </span>
+          <span class="more-meta"> 约 4722 字 </span>
           <span class="more-meta"> 预计阅读 10 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -247,11 +247,21 @@ input.PC_MARK1:focus{
 <p><strong>变基就是：将某一分支上的所有修改复制到另一分支上</strong></p>
 <p>除了<code>merge</code>，还有一种方法：你可以提取在 <code>C4</code> 中引入的补丁和修改，然后在 <code>C3</code> 的基础上应用一次。 在 Git 中，这种操作就叫做 <strong>变基（rebase）</strong>。 你可以使用 <code>rebase</code> 命令将提交到某一分支上的所有修改都移到另一分支上，就好像“重新播放”一样。</p>
 <p>在这个例子中，你可以检出 <code>experiment</code> 分支，然后将它变基到 <code>master</code> 分支上：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ git checkout experiment
-$ git rebase master <span style="color:#75715e"># 将experiment上的修改变基到master分支上（将experiment的提交移动到master上。）</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sh" data-lang="sh">$ git checkout experiment
+$ git rebase master <span class="c1"># 将experiment上的修改变基到master分支上（将experiment的提交移动到master上。）</span>
 First, rewinding head to replay your work on top of it...
-Applying: added staged command
-</code></pre></div><p>它的原理是首先找到这两个分支（即当前分支 <code>experiment</code>、变基操作的目标基底分支 <code>master</code>） 的最近共同祖先 <code>C2</code>，然后对比当前分支相对于该祖先的历次提交，提取相应的修改并存为临时文件， 然后将当前分支指向目标基底 <code>C3</code>, 最后以此将之前另存为临时文件的修改依序应用。 （译注：写明了 commit id，以便理解，下同）</p>
+Applying: added staged <span class="nb">command</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>它的原理是首先找到这两个分支（即当前分支 <code>experiment</code>、变基操作的目标基底分支 <code>master</code>） 的最近共同祖先 <code>C2</code>，然后对比当前分支相对于该祖先的历次提交，提取相应的修改并存为临时文件， 然后将当前分支指向目标基底 <code>C3</code>, 最后以此将之前另存为临时文件的修改依序应用。 （译注：写明了 commit id，以便理解，下同）</p>
 <h3 id="原理">原理</h3>
 <ol>
 <li>
@@ -273,18 +283,37 @@ Applying: added staged command
 <p><img src="https://git-scm.com/book/en/v2/images/basic-rebase-3.png" alt="将 C4 中的修改变基到 C3 上。"></p>
 <p align="center">图2.将 C4 中的修改变基到 C3 上 ▲</p>
 <p>现在回到 <code>master</code> 分支，进行一次快进合并。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ git checkout master
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sh" data-lang="sh">$ git checkout master
 $ git merge experiment
-</code></pre></div><p><img src="https://git-scm.com/book/en/v2/images/basic-rebase-4.png" alt="master 分支的快进合并。"></p>
+</code></pre></td></tr></table>
+</div>
+</div><p><img src="https://git-scm.com/book/en/v2/images/basic-rebase-4.png" alt="master 分支的快进合并。"></p>
 <p align="center">图3.master 分支的快进合并 ▲</p>
 <h3 id="步骤">步骤</h3>
 <p><strong>先检出源分支，将源分支的修改变基到目标分支。切回目标分支，进行一次快进合并</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># 示意：</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sh" data-lang="sh"><span class="c1"># 示意：</span>
 git checkout &lt;源分支&gt;
-git <span style="color:#f92672">(</span>源分支的修改<span style="color:#f92672">)</span>rebase<span style="color:#f92672">(</span>到<span style="color:#f92672">)</span> &lt;目标分支&gt;
+git <span class="o">(</span>源分支的修改<span class="o">)</span>rebase<span class="o">(</span>到<span class="o">)</span> &lt;目标分支&gt;
 git checkout &lt;目标分支&gt;
 git merge &lt;源分支&gt;
-</code></pre></div><p>此时，<code>C4'</code> 指向的快照就和 <a href="https://git-scm.com/book/zh/v2/ch00/ebasing-merging-example">the merge example</a> 中 <code>C5</code> 指向的快照一模一样了。 这两种整合方法的最终结果没有任何区别，但是 <strong>变基使得提交历史更加整洁</strong>。 你在查看一个经过变基的分支的历史记录时会发现，尽管实际的开发工作是并行的， 但它们看上去就像是串行的一样，提交历史是一条直线没有分叉。</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>此时，<code>C4'</code> 指向的快照就和 <a href="https://git-scm.com/book/zh/v2/ch00/ebasing-merging-example">the merge example</a> 中 <code>C5</code> 指向的快照一模一样了。 这两种整合方法的最终结果没有任何区别，但是 <strong>变基使得提交历史更加整洁</strong>。 你在查看一个经过变基的分支的历史记录时会发现，尽管实际的开发工作是并行的， 但它们看上去就像是串行的一样，提交历史是一条直线没有分叉。</p>
 <p>一般我们这样做的目的是为了确保在向远程分支推送时能保持提交历史的整洁——<strong>例如向某个其他人维护的项目贡献代码时。 在这种情况下，你首先在自己的分支里进行开发，当开发完成时你需要先将你的代码变基到 <code>origin/master</code> 上，然后再向主项目提交修改</strong>。 这样的话，该项目的维护者就不再需要进行整合工作，只需要快进合并便可。</p>
 <p>请注意，无论是通过变基，还是通过三方合并，整合的最终结果所指向的快照始终是一样的，只不过提交历史不同罢了。 变基是将一系列提交按照原有次序依次应用到另一分支上，而合并是把最终结果合在一起。</p>
 <h3 id="优点">优点</h3>
@@ -296,34 +325,81 @@ git merge &lt;源分支&gt;
 <p><img src="https://git-scm.com/book/en/v2/images/interesting-rebase-1.png" alt="从一个主题分支里再分出一个主题分支的提交历史。"></p>
 <p align="center">图4.从一个主题分支里再分出一个主题分支的提交历史 ▲</p>
 <p>假设你希望将 <code>client</code> 中的修改合并到主分支并发布，但暂时并不想合并 <code>server</code> 中的修改， 因为它们还需要经过更全面的测试。这时，你就可以使用 <code>git rebase</code> 命令的 <strong><code>--onto</code> 选项， 选中在 <code>client</code> 分支里但不在 <code>server</code> 分支里的修改（即 <code>C8</code> 和 <code>C9</code>），将它们在 <code>master</code> 分支上重放</strong>：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ git rebase --onto master server client
-</code></pre></div><p>以上命令的意思是：“取出 <code>client</code> 分支，找出它从 <code>server</code> 分支分歧之后的补丁， 然后把这些补丁在 <code>master</code> 分支上重放一遍，让 <code>client</code> 看起来像直接基于 <code>master</code> 修改一样”。这理解起来有一点复杂，不过效果非常酷。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sh" data-lang="sh">$ git rebase --onto master server client
+</code></pre></td></tr></table>
+</div>
+</div><p>以上命令的意思是：“取出 <code>client</code> 分支，找出它从 <code>server</code> 分支分歧之后的补丁， 然后把这些补丁在 <code>master</code> 分支上重放一遍，让 <code>client</code> 看起来像直接基于 <code>master</code> 修改一样”。这理解起来有一点复杂，不过效果非常酷。</p>
 <h3 id="--onto选项">&ndash;onto选项</h3>
 <p><strong>选中C分支中的但不在B分支里的修改，应用到A分支。</strong></p>
 <p><img src="https://git-scm.com/book/en/v2/images/interesting-rebase-2.png" alt="截取主题分支上的另一个主题分支，然后变基到其他分支。"></p>
  <p align="center">图5.截取主题分支上的另一个主题分支，然后变基到其他分支 ▲</p>
 <p>现在可以快进合并 <code>master</code> 分支了。（如图 <a href="https://git-scm.com/book/zh/v2/ch00/bdiag_g">快进合并 <code>master</code> 分支，使之包含来自 <code>client</code> 分支的修改</a>）：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ git checkout master
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sh" data-lang="sh">$ git checkout master
 $ git merge client
-</code></pre></div><p><img src="https://git-scm.com/book/en/v2/images/interesting-rebase-3.png" alt="快进合并 master 分支，使之包含来自 client 分支的修改。"></p>
+</code></pre></td></tr></table>
+</div>
+</div><p><img src="https://git-scm.com/book/en/v2/images/interesting-rebase-3.png" alt="快进合并 master 分支，使之包含来自 client 分支的修改。"></p>
  <p align="center">图6.快进合并 `master` 分支，使之包含来自 `client` 分支的修改 ▲</p>
 <h3 id="省去先切换到源分支的步骤">省去先切换到源分支的步骤</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">git rebase &lt;目标<span style="color:#f92672">(</span>当前<span style="color:#f92672">)</span>分支&gt; &lt;源分支&gt; <span style="color:#75715e"># 将源分支变基到目标分支。执行此命令后会自动切换到源分支</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sh" data-lang="sh">git rebase &lt;目标<span class="o">(</span>当前<span class="o">)</span>分支&gt; &lt;源分支&gt; <span class="c1"># 将源分支变基到目标分支。执行此命令后会自动切换到源分支</span>
 git checkout &lt;目标分支&gt;
 git merge &lt;源分支&gt;
-</code></pre></div><p><strong>注意：使用这个方法要确保源分支上的代码是最新的。</strong></p>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>注意：使用这个方法要确保源分支上的代码是最新的。</strong></p>
 <p>接下来你决定将 <code>server</code> 分支中的修改也整合进来。 使用 <code>git rebase &lt;basebranch&gt; &lt;topicbranch&gt;</code> 命令可以直接将主题分支 （即本例中的 <code>server</code>）变基到目标分支（即 <code>master</code>）上。 这样做能省去你先切换到 <code>server</code> 分支，再对其执行变基命令的多个步骤。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ git rebase master server
-</code></pre></div><p>如图 <a href="https://git-scm.com/book/zh/v2/ch00/bdiag_h">将 <code>server</code> 中的修改变基到 <code>master</code> 上</a> 所示，<code>server</code> 中的代码被“续”到了 <code>master</code> 后面。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sh" data-lang="sh">$ git rebase master server
+</code></pre></td></tr></table>
+</div>
+</div><p>如图 <a href="https://git-scm.com/book/zh/v2/ch00/bdiag_h">将 <code>server</code> 中的修改变基到 <code>master</code> 上</a> 所示，<code>server</code> 中的代码被“续”到了 <code>master</code> 后面。</p>
 <p><img src="https://git-scm.com/book/en/v2/images/interesting-rebase-4.png" alt="将 server 中的修改变基到 master 上。"></p>
 <p align="center">图7.将 `server` 中的修改变基到 `master` 上 ▲</p>
 <p>然后就可以快进合并主分支 <code>master</code> 了：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ git checkout master
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sh" data-lang="sh">$ git checkout master
 $ git merge server
-</code></pre></div><p>至此，<code>client</code> 和 <code>server</code> 分支中的修改都已经整合到主分支里了， 你可以删除这两个分支，最终提交历史会变成图 <a href="https://git-scm.com/book/zh/v2/ch00/bdiag_i">最终的提交历史</a> 中的样子：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ git branch -d client
+</code></pre></td></tr></table>
+</div>
+</div><p>至此，<code>client</code> 和 <code>server</code> 分支中的修改都已经整合到主分支里了， 你可以删除这两个分支，最终提交历史会变成图 <a href="https://git-scm.com/book/zh/v2/ch00/bdiag_i">最终的提交历史</a> 中的样子：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sh" data-lang="sh">$ git branch -d client
 $ git branch -d server
-</code></pre></div><p><img src="https://git-scm.com/book/en/v2/images/interesting-rebase-5.png" alt="最终的提交历史。"></p>
+</code></pre></td></tr></table>
+</div>
+</div><p><img src="https://git-scm.com/book/en/v2/images/interesting-rebase-5.png" alt="最终的提交历史。"></p>
 <p align="center">图8. 最终的提交历史 ▲</p>
 <h2 id="变基的风险">变基的风险</h2>
 <h3 id="金科玉律">金科玉律</h3>
@@ -500,7 +576,7 @@ $ git branch -d server
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

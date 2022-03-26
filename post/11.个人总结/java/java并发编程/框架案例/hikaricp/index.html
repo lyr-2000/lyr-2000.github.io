@@ -50,7 +50,7 @@
 <meta itemprop="description" content="hikaricp原理 参考官网文档 HiKariCP 官方网站解释了其性能之所以如此之高的秘密。微观上 HiKariCP 程序编译出的字节码执行效率更高，站在字节码的角度去优化 Java">
 <meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="2554">
+<meta itemprop="wordCount" content="2684">
 
 
 
@@ -188,7 +188,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
-          <span class="more-meta"> 约 2554 字 </span>
+          <span class="more-meta"> 约 2684 字 </span>
           <span class="more-meta"> 预计阅读 6 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -220,51 +220,101 @@ input.PC_MARK1:focus{
       <h3 id="hikaricp原理">hikaricp原理</h3>
 <p><a href="https://github.com/brettwooldridge/HikariCP/wiki/Down-the-Rabbit-Hole">参考官网文档</a></p>
 <p><a href="https://github.com/brettwooldridge/HikariCP/wiki/Down-the-Rabbit-Hole">HiKariCP 官方网站</a>解释了其性能之所以如此之高的秘密。微观上 HiKariCP 程序编译出的字节码执行效率更高，站在字节码的角度去优化 Java 代码，HiKariCP 的作者对性能的执着可见一斑，不过遗憾的是他并没有详细解释都做了哪些优化。而宏观上主要是和两个数据结构有关，一个是 FastList，另一个是 ConcurrentBag。下面我们来看看它们是如何提升 HiKariCP 的性能的。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 数据库连接池配置
-</span><span style="color:#75715e"></span>HikariConfig config <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> HikariConfig<span style="color:#f92672">();</span>
-config<span style="color:#f92672">.</span><span style="color:#a6e22e">setMinimumIdle</span><span style="color:#f92672">(</span>1<span style="color:#f92672">);</span>
-config<span style="color:#f92672">.</span><span style="color:#a6e22e">setMaximumPoolSize</span><span style="color:#f92672">(</span>2<span style="color:#f92672">);</span>
-config<span style="color:#f92672">.</span><span style="color:#a6e22e">setConnectionTestQuery</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;SELECT 1&#34;</span><span style="color:#f92672">);</span>
-config<span style="color:#f92672">.</span><span style="color:#a6e22e">setDataSourceClassName</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;org.h2.jdbcx.JdbcDataSource&#34;</span><span style="color:#f92672">);</span>
-config<span style="color:#f92672">.</span><span style="color:#a6e22e">addDataSourceProperty</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;url&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;jdbc:h2:mem:test&#34;</span><span style="color:#f92672">);</span>
-<span style="color:#75715e">// 创建数据源
-</span><span style="color:#75715e"></span>DataSource ds <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> HikariDataSource<span style="color:#f92672">(</span>config<span style="color:#f92672">);</span>
-Connection conn <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
-Statement stmt <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
-ResultSet rs <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
-<span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
-  <span style="color:#75715e">// 获取数据库连接
-</span><span style="color:#75715e"></span>  conn <span style="color:#f92672">=</span> ds<span style="color:#f92672">.</span><span style="color:#a6e22e">getConnection</span><span style="color:#f92672">();</span>
-  <span style="color:#75715e">// 创建 Statement 
-</span><span style="color:#75715e"></span>  stmt <span style="color:#f92672">=</span> conn<span style="color:#f92672">.</span><span style="color:#a6e22e">createStatement</span><span style="color:#f92672">();</span>
-  <span style="color:#75715e">// 执行 SQL
-</span><span style="color:#75715e"></span>  rs <span style="color:#f92672">=</span> stmt<span style="color:#f92672">.</span><span style="color:#a6e22e">executeQuery</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;select * from abc&#34;</span><span style="color:#f92672">);</span>
-  <span style="color:#75715e">// 获取结果
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span>rs<span style="color:#f92672">.</span><span style="color:#a6e22e">next</span><span style="color:#f92672">())</span> <span style="color:#f92672">{</span>
-    <span style="color:#66d9ef">int</span> id <span style="color:#f92672">=</span> rs<span style="color:#f92672">.</span><span style="color:#a6e22e">getInt</span><span style="color:#f92672">(</span>1<span style="color:#f92672">);</span>
-    <span style="color:#f92672">......</span>
-  <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span><span style="color:#f92672">(</span>Exception e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-   e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
-<span style="color:#f92672">}</span> <span style="color:#66d9ef">finally</span> <span style="color:#f92672">{</span>
-  <span style="color:#75715e">// 关闭 ResultSet
-</span><span style="color:#75715e"></span>  close<span style="color:#f92672">(</span>rs<span style="color:#f92672">);</span>
-  <span style="color:#75715e">// 关闭 Statement 
-</span><span style="color:#75715e"></span>  close<span style="color:#f92672">(</span>stmt<span style="color:#f92672">);</span>
-  <span style="color:#75715e">// 关闭 Connection
-</span><span style="color:#75715e"></span>  close<span style="color:#f92672">(</span>conn<span style="color:#f92672">);</span>
-<span style="color:#f92672">}</span>
-<span style="color:#75715e">// 关闭资源
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close</span><span style="color:#f92672">(</span>AutoCloseable rs<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-  <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>rs <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-    <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
-      rs<span style="color:#f92672">.</span><span style="color:#a6e22e">close</span><span style="color:#f92672">();</span>
-    <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>SQLException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-      e<span style="color:#f92672">.</span><span style="color:#a6e22e">printStackTrace</span><span style="color:#f92672">();</span>
-    <span style="color:#f92672">}</span>
-  <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><h2 id="fastlist-解决了哪些性能问题">FastList 解决了哪些性能问题</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">// 数据库连接池配置
+</span><span class="c1"></span><span class="n">HikariConfig</span> <span class="n">config</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HikariConfig</span><span class="o">();</span>
+<span class="n">config</span><span class="o">.</span><span class="na">setMinimumIdle</span><span class="o">(</span><span class="n">1</span><span class="o">);</span>
+<span class="n">config</span><span class="o">.</span><span class="na">setMaximumPoolSize</span><span class="o">(</span><span class="n">2</span><span class="o">);</span>
+<span class="n">config</span><span class="o">.</span><span class="na">setConnectionTestQuery</span><span class="o">(</span><span class="s">&#34;SELECT 1&#34;</span><span class="o">);</span>
+<span class="n">config</span><span class="o">.</span><span class="na">setDataSourceClassName</span><span class="o">(</span><span class="s">&#34;org.h2.jdbcx.JdbcDataSource&#34;</span><span class="o">);</span>
+<span class="n">config</span><span class="o">.</span><span class="na">addDataSourceProperty</span><span class="o">(</span><span class="s">&#34;url&#34;</span><span class="o">,</span> <span class="s">&#34;jdbc:h2:mem:test&#34;</span><span class="o">);</span>
+<span class="c1">// 创建数据源
+</span><span class="c1"></span><span class="n">DataSource</span> <span class="n">ds</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HikariDataSource</span><span class="o">(</span><span class="n">config</span><span class="o">);</span>
+<span class="n">Connection</span> <span class="n">conn</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+<span class="n">Statement</span> <span class="n">stmt</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+<span class="n">ResultSet</span> <span class="n">rs</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+<span class="k">try</span> <span class="o">{</span>
+  <span class="c1">// 获取数据库连接
+</span><span class="c1"></span>  <span class="n">conn</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="na">getConnection</span><span class="o">();</span>
+  <span class="c1">// 创建 Statement 
+</span><span class="c1"></span>  <span class="n">stmt</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="na">createStatement</span><span class="o">();</span>
+  <span class="c1">// 执行 SQL
+</span><span class="c1"></span>  <span class="n">rs</span> <span class="o">=</span> <span class="n">stmt</span><span class="o">.</span><span class="na">executeQuery</span><span class="o">(</span><span class="s">&#34;select * from abc&#34;</span><span class="o">);</span>
+  <span class="c1">// 获取结果
+</span><span class="c1"></span>  <span class="k">while</span> <span class="o">(</span><span class="n">rs</span><span class="o">.</span><span class="na">next</span><span class="o">())</span> <span class="o">{</span>
+    <span class="kt">int</span> <span class="n">id</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="na">getInt</span><span class="o">(</span><span class="n">1</span><span class="o">);</span>
+    <span class="o">......</span>
+  <span class="o">}</span>
+<span class="o">}</span> <span class="k">catch</span><span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+   <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+<span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+  <span class="c1">// 关闭 ResultSet
+</span><span class="c1"></span>  <span class="n">close</span><span class="o">(</span><span class="n">rs</span><span class="o">);</span>
+  <span class="c1">// 关闭 Statement 
+</span><span class="c1"></span>  <span class="n">close</span><span class="o">(</span><span class="n">stmt</span><span class="o">);</span>
+  <span class="c1">// 关闭 Connection
+</span><span class="c1"></span>  <span class="n">close</span><span class="o">(</span><span class="n">conn</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="c1">// 关闭资源
+</span><span class="c1"></span><span class="kt">void</span> <span class="nf">close</span><span class="o">(</span><span class="n">AutoCloseable</span> <span class="n">rs</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">rs</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">try</span> <span class="o">{</span>
+      <span class="n">rs</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">SQLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="fastlist-解决了哪些性能问题">FastList 解决了哪些性能问题</h2>
 <p>按照规范步骤，执行完数据库操作之后，需要依次关闭 ResultSet、Statement、Connection，但是总有粗心的同学只是关闭了 Connection，而忘了关闭 ResultSet 和 Statement。为了解决这种问题，最好的办法是<strong>当关闭 Connection 时，能够自动关闭 Statement</strong>。为了达到这个目标，Connection 就需要跟踪创建的 Statement，最简单的办法就是<strong>将创建的 Statement 保存在数组 ArrayList 里</strong>，这样<strong>当关闭 Connection 的时候，就可以依次将数组中的所有 Statement 关闭。</strong></p>
 <p>HiKariCP 觉得用 ArrayList 还是太慢，当通过 <code>conn.createStatement()</code> 创建一个 Statement 时，需要调用 ArrayList 的 add() 方法加入到 ArrayList 中，这个是没有问题的；但是当通过 <code>stmt.close()</code> 关闭 Statement 的时候，需要调用 ArrayList 的 remove() 方法来将其从 ArrayList 中删除，这里是有优化余地的。</p>
 <p>假设一个 Connection 依次创建 6 个 Statement，分别是 S1、S2、S3、S4、S5、S6，按照正常的编码习惯，关闭 Statement 的顺序一般是逆序的，关闭的顺序是：S6、S5、S4、S3、S2、S1，而 ArrayList 的 remove(Object o) 方法是顺序遍历查找，逆序删除而顺序查找，这样的查找效率就太慢了。如何优化呢？很简单，优化成逆序查找就可以了。</p>
@@ -275,102 +325,212 @@ ResultSet rs <span style="color:#f92672">=</span> <span style="color:#66d9ef">nu
 <p>如果让我们自己来实现一个数据库连接池，最简单的办法就是用<strong>两个阻塞队列来实现</strong>，一个用于<strong>保存空闲数据库连接的队列</strong> idle，另一个用于<strong>保存忙碌数据库连接的队列</strong> busy；<strong>获取连接时将空闲的数据库连接从 idle 队列移动到 busy 队列，而关闭连接时将数据库连接从 busy 移动到 idle</strong>。这种方案<strong>将并发问题委托给了阻塞队列</strong>，实现简单，但是<strong>性能并不是很理想</strong>。因为 Java SDK 中的<strong>阻塞队列是用锁实现的</strong>，而高<strong>并发场景下锁的争用对性能影响很大。</strong></p>
 <p>HiKariCP 并没有使用 Java SDK 中的阻塞队列，而是<strong>自己实现了一个叫做 ConcurrentBag 的并发容器。<strong>ConcurrentBag 的设计最初源自 C#，它的一个</strong>核心设计是使用 ThreadLocal 避免部分并发问题</strong>，不过 HiKariCP 中的 ConcurrentBag 并没有完全参考 C# 的实现，下面我们来看看它是如何实现的。</p>
 <p>ConcurrentBag 中最关键的属性有 4 个，分别是：用于存储所有的数据库连接的共享队列 sharedList、线程本地存储 threadList、等待数据库连接的线程数 waiters 以及分配数据库连接的工具 handoffQueue。其中，handoffQueue 用的是 Java SDK 提供的 SynchronousQueue，SynchronousQueue 主要用于线程之间传递数据。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 用于存储所有的数据库连接
-</span><span style="color:#75715e"></span>CopyOnWriteArrayList<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> sharedList<span style="color:#f92672">;</span>
-<span style="color:#75715e">// 线程本地存储中的数据库连接
-</span><span style="color:#75715e"></span>ThreadLocal<span style="color:#f92672">&lt;</span>List<span style="color:#f92672">&lt;</span>Object<span style="color:#f92672">&gt;&gt;</span> threadList<span style="color:#f92672">;</span>
-<span style="color:#75715e">// 等待数据库连接的线程数
-</span><span style="color:#75715e"></span>AtomicInteger waiters<span style="color:#f92672">;</span>
-<span style="color:#75715e">// 分配数据库连接的工具
-</span><span style="color:#75715e"></span>SynchronousQueue<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> handoffQueue<span style="color:#f92672">;</span>
-</code></pre></div><p>当线程池创建了一个数据库连接时，通过调用 ConcurrentBag 的 add() 方法加入到 ConcurrentBag 中，下面是 add() 方法的具体实现，逻辑很简单，就是将这个连接加入到共享队列 sharedList 中，如果此时有线程在等待数据库连接，那么就通过 handoffQueue 将这个连接分配给等待的线程。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 将空闲连接添加到队列
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">add</span><span style="color:#f92672">(</span><span style="color:#66d9ef">final</span> T bagEntry<span style="color:#f92672">){</span>
-  <span style="color:#75715e">// 加入共享队列
-</span><span style="color:#75715e"></span>  sharedList<span style="color:#f92672">.</span><span style="color:#a6e22e">add</span><span style="color:#f92672">(</span>bagEntry<span style="color:#f92672">);</span>
-  <span style="color:#75715e">// 如果有等待连接的线程，
-</span><span style="color:#75715e"></span>  <span style="color:#75715e">// 则通过 handoffQueue 直接分配给等待的线程
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span>waiters<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">()</span> <span style="color:#f92672">&gt;</span> 0 
-    <span style="color:#f92672">&amp;&amp;</span> bagEntry<span style="color:#f92672">.</span><span style="color:#a6e22e">getState</span><span style="color:#f92672">()</span> <span style="color:#f92672">==</span> STATE_NOT_IN_USE 
-    <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span>handoffQueue<span style="color:#f92672">.</span><span style="color:#a6e22e">offer</span><span style="color:#f92672">(</span>bagEntry<span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
-      yield<span style="color:#f92672">();</span>
-  <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><p>通过 ConcurrentBag 提供的 borrow() 方法，可以获取一个空闲的数据库连接，borrow() 的主要逻辑是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">// 用于存储所有的数据库连接
+</span><span class="c1"></span><span class="n">CopyOnWriteArrayList</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">sharedList</span><span class="o">;</span>
+<span class="c1">// 线程本地存储中的数据库连接
+</span><span class="c1"></span><span class="n">ThreadLocal</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;&gt;</span> <span class="n">threadList</span><span class="o">;</span>
+<span class="c1">// 等待数据库连接的线程数
+</span><span class="c1"></span><span class="n">AtomicInteger</span> <span class="n">waiters</span><span class="o">;</span>
+<span class="c1">// 分配数据库连接的工具
+</span><span class="c1"></span><span class="n">SynchronousQueue</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">handoffQueue</span><span class="o">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>当线程池创建了一个数据库连接时，通过调用 ConcurrentBag 的 add() 方法加入到 ConcurrentBag 中，下面是 add() 方法的具体实现，逻辑很简单，就是将这个连接加入到共享队列 sharedList 中，如果此时有线程在等待数据库连接，那么就通过 handoffQueue 将这个连接分配给等待的线程。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">// 将空闲连接添加到队列
+</span><span class="c1"></span><span class="kt">void</span> <span class="nf">add</span><span class="o">(</span><span class="kd">final</span> <span class="n">T</span> <span class="n">bagEntry</span><span class="o">){</span>
+  <span class="c1">// 加入共享队列
+</span><span class="c1"></span>  <span class="n">sharedList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">bagEntry</span><span class="o">);</span>
+  <span class="c1">// 如果有等待连接的线程，
+</span><span class="c1"></span>  <span class="c1">// 则通过 handoffQueue 直接分配给等待的线程
+</span><span class="c1"></span>  <span class="k">while</span> <span class="o">(</span><span class="n">waiters</span><span class="o">.</span><span class="na">get</span><span class="o">()</span> <span class="o">&gt;</span> <span class="n">0</span> 
+    <span class="o">&amp;&amp;</span> <span class="n">bagEntry</span><span class="o">.</span><span class="na">getState</span><span class="o">()</span> <span class="o">==</span> <span class="n">STATE_NOT_IN_USE</span> 
+    <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">handoffQueue</span><span class="o">.</span><span class="na">offer</span><span class="o">(</span><span class="n">bagEntry</span><span class="o">))</span> <span class="o">{</span>
+      <span class="n">yield</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>通过 ConcurrentBag 提供的 borrow() 方法，可以获取一个空闲的数据库连接，borrow() 的主要逻辑是：</p>
 <ol>
 <li>首先查看线程本地存储是否有空闲连接，如果有，则返回一个空闲的连接；</li>
 <li>如果线程本地存储中无空闲连接，则从共享队列中获取。</li>
 <li>如果共享队列中也没有空闲的连接，则请求线程需要等待。</li>
 </ol>
 <p>需要注意的是，线程本地存储中的连接是可以被其他线程窃取的，所以需要用 CAS 方法防止重复分配。在共享队列中获取空闲连接，也采用了 CAS 方法防止重复分配。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">T <span style="color:#a6e22e">borrow</span><span style="color:#f92672">(</span><span style="color:#66d9ef">long</span> timeout<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> TimeUnit timeUnit<span style="color:#f92672">){</span>
-  <span style="color:#75715e">// 先查看线程本地存储是否有空闲连接
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">final</span> List<span style="color:#f92672">&lt;</span>Object<span style="color:#f92672">&gt;</span> list <span style="color:#f92672">=</span> threadList<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">();</span>
-  <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> list<span style="color:#f92672">.</span><span style="color:#a6e22e">size</span><span style="color:#f92672">()</span> <span style="color:#f92672">-</span> 1<span style="color:#f92672">;</span> i <span style="color:#f92672">&gt;=</span> 0<span style="color:#f92672">;</span> i<span style="color:#f92672">--)</span> <span style="color:#f92672">{</span>
-    <span style="color:#66d9ef">final</span> Object entry <span style="color:#f92672">=</span> list<span style="color:#f92672">.</span><span style="color:#a6e22e">remove</span><span style="color:#f92672">(</span>i<span style="color:#f92672">);</span>
-    <span style="color:#66d9ef">final</span> T bagEntry <span style="color:#f92672">=</span> weakThreadLocals 
-      <span style="color:#f92672">?</span> <span style="color:#f92672">((</span>WeakReference<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;)</span> entry<span style="color:#f92672">).</span><span style="color:#a6e22e">get</span><span style="color:#f92672">()</span> 
-      <span style="color:#f92672">:</span> <span style="color:#f92672">(</span>T<span style="color:#f92672">)</span> entry<span style="color:#f92672">;</span>
-    <span style="color:#75715e">// 线程本地存储中的连接也可以被窃取，
-</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 所以需要用 CAS 方法防止重复分配
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>bagEntry <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span> 
-      <span style="color:#f92672">&amp;&amp;</span> bagEntry<span style="color:#f92672">.</span><span style="color:#a6e22e">compareAndSet</span><span style="color:#f92672">(</span>STATE_NOT_IN_USE<span style="color:#f92672">,</span> STATE_IN_USE<span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
-      <span style="color:#66d9ef">return</span> bagEntry<span style="color:#f92672">;</span>
-    <span style="color:#f92672">}</span>
-  <span style="color:#f92672">}</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="n">T</span> <span class="nf">borrow</span><span class="o">(</span><span class="kt">long</span> <span class="n">timeout</span><span class="o">,</span> <span class="kd">final</span> <span class="n">TimeUnit</span> <span class="n">timeUnit</span><span class="o">){</span>
+  <span class="c1">// 先查看线程本地存储是否有空闲连接
+</span><span class="c1"></span>  <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="n">list</span> <span class="o">=</span> <span class="n">threadList</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">list</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="n">1</span><span class="o">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span><span class="o">--)</span> <span class="o">{</span>
+    <span class="kd">final</span> <span class="n">Object</span> <span class="n">entry</span> <span class="o">=</span> <span class="n">list</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+    <span class="kd">final</span> <span class="n">T</span> <span class="n">bagEntry</span> <span class="o">=</span> <span class="n">weakThreadLocals</span> 
+      <span class="o">?</span> <span class="o">((</span><span class="n">WeakReference</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;)</span> <span class="n">entry</span><span class="o">).</span><span class="na">get</span><span class="o">()</span> 
+      <span class="o">:</span> <span class="o">(</span><span class="n">T</span><span class="o">)</span> <span class="n">entry</span><span class="o">;</span>
+    <span class="c1">// 线程本地存储中的连接也可以被窃取，
+</span><span class="c1"></span>    <span class="c1">// 所以需要用 CAS 方法防止重复分配
+</span><span class="c1"></span>    <span class="k">if</span> <span class="o">(</span><span class="n">bagEntry</span> <span class="o">!=</span> <span class="kc">null</span> 
+      <span class="o">&amp;&amp;</span> <span class="n">bagEntry</span><span class="o">.</span><span class="na">compareAndSet</span><span class="o">(</span><span class="n">STATE_NOT_IN_USE</span><span class="o">,</span> <span class="n">STATE_IN_USE</span><span class="o">))</span> <span class="o">{</span>
+      <span class="k">return</span> <span class="n">bagEntry</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
  
-  <span style="color:#75715e">// 线程本地存储中无空闲连接，则从共享队列中获取
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> waiting <span style="color:#f92672">=</span> waiters<span style="color:#f92672">.</span><span style="color:#a6e22e">incrementAndGet</span><span style="color:#f92672">();</span>
-  <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
-    <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span>T bagEntry <span style="color:#f92672">:</span> sharedList<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-      <span style="color:#75715e">// 如果共享队列中有空闲连接，则返回
-</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>bagEntry<span style="color:#f92672">.</span><span style="color:#a6e22e">compareAndSet</span><span style="color:#f92672">(</span>STATE_NOT_IN_USE<span style="color:#f92672">,</span> STATE_IN_USE<span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
-        <span style="color:#66d9ef">return</span> bagEntry<span style="color:#f92672">;</span>
-      <span style="color:#f92672">}</span>
-    <span style="color:#f92672">}</span>
-    <span style="color:#75715e">// 共享队列中没有连接，则需要等待
-</span><span style="color:#75715e"></span>    timeout <span style="color:#f92672">=</span> timeUnit<span style="color:#f92672">.</span><span style="color:#a6e22e">toNanos</span><span style="color:#f92672">(</span>timeout<span style="color:#f92672">);</span>
-    <span style="color:#66d9ef">do</span> <span style="color:#f92672">{</span>
-      <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">long</span> start <span style="color:#f92672">=</span> currentTime<span style="color:#f92672">();</span>
-      <span style="color:#66d9ef">final</span> T bagEntry <span style="color:#f92672">=</span> handoffQueue<span style="color:#f92672">.</span><span style="color:#a6e22e">poll</span><span style="color:#f92672">(</span>timeout<span style="color:#f92672">,</span> NANOSECONDS<span style="color:#f92672">);</span>
-      <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>bagEntry <span style="color:#f92672">==</span> <span style="color:#66d9ef">null</span> 
-        <span style="color:#f92672">||</span> bagEntry<span style="color:#f92672">.</span><span style="color:#a6e22e">compareAndSet</span><span style="color:#f92672">(</span>STATE_NOT_IN_USE<span style="color:#f92672">,</span> STATE_IN_USE<span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
-          <span style="color:#66d9ef">return</span> bagEntry<span style="color:#f92672">;</span>
-      <span style="color:#f92672">}</span>
-      <span style="color:#75715e">// 重新计算等待时间
-</span><span style="color:#75715e"></span>      timeout <span style="color:#f92672">-=</span> elapsedNanos<span style="color:#f92672">(</span>start<span style="color:#f92672">);</span>
-    <span style="color:#f92672">}</span> <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span>timeout <span style="color:#f92672">&gt;</span> 10_000<span style="color:#f92672">);</span>
-    <span style="color:#75715e">// 超时没有获取到连接，返回 null
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
-  <span style="color:#f92672">}</span> <span style="color:#66d9ef">finally</span> <span style="color:#f92672">{</span>
-    waiters<span style="color:#f92672">.</span><span style="color:#a6e22e">decrementAndGet</span><span style="color:#f92672">();</span>
-  <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><p>释放连接需要调用 ConcurrentBag 提供的 requite() 方法，该方法的逻辑很简单，首先将数据库连接状态更改为 STATE_NOT_IN_USE，之后查看是否存在等待线程，如果有，则分配给等待线程；如果没有，则将该数据库连接保存到线程本地存储里。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 释放连接
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">requite</span><span style="color:#f92672">(</span><span style="color:#66d9ef">final</span> T bagEntry<span style="color:#f92672">){</span>
-  <span style="color:#75715e">// 更新连接状态
-</span><span style="color:#75715e"></span>  bagEntry<span style="color:#f92672">.</span><span style="color:#a6e22e">setState</span><span style="color:#f92672">(</span>STATE_NOT_IN_USE<span style="color:#f92672">);</span>
-  <span style="color:#75715e">// 如果有等待的线程，则直接分配给线程，无需进入任何队列
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span> waiters<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">()</span> <span style="color:#f92672">&gt;</span> 0<span style="color:#f92672">;</span> i<span style="color:#f92672">++)</span> <span style="color:#f92672">{</span>
-    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>bagEntry<span style="color:#f92672">.</span><span style="color:#a6e22e">getState</span><span style="color:#f92672">()</span> <span style="color:#f92672">!=</span> STATE_NOT_IN_USE 
-      <span style="color:#f92672">||</span> handoffQueue<span style="color:#f92672">.</span><span style="color:#a6e22e">offer</span><span style="color:#f92672">(</span>bagEntry<span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
-        <span style="color:#66d9ef">return</span><span style="color:#f92672">;</span>
-    <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> <span style="color:#f92672">((</span>i <span style="color:#f92672">&amp;</span> 0xff<span style="color:#f92672">)</span> <span style="color:#f92672">==</span> 0xff<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-      parkNanos<span style="color:#f92672">(</span>MICROSECONDS<span style="color:#f92672">.</span><span style="color:#a6e22e">toNanos</span><span style="color:#f92672">(</span>10<span style="color:#f92672">));</span>
-    <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
-      yield<span style="color:#f92672">();</span>
-    <span style="color:#f92672">}</span>
-  <span style="color:#f92672">}</span>
-  <span style="color:#75715e">// 如果没有等待的线程，则进入线程本地存储
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">final</span> List<span style="color:#f92672">&lt;</span>Object<span style="color:#f92672">&gt;</span> threadLocalList <span style="color:#f92672">=</span> threadList<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">();</span>
-  <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>threadLocalList<span style="color:#f92672">.</span><span style="color:#a6e22e">size</span><span style="color:#f92672">()</span> <span style="color:#f92672">&lt;</span> 50<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-    threadLocalList<span style="color:#f92672">.</span><span style="color:#a6e22e">add</span><span style="color:#f92672">(</span>weakThreadLocals 
-      <span style="color:#f92672">?</span> <span style="color:#66d9ef">new</span> WeakReference<span style="color:#f92672">&lt;&gt;(</span>bagEntry<span style="color:#f92672">)</span> 
-      <span style="color:#f92672">:</span> bagEntry<span style="color:#f92672">);</span>
-  <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><h2 id="总结">总结</h2>
+  <span class="c1">// 线程本地存储中无空闲连接，则从共享队列中获取
+</span><span class="c1"></span>  <span class="kd">final</span> <span class="kt">int</span> <span class="n">waiting</span> <span class="o">=</span> <span class="n">waiters</span><span class="o">.</span><span class="na">incrementAndGet</span><span class="o">();</span>
+  <span class="k">try</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(</span><span class="n">T</span> <span class="n">bagEntry</span> <span class="o">:</span> <span class="n">sharedList</span><span class="o">)</span> <span class="o">{</span>
+      <span class="c1">// 如果共享队列中有空闲连接，则返回
+</span><span class="c1"></span>      <span class="k">if</span> <span class="o">(</span><span class="n">bagEntry</span><span class="o">.</span><span class="na">compareAndSet</span><span class="o">(</span><span class="n">STATE_NOT_IN_USE</span><span class="o">,</span> <span class="n">STATE_IN_USE</span><span class="o">))</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">bagEntry</span><span class="o">;</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="c1">// 共享队列中没有连接，则需要等待
+</span><span class="c1"></span>    <span class="n">timeout</span> <span class="o">=</span> <span class="n">timeUnit</span><span class="o">.</span><span class="na">toNanos</span><span class="o">(</span><span class="n">timeout</span><span class="o">);</span>
+    <span class="k">do</span> <span class="o">{</span>
+      <span class="kd">final</span> <span class="kt">long</span> <span class="n">start</span> <span class="o">=</span> <span class="n">currentTime</span><span class="o">();</span>
+      <span class="kd">final</span> <span class="n">T</span> <span class="n">bagEntry</span> <span class="o">=</span> <span class="n">handoffQueue</span><span class="o">.</span><span class="na">poll</span><span class="o">(</span><span class="n">timeout</span><span class="o">,</span> <span class="n">NANOSECONDS</span><span class="o">);</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">bagEntry</span> <span class="o">==</span> <span class="kc">null</span> 
+        <span class="o">||</span> <span class="n">bagEntry</span><span class="o">.</span><span class="na">compareAndSet</span><span class="o">(</span><span class="n">STATE_NOT_IN_USE</span><span class="o">,</span> <span class="n">STATE_IN_USE</span><span class="o">))</span> <span class="o">{</span>
+          <span class="k">return</span> <span class="n">bagEntry</span><span class="o">;</span>
+      <span class="o">}</span>
+      <span class="c1">// 重新计算等待时间
+</span><span class="c1"></span>      <span class="n">timeout</span> <span class="o">-=</span> <span class="n">elapsedNanos</span><span class="o">(</span><span class="n">start</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">while</span> <span class="o">(</span><span class="n">timeout</span> <span class="o">&gt;</span> <span class="n">10_000</span><span class="o">);</span>
+    <span class="c1">// 超时没有获取到连接，返回 null
+</span><span class="c1"></span>    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+    <span class="n">waiters</span><span class="o">.</span><span class="na">decrementAndGet</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>释放连接需要调用 ConcurrentBag 提供的 requite() 方法，该方法的逻辑很简单，首先将数据库连接状态更改为 STATE_NOT_IN_USE，之后查看是否存在等待线程，如果有，则分配给等待线程；如果没有，则将该数据库连接保存到线程本地存储里。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">// 释放连接
+</span><span class="c1"></span><span class="kt">void</span> <span class="nf">requite</span><span class="o">(</span><span class="kd">final</span> <span class="n">T</span> <span class="n">bagEntry</span><span class="o">){</span>
+  <span class="c1">// 更新连接状态
+</span><span class="c1"></span>  <span class="n">bagEntry</span><span class="o">.</span><span class="na">setState</span><span class="o">(</span><span class="n">STATE_NOT_IN_USE</span><span class="o">);</span>
+  <span class="c1">// 如果有等待的线程，则直接分配给线程，无需进入任何队列
+</span><span class="c1"></span>  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">waiters</span><span class="o">.</span><span class="na">get</span><span class="o">()</span> <span class="o">&gt;</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">bagEntry</span><span class="o">.</span><span class="na">getState</span><span class="o">()</span> <span class="o">!=</span> <span class="n">STATE_NOT_IN_USE</span> 
+      <span class="o">||</span> <span class="n">handoffQueue</span><span class="o">.</span><span class="na">offer</span><span class="o">(</span><span class="n">bagEntry</span><span class="o">))</span> <span class="o">{</span>
+        <span class="k">return</span><span class="o">;</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">((</span><span class="n">i</span> <span class="o">&amp;</span> <span class="n">0xff</span><span class="o">)</span> <span class="o">==</span> <span class="n">0xff</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">parkNanos</span><span class="o">(</span><span class="n">MICROSECONDS</span><span class="o">.</span><span class="na">toNanos</span><span class="o">(</span><span class="n">10</span><span class="o">));</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+      <span class="n">yield</span><span class="o">();</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+  <span class="c1">// 如果没有等待的线程，则进入线程本地存储
+</span><span class="c1"></span>  <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="n">threadLocalList</span> <span class="o">=</span> <span class="n">threadList</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">threadLocalList</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">&lt;</span> <span class="n">50</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">threadLocalList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">weakThreadLocals</span> 
+      <span class="o">?</span> <span class="k">new</span> <span class="n">WeakReference</span><span class="o">&lt;&gt;(</span><span class="n">bagEntry</span><span class="o">)</span> 
+      <span class="o">:</span> <span class="n">bagEntry</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="总结">总结</h2>
 <p>HiKariCP 中的 FastList 和 ConcurrentBag 这两个数据结构使用得非常巧妙，虽然实现起来并不复杂，但是对于性能的提升非常明显，根本原因在于这两个数据结构适用于数据库连接池这个特定的场景。<strong>FastList 适用于逆序删除场景</strong>；而 <strong>ConcurrentBag 通过 ThreadLocal 做一次预分配，避免直接竞争共享资源，非常适合池化资源的分配</strong>。</p>
 <p>在实际工作中，我们遇到的并发问题千差万别，这时<strong>选择合适的并发数据结构就非常重要了</strong>。当然能选对的前提是对特定场景的并发特性有深入的了解**，只有了解到无谓的性能消耗在哪里，才能对症下药。**</p>
 
@@ -498,7 +658,7 @@ ResultSet rs <span style="color:#f92672">=</span> <span style="color:#66d9ef">nu
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

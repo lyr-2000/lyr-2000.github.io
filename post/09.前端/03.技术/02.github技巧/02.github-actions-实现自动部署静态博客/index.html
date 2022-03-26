@@ -50,7 +50,7 @@
 <meta itemprop="description" content="GitHub Actions 实现自动部署静态博客 前言 我使用vuepress搭建了一个静态博客，挂在了Github pages和Coding pages上面。 coding pages">
 <meta itemprop="datePublished" content="2019-12-27T11:44:41&#43;00:00" />
 <meta itemprop="dateModified" content="2019-12-27T11:44:41&#43;00:00" />
-<meta itemprop="wordCount" content="1795">
+<meta itemprop="wordCount" content="2100">
 
 
 
@@ -191,8 +191,8 @@ input.PC_MARK1:focus{
             <a href="/categories/%E6%8A%80%E6%9C%AF/"> 技术 </a>
             <a href="/categories/github%E6%8A%80%E5%B7%A7/"> GitHub技巧 </a>
             </div>
-          <span class="more-meta"> 约 1795 字 </span>
-          <span class="more-meta"> 预计阅读 4 分钟 </span>
+          <span class="more-meta"> 约 2100 字 </span>
+          <span class="more-meta"> 预计阅读 5 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -229,35 +229,69 @@ input.PC_MARK1:focus{
 <p>GitHub Actions 的配置文件叫做 workflow 文件，存放在代码仓库的<code>.github/workflows</code>目录。</p>
 <p>workflow 文件采用 <a href="https://xugaoyi.com/pages/4e8444e2d534d14f/">YAML 格式</a>，文件名可以任意取，但是后缀名统一为<code>.yml</code>，比如<code>ci.yml</code>。一个库可以有多个 workflow 文件。GitHub 只要发现<code>.github/workflows</code>目录里面有<code>.yml</code>文件，就会自动运行该文件。</p>
 <p>我的<code>ci.yml</code>文件：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">name</span>: CI
-
-<span style="color:#75715e"># 在master分支发生push事件时触发。</span>
-<span style="color:#66d9ef">on</span>: 
-  <span style="color:#66d9ef">push</span>:
-    <span style="color:#66d9ef">branches</span>:
-      - master
-<span style="color:#66d9ef">jobs</span>: <span style="color:#75715e"># 工作流</span>
-  <span style="color:#66d9ef">build</span>:
-    <span style="color:#66d9ef">runs-on</span>: ubuntu-latest <span style="color:#75715e">#运行在虚拟机环境ubuntu-latest</span>
-
-    <span style="color:#66d9ef">strategy</span>:
-      <span style="color:#66d9ef">matrix</span>:
-        <span style="color:#66d9ef">node-version</span>: [<span style="color:#ae81ff">10.</span>x]
-
-    <span style="color:#66d9ef">steps</span>: 
-      - <span style="color:#66d9ef">name</span>: Checkout <span style="color:#75715e"># 步骤1</span>
-        <span style="color:#66d9ef">uses</span>: actions/checkout@v1 <span style="color:#75715e"># 使用的动作。格式：userName/repoName。作用：检出仓库，获取源码。 官方actions库：https://github.com/actions</span>
-      - <span style="color:#66d9ef">name</span>: Use Node.js ${{ matrix.node-version }} <span style="color:#75715e"># 步骤2</span>
-        <span style="color:#66d9ef">uses</span>: actions/setup-node@v1 <span style="color:#75715e"># 作用：安装nodejs</span>
-        <span style="color:#66d9ef">with</span>:
-          <span style="color:#66d9ef">node-version</span>: ${{ matrix.node-version }} <span style="color:#75715e"># 版本</span>
-      - <span style="color:#66d9ef">name</span>: run deploy.sh <span style="color:#75715e"># 步骤3 （同时部署到github和coding）</span>
-        <span style="color:#66d9ef">env</span>: <span style="color:#75715e"># 设置环境变量</span>
-          <span style="color:#66d9ef">GITHUB_TOKEN</span>: ${{ secrets.ACCESS_TOKEN }} <span style="color:#75715e"># toKen私密变量</span>
-          <span style="color:#66d9ef">CODING_TOKEN</span>: ${{ secrets.CODING_TOKEN }} <span style="color:#75715e"># 腾讯云开发者平台（coding）私密token</span>
-        <span style="color:#66d9ef">run</span>: npm install <span style="color:#75715e">&amp;&amp;</span> npm run deploy <span style="color:#75715e"># 执行的命令  </span>
-        <span style="color:#75715e"># package.json 中添加 &#34;deploy&#34;: &#34;bash deploy.sh&#34;</span>
-</code></pre></div><p>这个配置文件会在我push提交代码到主分支时触发工作，运行环境是<code>ubuntu-latest</code>，工作步骤：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="k">name</span><span class="p">:</span><span class="w"> </span>CI<span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="c"># 在master分支发生push事件时触发。</span><span class="w">
+</span><span class="w"></span><span class="k">on</span><span class="p">:</span><span class="w"> 
+</span><span class="w">  </span><span class="k">push</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="k">branches</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- master<span class="w">
+</span><span class="w"></span><span class="k">jobs</span><span class="p">:</span><span class="w"> </span><span class="c"># 工作流</span><span class="w">
+</span><span class="w">  </span><span class="k">build</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="k">runs-on</span><span class="p">:</span><span class="w"> </span>ubuntu-latest<span class="w"> </span><span class="c">#运行在虚拟机环境ubuntu-latest</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="k">strategy</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="k">matrix</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span><span class="k">node-version</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="m">10.</span>x<span class="p">]</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="k">steps</span><span class="p">:</span><span class="w"> 
+</span><span class="w">      </span>- <span class="k">name</span><span class="p">:</span><span class="w"> </span>Checkout<span class="w"> </span><span class="c"># 步骤1</span><span class="w">
+</span><span class="w">        </span><span class="k">uses</span><span class="p">:</span><span class="w"> </span>actions/checkout@v1<span class="w"> </span><span class="c"># 使用的动作。格式：userName/repoName。作用：检出仓库，获取源码。 官方actions库：https://github.com/actions</span><span class="w">
+</span><span class="w">      </span>- <span class="k">name</span><span class="p">:</span><span class="w"> </span>Use<span class="w"> </span>Node.js<span class="w"> </span>${{<span class="w"> </span>matrix.node-version<span class="w"> </span>}}<span class="w"> </span><span class="c"># 步骤2</span><span class="w">
+</span><span class="w">        </span><span class="k">uses</span><span class="p">:</span><span class="w"> </span>actions/setup-node@v1<span class="w"> </span><span class="c"># 作用：安装nodejs</span><span class="w">
+</span><span class="w">        </span><span class="k">with</span><span class="p">:</span><span class="w">
+</span><span class="w">          </span><span class="k">node-version</span><span class="p">:</span><span class="w"> </span>${{<span class="w"> </span>matrix.node-version<span class="w"> </span>}}<span class="w"> </span><span class="c"># 版本</span><span class="w">
+</span><span class="w">      </span>- <span class="k">name</span><span class="p">:</span><span class="w"> </span>run<span class="w"> </span>deploy.sh<span class="w"> </span><span class="c"># 步骤3 （同时部署到github和coding）</span><span class="w">
+</span><span class="w">        </span><span class="k">env</span><span class="p">:</span><span class="w"> </span><span class="c"># 设置环境变量</span><span class="w">
+</span><span class="w">          </span><span class="k">GITHUB_TOKEN</span><span class="p">:</span><span class="w"> </span>${{<span class="w"> </span>secrets.ACCESS_TOKEN<span class="w"> </span>}}<span class="w"> </span><span class="c"># toKen私密变量</span><span class="w">
+</span><span class="w">          </span><span class="k">CODING_TOKEN</span><span class="p">:</span><span class="w"> </span>${{<span class="w"> </span>secrets.CODING_TOKEN<span class="w"> </span>}}<span class="w"> </span><span class="c"># 腾讯云开发者平台（coding）私密token</span><span class="w">
+</span><span class="w">        </span><span class="k">run</span><span class="p">:</span><span class="w"> </span>npm<span class="w"> </span>install<span class="w"> </span><span class="cp">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>deploy<span class="w"> </span><span class="c"># 执行的命令  </span><span class="w">
+</span><span class="w">        </span><span class="c"># package.json 中添加 &#34;deploy&#34;: &#34;bash deploy.sh&#34;</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>这个配置文件会在我push提交代码到主分支时触发工作，运行环境是<code>ubuntu-latest</code>，工作步骤：</p>
 <ul>
 <li>
 <p>一，获取仓库源码</p>
@@ -273,42 +307,83 @@ input.PC_MARK1:focus{
 <p>ACCESS_TOKE 和 CODING_TOKEN 都是保存在github仓库的<code>Settings/Secrets</code>位置的私密变量，仓库代码中可以通过&lt;secrets.变量名&gt;来获取，保证了token的私密性。</p>
 </blockquote>
 <p>再来看看将要被运行的<code>deploy.sh</code>部署代码：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e">#!/usr/bin/env sh
-</span><span style="color:#75715e"></span><span style="color:#75715e"># 确保脚本抛出遇到的错误</span>
-set -e
-npm run build <span style="color:#75715e"># 生成静态文件</span>
-cd docs/.vuepress/dist <span style="color:#75715e"># 进入生成的文件夹</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sh" data-lang="sh"><span class="cp">#!/usr/bin/env sh
+</span><span class="cp"></span><span class="c1"># 确保脚本抛出遇到的错误</span>
+<span class="nb">set</span> -e
+npm run build <span class="c1"># 生成静态文件</span>
+<span class="nb">cd</span> docs/.vuepress/dist <span class="c1"># 进入生成的文件夹</span>
 
-<span style="color:#75715e"># deploy to github</span>
-echo <span style="color:#e6db74">&#39;blog.xugaoyi.com&#39;</span> &gt; CNAME
-<span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> -z <span style="color:#e6db74">&#34;</span>$GITHUB_TOKEN<span style="color:#e6db74">&#34;</span> <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
-  msg<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;deploy&#39;</span>
-  githubUrl<span style="color:#f92672">=</span>git@github.com:xugaoyi/blog.git
-<span style="color:#66d9ef">else</span>
-  msg<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;来自github action的自动部署&#39;</span>
-  githubUrl<span style="color:#f92672">=</span>https://xugaoyi:<span style="color:#e6db74">${</span>GITHUB_TOKEN<span style="color:#e6db74">}</span>@github.com/xugaoyi/blog.git
-  git config --global user.name <span style="color:#e6db74">&#34;xugaoyi&#34;</span>
-  git config --global user.email <span style="color:#e6db74">&#34;894072666@qq.com&#34;</span>
-<span style="color:#66d9ef">fi</span>
+<span class="c1"># deploy to github</span>
+<span class="nb">echo</span> <span class="s1">&#39;blog.xugaoyi.com&#39;</span> &gt; CNAME
+<span class="k">if</span> <span class="o">[</span> -z <span class="s2">&#34;</span><span class="nv">$GITHUB_TOKEN</span><span class="s2">&#34;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+  <span class="nv">msg</span><span class="o">=</span><span class="s1">&#39;deploy&#39;</span>
+  <span class="nv">githubUrl</span><span class="o">=</span>git@github.com:xugaoyi/blog.git
+<span class="k">else</span>
+  <span class="nv">msg</span><span class="o">=</span><span class="s1">&#39;来自github action的自动部署&#39;</span>
+  <span class="nv">githubUrl</span><span class="o">=</span>https://xugaoyi:<span class="si">${</span><span class="nv">GITHUB_TOKEN</span><span class="si">}</span>@github.com/xugaoyi/blog.git
+  git config --global user.name <span class="s2">&#34;xugaoyi&#34;</span>
+  git config --global user.email <span class="s2">&#34;894072666@qq.com&#34;</span>
+<span class="k">fi</span>
 git init
 git add -A
-git commit -m <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>msg<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
-git push -f $githubUrl master:gh-pages <span style="color:#75715e"># 推送到github</span>
+git commit -m <span class="s2">&#34;</span><span class="si">${</span><span class="nv">msg</span><span class="si">}</span><span class="s2">&#34;</span>
+git push -f <span class="nv">$githubUrl</span> master:gh-pages <span class="c1"># 推送到github</span>
 
-<span style="color:#75715e"># deploy to coding</span>
-echo <span style="color:#e6db74">&#39;www.xugaoyi.com\nxugaoyi.com&#39;</span> &gt; CNAME  <span style="color:#75715e"># 自定义域名</span>
-<span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> -z <span style="color:#e6db74">&#34;</span>$CODING_TOKEN<span style="color:#e6db74">&#34;</span> <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>  <span style="color:#75715e"># -z 字符串 长度为0则为true；$CODING_TOKEN来自于github仓库`Settings/Secrets`设置的私密环境变量</span>
-  codingUrl<span style="color:#f92672">=</span>git@git.dev.tencent.com:xugaoyi/xugaoyi.git
-<span style="color:#66d9ef">else</span>
-  codingUrl<span style="color:#f92672">=</span>https://xugaoyi:<span style="color:#e6db74">${</span>CODING_TOKEN<span style="color:#e6db74">}</span>@git.dev.tencent.com/xugaoyi/xugaoyi.git
-<span style="color:#66d9ef">fi</span>
+<span class="c1"># deploy to coding</span>
+<span class="nb">echo</span> <span class="s1">&#39;www.xugaoyi.com\nxugaoyi.com&#39;</span> &gt; CNAME  <span class="c1"># 自定义域名</span>
+<span class="k">if</span> <span class="o">[</span> -z <span class="s2">&#34;</span><span class="nv">$CODING_TOKEN</span><span class="s2">&#34;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>  <span class="c1"># -z 字符串 长度为0则为true；$CODING_TOKEN来自于github仓库`Settings/Secrets`设置的私密环境变量</span>
+  <span class="nv">codingUrl</span><span class="o">=</span>git@git.dev.tencent.com:xugaoyi/xugaoyi.git
+<span class="k">else</span>
+  <span class="nv">codingUrl</span><span class="o">=</span>https://xugaoyi:<span class="si">${</span><span class="nv">CODING_TOKEN</span><span class="si">}</span>@git.dev.tencent.com/xugaoyi/xugaoyi.git
+<span class="k">fi</span>
 git add -A
-git commit -m <span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>msg<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
-git push -f $codingUrl master <span style="color:#75715e"># 推送到coding</span>
+git commit -m <span class="s2">&#34;</span><span class="si">${</span><span class="nv">msg</span><span class="si">}</span><span class="s2">&#34;</span>
+git push -f <span class="nv">$codingUrl</span> master <span class="c1"># 推送到coding</span>
 
-cd -
+<span class="nb">cd</span> -
 rm -rf docs/.vuepress/dist
-</code></pre></div><p>这个文件使用<a href="https://ipcmen.com/">Shell命令</a>写的，它会先运行打包命令，进入打包好的文件，创建一个自定义域名的CNAME文件（如果你没有自定义域名可去掉这个命令），判断是否有token环境变量，如果没有说明是在本地自己的电脑上运行的部署，使用ssh代码仓库地址，如果有token环境变量，说明是GitHub Actions自动触发的部署，此时使用的是可以通过toKen来获取代码提交权限的提交地址。最后通过git命令提交到各自的仓库，完成部署。</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>这个文件使用<a href="https://ipcmen.com/">Shell命令</a>写的，它会先运行打包命令，进入打包好的文件，创建一个自定义域名的CNAME文件（如果你没有自定义域名可去掉这个命令），判断是否有token环境变量，如果没有说明是在本地自己的电脑上运行的部署，使用ssh代码仓库地址，如果有token环境变量，说明是GitHub Actions自动触发的部署，此时使用的是可以通过toKen来获取代码提交权限的提交地址。最后通过git命令提交到各自的仓库，完成部署。</p>
 <blockquote>
 <p>提示：</p>
 <ul>
@@ -452,7 +527,7 @@ rm -rf docs/.vuepress/dist
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

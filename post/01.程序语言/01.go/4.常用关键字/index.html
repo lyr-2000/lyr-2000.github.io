@@ -50,7 +50,7 @@
 <meta itemprop="description" content="for和range for循环的三种用法 for range用于遍历切片，数组或者map 几个用法 使用 for range a {} 遍历数组和切片，不关心索引和数据的情况； 使">
 <meta itemprop="datePublished" content="2021-03-20T15:46:19&#43;00:00" />
 <meta itemprop="dateModified" content="2021-03-20T15:46:19&#43;00:00" />
-<meta itemprop="wordCount" content="2609">
+<meta itemprop="wordCount" content="2789">
 
 
 
@@ -191,7 +191,7 @@ input.PC_MARK1:focus{
             <a href="/categories/%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/"> 程序语言 </a>
             <a href="/categories/go/"> Go </a>
             </div>
-          <span class="more-meta"> 约 2609 字 </span>
+          <span class="more-meta"> 约 2789 字 </span>
           <span class="more-meta"> 预计阅读 6 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -257,71 +257,150 @@ input.PC_MARK1:focus{
 <li>使用 <code>for i, elem := range a {}</code> 遍历数组和切片，关心索引和数据的情况；</li>
 </ol>
 <h3 id="for-range里面修改数组后不会改变遍历次数">for range里面修改数组后不会改变遍历次数</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-	<span style="color:#a6e22e">arr</span> <span style="color:#f92672">:=</span> []<span style="color:#66d9ef">int</span>{<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>}
-	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">v</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">arr</span> {
-		<span style="color:#a6e22e">arr</span> = append(<span style="color:#a6e22e">arr</span>, <span style="color:#a6e22e">v</span>)
-	}
-	<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">arr</span>)
-}
-<span style="color:#960050;background-color:#1e0010">$</span> <span style="color:#66d9ef">go</span> <span style="color:#a6e22e">run</span> <span style="color:#a6e22e">main</span>.<span style="color:#66d9ef">go</span>
-<span style="color:#ae81ff">1</span> <span style="color:#ae81ff">2</span> <span style="color:#ae81ff">3</span> <span style="color:#ae81ff">1</span> <span style="color:#ae81ff">2</span> <span style="color:#ae81ff">3</span>
-</code></pre></div><p>这里for代码只会执行3次，为什么？</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">arr</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}</span>
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">v</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">arr</span> <span class="p">{</span>
+		<span class="nx">arr</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">arr</span><span class="p">,</span> <span class="nx">v</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">arr</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="err">$</span> <span class="k">go</span> <span class="nx">run</span> <span class="nx">main</span><span class="p">.</span><span class="k">go</span>
+<span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这里for代码只会执行3次，为什么？</p>
 <p>因为我们在遍历时go会把切片赋值给一个新变量，同时通过<code>len</code>预先获取切片长度，所以不会改变循环次数</p>
 <h3 id="for-range使用指针问题">for range使用指针问题</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-	<span style="color:#a6e22e">arr</span> <span style="color:#f92672">:=</span> []<span style="color:#66d9ef">int</span>{<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>}
-	<span style="color:#a6e22e">newArr</span> <span style="color:#f92672">:=</span> []<span style="color:#f92672">*</span><span style="color:#66d9ef">int</span>{}
-	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">v</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">arr</span> {
-		<span style="color:#a6e22e">newArr</span> = append(<span style="color:#a6e22e">newArr</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">v</span>)
-	}
-	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">v</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">newArr</span> {
-		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#f92672">*</span><span style="color:#a6e22e">v</span>)
-	}
-}
-<span style="color:#960050;background-color:#1e0010">$</span> <span style="color:#66d9ef">go</span> <span style="color:#a6e22e">run</span> <span style="color:#a6e22e">main</span>.<span style="color:#66d9ef">go</span>
-<span style="color:#ae81ff">3</span> <span style="color:#ae81ff">3</span> <span style="color:#ae81ff">3</span>
-</code></pre></div><p>为什么会这样？</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">arr</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}</span>
+	<span class="nx">newArr</span> <span class="o">:=</span> <span class="p">[]</span><span class="o">*</span><span class="kt">int</span><span class="p">{}</span>
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">v</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">arr</span> <span class="p">{</span>
+		<span class="nx">newArr</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">newArr</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">v</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">v</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">newArr</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="o">*</span><span class="nx">v</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+<span class="err">$</span> <span class="k">go</span> <span class="nx">run</span> <span class="nx">main</span><span class="p">.</span><span class="k">go</span>
+<span class="mi">3</span> <span class="mi">3</span> <span class="mi">3</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>为什么会这样？</p>
 <p>因为go遍历时会额外新建<code>V2</code>来存切片中的元素，而且每次循环时会重新覆盖这个值，所以结果会相同。正确的做法应该是使用 <code>&amp;arr[i]</code> 替代 <code>&amp;v</code></p>
 <h3 id="for-range清空数组的代码会进行优化">for range清空数组的代码会进行优化</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-	<span style="color:#a6e22e">arr</span> <span style="color:#f92672">:=</span> []<span style="color:#66d9ef">int</span>{<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>}
-	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span>, <span style="color:#a6e22e">_</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">arr</span> {
-		<span style="color:#a6e22e">arr</span>[<span style="color:#a6e22e">i</span>] = <span style="color:#ae81ff">0</span>
-	}
-}
-</code></pre></div><p>依次遍历切片和哈希看起来是非常耗费性能的，<strong>因为数组、切片和哈希占用的内存空间都是连续的，go会对上面这种代码进行优化，会直接清空这片内存中的内容</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">arr</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}</span>
+	<span class="k">for</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">arr</span> <span class="p">{</span>
+		<span class="nx">arr</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="mi">0</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>依次遍历切片和哈希看起来是非常耗费性能的，<strong>因为数组、切片和哈希占用的内存空间都是连续的，go会对上面这种代码进行优化，会直接清空这片内存中的内容</strong></p>
 <h3 id="map会随机遍历">map会随机遍历</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-	<span style="color:#a6e22e">hash</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#66d9ef">int</span>{
-		<span style="color:#e6db74">&#34;1&#34;</span>: <span style="color:#ae81ff">1</span>,
-		<span style="color:#e6db74">&#34;2&#34;</span>: <span style="color:#ae81ff">2</span>,
-		<span style="color:#e6db74">&#34;3&#34;</span>: <span style="color:#ae81ff">3</span>,
-	}
-	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">k</span>, <span style="color:#a6e22e">v</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">hash</span> {
-		println(<span style="color:#a6e22e">k</span>, <span style="color:#a6e22e">v</span>)
-	}
-}
-</code></pre></div><p>这段代码，每次执行的结果都不一样**，因为go会生成随机数，随机选择一个桶来作为起始地址进行遍历。**</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">hash</span> <span class="o">:=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span><span class="p">{</span>
+		<span class="s">&#34;1&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+		<span class="s">&#34;2&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+		<span class="s">&#34;3&#34;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+	<span class="p">}</span>
+	<span class="k">for</span> <span class="nx">k</span><span class="p">,</span> <span class="nx">v</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">hash</span> <span class="p">{</span>
+		<span class="nb">println</span><span class="p">(</span><span class="nx">k</span><span class="p">,</span> <span class="nx">v</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这段代码，每次执行的结果都不一样**，因为go会生成随机数，随机选择一个桶来作为起始地址进行遍历。**</p>
 <p>详细参考：<a href="https://draveness.me/golang/docs/part2-foundation/ch05-keyword/golang-for-range/">Go 语言 for 和 range 的实现 | Go 语言设计与实现 (draveness.me)</a></p>
 <h2 id="select">select</h2>
 <blockquote>
 <p><code>select</code> 是操作系统中的系统调用，我们经常会使用 <code>select</code>、<code>poll</code> 和 <code>epoll</code> 等函数构建 I/O 多路复用模型提升程序的性能。Go 语言的 <code>select</code> 与操作系统中的 <code>select</code> 比较相似，<strong>同样用于监听IO多路操作</strong></p>
 </blockquote>
 <h3 id="简单例子">简单例子</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">fibonacci</span>(<span style="color:#a6e22e">c</span>, <span style="color:#a6e22e">quit</span> <span style="color:#66d9ef">chan</span> <span style="color:#66d9ef">int</span>) {
-	<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>
-	<span style="color:#66d9ef">for</span> {
-		<span style="color:#66d9ef">select</span> {
-		<span style="color:#66d9ef">case</span> <span style="color:#a6e22e">c</span> <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">x</span>:
-			<span style="color:#a6e22e">x</span>, <span style="color:#a6e22e">y</span> = <span style="color:#a6e22e">y</span>, <span style="color:#a6e22e">x</span><span style="color:#f92672">+</span><span style="color:#a6e22e">y</span>
-		<span style="color:#66d9ef">case</span> <span style="color:#f92672">&lt;-</span><span style="color:#a6e22e">quit</span>:
-			<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;quit&#34;</span>)
-			<span style="color:#66d9ef">return</span>
-		}
-	}
-}
-</code></pre></div><p>上述控制结构会等待 <code>c &lt;- x</code> 或者 <code>&lt;-quit</code> 两个表达式中任意一个返回。无论哪一个表达式返回都会立刻执行 <code>case</code> 中的代码，当 <code>select</code> 中的两个 <code>case</code> 同时被触发时，会随机执行其中的一个。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">fibonacci</span><span class="p">(</span><span class="nx">c</span><span class="p">,</span> <span class="nx">quit</span> <span class="kd">chan</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">x</span><span class="p">,</span> <span class="nx">y</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+	<span class="k">for</span> <span class="p">{</span>
+		<span class="k">select</span> <span class="p">{</span>
+		<span class="k">case</span> <span class="nx">c</span> <span class="o">&lt;-</span> <span class="nx">x</span><span class="p">:</span>
+			<span class="nx">x</span><span class="p">,</span> <span class="nx">y</span> <span class="p">=</span> <span class="nx">y</span><span class="p">,</span> <span class="nx">x</span><span class="o">+</span><span class="nx">y</span>
+		<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">quit</span><span class="p">:</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;quit&#34;</span><span class="p">)</span>
+			<span class="k">return</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>上述控制结构会等待 <code>c &lt;- x</code> 或者 <code>&lt;-quit</code> 两个表达式中任意一个返回。无论哪一个表达式返回都会立刻执行 <code>case</code> 中的代码，当 <code>select</code> 中的两个 <code>case</code> 同时被触发时，会随机执行其中的一个。</p>
 <h3 id="特性">特性</h3>
 <ol>
 <li>当 <code>select</code> 中的两个 <code>case</code> 同时被触发时，会随机执行其中的一个</li>
@@ -339,19 +418,37 @@ input.PC_MARK1:focus{
 <p><code>defer</code> 会在当前函数返回前执行传入的函数，它会经常被用于关闭文件描述符、关闭数据库连接以及解锁资源。</p>
 </blockquote>
 <h3 id="多个defer的执行顺序">多个defer的执行顺序</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#ae81ff">5</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
-		<span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">i</span>)
-	}
-}
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">5</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="k">defer</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
 
-<span style="color:#960050;background-color:#1e0010">$</span> <span style="color:#66d9ef">go</span> <span style="color:#a6e22e">run</span> <span style="color:#a6e22e">main</span>.<span style="color:#66d9ef">go</span>
-<span style="color:#ae81ff">4</span>
-<span style="color:#ae81ff">3</span>
-<span style="color:#ae81ff">2</span>
-<span style="color:#ae81ff">1</span>
-<span style="color:#ae81ff">0</span>
-</code></pre></div><p>我们可以看到，越到后面的defer会越先执行</p>
+<span class="err">$</span> <span class="k">go</span> <span class="nx">run</span> <span class="nx">main</span><span class="p">.</span><span class="k">go</span>
+<span class="mi">4</span>
+<span class="mi">3</span>
+<span class="mi">2</span>
+<span class="mi">1</span>
+<span class="mi">0</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>我们可以看到，越到后面的defer会越先执行</p>
 <p>深入可参考：<a href="https://draveness.me/golang/docs/part2-foundation/ch05-keyword/golang-defer/">理解 Go 语言 defer 关键字的原理 | Go 语言设计与实现 (draveness.me)</a></p>
 <h3 id="return和defer之间的关系">return和defer之间的关系</h3>
 <p>Go 的函数返回值是通过堆栈返回的, return 语句不是原子操作，而是被拆成了两步.</p>
@@ -361,96 +458,190 @@ input.PC_MARK1:focus{
 <li>返回给调用函数(ret)</li>
 </ul>
 <p>下面这个例子就很好的说明了整个return执行的流程</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
-<span style="color:#f92672">import</span> <span style="color:#e6db74">&#34;fmt&#34;</span>
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">increase</span>(<span style="color:#ae81ff">1</span>))
-}
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">increase</span>(<span style="color:#a6e22e">d</span> <span style="color:#66d9ef">int</span>) (<span style="color:#a6e22e">ret</span> <span style="color:#66d9ef">int</span>) {
-  <span style="color:#66d9ef">defer</span> <span style="color:#66d9ef">func</span>() {
-    <span style="color:#a6e22e">ret</span><span style="color:#f92672">++</span>
-  }()
-  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">d</span>
-}
-<span style="color:#75715e">// 函数会返回2
-</span></code></pre></div><h3 id="defer表达式的返回值会被丢弃">defer表达式的返回值会被丢弃</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nf">increase</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="p">}</span>
+<span class="kd">func</span> <span class="nf">increase</span><span class="p">(</span><span class="nx">d</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="nx">ret</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">ret</span><span class="o">++</span>
+  <span class="p">}()</span>
+  <span class="k">return</span> <span class="nx">d</span>
+<span class="p">}</span>
+<span class="c1">// 函数会返回2
+</span></code></pre></td></tr></table>
+</div>
+</div><h3 id="defer表达式的返回值会被丢弃">defer表达式的返回值会被丢弃</h3>
 <p>闭包与匿名函数.</p>
 <ul>
 <li>匿名函数：没有函数名的函数。</li>
 <li>闭包：可以使用另外一个函数作用域中的变量的函数。</li>
 </ul>
 <p>在实际开发中，defer 的使用经常伴随着闭包与匿名函数的使用</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
-<span style="color:#f92672">import</span> <span style="color:#e6db74">&#34;fmt&#34;</span>
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#ae81ff">5</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
-        <span style="color:#66d9ef">defer</span> <span style="color:#66d9ef">func</span>() {
-            <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">i</span>)
-        }()
-    }
-}
-<span style="color:#75715e">/**
-</span><span style="color:#75715e">5
-</span><span style="color:#75715e">5
-</span><span style="color:#75715e">5
-</span><span style="color:#75715e">5
-</span><span style="color:#75715e">5
-</span><span style="color:#75715e">之所以这样是因为,defer 表达式中的 i 是对 for 循环中 i 的引用。到最后，i 加到 5，故最后全部打印 5。
-</span><span style="color:#75715e">如果将 i 作为参数传入 defer 表达式中，在传入最初就会进行求值保存，只是没有执行延迟函数而已。
-</span><span style="color:#75715e">**/</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">5</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
+        <span class="p">}()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="cm">/**
+</span><span class="cm">5
+</span><span class="cm">5
+</span><span class="cm">5
+</span><span class="cm">5
+</span><span class="cm">5
+</span><span class="cm">之所以这样是因为,defer 表达式中的 i 是对 for 循环中 i 的引用。到最后，i 加到 5，故最后全部打印 5。
+</span><span class="cm">如果将 i 作为参数传入 defer 表达式中，在传入最初就会进行求值保存，只是没有执行延迟函数而已。
+</span><span class="cm">**/</span>
 
-<span style="color:#75715e">/**比如下面这种情况**/</span>
+<span class="cm">/**比如下面这种情况**/</span>
 
-<span style="color:#75715e">// 这个函数会返回1，因为defer执行的比return更晚，当return返回0时，此时执行defer，然后defer就会对result进行++操作
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">f1</span>() (<span style="color:#a6e22e">result</span> <span style="color:#66d9ef">int</span>) {
-	<span style="color:#66d9ef">defer</span> <span style="color:#66d9ef">func</span>() {
-		<span style="color:#a6e22e">result</span><span style="color:#f92672">++</span>
-	}()
-	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
-}
+<span class="c1">// 这个函数会返回1，因为defer执行的比return更晚，当return返回0时，此时执行defer，然后defer就会对result进行++操作
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">f1</span><span class="p">()</span> <span class="p">(</span><span class="nx">result</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">result</span><span class="o">++</span>
+	<span class="p">}()</span>
+	<span class="k">return</span> <span class="mi">0</span>
+<span class="p">}</span>
 
-<span style="color:#75715e">// 这个函数会返回5，同样是因为defer执行的更晚
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">f2</span>() (<span style="color:#a6e22e">r</span> <span style="color:#66d9ef">int</span>) {
-    <span style="color:#a6e22e">t</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">5</span>
-   <span style="color:#66d9ef">defer</span> <span style="color:#66d9ef">func</span>() {
-    <span style="color:#75715e">// 这里并不会修改返回值，除非我们修改r
-</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">t</span> = <span style="color:#a6e22e">t</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">5</span>
-   }()
-   <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">t</span>
-}
-<span style="color:#75715e">// 你也可以这样理解
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">f</span>() (<span style="color:#a6e22e">r</span> <span style="color:#66d9ef">int</span>) {
-     <span style="color:#a6e22e">t</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">5</span>
-     <span style="color:#a6e22e">r</span> = <span style="color:#a6e22e">t</span> <span style="color:#75715e">// 赋值指令
-</span><span style="color:#75715e"></span>     <span style="color:#66d9ef">func</span>() {        <span style="color:#75715e">// defer被插入到赋值与返回之间执行，这个例子中返回值r没被修改过
-</span><span style="color:#75715e"></span>         <span style="color:#a6e22e">t</span> = <span style="color:#a6e22e">t</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">5</span>
-     }
-     <span style="color:#66d9ef">return</span>        <span style="color:#75715e">// 空的return指令
-</span><span style="color:#75715e"></span>}
+<span class="c1">// 这个函数会返回5，同样是因为defer执行的更晚
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">f2</span><span class="p">()</span> <span class="p">(</span><span class="nx">r</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">t</span> <span class="o">:=</span> <span class="mi">5</span>
+   <span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// 这里并不会修改返回值，除非我们修改r
+</span><span class="c1"></span>    <span class="nx">t</span> <span class="p">=</span> <span class="nx">t</span> <span class="o">+</span> <span class="mi">5</span>
+   <span class="p">}()</span>
+   <span class="k">return</span> <span class="nx">t</span>
+<span class="p">}</span>
+<span class="c1">// 你也可以这样理解
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">f</span><span class="p">()</span> <span class="p">(</span><span class="nx">r</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+     <span class="nx">t</span> <span class="o">:=</span> <span class="mi">5</span>
+     <span class="nx">r</span> <span class="p">=</span> <span class="nx">t</span> <span class="c1">// 赋值指令
+</span><span class="c1"></span>     <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>        <span class="c1">// defer被插入到赋值与返回之间执行，这个例子中返回值r没被修改过
+</span><span class="c1"></span>         <span class="nx">t</span> <span class="p">=</span> <span class="nx">t</span> <span class="o">+</span> <span class="mi">5</span>
+     <span class="p">}</span>
+     <span class="k">return</span>        <span class="c1">// 空的return指令
+</span><span class="c1"></span><span class="p">}</span>
 
-<span style="color:#75715e">// 这个函数会返回1，因为defer里面的r其实是一个局部变量，++操作不会影响返回的值
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">f3</span>() (<span style="color:#a6e22e">r</span> <span style="color:#66d9ef">int</span>) {
-	<span style="color:#66d9ef">defer</span> <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">r</span> <span style="color:#66d9ef">int</span>) {
-		<span style="color:#a6e22e">r</span> = <span style="color:#a6e22e">r</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">5</span>
-	}(<span style="color:#a6e22e">r</span>)
-	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>
-}
-<span style="color:#75715e">// 换成下面这个就会返回6了
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">f3</span>() (<span style="color:#a6e22e">r</span> <span style="color:#66d9ef">int</span>) {
-	<span style="color:#66d9ef">defer</span> <span style="color:#66d9ef">func</span>() {
-		<span style="color:#a6e22e">r</span> = <span style="color:#a6e22e">r</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">5</span>
-	}()
-	<span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>
-}
-<span style="color:#75715e">// 也可以这样理解
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">f</span>() (<span style="color:#a6e22e">r</span> <span style="color:#66d9ef">int</span>) {
-     <span style="color:#a6e22e">r</span> = <span style="color:#ae81ff">1</span>  <span style="color:#75715e">// 给返回值赋值
-</span><span style="color:#75715e"></span>     <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">r</span> <span style="color:#66d9ef">int</span>) {        <span style="color:#75715e">// 这里改的r是传值传进去的r，不会改变要返回的那个r值
-</span><span style="color:#75715e"></span>          <span style="color:#a6e22e">r</span> = <span style="color:#a6e22e">r</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">5</span>
-     }(<span style="color:#a6e22e">r</span>)
-     <span style="color:#66d9ef">return</span>        <span style="color:#75715e">// 空的return
-</span><span style="color:#75715e"></span>}
-</code></pre></div><h2 id="panic和recover">panic和recover</h2>
+<span class="c1">// 这个函数会返回1，因为defer里面的r其实是一个局部变量，++操作不会影响返回的值
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">f3</span><span class="p">()</span> <span class="p">(</span><span class="nx">r</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">(</span><span class="nx">r</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+		<span class="nx">r</span> <span class="p">=</span> <span class="nx">r</span> <span class="o">+</span> <span class="mi">5</span>
+	<span class="p">}(</span><span class="nx">r</span><span class="p">)</span>
+	<span class="k">return</span> <span class="mi">1</span>
+<span class="p">}</span>
+<span class="c1">// 换成下面这个就会返回6了
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">f3</span><span class="p">()</span> <span class="p">(</span><span class="nx">r</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">r</span> <span class="p">=</span> <span class="nx">r</span> <span class="o">+</span> <span class="mi">5</span>
+	<span class="p">}()</span>
+	<span class="k">return</span> <span class="mi">1</span>
+<span class="p">}</span>
+<span class="c1">// 也可以这样理解
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">f</span><span class="p">()</span> <span class="p">(</span><span class="nx">r</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+     <span class="nx">r</span> <span class="p">=</span> <span class="mi">1</span>  <span class="c1">// 给返回值赋值
+</span><span class="c1"></span>     <span class="kd">func</span><span class="p">(</span><span class="nx">r</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>        <span class="c1">// 这里改的r是传值传进去的r，不会改变要返回的那个r值
+</span><span class="c1"></span>          <span class="nx">r</span> <span class="p">=</span> <span class="nx">r</span> <span class="o">+</span> <span class="mi">5</span>
+     <span class="p">}(</span><span class="nx">r</span><span class="p">)</span>
+     <span class="k">return</span>        <span class="c1">// 空的return
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="panic和recover">panic和recover</h2>
 <ul>
 <li><code>panic</code> 能够改变程序的控制流，调用 <code>panic</code> 后会立刻停止执行当前函数的剩余代码，并在当前 Goroutine 中递归执行调用方的 <code>defer</code>；</li>
 <li><code>recover</code> 可以中止 <code>panic</code> 造成的程序崩溃。它是一个只能在 <code>defer</code> 中发挥作用的函数，在其他作用域中调用不会发挥作用；</li>
@@ -470,48 +661,103 @@ input.PC_MARK1:focus{
 <p>参考：<a href="https://draveness.me/golang/docs/part2-foundation/ch05-keyword/golang-make-and-new/">Go 语言中的 make 和 new | Go 语言设计与实现 (draveness.me)</a></p>
 <h2 id="switch">switch</h2>
 <p>go的switch的类型判断部分的表达式是可加可不加的，如果不加就需要在case里面进行判断</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">switch</span> {
-      <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">grade</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;A&#34;</span> :
-         <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;优秀!&#34;</span> )  
-      <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">grade</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;B&#34;</span>, <span style="color:#a6e22e">grade</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;C&#34;</span> :
-         <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;良好&#34;</span> )  
-      <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">grade</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;D&#34;</span> :
-         <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;及格&#34;</span> )  
-      <span style="color:#66d9ef">case</span> <span style="color:#a6e22e">grade</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;F&#34;</span>:
-         <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;不及格&#34;</span> )
-      <span style="color:#66d9ef">default</span>:
-         <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;差&#34;</span> );
-   }
-</code></pre></div><p>case里面可以有一个或者多个表达式</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">switch</span> <span style="color:#a6e22e">marks</span> {
-      <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">90</span>: <span style="color:#a6e22e">grade</span> = <span style="color:#e6db74">&#34;A&#34;</span>
-      <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">80</span>: <span style="color:#a6e22e">grade</span> = <span style="color:#e6db74">&#34;B&#34;</span>
-      <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">50</span>,<span style="color:#ae81ff">60</span>,<span style="color:#ae81ff">70</span> : <span style="color:#a6e22e">grade</span> = <span style="color:#e6db74">&#34;C&#34;</span>
-      <span style="color:#66d9ef">default</span>: <span style="color:#a6e22e">grade</span> = <span style="color:#e6db74">&#34;D&#34;</span>  
-   }
-</code></pre></div><p>case里是不需要用break的，因为go默认会加break。如果我们不想用break，那么可使用 <code>fallthrough</code>关键词来执行下面的case代码块</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="k">switch</span> <span class="p">{</span>
+      <span class="k">case</span> <span class="nx">grade</span> <span class="o">==</span> <span class="s">&#34;A&#34;</span> <span class="p">:</span>
+         <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;优秀!&#34;</span> <span class="p">)</span>  
+      <span class="k">case</span> <span class="nx">grade</span> <span class="o">==</span> <span class="s">&#34;B&#34;</span><span class="p">,</span> <span class="nx">grade</span> <span class="o">==</span> <span class="s">&#34;C&#34;</span> <span class="p">:</span>
+         <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;良好&#34;</span> <span class="p">)</span>  
+      <span class="k">case</span> <span class="nx">grade</span> <span class="o">==</span> <span class="s">&#34;D&#34;</span> <span class="p">:</span>
+         <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;及格&#34;</span> <span class="p">)</span>  
+      <span class="k">case</span> <span class="nx">grade</span> <span class="o">==</span> <span class="s">&#34;F&#34;</span><span class="p">:</span>
+         <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;不及格&#34;</span> <span class="p">)</span>
+      <span class="k">default</span><span class="p">:</span>
+         <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;差&#34;</span> <span class="p">);</span>
+   <span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>case里面可以有一个或者多个表达式</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="k">switch</span> <span class="nx">marks</span> <span class="p">{</span>
+      <span class="k">case</span> <span class="mi">90</span><span class="p">:</span> <span class="nx">grade</span> <span class="p">=</span> <span class="s">&#34;A&#34;</span>
+      <span class="k">case</span> <span class="mi">80</span><span class="p">:</span> <span class="nx">grade</span> <span class="p">=</span> <span class="s">&#34;B&#34;</span>
+      <span class="k">case</span> <span class="mi">50</span><span class="p">,</span><span class="mi">60</span><span class="p">,</span><span class="mi">70</span> <span class="p">:</span> <span class="nx">grade</span> <span class="p">=</span> <span class="s">&#34;C&#34;</span>
+      <span class="k">default</span><span class="p">:</span> <span class="nx">grade</span> <span class="p">=</span> <span class="s">&#34;D&#34;</span>  
+   <span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>case里是不需要用break的，因为go默认会加break。如果我们不想用break，那么可使用 <code>fallthrough</code>关键词来执行下面的case代码块</p>
 <h2 id="goto">goto</h2>
 <p>go是支持goto语句的，不过一般不推荐使用</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#f92672">import</span> <span style="color:#e6db74">&#34;fmt&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-   <span style="color:#75715e">/* 定义局部变量 */</span>
-   <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">a</span> <span style="color:#66d9ef">int</span> = <span style="color:#ae81ff">10</span>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+   <span class="cm">/* 定义局部变量 */</span>
+   <span class="kd">var</span> <span class="nx">a</span> <span class="kt">int</span> <span class="p">=</span> <span class="mi">10</span>
 
-   <span style="color:#75715e">/* 循环 */</span>
-   <span style="color:#a6e22e">LOOP</span>: <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">a</span> &lt; <span style="color:#ae81ff">20</span> {
-      <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">a</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">15</span> {
-         <span style="color:#75715e">/* 跳过迭代 */</span>
-         <span style="color:#a6e22e">a</span> = <span style="color:#a6e22e">a</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>
-         <span style="color:#66d9ef">goto</span> <span style="color:#a6e22e">LOOP</span>
-      }
-      <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;a的值为 : %d&#34;</span>, <span style="color:#a6e22e">a</span>)
-      <span style="color:#a6e22e">a</span><span style="color:#f92672">++</span>  
-   }  
-}
-</code></pre></div><h2 id="delete">delete</h2>
+   <span class="cm">/* 循环 */</span>
+   <span class="nx">LOOP</span><span class="p">:</span> <span class="k">for</span> <span class="nx">a</span> <span class="p">&lt;</span> <span class="mi">20</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="nx">a</span> <span class="o">==</span> <span class="mi">15</span> <span class="p">{</span>
+         <span class="cm">/* 跳过迭代 */</span>
+         <span class="nx">a</span> <span class="p">=</span> <span class="nx">a</span> <span class="o">+</span> <span class="mi">1</span>
+         <span class="k">goto</span> <span class="nx">LOOP</span>
+      <span class="p">}</span>
+      <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;a的值为 : %d&#34;</span><span class="p">,</span> <span class="nx">a</span><span class="p">)</span>
+      <span class="nx">a</span><span class="o">++</span>  
+   <span class="p">}</span>  
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="delete">delete</h2>
 <p><code>delete</code> 关键字用于删除哈希表 map 中的元素, 参数为 map 和其对应的 key</p>
 
     </div>
@@ -640,7 +886,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

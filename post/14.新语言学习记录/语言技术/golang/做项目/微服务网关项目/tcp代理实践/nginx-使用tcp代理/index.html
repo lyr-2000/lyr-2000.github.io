@@ -50,7 +50,7 @@
 <meta itemprop="description" content="nginx tcp代理 参考博客 四层负载和七层负载的区别： 四层代理 其实就是路由转发 实际是 路由转发与反向代理的区别 转发客户端与服务器只会有一次三次握手而代">
 <meta itemprop="datePublished" content="2022-02-16T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2022-02-16T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="548">
+<meta itemprop="wordCount" content="639">
 
 
 
@@ -188,7 +188,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2022-02-16 </span>
         
-          <span class="more-meta"> 约 548 字 </span>
+          <span class="more-meta"> 约 639 字 </span>
           <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -240,99 +240,202 @@ input.PC_MARK1:focus{
 <li>tcp服务器与代理结合，实现简单的负载均衡</li>
 </ul>
 <h2 id="golang实现tcp代理-demo">golang实现tcp代理 demo</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">commonhandle</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">commonhandle</span>
 
-<span style="color:#f92672">import</span> (
-	<span style="color:#e6db74">&#34;io&#34;</span>
-	<span style="color:#e6db74">&#34;log&#34;</span>
-	<span style="color:#e6db74">&#34;net&#34;</span>
-	<span style="color:#e6db74">&#34;net/url&#34;</span>
-)
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;io&#34;</span>
+	<span class="s">&#34;log&#34;</span>
+	<span class="s">&#34;net&#34;</span>
+	<span class="s">&#34;net/url&#34;</span>
+<span class="p">)</span>
 
-<span style="color:#75715e">//使用 协程处理 tcp 连接
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">CommonHandler</span> <span style="color:#66d9ef">struct</span> {
-}
+<span class="c1">//使用 协程处理 tcp 连接
+</span><span class="c1"></span>
+<span class="kd">type</span> <span class="nx">CommonHandler</span> <span class="kd">struct</span> <span class="p">{</span>
+<span class="p">}</span>
 
-<span style="color:#75715e">//开启协程，简历连接
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">transferData</span>(<span style="color:#a6e22e">con</span> <span style="color:#a6e22e">net</span>.<span style="color:#a6e22e">Conn</span>, <span style="color:#a6e22e">to</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">url</span>.<span style="color:#a6e22e">URL</span>) {
-	<span style="color:#75715e">//defer con.Close()
-</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">target</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">net</span>.<span style="color:#a6e22e">Dial</span>(<span style="color:#e6db74">&#34;tcp&#34;</span>, <span style="color:#a6e22e">to</span>.<span style="color:#a6e22e">Host</span>)
-	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;error occur [%+v]\n&#34;</span>, <span style="color:#a6e22e">err</span>)
-		<span style="color:#66d9ef">return</span>
-	}
-	<span style="color:#75715e">//defer target.Close()
-</span><span style="color:#75715e"></span>
-	<span style="color:#66d9ef">go</span> <span style="color:#66d9ef">func</span>() {
-		<span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">Copy</span>(<span style="color:#a6e22e">con</span>, <span style="color:#a6e22e">target</span>)
-		<span style="color:#a6e22e">con</span>.<span style="color:#a6e22e">Close</span>()
-		<span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">Close</span>()
-	}()
-	<span style="color:#66d9ef">go</span> <span style="color:#66d9ef">func</span>() {
-		<span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">Copy</span>(<span style="color:#a6e22e">target</span>, <span style="color:#a6e22e">con</span>)
-		<span style="color:#a6e22e">target</span>.<span style="color:#a6e22e">Close</span>()
-		<span style="color:#a6e22e">con</span>.<span style="color:#a6e22e">Close</span>()
-	}()
-	<span style="color:#75715e">//waitExit := make(chan bool, 1)
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//var buf = make([]byte, consts.TcpBufSize)
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//for {
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//	nbuf, err := con.Read(buf)
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//	if err != nil {
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//		log.Printf(&#34;unable read  conn data %+v\n&#34;, err)
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//		break
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//	}
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//	_, err = target.Write(buf[:nbuf])
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//	if err != nil {
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//		log.Printf(&#34;unable write conn data %+v&#34;, err)
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//	}
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//}
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//&lt;-waitExit
-</span><span style="color:#75715e"></span>
-}
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">handle0</span>(<span style="color:#a6e22e">from</span>, <span style="color:#a6e22e">to</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">url</span>.<span style="color:#a6e22e">URL</span>) <span style="color:#66d9ef">error</span> {
-	<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;listen host [%v]&#34;</span>, <span style="color:#a6e22e">from</span>.<span style="color:#a6e22e">Host</span>)
-	<span style="color:#75715e">//监听本地端口
-</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">listener</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">net</span>.<span style="color:#a6e22e">Listen</span>(<span style="color:#e6db74">&#34;tcp&#34;</span>, <span style="color:#a6e22e">from</span>.<span style="color:#a6e22e">Host</span>)
-	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
-	}
-	<span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">listener</span>.<span style="color:#a6e22e">Close</span>()
-	<span style="color:#66d9ef">for</span> {
-		<span style="color:#75715e">//处理连接事件
-</span><span style="color:#75715e"></span>		<span style="color:#a6e22e">con</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">listener</span>.<span style="color:#a6e22e">Accept</span>()
-		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-			<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;connct error %+v\n&#34;</span>, <span style="color:#a6e22e">err</span>)
-		}
-		<span style="color:#66d9ef">go</span> <span style="color:#a6e22e">transferData</span>(<span style="color:#a6e22e">con</span>, <span style="color:#a6e22e">to</span>)
+<span class="c1">//开启协程，简历连接
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">transferData</span><span class="p">(</span><span class="nx">con</span> <span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">,</span> <span class="nx">to</span> <span class="o">*</span><span class="nx">url</span><span class="p">.</span><span class="nx">URL</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">//defer con.Close()
+</span><span class="c1"></span>	<span class="nx">target</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">net</span><span class="p">.</span><span class="nf">Dial</span><span class="p">(</span><span class="s">&#34;tcp&#34;</span><span class="p">,</span> <span class="nx">to</span><span class="p">.</span><span class="nx">Host</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;error occur [%+v]\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="k">return</span>
+	<span class="p">}</span>
+	<span class="c1">//defer target.Close()
+</span><span class="c1"></span>
+	<span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">io</span><span class="p">.</span><span class="nf">Copy</span><span class="p">(</span><span class="nx">con</span><span class="p">,</span> <span class="nx">target</span><span class="p">)</span>
+		<span class="nx">con</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+		<span class="nx">target</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+	<span class="p">}()</span>
+	<span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">io</span><span class="p">.</span><span class="nf">Copy</span><span class="p">(</span><span class="nx">target</span><span class="p">,</span> <span class="nx">con</span><span class="p">)</span>
+		<span class="nx">target</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+		<span class="nx">con</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+	<span class="p">}()</span>
+	<span class="c1">//waitExit := make(chan bool, 1)
+</span><span class="c1"></span>	<span class="c1">//var buf = make([]byte, consts.TcpBufSize)
+</span><span class="c1"></span>	<span class="c1">//for {
+</span><span class="c1"></span>	<span class="c1">//	nbuf, err := con.Read(buf)
+</span><span class="c1"></span>	<span class="c1">//	if err != nil {
+</span><span class="c1"></span>	<span class="c1">//		log.Printf(&#34;unable read  conn data %+v\n&#34;, err)
+</span><span class="c1"></span>	<span class="c1">//		break
+</span><span class="c1"></span>	<span class="c1">//	}
+</span><span class="c1"></span>	<span class="c1">//	_, err = target.Write(buf[:nbuf])
+</span><span class="c1"></span>	<span class="c1">//	if err != nil {
+</span><span class="c1"></span>	<span class="c1">//		log.Printf(&#34;unable write conn data %+v&#34;, err)
+</span><span class="c1"></span>	<span class="c1">//	}
+</span><span class="c1"></span>	<span class="c1">//}
+</span><span class="c1"></span>	<span class="c1">//&lt;-waitExit
+</span><span class="c1"></span>
+<span class="p">}</span>
+<span class="kd">func</span> <span class="nf">handle0</span><span class="p">(</span><span class="nx">from</span><span class="p">,</span> <span class="nx">to</span> <span class="o">*</span><span class="nx">url</span><span class="p">.</span><span class="nx">URL</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;listen host [%v]&#34;</span><span class="p">,</span> <span class="nx">from</span><span class="p">.</span><span class="nx">Host</span><span class="p">)</span>
+	<span class="c1">//监听本地端口
+</span><span class="c1"></span>	<span class="nx">listener</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">net</span><span class="p">.</span><span class="nf">Listen</span><span class="p">(</span><span class="s">&#34;tcp&#34;</span><span class="p">,</span> <span class="nx">from</span><span class="p">.</span><span class="nx">Host</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">err</span>
+	<span class="p">}</span>
+	<span class="k">defer</span> <span class="nx">listener</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+	<span class="k">for</span> <span class="p">{</span>
+		<span class="c1">//处理连接事件
+</span><span class="c1"></span>		<span class="nx">con</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">listener</span><span class="p">.</span><span class="nf">Accept</span><span class="p">()</span>
+		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;connct error %+v\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="p">}</span>
+		<span class="k">go</span> <span class="nf">transferData</span><span class="p">(</span><span class="nx">con</span><span class="p">,</span> <span class="nx">to</span><span class="p">)</span>
 
-	}
+	<span class="p">}</span>
 
-}
-<span style="color:#66d9ef">func</span> (<span style="color:#f92672">*</span><span style="color:#a6e22e">CommonHandler</span>) <span style="color:#a6e22e">Serve</span>(<span style="color:#a6e22e">from</span>, <span style="color:#a6e22e">to</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">url</span>.<span style="color:#a6e22e">URL</span>) {
-	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">from</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">to</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
-		panic(<span style="color:#e6db74">&#34;empty url config&#34;</span>)
-	}
-	<span style="color:#75715e">//非阻塞的方式处理多个连接
-</span><span style="color:#75715e"></span>
-	<span style="color:#66d9ef">go</span> <span style="color:#66d9ef">func</span>() {
-		<span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">handle0</span>(<span style="color:#a6e22e">from</span>, <span style="color:#a6e22e">to</span>)
-		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-			<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;%+v\n&#34;</span>, <span style="color:#a6e22e">err</span>)
-		}
-	}()
+<span class="p">}</span>
+<span class="kd">func</span> <span class="p">(</span><span class="o">*</span><span class="nx">CommonHandler</span><span class="p">)</span> <span class="nf">Serve</span><span class="p">(</span><span class="nx">from</span><span class="p">,</span> <span class="nx">to</span> <span class="o">*</span><span class="nx">url</span><span class="p">.</span><span class="nx">URL</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">from</span> <span class="o">==</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">to</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nb">panic</span><span class="p">(</span><span class="s">&#34;empty url config&#34;</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="c1">//非阻塞的方式处理多个连接
+</span><span class="c1"></span>
+	<span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">err</span> <span class="o">:=</span> <span class="nf">handle0</span><span class="p">(</span><span class="nx">from</span><span class="p">,</span> <span class="nx">to</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}()</span>
 
-}
+<span class="p">}</span>
 
-</code></pre></div><h3 id="代码测试">代码测试</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># 一个 shell,等待消息</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="代码测试">代码测试</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 一个 shell,等待消息</span>
 
-nc -l -v <span style="color:#ae81ff">8078</span>
+nc -l -v <span class="m">8078</span>
 
 
-<span style="color:#75715e"># 请求代理 8080</span>
-telnet  localhost  <span style="color:#ae81ff">8080</span>
-</code></pre></div>
+<span class="c1"># 请求代理 8080</span>
+telnet  localhost  <span class="m">8080</span>
+</code></pre></td></tr></table>
+</div>
+</div>
     </div>
 
     <div class="post-copyright">
@@ -459,7 +562,7 @@ telnet  localhost  <span style="color:#ae81ff">8080</span>
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

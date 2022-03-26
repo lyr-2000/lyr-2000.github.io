@@ -50,7 +50,7 @@
 <meta itemprop="description" content="扩展 axios.create 静态接口 需求分析 目前为止，我们的 axios 都是一个单例，一旦我们修改了 axios 的默认配置，会影响所有的请求。我们希望提供了一个 axios.create 的静态接口允许我们创">
 <meta itemprop="datePublished" content="2020-01-05T10:56:02&#43;00:00" />
 <meta itemprop="dateModified" content="2020-01-05T10:56:02&#43;00:00" />
-<meta itemprop="wordCount" content="583">
+<meta itemprop="wordCount" content="637">
 
 
 
@@ -191,7 +191,7 @@ input.PC_MARK1:focus{
             <a href="/categories/typescript-%E4%BB%8E%E9%9B%B6%E5%AE%9E%E7%8E%B0-axios/"> 《TypeScript 从零实现 axios》 </a>
             <a href="/categories/ts-axios-%E9%85%8D%E7%BD%AE%E5%8C%96%E5%AE%9E%E7%8E%B0/"> ts-axios 配置化实现 </a>
             </div>
-          <span class="more-meta"> 约 583 字 </span>
+          <span class="more-meta"> 约 637 字 </span>
           <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -219,69 +219,147 @@ input.PC_MARK1:focus{
 <h2 id="需求分析">需求分析</h2>
 <p>目前为止，我们的 axios 都是一个单例，一旦我们修改了 axios 的默认配置，会影响所有的请求。我们希望提供了一个 <code>axios.create</code> 的静态接口允许我们创建一个新的 <code>axios</code> 实例，同时允许我们传入新的配置和默认配置合并，并做为新的默认配置。</p>
 <p>举个例子：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">instance</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">create</span>({
-  <span style="color:#a6e22e">transformRequest</span><span style="color:#f92672">:</span> [(<span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">data</span>) {
-    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">qs</span>.<span style="color:#a6e22e">stringify</span>(<span style="color:#a6e22e">data</span>)
-  }), ...(<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">defaults</span>.<span style="color:#a6e22e">transformRequest</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">AxiosTransformer</span>[])],
-  <span style="color:#a6e22e">transformResponse</span><span style="color:#f92672">:</span> [...(<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">defaults</span>.<span style="color:#a6e22e">transformResponse</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">AxiosTransformer</span>[]), <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">data</span>) {
-    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">typeof</span> <span style="color:#a6e22e">data</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;object&#39;</span>) {
-      <span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">b</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
-    }
-    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">data</span>
-  }]
-})
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+  <span class="nx">transformRequest</span><span class="o">:</span> <span class="p">[(</span><span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">qs</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span>
+  <span class="p">}),</span> <span class="p">...(</span><span class="nx">axios</span><span class="p">.</span><span class="nx">defaults</span><span class="p">.</span><span class="nx">transformRequest</span> <span class="kr">as</span> <span class="nx">AxiosTransformer</span><span class="p">[])],</span>
+  <span class="nx">transformResponse</span><span class="o">:</span> <span class="p">[...(</span><span class="nx">axios</span><span class="p">.</span><span class="nx">defaults</span><span class="p">.</span><span class="nx">transformResponse</span> <span class="kr">as</span> <span class="nx">AxiosTransformer</span><span class="p">[]),</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">data</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">data</span><span class="p">.</span><span class="nx">b</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">data</span>
+  <span class="p">}]</span>
+<span class="p">})</span>
 
-<span style="color:#a6e22e">instance</span>({
-  <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;/config/post&#39;</span>,
-  <span style="color:#a6e22e">method</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;post&#39;</span>,
-  <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> {
-    <span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">1</span>
-  }
-})
-</code></pre></div><h2 id="静态方法扩展">静态方法扩展</h2>
+<span class="nx">instance</span><span class="p">({</span>
+  <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;/config/post&#39;</span><span class="p">,</span>
+  <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span>
+  <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">a</span>: <span class="kt">1</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="静态方法扩展">静态方法扩展</h2>
 <p>由于 <code>axios</code> 扩展了一个静态接口，因此我们先来修改接口类型定义。</p>
 <p><code>types/index.ts</code>：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">AxiosStatic</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">AxiosInstance</span>{
-  <span style="color:#a6e22e">create</span>(<span style="color:#a6e22e">config?</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosInstance</span>
-}
-</code></pre></div><p><code>create</code> 函数可以接受一个 <code>AxiosRequestConfig</code> 类型的配置，作为默认配置的扩展，也可以接受不传参数。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">export</span> <span class="kr">interface</span> <span class="nx">AxiosStatic</span> <span class="kr">extends</span> <span class="nx">AxiosInstance</span><span class="p">{</span>
+  <span class="nx">create</span><span class="p">(</span><span class="nx">config?</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosInstance</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><code>create</code> 函数可以接受一个 <code>AxiosRequestConfig</code> 类型的配置，作为默认配置的扩展，也可以接受不传参数。</p>
 <p>接着我们来实现 <code>axios.create</code> 静态方法。</p>
 <p><code>axios.ts</code>：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">createInstance</span>(<span style="color:#a6e22e">config</span>: <span style="color:#66d9ef">AxiosRequestConfig</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">AxiosStatic</span> {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">context</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Axios</span>(<span style="color:#a6e22e">config</span>)
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">instance</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Axios</span>.<span style="color:#a6e22e">prototype</span>.<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">bind</span>(<span style="color:#a6e22e">context</span>)
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kd">function</span> <span class="nx">createInstance</span><span class="p">(</span><span class="nx">config</span>: <span class="kt">AxiosRequestConfig</span><span class="p">)</span><span class="o">:</span> <span class="nx">AxiosStatic</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">context</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Axios</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span>
+  <span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">Axios</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">context</span><span class="p">)</span>
 
-  <span style="color:#a6e22e">extend</span>(<span style="color:#a6e22e">instance</span>, <span style="color:#a6e22e">context</span>)
+  <span class="nx">extend</span><span class="p">(</span><span class="nx">instance</span><span class="p">,</span> <span class="nx">context</span><span class="p">)</span>
 
-  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">instance</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">AxiosStatic</span>
-}
-<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">create</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">create</span>(<span style="color:#a6e22e">config</span>) {
-  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">createInstance</span>(<span style="color:#a6e22e">mergeConfig</span>(<span style="color:#a6e22e">defaults</span>, <span style="color:#a6e22e">config</span>))
-}
-</code></pre></div><p>内部调用了 <code>createInstance</code> 函数，并且把参数 <code>config</code> 与 <code>defaults</code> 合并，作为新的默认配置。注意这里我们需要 <code>createInstance</code> 函数的返回值类型为 <code>AxiosStatic</code>。</p>
+  <span class="k">return</span> <span class="nx">instance</span> <span class="kr">as</span> <span class="nx">AxiosStatic</span>
+<span class="p">}</span>
+<span class="nx">axios</span><span class="p">.</span><span class="nx">create</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">create</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">createInstance</span><span class="p">(</span><span class="nx">mergeConfig</span><span class="p">(</span><span class="nx">defaults</span><span class="p">,</span> <span class="nx">config</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>内部调用了 <code>createInstance</code> 函数，并且把参数 <code>config</code> 与 <code>defaults</code> 合并，作为新的默认配置。注意这里我们需要 <code>createInstance</code> 函数的返回值类型为 <code>AxiosStatic</code>。</p>
 <h2 id="demo-编写">demo 编写</h2>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-typescript" data-lang="typescript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">instance</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">create</span>({
-  <span style="color:#a6e22e">transformRequest</span><span style="color:#f92672">:</span> [(<span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">data</span>) {
-    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">qs</span>.<span style="color:#a6e22e">stringify</span>(<span style="color:#a6e22e">data</span>)
-  }), ...(<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">defaults</span>.<span style="color:#a6e22e">transformRequest</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">AxiosTransformer</span>[])],
-  <span style="color:#a6e22e">transformResponse</span><span style="color:#f92672">:</span> [...(<span style="color:#a6e22e">axios</span>.<span style="color:#a6e22e">defaults</span>.<span style="color:#a6e22e">transformResponse</span> <span style="color:#66d9ef">as</span> <span style="color:#a6e22e">AxiosTransformer</span>[]), <span style="color:#66d9ef">function</span>(<span style="color:#a6e22e">data</span>) {
-    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">typeof</span> <span style="color:#a6e22e">data</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;object&#39;</span>) {
-      <span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">b</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
-    }
-    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">data</span>
-  }]
-})
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-typescript" data-lang="typescript"><span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+  <span class="nx">transformRequest</span><span class="o">:</span> <span class="p">[(</span><span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">qs</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span>
+  <span class="p">}),</span> <span class="p">...(</span><span class="nx">axios</span><span class="p">.</span><span class="nx">defaults</span><span class="p">.</span><span class="nx">transformRequest</span> <span class="kr">as</span> <span class="nx">AxiosTransformer</span><span class="p">[])],</span>
+  <span class="nx">transformResponse</span><span class="o">:</span> <span class="p">[...(</span><span class="nx">axios</span><span class="p">.</span><span class="nx">defaults</span><span class="p">.</span><span class="nx">transformResponse</span> <span class="kr">as</span> <span class="nx">AxiosTransformer</span><span class="p">[]),</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">data</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">data</span><span class="p">.</span><span class="nx">b</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">data</span>
+  <span class="p">}]</span>
+<span class="p">})</span>
 
-<span style="color:#a6e22e">instance</span>({
-  <span style="color:#a6e22e">url</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;/config/post&#39;</span>,
-  <span style="color:#a6e22e">method</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;post&#39;</span>,
-  <span style="color:#a6e22e">data</span><span style="color:#f92672">:</span> {
-    <span style="color:#a6e22e">a</span>: <span style="color:#66d9ef">1</span>
-  }
-}).<span style="color:#a6e22e">then</span>((<span style="color:#a6e22e">res</span>) <span style="color:#f92672">=&gt;</span> {
-  <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">data</span>)
-})
-</code></pre></div><p>我们对上节课的示例做了小小的修改，通过 <code>axios.create</code> 方法创建一个新的实例 <code>instance</code>，并传入了 <code>transformRequest</code> 和 <code>transformResponse</code> 的配置修改了默认配置，然后通过 <code>instance</code> 发送请求，效果和之前是一样的。</p>
+<span class="nx">instance</span><span class="p">({</span>
+  <span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;/config/post&#39;</span><span class="p">,</span>
+  <span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span>
+  <span class="nx">data</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">a</span>: <span class="kt">1</span>
+  <span class="p">}</span>
+<span class="p">}).</span><span class="nx">then</span><span class="p">((</span><span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">data</span><span class="p">)</span>
+<span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>我们对上节课的示例做了小小的修改，通过 <code>axios.create</code> 方法创建一个新的实例 <code>instance</code>，并传入了 <code>transformRequest</code> 和 <code>transformResponse</code> 的配置修改了默认配置，然后通过 <code>instance</code> 发送请求，效果和之前是一样的。</p>
 <p>至此我们实现了 <code>axios.create</code> 静态接口的扩展，整个 <code>ts-axios</code> 的配置化也告一段落。官方 axios 库还支持了对请求取消的能力，在发送请求前以及请求发送出去未响应前都可以取消该请求。下一章我们就来实现这个 feature。</p>
 
     </div>
@@ -410,7 +488,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

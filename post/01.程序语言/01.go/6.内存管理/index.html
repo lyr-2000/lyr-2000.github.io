@@ -51,7 +51,7 @@
 <meta itemprop="description" content="6.内存管理 ​ 程序中的数据和变量都会被分配到程序所在的虚拟内存中，内存空间包含两个重要区域：栈区（Stack）和堆区（Heap）。函数调用的">
 <meta itemprop="datePublished" content="2022-03-12T00:52:48&#43;08:00" />
 <meta itemprop="dateModified" content="2022-03-12T00:52:48&#43;08:00" />
-<meta itemprop="wordCount" content="8953">
+<meta itemprop="wordCount" content="9048">
 <meta itemprop="image" content="https://tva2.sinaimg.cn/large/0072Vf1pgy1foxlo645aaj31hc0u07h7.jpg">
 
 
@@ -197,8 +197,8 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/01.go/"> 01.Go </a>
             </div>
-          <span class="more-meta"> 约 8953 字 </span>
-          <span class="more-meta"> 预计阅读 18 分钟 </span>
+          <span class="more-meta"> 约 9048 字 </span>
+          <span class="more-meta"> 预计阅读 19 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -656,77 +656,161 @@ input.PC_MARK1:focus{
 <h4 id="逃逸的场景">逃逸的场景</h4>
 <p><strong>指针逃逸</strong></p>
 <p>有些时候，因为变量太大等原因，我们会选择返回变量的指针，而非变量，这里其实就是逃逸的一个经典现象</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#a6e22e">test</span>()
-}
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nf">test</span><span class="p">()</span>
+<span class="p">}</span>
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">test</span>() <span style="color:#f92672">*</span><span style="color:#66d9ef">int</span> {
-    <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">1</span>
-    <span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">i</span>
-}
+<span class="kd">func</span> <span class="nf">test</span><span class="p">()</span> <span class="o">*</span><span class="kt">int</span> <span class="p">{</span>
+    <span class="nx">i</span> <span class="o">:=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">i</span>
+<span class="p">}</span>
 
-<span style="color:#75715e">/**
-</span><span style="color:#75715e"># command-line-arguments
-</span><span style="color:#75715e">./main.go:7:6: can inline test
-</span><span style="color:#75715e">./main.go:3:6: can inline main
-</span><span style="color:#75715e">./main.go:4:6: inlining call to test
-</span><span style="color:#75715e">./main.go:4:6: main &amp;i does not escape
-</span><span style="color:#75715e">./main.go:9:9: &amp;i escapes to heap
-</span><span style="color:#75715e">./main.go:8:2: moved to heap: i
-</span><span style="color:#75715e">**/</span>
-</code></pre></div><p>可以看到i逃逸到了堆上</p>
+<span class="cm">/**
+</span><span class="cm"># command-line-arguments
+</span><span class="cm">./main.go:7:6: can inline test
+</span><span class="cm">./main.go:3:6: can inline main
+</span><span class="cm">./main.go:4:6: inlining call to test
+</span><span class="cm">./main.go:4:6: main &amp;i does not escape
+</span><span class="cm">./main.go:9:9: &amp;i escapes to heap
+</span><span class="cm">./main.go:8:2: moved to heap: i
+</span><span class="cm">**/</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>可以看到i逃逸到了堆上</p>
 <p><strong>栈空间不足逃逸</strong></p>
 <p>创建一个 长度较小的 slice是会分配到栈上，如果分配一个超大的slice，就会逃逸到堆上</p>
 <p><strong>动态类型逃逸</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#a6e22e">dynamic</span>()
-}
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nf">dynamic</span><span class="p">()</span>
+<span class="p">}</span>
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">dynamic</span>() <span style="color:#66d9ef">interface</span>{} {
-    <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>
-    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">i</span>
-}
-</code></pre></div><p><strong>闭包引用逃逸</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#a6e22e">f</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">fibonacci</span>()
-    <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#ae81ff">10</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
-        <span style="color:#a6e22e">f</span>()
-    }
-}
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">fibonacci</span>() <span style="color:#66d9ef">func</span>() <span style="color:#66d9ef">int</span> {
-    <span style="color:#a6e22e">a</span>, <span style="color:#a6e22e">b</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>
-    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">func</span>() <span style="color:#66d9ef">int</span> {
-        <span style="color:#a6e22e">a</span>, <span style="color:#a6e22e">b</span> = <span style="color:#a6e22e">b</span>, <span style="color:#a6e22e">a</span><span style="color:#f92672">+</span><span style="color:#a6e22e">b</span>
-        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">a</span>
-    }
-}
+<span class="kd">func</span> <span class="nf">dynamic</span><span class="p">()</span> <span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
+    <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="nx">i</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>闭包引用逃逸</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">f</span> <span class="o">:=</span> <span class="nf">fibonacci</span><span class="p">()</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="nf">f</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="kd">func</span> <span class="nf">fibonacci</span><span class="p">()</span> <span class="kd">func</span><span class="p">()</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="nx">a</span><span class="p">,</span> <span class="nx">b</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="kd">func</span><span class="p">()</span> <span class="kt">int</span> <span class="p">{</span>
+        <span class="nx">a</span><span class="p">,</span> <span class="nx">b</span> <span class="p">=</span> <span class="nx">b</span><span class="p">,</span> <span class="nx">a</span><span class="o">+</span><span class="nx">b</span>
+        <span class="k">return</span> <span class="nx">a</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 
-<span style="color:#75715e">/**
-</span><span style="color:#75715e">./main.go:11:9: can inline fibonacci.func1
-</span><span style="color:#75715e">./main.go:11:9: func literal escapes to heap
-</span><span style="color:#75715e">./main.go:11:9: func literal escapes to heap
-</span><span style="color:#75715e">./main.go:12:10: &amp;b escapes to heap
-</span><span style="color:#75715e">./main.go:10:5: moved to heap: b
-</span><span style="color:#75715e">./main.go:12:13: &amp;a escapes to heap
-</span><span style="color:#75715e">./main.go:10:2: moved to heap: a
-</span><span style="color:#75715e">**/</span>
-</code></pre></div><p>参考:</p>
+<span class="cm">/**
+</span><span class="cm">./main.go:11:9: can inline fibonacci.func1
+</span><span class="cm">./main.go:11:9: func literal escapes to heap
+</span><span class="cm">./main.go:11:9: func literal escapes to heap
+</span><span class="cm">./main.go:12:10: &amp;b escapes to heap
+</span><span class="cm">./main.go:10:5: moved to heap: b
+</span><span class="cm">./main.go:12:13: &amp;a escapes to heap
+</span><span class="cm">./main.go:10:2: moved to heap: a
+</span><span class="cm">**/</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>参考:</p>
 <p><a href="https://segmentfault.com/a/1190000020086727">深入理解Go-逃逸分析 - SegmentFault 思否</a></p>
 <p><a href="https://zhuanlan.zhihu.com/p/91559562">golang 逃逸分析详解 - 知乎 (zhihu.com)</a></p>
 <h2 id="内存对齐">内存对齐</h2>
 <p><a href="https://www.bilibili.com/video/BV1Vt4y1m7DP?from=search&amp;seid=456871147342157458&amp;spm_id_from=333.337.0.0">参考视频</a></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">T1</span> <span style="color:#66d9ef">struct</span> {
-        <span style="color:#a6e22e">a</span> <span style="color:#66d9ef">int8</span>
-        <span style="color:#a6e22e">b</span> <span style="color:#66d9ef">int64</span>
-        <span style="color:#a6e22e">c</span> <span style="color:#66d9ef">int16</span>
-}
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">T1</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">a</span> <span class="kt">int8</span>
+        <span class="nx">b</span> <span class="kt">int64</span>
+        <span class="nx">c</span> <span class="kt">int16</span>
+<span class="p">}</span>
 
-<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">T2</span> <span style="color:#66d9ef">struct</span> {
-        <span style="color:#a6e22e">a</span> <span style="color:#66d9ef">int8</span>
-        <span style="color:#a6e22e">c</span> <span style="color:#66d9ef">int16</span>
-        <span style="color:#a6e22e">b</span> <span style="color:#66d9ef">int64</span>
-}
-</code></pre></div><p>在 64 bit 平台上，T1 占用 24 bytes，T2 占用 16 bytes 大小；<strong>不同的字段顺序，最终决定 struct 的内存大小，所以有时候合理的字段顺序可以减少内存的开销</strong>。</p>
+<span class="kd">type</span> <span class="nx">T2</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">a</span> <span class="kt">int8</span>
+        <span class="nx">c</span> <span class="kt">int16</span>
+        <span class="nx">b</span> <span class="kt">int64</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在 64 bit 平台上，T1 占用 24 bytes，T2 占用 16 bytes 大小；<strong>不同的字段顺序，最终决定 struct 的内存大小，所以有时候合理的字段顺序可以减少内存的开销</strong>。</p>
 <p>64位的平台上，我们每次读取都是按字节来读取的，一个字节就是8位，比如我们的T1，在64位系统就会因为padding导致多占用了内存，<strong>而T2因为内存对其了，所以比上面少了8个字节</strong></p>
 <p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_03_12_17_39_23image-20220312173923350.png" alt="image-20220312173923350"></p>
 <p>内存对齐主要用在下面这几个地方</p>
@@ -749,42 +833,89 @@ input.PC_MARK1:focus{
 </ul>
 <h2 id="cpu缓存优化">cpu缓存优化</h2>
 <p>在上述的代码中，有两个6400*6400的初始化数组矩阵A和B，将A和B的元素进行相加，第一种方式是对应行列坐标相加，即<code>matrixA[i][j] = matrixA[i][j] + matrixB[i][j]</code>，第二种方式是对称行列坐标相加，即<code>matrixA[i][j] = matrixA[i][j] + matrixB[j][i]</code>。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">createMatrix</span>(<span style="color:#a6e22e">size</span> <span style="color:#66d9ef">int</span>) [][]<span style="color:#66d9ef">int64</span> {
-    <span style="color:#a6e22e">matrix</span> <span style="color:#f92672">:=</span> make([][]<span style="color:#66d9ef">int64</span>, <span style="color:#a6e22e">size</span>)
-    <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#a6e22e">size</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
-        <span style="color:#a6e22e">matrix</span>[<span style="color:#a6e22e">i</span>] = make([]<span style="color:#66d9ef">int64</span>, <span style="color:#a6e22e">size</span>)
-    }
-    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">matrix</span>
-}
-<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">matrixLength</span> = <span style="color:#ae81ff">6400</span>
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">BenchmarkMatrixCombination</span>(<span style="color:#a6e22e">b</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">testing</span>.<span style="color:#a6e22e">B</span>) {
-    <span style="color:#a6e22e">matrixA</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">createMatrix</span>(<span style="color:#a6e22e">matrixLength</span>)
-    <span style="color:#a6e22e">matrixB</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">createMatrix</span>(<span style="color:#a6e22e">matrixLength</span>)
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">createMatrix</span><span class="p">(</span><span class="nx">size</span> <span class="kt">int</span><span class="p">)</span> <span class="p">[][]</span><span class="kt">int64</span> <span class="p">{</span>
+    <span class="nx">matrix</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([][]</span><span class="kt">int64</span><span class="p">,</span> <span class="nx">size</span><span class="p">)</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">size</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="nx">matrix</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">int64</span><span class="p">,</span> <span class="nx">size</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">matrix</span>
+<span class="p">}</span>
+<span class="kd">const</span> <span class="nx">matrixLength</span> <span class="p">=</span> <span class="mi">6400</span>
+<span class="kd">func</span> <span class="nf">BenchmarkMatrixCombination</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">matrixA</span> <span class="o">:=</span> <span class="nf">createMatrix</span><span class="p">(</span><span class="nx">matrixLength</span><span class="p">)</span>
+    <span class="nx">matrixB</span> <span class="o">:=</span> <span class="nf">createMatrix</span><span class="p">(</span><span class="nx">matrixLength</span><span class="p">)</span>
 
-    <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">n</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">n</span> &lt; <span style="color:#a6e22e">b</span>.<span style="color:#a6e22e">N</span>; <span style="color:#a6e22e">n</span><span style="color:#f92672">++</span> {
-        <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#a6e22e">matrixLength</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
-            <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">j</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">j</span> &lt; <span style="color:#a6e22e">matrixLength</span>; <span style="color:#a6e22e">j</span><span style="color:#f92672">++</span> {
-                <span style="color:#a6e22e">matrixA</span>[<span style="color:#a6e22e">i</span>][<span style="color:#a6e22e">j</span>] = <span style="color:#a6e22e">matrixA</span>[<span style="color:#a6e22e">i</span>][<span style="color:#a6e22e">j</span>] <span style="color:#f92672">+</span> <span style="color:#a6e22e">matrixB</span>[<span style="color:#a6e22e">i</span>][<span style="color:#a6e22e">j</span>]
-            }
-        }
-    }
-}
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">BenchmarkMatrixReversedCombination</span>(<span style="color:#a6e22e">b</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">testing</span>.<span style="color:#a6e22e">B</span>) {
-    <span style="color:#a6e22e">matrixA</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">createMatrix</span>(<span style="color:#a6e22e">matrixLength</span>)
-    <span style="color:#a6e22e">matrixB</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">createMatrix</span>(<span style="color:#a6e22e">matrixLength</span>)
+    <span class="k">for</span> <span class="nx">n</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">n</span> <span class="p">&lt;</span> <span class="nx">b</span><span class="p">.</span><span class="nx">N</span><span class="p">;</span> <span class="nx">n</span><span class="o">++</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">matrixLength</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="nx">j</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">j</span> <span class="p">&lt;</span> <span class="nx">matrixLength</span><span class="p">;</span> <span class="nx">j</span><span class="o">++</span> <span class="p">{</span>
+                <span class="nx">matrixA</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="nx">j</span><span class="p">]</span> <span class="p">=</span> <span class="nx">matrixA</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="nx">j</span><span class="p">]</span> <span class="o">+</span> <span class="nx">matrixB</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="nx">j</span><span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="kd">func</span> <span class="nf">BenchmarkMatrixReversedCombination</span><span class="p">(</span><span class="nx">b</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">matrixA</span> <span class="o">:=</span> <span class="nf">createMatrix</span><span class="p">(</span><span class="nx">matrixLength</span><span class="p">)</span>
+    <span class="nx">matrixB</span> <span class="o">:=</span> <span class="nf">createMatrix</span><span class="p">(</span><span class="nx">matrixLength</span><span class="p">)</span>
 
-    <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">n</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">n</span> &lt; <span style="color:#a6e22e">b</span>.<span style="color:#a6e22e">N</span>; <span style="color:#a6e22e">n</span><span style="color:#f92672">++</span> {
-        <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#a6e22e">matrixLength</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
-            <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">j</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">j</span> &lt; <span style="color:#a6e22e">matrixLength</span>; <span style="color:#a6e22e">j</span><span style="color:#f92672">++</span> {
-                <span style="color:#a6e22e">matrixA</span>[<span style="color:#a6e22e">i</span>][<span style="color:#a6e22e">j</span>] = <span style="color:#a6e22e">matrixA</span>[<span style="color:#a6e22e">i</span>][<span style="color:#a6e22e">j</span>] <span style="color:#f92672">+</span> <span style="color:#a6e22e">matrixB</span>[<span style="color:#a6e22e">j</span>][<span style="color:#a6e22e">i</span>]
-            }
-        }
-    }
-}
+    <span class="k">for</span> <span class="nx">n</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">n</span> <span class="p">&lt;</span> <span class="nx">b</span><span class="p">.</span><span class="nx">N</span><span class="p">;</span> <span class="nx">n</span><span class="o">++</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">matrixLength</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+            <span class="k">for</span> <span class="nx">j</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">j</span> <span class="p">&lt;</span> <span class="nx">matrixLength</span><span class="p">;</span> <span class="nx">j</span><span class="o">++</span> <span class="p">{</span>
+                <span class="nx">matrixA</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="nx">j</span><span class="p">]</span> <span class="p">=</span> <span class="nx">matrixA</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="nx">j</span><span class="p">]</span> <span class="o">+</span> <span class="nx">matrixB</span><span class="p">[</span><span class="nx">j</span><span class="p">][</span><span class="nx">i</span><span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 
-</code></pre></div><pre><code>BenchmarkMatrixCombination-8                     16      67211689 ns/op
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">BenchmarkMatrixCombination-8                     16      67211689 ns/op
 BenchmarkMatrixReversedCombination-8              3     480798925 ns/op
-</code></pre><p>两种相加方式，<strong>性能差异竟然接近十倍。</strong></p>
+</code></pre></td></tr></table>
+</div>
+</div><p>两种相加方式，<strong>性能差异竟然接近十倍。</strong></p>
 <p>当粉红色圆圈遍历完第一列时，处理器将相应的所有存储行都存储到L1中去了。因此，对矩形块其他元素的遍历就是直接从L1里访问了，这能明显提高访问速度。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_03_12_17_47_35image-20220312174735800.png" alt="image-20220312174735800"></p>
 <p><a href="https://segmentfault.com/a/1190000038957418">参考博客</a></p>
@@ -915,7 +1046,7 @@ BenchmarkMatrixReversedCombination-8              3     480798925 ns/op
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

@@ -51,7 +51,7 @@
 <meta itemprop="description" content="linux下使用 epoll优化 ​ 可以参考的tcp框架 linux 下使用 epoll优化，你必须知道的概念 level trigger, 和 edge trigger 名字 原理 水平出发（LT) 当进行sock">
 <meta itemprop="datePublished" content="2022-03-19T19:31:48&#43;08:00" />
 <meta itemprop="dateModified" content="2022-03-19T19:31:48&#43;08:00" />
-<meta itemprop="wordCount" content="1810">
+<meta itemprop="wordCount" content="2046">
 <meta itemprop="image" content="https://tva3.sinaimg.cn/large/005BYqpgly1frn9ejfko8j31hc0u04qp.jpg">
 
 
@@ -197,8 +197,8 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/tcp%E4%BB%A3%E7%90%86%E5%AE%9E%E8%B7%B5/"> tcp代理实践 </a>
             </div>
-          <span class="more-meta"> 约 1810 字 </span>
-          <span class="more-meta"> 预计阅读 4 分钟 </span>
+          <span class="more-meta"> 约 2046 字 </span>
+          <span class="more-meta"> 预计阅读 5 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -318,246 +318,501 @@ input.PC_MARK1:focus{
 </tbody>
 </table>
 <h3 id="c原生api">c原生api</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/epoll.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">epoll_wait</span>(<span style="color:#66d9ef">int</span> epfd, <span style="color:#66d9ef">struct</span> epoll_event <span style="color:#f92672">*</span>events,
-               <span style="color:#66d9ef">int</span> maxevents, <span style="color:#66d9ef">int</span> timeout);
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">epoll_pwait</span>(<span style="color:#66d9ef">int</span> epfd, <span style="color:#66d9ef">struct</span> epoll_event <span style="color:#f92672">*</span>events, <span style="color:#66d9ef">int</span> maxevents, <span style="color:#66d9ef">int</span> timeout, <span style="color:#66d9ef">const</span> sigset_t <span style="color:#f92672">*</span>sigmask);
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="cp">#include</span> <span class="cpf">&lt;sys/epoll.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="kt">int</span> <span class="nf">epoll_wait</span><span class="p">(</span><span class="kt">int</span> <span class="n">epfd</span><span class="p">,</span> <span class="k">struct</span> <span class="n">epoll_event</span> <span class="o">*</span><span class="n">events</span><span class="p">,</span>
+               <span class="kt">int</span> <span class="n">maxevents</span><span class="p">,</span> <span class="kt">int</span> <span class="n">timeout</span><span class="p">);</span>
+<span class="kt">int</span> <span class="nf">epoll_pwait</span><span class="p">(</span><span class="kt">int</span> <span class="n">epfd</span><span class="p">,</span> <span class="k">struct</span> <span class="n">epoll_event</span> <span class="o">*</span><span class="n">events</span><span class="p">,</span> <span class="kt">int</span> <span class="n">maxevents</span><span class="p">,</span> <span class="kt">int</span> <span class="n">timeout</span><span class="p">,</span> <span class="k">const</span> <span class="n">sigset_t</span> <span class="o">*</span><span class="n">sigmask</span><span class="p">);</span>
 
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
-</span><span style="color:#75715e">   This file is part of the GNU C Library.
-</span><span style="color:#75715e">   The GNU C Library is free software; you can redistribute it and/or
-</span><span style="color:#75715e">   modify it under the terms of the GNU Lesser General Public
-</span><span style="color:#75715e">   License as published by the Free Software Foundation; either
-</span><span style="color:#75715e">   version 2.1 of the License, or (at your option) any later version.
-</span><span style="color:#75715e">   The GNU C Library is distributed in the hope that it will be useful,
-</span><span style="color:#75715e">   but WITHOUT ANY WARRANTY; without even the implied warranty of
-</span><span style="color:#75715e">   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-</span><span style="color:#75715e">   Lesser General Public License for more details.
-</span><span style="color:#75715e">   You should have received a copy of the GNU Lesser General Public
-</span><span style="color:#75715e">   License along with the GNU C Library; if not, see
-</span><span style="color:#75715e">   &lt;http://www.gnu.org/licenses/&gt;.  */</span>
-<span style="color:#75715e">#ifndef        _SYS_EPOLL_H
-</span><span style="color:#75715e">#define        _SYS_EPOLL_H        1
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdint.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/types.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;bits/types/sigset_t.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#75715e">/* Get the platform-dependent flags.  */</span>
-<span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;bits/epoll.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#ifndef __EPOLL_PACKED
-</span><span style="color:#75715e"># define __EPOLL_PACKED
-</span><span style="color:#75715e">#endif
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">EPOLL_EVENTS</span>
-  {
-    EPOLLIN <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x001</span>,
-<span style="color:#75715e">#define EPOLLIN EPOLLIN
-</span><span style="color:#75715e"></span>    EPOLLPRI <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x002</span>,
-<span style="color:#75715e">#define EPOLLPRI EPOLLPRI
-</span><span style="color:#75715e"></span>    EPOLLOUT <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x004</span>,
-<span style="color:#75715e">#define EPOLLOUT EPOLLOUT
-</span><span style="color:#75715e"></span>    EPOLLRDNORM <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x040</span>,
-<span style="color:#75715e">#define EPOLLRDNORM EPOLLRDNORM
-</span><span style="color:#75715e"></span>    EPOLLRDBAND <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x080</span>,
-<span style="color:#75715e">#define EPOLLRDBAND EPOLLRDBAND
-</span><span style="color:#75715e"></span>    EPOLLWRNORM <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x100</span>,
-<span style="color:#75715e">#define EPOLLWRNORM EPOLLWRNORM
-</span><span style="color:#75715e"></span>    EPOLLWRBAND <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x200</span>,
-<span style="color:#75715e">#define EPOLLWRBAND EPOLLWRBAND
-</span><span style="color:#75715e"></span>    EPOLLMSG <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x400</span>,
-<span style="color:#75715e">#define EPOLLMSG EPOLLMSG
-</span><span style="color:#75715e"></span>    EPOLLERR <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x008</span>,
-<span style="color:#75715e">#define EPOLLERR EPOLLERR
-</span><span style="color:#75715e"></span>    EPOLLHUP <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x010</span>,
-<span style="color:#75715e">#define EPOLLHUP EPOLLHUP
-</span><span style="color:#75715e"></span>    EPOLLRDHUP <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x2000</span>,
-<span style="color:#75715e">#define EPOLLRDHUP EPOLLRDHUP
-</span><span style="color:#75715e"></span>    EPOLLEXCLUSIVE <span style="color:#f92672">=</span> <span style="color:#ae81ff">1u</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">28</span>,
-<span style="color:#75715e">#define EPOLLEXCLUSIVE EPOLLEXCLUSIVE
-</span><span style="color:#75715e"></span>    EPOLLWAKEUP <span style="color:#f92672">=</span> <span style="color:#ae81ff">1u</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">29</span>,
-<span style="color:#75715e">#define EPOLLWAKEUP EPOLLWAKEUP
-</span><span style="color:#75715e"></span>    EPOLLONESHOT <span style="color:#f92672">=</span> <span style="color:#ae81ff">1u</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">30</span>,
-<span style="color:#75715e">#define EPOLLONESHOT EPOLLONESHOT
-</span><span style="color:#75715e"></span>    EPOLLET <span style="color:#f92672">=</span> <span style="color:#ae81ff">1u</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">31</span>
-<span style="color:#75715e">#define EPOLLET EPOLLET
-</span><span style="color:#75715e"></span>  };
-<span style="color:#75715e">/* Valid opcodes ( &#34;op&#34; parameter ) to issue to epoll_ctl().  */</span>
-<span style="color:#75715e">#define EPOLL_CTL_ADD 1        </span><span style="color:#75715e">/* Add a file descriptor to the interface.  */</span><span style="color:#75715e">
-</span><span style="color:#75715e">#define EPOLL_CTL_DEL 2        </span><span style="color:#75715e">/* Remove a file descriptor from the interface.  */</span><span style="color:#75715e">
-</span><span style="color:#75715e">#define EPOLL_CTL_MOD 3        </span><span style="color:#75715e">/* Change file descriptor epoll_event structure.  */</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">union</span> <span style="color:#a6e22e">epoll_data</span>
-{
-  <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>ptr;
-  <span style="color:#66d9ef">int</span> fd;
-  <span style="color:#66d9ef">uint32_t</span> u32;
-  <span style="color:#66d9ef">uint64_t</span> u64;
-} epoll_data_t;
-<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">epoll_event</span>
-{
-  <span style="color:#66d9ef">uint32_t</span> events;        <span style="color:#75715e">/* Epoll events */</span>
-  epoll_data_t data;        <span style="color:#75715e">/* User data variable */</span>
-} __EPOLL_PACKED;
-__BEGIN_DECLS
-<span style="color:#75715e">/* Creates an epoll instance.  Returns an fd for the new instance.
-</span><span style="color:#75715e">   The &#34;size&#34; parameter is a hint specifying the number of file
-</span><span style="color:#75715e">   descriptors to be associated with the new instance.  The fd
-</span><span style="color:#75715e">   returned by epoll_create() should be closed with close().  */</span>
-<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> epoll_create (<span style="color:#66d9ef">int</span> __size) __THROW;
-<span style="color:#75715e">/* Same as epoll_create but with an FLAGS parameter.  The unused SIZE
-</span><span style="color:#75715e">   parameter has been dropped.  */</span>
-<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">epoll_create1</span> (<span style="color:#66d9ef">int</span> __flags) __THROW;
-<span style="color:#75715e">/* Manipulate an epoll instance &#34;epfd&#34;. Returns 0 in case of success,
-</span><span style="color:#75715e">   -1 in case of error ( the &#34;errno&#34; variable will contain the
-</span><span style="color:#75715e">   specific error code ) The &#34;op&#34; parameter is one of the EPOLL_CTL_*
-</span><span style="color:#75715e">   constants defined above. The &#34;fd&#34; parameter is the target of the
-</span><span style="color:#75715e">   operation. The &#34;event&#34; parameter describes which events the caller
-</span><span style="color:#75715e">   is interested in and any associated user data.  */</span>
-<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">epoll_ctl</span> (<span style="color:#66d9ef">int</span> __epfd, <span style="color:#66d9ef">int</span> __op, <span style="color:#66d9ef">int</span> __fd,
-                      <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">epoll_event</span> <span style="color:#f92672">*</span>__event) __THROW;
-<span style="color:#75715e">/* Wait for events on an epoll instance &#34;epfd&#34;. Returns the number of
-</span><span style="color:#75715e">   triggered events returned in &#34;events&#34; buffer. Or -1 in case of
-</span><span style="color:#75715e">   error with the &#34;errno&#34; variable set to the specific error code. The
-</span><span style="color:#75715e">   &#34;events&#34; parameter is a buffer that will contain triggered
-</span><span style="color:#75715e">   events. The &#34;maxevents&#34; is the maximum number of events to be
-</span><span style="color:#75715e">   returned ( usually size of &#34;events&#34; ). The &#34;timeout&#34; parameter
-</span><span style="color:#75715e">   specifies the maximum wait time in milliseconds (-1 == infinite).
-</span><span style="color:#75715e">   This function is a cancellation point and therefore not marked with
-</span><span style="color:#75715e">   __THROW.  */</span>
-<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">epoll_wait</span> (<span style="color:#66d9ef">int</span> __epfd, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">epoll_event</span> <span style="color:#f92672">*</span>__events,
-                       <span style="color:#66d9ef">int</span> __maxevents, <span style="color:#66d9ef">int</span> __timeout);
-<span style="color:#75715e">/* Same as epoll_wait, but the thread&#39;s signal mask is temporarily
-</span><span style="color:#75715e">   and atomically replaced with the one provided as parameter.
-</span><span style="color:#75715e">   This function is a cancellation point and therefore not marked with
-</span><span style="color:#75715e">   __THROW.  */</span>
-<span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">epoll_pwait</span> (<span style="color:#66d9ef">int</span> __epfd, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">epoll_event</span> <span style="color:#f92672">*</span>__events,
-                        <span style="color:#66d9ef">int</span> __maxevents, <span style="color:#66d9ef">int</span> __timeout,
-                        <span style="color:#66d9ef">const</span> __sigset_t <span style="color:#f92672">*</span>__ss);
-__END_DECLS
-<span style="color:#75715e">#endif </span><span style="color:#75715e">/* sys/epoll.h */</span><span style="color:#75715e">
-</span></code></pre></div><h3 id="golang下的完整示例">golang下的完整示例</h3>
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cm">/* Copyright (C) 2002-2019 Free Software Foundation, Inc.
+</span><span class="cm">   This file is part of the GNU C Library.
+</span><span class="cm">   The GNU C Library is free software; you can redistribute it and/or
+</span><span class="cm">   modify it under the terms of the GNU Lesser General Public
+</span><span class="cm">   License as published by the Free Software Foundation; either
+</span><span class="cm">   version 2.1 of the License, or (at your option) any later version.
+</span><span class="cm">   The GNU C Library is distributed in the hope that it will be useful,
+</span><span class="cm">   but WITHOUT ANY WARRANTY; without even the implied warranty of
+</span><span class="cm">   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+</span><span class="cm">   Lesser General Public License for more details.
+</span><span class="cm">   You should have received a copy of the GNU Lesser General Public
+</span><span class="cm">   License along with the GNU C Library; if not, see
+</span><span class="cm">   &lt;http://www.gnu.org/licenses/&gt;.  */</span>
+<span class="cp">#ifndef        _SYS_EPOLL_H
+</span><span class="cp">#define        _SYS_EPOLL_H        1
+</span><span class="cp">#include</span> <span class="cpf">&lt;stdint.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;bits/types/sigset_t.h&gt;</span><span class="cp">
+</span><span class="cp"></span><span class="cm">/* Get the platform-dependent flags.  */</span>
+<span class="cp">#include</span> <span class="cpf">&lt;bits/epoll.h&gt;</span><span class="cp">
+</span><span class="cp">#ifndef __EPOLL_PACKED
+</span><span class="cp"># define __EPOLL_PACKED
+</span><span class="cp">#endif
+</span><span class="cp"></span><span class="k">enum</span> <span class="nc">EPOLL_EVENTS</span>
+  <span class="p">{</span>
+    <span class="n">EPOLLIN</span> <span class="o">=</span> <span class="mh">0x001</span><span class="p">,</span>
+<span class="cp">#define EPOLLIN EPOLLIN
+</span><span class="cp"></span>    <span class="n">EPOLLPRI</span> <span class="o">=</span> <span class="mh">0x002</span><span class="p">,</span>
+<span class="cp">#define EPOLLPRI EPOLLPRI
+</span><span class="cp"></span>    <span class="n">EPOLLOUT</span> <span class="o">=</span> <span class="mh">0x004</span><span class="p">,</span>
+<span class="cp">#define EPOLLOUT EPOLLOUT
+</span><span class="cp"></span>    <span class="n">EPOLLRDNORM</span> <span class="o">=</span> <span class="mh">0x040</span><span class="p">,</span>
+<span class="cp">#define EPOLLRDNORM EPOLLRDNORM
+</span><span class="cp"></span>    <span class="n">EPOLLRDBAND</span> <span class="o">=</span> <span class="mh">0x080</span><span class="p">,</span>
+<span class="cp">#define EPOLLRDBAND EPOLLRDBAND
+</span><span class="cp"></span>    <span class="n">EPOLLWRNORM</span> <span class="o">=</span> <span class="mh">0x100</span><span class="p">,</span>
+<span class="cp">#define EPOLLWRNORM EPOLLWRNORM
+</span><span class="cp"></span>    <span class="n">EPOLLWRBAND</span> <span class="o">=</span> <span class="mh">0x200</span><span class="p">,</span>
+<span class="cp">#define EPOLLWRBAND EPOLLWRBAND
+</span><span class="cp"></span>    <span class="n">EPOLLMSG</span> <span class="o">=</span> <span class="mh">0x400</span><span class="p">,</span>
+<span class="cp">#define EPOLLMSG EPOLLMSG
+</span><span class="cp"></span>    <span class="n">EPOLLERR</span> <span class="o">=</span> <span class="mh">0x008</span><span class="p">,</span>
+<span class="cp">#define EPOLLERR EPOLLERR
+</span><span class="cp"></span>    <span class="n">EPOLLHUP</span> <span class="o">=</span> <span class="mh">0x010</span><span class="p">,</span>
+<span class="cp">#define EPOLLHUP EPOLLHUP
+</span><span class="cp"></span>    <span class="n">EPOLLRDHUP</span> <span class="o">=</span> <span class="mh">0x2000</span><span class="p">,</span>
+<span class="cp">#define EPOLLRDHUP EPOLLRDHUP
+</span><span class="cp"></span>    <span class="n">EPOLLEXCLUSIVE</span> <span class="o">=</span> <span class="mi">1u</span> <span class="o">&lt;&lt;</span> <span class="mi">28</span><span class="p">,</span>
+<span class="cp">#define EPOLLEXCLUSIVE EPOLLEXCLUSIVE
+</span><span class="cp"></span>    <span class="n">EPOLLWAKEUP</span> <span class="o">=</span> <span class="mi">1u</span> <span class="o">&lt;&lt;</span> <span class="mi">29</span><span class="p">,</span>
+<span class="cp">#define EPOLLWAKEUP EPOLLWAKEUP
+</span><span class="cp"></span>    <span class="n">EPOLLONESHOT</span> <span class="o">=</span> <span class="mi">1u</span> <span class="o">&lt;&lt;</span> <span class="mi">30</span><span class="p">,</span>
+<span class="cp">#define EPOLLONESHOT EPOLLONESHOT
+</span><span class="cp"></span>    <span class="n">EPOLLET</span> <span class="o">=</span> <span class="mi">1u</span> <span class="o">&lt;&lt;</span> <span class="mi">31</span>
+<span class="cp">#define EPOLLET EPOLLET
+</span><span class="cp"></span>  <span class="p">};</span>
+<span class="cm">/* Valid opcodes ( &#34;op&#34; parameter ) to issue to epoll_ctl().  */</span>
+<span class="cp">#define EPOLL_CTL_ADD 1        </span><span class="cm">/* Add a file descriptor to the interface.  */</span><span class="cp">
+</span><span class="cp">#define EPOLL_CTL_DEL 2        </span><span class="cm">/* Remove a file descriptor from the interface.  */</span><span class="cp">
+</span><span class="cp">#define EPOLL_CTL_MOD 3        </span><span class="cm">/* Change file descriptor epoll_event structure.  */</span><span class="cp">
+</span><span class="cp"></span><span class="k">typedef</span> <span class="k">union</span> <span class="nc">epoll_data</span>
+<span class="p">{</span>
+  <span class="kt">void</span> <span class="o">*</span><span class="n">ptr</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">fd</span><span class="p">;</span>
+  <span class="kt">uint32_t</span> <span class="n">u32</span><span class="p">;</span>
+  <span class="kt">uint64_t</span> <span class="n">u64</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">epoll_data_t</span><span class="p">;</span>
+<span class="k">struct</span> <span class="nc">epoll_event</span>
+<span class="p">{</span>
+  <span class="kt">uint32_t</span> <span class="n">events</span><span class="p">;</span>        <span class="cm">/* Epoll events */</span>
+  <span class="n">epoll_data_t</span> <span class="n">data</span><span class="p">;</span>        <span class="cm">/* User data variable */</span>
+<span class="p">}</span> <span class="n">__EPOLL_PACKED</span><span class="p">;</span>
+<span class="n">__BEGIN_DECLS</span>
+<span class="cm">/* Creates an epoll instance.  Returns an fd for the new instance.
+</span><span class="cm">   The &#34;size&#34; parameter is a hint specifying the number of file
+</span><span class="cm">   descriptors to be associated with the new instance.  The fd
+</span><span class="cm">   returned by epoll_create() should be closed with close().  */</span>
+<span class="k">extern</span> <span class="kt">int</span> <span class="n">epoll_create</span> <span class="p">(</span><span class="kt">int</span> <span class="n">__size</span><span class="p">)</span> <span class="n">__THROW</span><span class="p">;</span>
+<span class="cm">/* Same as epoll_create but with an FLAGS parameter.  The unused SIZE
+</span><span class="cm">   parameter has been dropped.  */</span>
+<span class="k">extern</span> <span class="kt">int</span> <span class="nf">epoll_create1</span> <span class="p">(</span><span class="kt">int</span> <span class="n">__flags</span><span class="p">)</span> <span class="n">__THROW</span><span class="p">;</span>
+<span class="cm">/* Manipulate an epoll instance &#34;epfd&#34;. Returns 0 in case of success,
+</span><span class="cm">   -1 in case of error ( the &#34;errno&#34; variable will contain the
+</span><span class="cm">   specific error code ) The &#34;op&#34; parameter is one of the EPOLL_CTL_*
+</span><span class="cm">   constants defined above. The &#34;fd&#34; parameter is the target of the
+</span><span class="cm">   operation. The &#34;event&#34; parameter describes which events the caller
+</span><span class="cm">   is interested in and any associated user data.  */</span>
+<span class="k">extern</span> <span class="kt">int</span> <span class="nf">epoll_ctl</span> <span class="p">(</span><span class="kt">int</span> <span class="n">__epfd</span><span class="p">,</span> <span class="kt">int</span> <span class="n">__op</span><span class="p">,</span> <span class="kt">int</span> <span class="n">__fd</span><span class="p">,</span>
+                      <span class="k">struct</span> <span class="nc">epoll_event</span> <span class="o">*</span><span class="n">__event</span><span class="p">)</span> <span class="n">__THROW</span><span class="p">;</span>
+<span class="cm">/* Wait for events on an epoll instance &#34;epfd&#34;. Returns the number of
+</span><span class="cm">   triggered events returned in &#34;events&#34; buffer. Or -1 in case of
+</span><span class="cm">   error with the &#34;errno&#34; variable set to the specific error code. The
+</span><span class="cm">   &#34;events&#34; parameter is a buffer that will contain triggered
+</span><span class="cm">   events. The &#34;maxevents&#34; is the maximum number of events to be
+</span><span class="cm">   returned ( usually size of &#34;events&#34; ). The &#34;timeout&#34; parameter
+</span><span class="cm">   specifies the maximum wait time in milliseconds (-1 == infinite).
+</span><span class="cm">   This function is a cancellation point and therefore not marked with
+</span><span class="cm">   __THROW.  */</span>
+<span class="k">extern</span> <span class="kt">int</span> <span class="nf">epoll_wait</span> <span class="p">(</span><span class="kt">int</span> <span class="n">__epfd</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">epoll_event</span> <span class="o">*</span><span class="n">__events</span><span class="p">,</span>
+                       <span class="kt">int</span> <span class="n">__maxevents</span><span class="p">,</span> <span class="kt">int</span> <span class="n">__timeout</span><span class="p">);</span>
+<span class="cm">/* Same as epoll_wait, but the thread&#39;s signal mask is temporarily
+</span><span class="cm">   and atomically replaced with the one provided as parameter.
+</span><span class="cm">   This function is a cancellation point and therefore not marked with
+</span><span class="cm">   __THROW.  */</span>
+<span class="k">extern</span> <span class="kt">int</span> <span class="nf">epoll_pwait</span> <span class="p">(</span><span class="kt">int</span> <span class="n">__epfd</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">epoll_event</span> <span class="o">*</span><span class="n">__events</span><span class="p">,</span>
+                        <span class="kt">int</span> <span class="n">__maxevents</span><span class="p">,</span> <span class="kt">int</span> <span class="n">__timeout</span><span class="p">,</span>
+                        <span class="k">const</span> <span class="n">__sigset_t</span> <span class="o">*</span><span class="n">__ss</span><span class="p">);</span>
+<span class="n">__END_DECLS</span>
+<span class="cp">#endif </span><span class="cm">/* sys/epoll.h */</span><span class="cp">
+</span></code></pre></td></tr></table>
+</div>
+</div><h3 id="golang下的完整示例">golang下的完整示例</h3>
 <p><a href="https://zhuanlan.zhihu.com/p/346983498">参考代码</a></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
-<span style="color:#f92672">import</span> (
-	<span style="color:#e6db74">&#34;fmt&#34;</span>
-	<span style="color:#e6db74">&#34;golang.org/x/sys/unix&#34;</span>
-	<span style="color:#e6db74">&#34;log&#34;</span>
-	<span style="color:#e6db74">&#34;net&#34;</span>
-	<span style="color:#e6db74">&#34;os&#34;</span>
-	<span style="color:#e6db74">&#34;syscall&#34;</span>
-)
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;fmt&#34;</span>
+	<span class="s">&#34;golang.org/x/sys/unix&#34;</span>
+	<span class="s">&#34;log&#34;</span>
+	<span class="s">&#34;net&#34;</span>
+	<span class="s">&#34;os&#34;</span>
+	<span class="s">&#34;syscall&#34;</span>
+<span class="p">)</span>
 
-<span style="color:#66d9ef">const</span> (
-	<span style="color:#75715e">//EPOLLET        = syscall.EPOLLPRI | syscall.EPOLLIN //这里只是监听读事件
-</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">MaxEpollEvents</span> = <span style="color:#ae81ff">32</span>
-)
+<span class="kd">const</span> <span class="p">(</span>
+	<span class="c1">//EPOLLET        = syscall.EPOLLPRI | syscall.EPOLLIN //这里只是监听读事件
+</span><span class="c1"></span>	<span class="nx">MaxEpollEvents</span> <span class="p">=</span> <span class="mi">32</span>
+<span class="p">)</span>
 
-<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">buf</span> [<span style="color:#ae81ff">8</span>]<span style="color:#66d9ef">byte</span>
+<span class="kd">var</span> <span class="nx">buf</span> <span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="kt">byte</span>
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">echo</span>(<span style="color:#a6e22e">epollfd</span>, <span style="color:#a6e22e">fd</span> <span style="color:#66d9ef">int</span>) {
-	<span style="color:#75715e">//defer syscall.Close(fd)
-</span><span style="color:#75715e"></span>	<span style="color:#75715e">//for {
-</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">nbytes</span>, <span style="color:#a6e22e">e</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">Read</span>(<span style="color:#a6e22e">fd</span>, <span style="color:#a6e22e">buf</span>[:])
-	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">nbytes</span> &gt; <span style="color:#ae81ff">0</span> {
-		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;&gt;&gt;&gt; %s&#34;</span>, <span style="color:#a6e22e">buf</span>)
-		<span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">e</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">Write</span>(<span style="color:#a6e22e">fd</span>, <span style="color:#a6e22e">buf</span>[:<span style="color:#a6e22e">nbytes</span>])
-		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">e</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-			<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;error write [%+v]&#34;</span>, <span style="color:#a6e22e">e</span>)
-		}
-		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;&lt;&lt;&lt; %s&#34;</span>, <span style="color:#a6e22e">buf</span>)
-	}
-	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">e</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;error %v\n&#34;</span>, <span style="color:#a6e22e">e</span>)
-	}
-	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">nbytes</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> {
-		<span style="color:#75715e">//如果无法读取，说明客户端被关闭了，要移除连接
-</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">EpollCtl</span>(<span style="color:#a6e22e">epollfd</span>, <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">EPOLL_CTL_DEL</span>, <span style="color:#a6e22e">fd</span>, <span style="color:#66d9ef">nil</span>); <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-			<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;epoll_ctl: &#34;</span>, <span style="color:#a6e22e">err</span>)
-			<span style="color:#75715e">//os.Exit(1)
-</span><span style="color:#75715e"></span>		}
-		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;close epoll fd %v\n&#34;</span>, <span style="color:#a6e22e">fd</span>)
+<span class="kd">func</span> <span class="nf">echo</span><span class="p">(</span><span class="nx">epollfd</span><span class="p">,</span> <span class="nx">fd</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">//defer syscall.Close(fd)
+</span><span class="c1"></span>	<span class="c1">//for {
+</span><span class="c1"></span>	<span class="nx">nbytes</span><span class="p">,</span> <span class="nx">e</span> <span class="o">:=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">Read</span><span class="p">(</span><span class="nx">fd</span><span class="p">,</span> <span class="nx">buf</span><span class="p">[:])</span>
+	<span class="k">if</span> <span class="nx">nbytes</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;&gt;&gt;&gt; %s&#34;</span><span class="p">,</span> <span class="nx">buf</span><span class="p">)</span>
+		<span class="nx">_</span><span class="p">,</span> <span class="nx">e</span> <span class="o">:=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="nx">fd</span><span class="p">,</span> <span class="nx">buf</span><span class="p">[:</span><span class="nx">nbytes</span><span class="p">])</span>
+		<span class="k">if</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;error write [%+v]&#34;</span><span class="p">,</span> <span class="nx">e</span><span class="p">)</span>
+		<span class="p">}</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;&lt;&lt;&lt; %s&#34;</span><span class="p">,</span> <span class="nx">buf</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="k">if</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;error %v\n&#34;</span><span class="p">,</span> <span class="nx">e</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="k">if</span> <span class="nx">nbytes</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+		<span class="c1">//如果无法读取，说明客户端被关闭了，要移除连接
+</span><span class="c1"></span>		<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">EpollCtl</span><span class="p">(</span><span class="nx">epollfd</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">EPOLL_CTL_DEL</span><span class="p">,</span> <span class="nx">fd</span><span class="p">,</span> <span class="kc">nil</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;epoll_ctl: &#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+			<span class="c1">//os.Exit(1)
+</span><span class="c1"></span>		<span class="p">}</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;close epoll fd %v\n&#34;</span><span class="p">,</span> <span class="nx">fd</span><span class="p">)</span>
 
-	}
-	<span style="color:#75715e">//}
-</span><span style="color:#75715e"></span>}
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-	<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">event</span> <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">EpollEvent</span>
-	<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">events</span> [<span style="color:#a6e22e">MaxEpollEvents</span>]<span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">EpollEvent</span>
-	<span style="color:#a6e22e">fd</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">Socket</span>(<span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">AF_INET</span>, <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">O_NONBLOCK</span>|<span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">SOCK_STREAM</span>, <span style="color:#ae81ff">0</span>) <span style="color:#75715e">//创建socket
-</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">err</span>)
-		<span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Exit</span>(<span style="color:#ae81ff">1</span>)
-	}
-	<span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">Close</span>(<span style="color:#a6e22e">fd</span>)
-	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">SetNonblock</span>(<span style="color:#a6e22e">fd</span>, <span style="color:#66d9ef">true</span>); <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> { <span style="color:#75715e">//设置非阻塞模式
-</span><span style="color:#75715e"></span>		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;setnonblock1: &#34;</span>, <span style="color:#a6e22e">err</span>)
-		<span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Exit</span>(<span style="color:#ae81ff">1</span>)
-	}
-	<span style="color:#a6e22e">addr</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">SockaddrInet4</span>{<span style="color:#a6e22e">Port</span>: <span style="color:#ae81ff">50000</span>}
-	copy(<span style="color:#a6e22e">addr</span>.<span style="color:#a6e22e">Addr</span>[:], <span style="color:#a6e22e">net</span>.<span style="color:#a6e22e">ParseIP</span>(<span style="color:#e6db74">&#34;0.0.0.0&#34;</span>).<span style="color:#a6e22e">To4</span>())
-	<span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">Bind</span>(<span style="color:#a6e22e">fd</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">addr</span>) <span style="color:#75715e">//绑定ip,端口。
-</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">Listen</span>(<span style="color:#a6e22e">fd</span>, <span style="color:#ae81ff">10</span>)  <span style="color:#75715e">//监听端口
-</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">epfd</span>, <span style="color:#a6e22e">e</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">EpollCreate1</span>(<span style="color:#ae81ff">0</span>)
-	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">e</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;epoll_create1: &#34;</span>, <span style="color:#a6e22e">e</span>)
-		<span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Exit</span>(<span style="color:#ae81ff">1</span>)
-	}
-	<span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">Close</span>(<span style="color:#a6e22e">epfd</span>)
-	<span style="color:#a6e22e">event</span>.<span style="color:#a6e22e">Events</span> = <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">EPOLLIN</span>
-	<span style="color:#a6e22e">event</span>.<span style="color:#a6e22e">Fd</span> = int32(<span style="color:#a6e22e">fd</span>) <span style="color:#75715e">//设置监听描述符
-</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">e</span> = <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">EpollCtl</span>(<span style="color:#a6e22e">epfd</span>, <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">EPOLL_CTL_ADD</span>, <span style="color:#a6e22e">fd</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">event</span>); <span style="color:#a6e22e">e</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;epoll_ctl: &#34;</span>, <span style="color:#a6e22e">e</span>)
-		<span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Exit</span>(<span style="color:#ae81ff">1</span>)
-	}
-	<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;ok=&gt;enter\n&#34;</span>)
-	<span style="color:#66d9ef">for</span> {
-		<span style="color:#a6e22e">nevents</span>, <span style="color:#a6e22e">e</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">EpollWait</span>(<span style="color:#a6e22e">epfd</span>, <span style="color:#a6e22e">events</span>[:], <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) <span style="color:#75715e">//获取就绪事件
-</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">e</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-			<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">e</span> <span style="color:#f92672">==</span> <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">EINTR</span> {
-				<span style="color:#66d9ef">continue</span>
-			}
-			<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;epoll_wait: %+v\n&#34;</span>, <span style="color:#a6e22e">e</span>)
-			<span style="color:#75715e">//break
-</span><span style="color:#75715e"></span>			<span style="color:#66d9ef">continue</span>
-		}
-		<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;nevent cnt = %d\n&#34;</span>, <span style="color:#a6e22e">nevents</span>)
-		<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">ev</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">ev</span> &lt; <span style="color:#a6e22e">nevents</span>; <span style="color:#a6e22e">ev</span><span style="color:#f92672">++</span> {
-			<span style="color:#66d9ef">if</span> int(<span style="color:#a6e22e">events</span>[<span style="color:#a6e22e">ev</span>].<span style="color:#a6e22e">Fd</span>) <span style="color:#f92672">==</span> <span style="color:#a6e22e">fd</span> {
-				<span style="color:#a6e22e">connFd</span>, <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">Accept</span>(<span style="color:#a6e22e">fd</span>) <span style="color:#75715e">//接受请求
-</span><span style="color:#75715e"></span>				<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-					<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;accept: &#34;</span>, <span style="color:#a6e22e">err</span>)
-					<span style="color:#66d9ef">continue</span>
-				}
-				<span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">SetNonblock</span>(<span style="color:#a6e22e">fd</span>, <span style="color:#66d9ef">true</span>)
-				<span style="color:#75715e">//syscall.EPOLLIN
-</span><span style="color:#75715e"></span>				<span style="color:#75715e">//监听读事件, 模式是水平触发
-</span><span style="color:#75715e"></span>				<span style="color:#a6e22e">event</span>.<span style="color:#a6e22e">Events</span> = <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">EPOLLIN</span> | <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">EPOLLPRI</span>
-				<span style="color:#a6e22e">event</span>.<span style="color:#a6e22e">Fd</span> = int32(<span style="color:#a6e22e">connFd</span>)
-				<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">EpollCtl</span>(<span style="color:#a6e22e">epfd</span>, <span style="color:#a6e22e">syscall</span>.<span style="color:#a6e22e">EPOLL_CTL_ADD</span>, <span style="color:#a6e22e">connFd</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">event</span>); <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
-					<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">&#34;epoll_ctl: &#34;</span>, <span style="color:#a6e22e">connFd</span>, <span style="color:#a6e22e">err</span>)
-					<span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Exit</span>(<span style="color:#ae81ff">1</span>)
-				}
-			} <span style="color:#66d9ef">else</span> {
-				<span style="color:#75715e">//var rEvents uint32
-</span><span style="color:#75715e"></span>				<span style="color:#66d9ef">if</span> ((<span style="color:#a6e22e">events</span>[<span style="color:#a6e22e">ev</span>].<span style="color:#a6e22e">Events</span> <span style="color:#f92672">&amp;</span> <span style="color:#a6e22e">unix</span>.<span style="color:#a6e22e">POLLHUP</span>) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) <span style="color:#f92672">&amp;&amp;</span> ((<span style="color:#a6e22e">events</span>[<span style="color:#a6e22e">ev</span>].<span style="color:#a6e22e">Events</span> <span style="color:#f92672">&amp;</span> <span style="color:#a6e22e">unix</span>.<span style="color:#a6e22e">POLLIN</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
-					<span style="color:#75715e">//rEvents |= EventErr
-</span><span style="color:#75715e"></span>					<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;event err\n&#34;</span>)
-				}
-				<span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">events</span>[<span style="color:#a6e22e">ev</span>].<span style="color:#a6e22e">Events</span><span style="color:#f92672">&amp;</span><span style="color:#a6e22e">unix</span>.<span style="color:#a6e22e">EPOLLERR</span> <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) <span style="color:#f92672">||</span> (<span style="color:#a6e22e">events</span>[<span style="color:#a6e22e">ev</span>].<span style="color:#a6e22e">Events</span><span style="color:#f92672">&amp;</span><span style="color:#a6e22e">unix</span>.<span style="color:#a6e22e">EPOLLOUT</span> <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
-					<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;write event\n&#34;</span>)
-				}
-				<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">events</span>[<span style="color:#a6e22e">ev</span>].<span style="color:#a6e22e">Events</span><span style="color:#f92672">&amp;</span>(<span style="color:#a6e22e">unix</span>.<span style="color:#a6e22e">EPOLLIN</span>|<span style="color:#a6e22e">unix</span>.<span style="color:#a6e22e">EPOLLPRI</span>|<span style="color:#a6e22e">unix</span>.<span style="color:#a6e22e">EPOLLRDHUP</span>) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span> {
-					<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;read event&#34;</span>)
-				}
-				<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;events.fd=%d\n&#34;</span>, <span style="color:#a6e22e">events</span>[<span style="color:#a6e22e">ev</span>].<span style="color:#a6e22e">Fd</span>)
-				<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;events %#v&#34;</span>, <span style="color:#a6e22e">events</span>[<span style="color:#a6e22e">ev</span>])
-				<span style="color:#75715e">/*go*/</span> <span style="color:#a6e22e">echo</span>(<span style="color:#a6e22e">epfd</span>, int(<span style="color:#a6e22e">events</span>[<span style="color:#a6e22e">ev</span>].<span style="color:#a6e22e">Fd</span>))
-			}
-		}
-	}
-}
+	<span class="p">}</span>
+	<span class="c1">//}
+</span><span class="c1"></span><span class="p">}</span>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">event</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">EpollEvent</span>
+	<span class="kd">var</span> <span class="nx">events</span> <span class="p">[</span><span class="nx">MaxEpollEvents</span><span class="p">]</span><span class="nx">syscall</span><span class="p">.</span><span class="nx">EpollEvent</span>
+	<span class="nx">fd</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">Socket</span><span class="p">(</span><span class="nx">syscall</span><span class="p">.</span><span class="nx">AF_INET</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">O_NONBLOCK</span><span class="p">|</span><span class="nx">syscall</span><span class="p">.</span><span class="nx">SOCK_STREAM</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="c1">//创建socket
+</span><span class="c1"></span>	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="k">defer</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="nx">fd</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">SetNonblock</span><span class="p">(</span><span class="nx">fd</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span> <span class="c1">//设置非阻塞模式
+</span><span class="c1"></span>		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;setnonblock1: &#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="nx">addr</span> <span class="o">:=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">SockaddrInet4</span><span class="p">{</span><span class="nx">Port</span><span class="p">:</span> <span class="mi">50000</span><span class="p">}</span>
+	<span class="nb">copy</span><span class="p">(</span><span class="nx">addr</span><span class="p">.</span><span class="nx">Addr</span><span class="p">[:],</span> <span class="nx">net</span><span class="p">.</span><span class="nf">ParseIP</span><span class="p">(</span><span class="s">&#34;0.0.0.0&#34;</span><span class="p">).</span><span class="nf">To4</span><span class="p">())</span>
+	<span class="nx">syscall</span><span class="p">.</span><span class="nf">Bind</span><span class="p">(</span><span class="nx">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">addr</span><span class="p">)</span> <span class="c1">//绑定ip,端口。
+</span><span class="c1"></span>	<span class="nx">syscall</span><span class="p">.</span><span class="nf">Listen</span><span class="p">(</span><span class="nx">fd</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>  <span class="c1">//监听端口
+</span><span class="c1"></span>	<span class="nx">epfd</span><span class="p">,</span> <span class="nx">e</span> <span class="o">:=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">EpollCreate1</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;epoll_create1: &#34;</span><span class="p">,</span> <span class="nx">e</span><span class="p">)</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="k">defer</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="nx">epfd</span><span class="p">)</span>
+	<span class="nx">event</span><span class="p">.</span><span class="nx">Events</span> <span class="p">=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">EPOLLIN</span>
+	<span class="nx">event</span><span class="p">.</span><span class="nx">Fd</span> <span class="p">=</span> <span class="nb">int32</span><span class="p">(</span><span class="nx">fd</span><span class="p">)</span> <span class="c1">//设置监听描述符
+</span><span class="c1"></span>	<span class="k">if</span> <span class="nx">e</span> <span class="p">=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">EpollCtl</span><span class="p">(</span><span class="nx">epfd</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">EPOLL_CTL_ADD</span><span class="p">,</span> <span class="nx">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">event</span><span class="p">);</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;epoll_ctl: &#34;</span><span class="p">,</span> <span class="nx">e</span><span class="p">)</span>
+		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;ok=&gt;enter\n&#34;</span><span class="p">)</span>
+	<span class="k">for</span> <span class="p">{</span>
+		<span class="nx">nevents</span><span class="p">,</span> <span class="nx">e</span> <span class="o">:=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">EpollWait</span><span class="p">(</span><span class="nx">epfd</span><span class="p">,</span> <span class="nx">events</span><span class="p">[:],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1">//获取就绪事件
+</span><span class="c1"></span>		<span class="k">if</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="nx">e</span> <span class="o">==</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">EINTR</span> <span class="p">{</span>
+				<span class="k">continue</span>
+			<span class="p">}</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;epoll_wait: %+v\n&#34;</span><span class="p">,</span> <span class="nx">e</span><span class="p">)</span>
+			<span class="c1">//break
+</span><span class="c1"></span>			<span class="k">continue</span>
+		<span class="p">}</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;nevent cnt = %d\n&#34;</span><span class="p">,</span> <span class="nx">nevents</span><span class="p">)</span>
+		<span class="k">for</span> <span class="nx">ev</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">ev</span> <span class="p">&lt;</span> <span class="nx">nevents</span><span class="p">;</span> <span class="nx">ev</span><span class="o">++</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="nx">events</span><span class="p">[</span><span class="nx">ev</span><span class="p">].</span><span class="nx">Fd</span><span class="p">)</span> <span class="o">==</span> <span class="nx">fd</span> <span class="p">{</span>
+				<span class="nx">connFd</span><span class="p">,</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">Accept</span><span class="p">(</span><span class="nx">fd</span><span class="p">)</span> <span class="c1">//接受请求
+</span><span class="c1"></span>				<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+					<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;accept: &#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+					<span class="k">continue</span>
+				<span class="p">}</span>
+				<span class="nx">syscall</span><span class="p">.</span><span class="nf">SetNonblock</span><span class="p">(</span><span class="nx">fd</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+				<span class="c1">//syscall.EPOLLIN
+</span><span class="c1"></span>				<span class="c1">//监听读事件, 模式是水平触发
+</span><span class="c1"></span>				<span class="nx">event</span><span class="p">.</span><span class="nx">Events</span> <span class="p">=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">EPOLLIN</span> <span class="p">|</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">EPOLLPRI</span>
+				<span class="nx">event</span><span class="p">.</span><span class="nx">Fd</span> <span class="p">=</span> <span class="nb">int32</span><span class="p">(</span><span class="nx">connFd</span><span class="p">)</span>
+				<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">EpollCtl</span><span class="p">(</span><span class="nx">epfd</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">EPOLL_CTL_ADD</span><span class="p">,</span> <span class="nx">connFd</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">event</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+					<span class="nx">fmt</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;epoll_ctl: &#34;</span><span class="p">,</span> <span class="nx">connFd</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+					<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+				<span class="p">}</span>
+			<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+				<span class="c1">//var rEvents uint32
+</span><span class="c1"></span>				<span class="k">if</span> <span class="p">((</span><span class="nx">events</span><span class="p">[</span><span class="nx">ev</span><span class="p">].</span><span class="nx">Events</span> <span class="o">&amp;</span> <span class="nx">unix</span><span class="p">.</span><span class="nx">POLLHUP</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">((</span><span class="nx">events</span><span class="p">[</span><span class="nx">ev</span><span class="p">].</span><span class="nx">Events</span> <span class="o">&amp;</span> <span class="nx">unix</span><span class="p">.</span><span class="nx">POLLIN</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+					<span class="c1">//rEvents |= EventErr
+</span><span class="c1"></span>					<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;event err\n&#34;</span><span class="p">)</span>
+				<span class="p">}</span>
+				<span class="k">if</span> <span class="p">(</span><span class="nx">events</span><span class="p">[</span><span class="nx">ev</span><span class="p">].</span><span class="nx">Events</span><span class="o">&amp;</span><span class="nx">unix</span><span class="p">.</span><span class="nx">EPOLLERR</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="nx">events</span><span class="p">[</span><span class="nx">ev</span><span class="p">].</span><span class="nx">Events</span><span class="o">&amp;</span><span class="nx">unix</span><span class="p">.</span><span class="nx">EPOLLOUT</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+					<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;write event\n&#34;</span><span class="p">)</span>
+				<span class="p">}</span>
+				<span class="k">if</span> <span class="nx">events</span><span class="p">[</span><span class="nx">ev</span><span class="p">].</span><span class="nx">Events</span><span class="o">&amp;</span><span class="p">(</span><span class="nx">unix</span><span class="p">.</span><span class="nx">EPOLLIN</span><span class="p">|</span><span class="nx">unix</span><span class="p">.</span><span class="nx">EPOLLPRI</span><span class="p">|</span><span class="nx">unix</span><span class="p">.</span><span class="nx">EPOLLRDHUP</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+					<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;read event&#34;</span><span class="p">)</span>
+				<span class="p">}</span>
+				<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;events.fd=%d\n&#34;</span><span class="p">,</span> <span class="nx">events</span><span class="p">[</span><span class="nx">ev</span><span class="p">].</span><span class="nx">Fd</span><span class="p">)</span>
+				<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;events %#v&#34;</span><span class="p">,</span> <span class="nx">events</span><span class="p">[</span><span class="nx">ev</span><span class="p">])</span>
+				<span class="cm">/*go*/</span> <span class="nf">echo</span><span class="p">(</span><span class="nx">epfd</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nx">events</span><span class="p">[</span><span class="nx">ev</span><span class="p">].</span><span class="nx">Fd</span><span class="p">))</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
 
 
-</code></pre></div>
+</code></pre></td></tr></table>
+</div>
+</div>
     </div>
 
     <div class="post-copyright">
@@ -684,7 +939,7 @@ __END_DECLS
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

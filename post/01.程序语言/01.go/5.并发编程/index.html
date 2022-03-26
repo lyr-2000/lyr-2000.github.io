@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="lyr" /><meta name="description" content="5.并发编程 ​ 上下文context 这东西是用于控制并发的。下面是一个简单的例子 func main() { // 使用context.Background()返回一个空" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+<meta name="author" content="lyr" /><meta name="description" content="5.并发编程 ​ 上下文context 这东西是用于控制并发的。下面是一个简单的例子 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
 
 
 
@@ -41,17 +41,17 @@
 
 
 <meta property="og:title" content="5.并发编程" />
-<meta property="og:description" content="5.并发编程 ​ 上下文context 这东西是用于控制并发的。下面是一个简单的例子 func main() { // 使用context.Background()返回一个空" />
+<meta property="og:description" content="5.并发编程 ​ 上下文context 这东西是用于控制并发的。下面是一个简单的例子 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://lyr-2000.github.io/post/01.%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/01.go/5.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" />
 <meta property="og:image" content="https://tva1.sinaimg.cn/large/0076Ry2fgy1frc77vhnukj31hc0u0ajl.jpg" />
 <meta property="article:published_time" content="2022-03-12T01:31:48+08:00" />
 <meta property="article:modified_time" content="2022-03-12T01:31:48+08:00" />
 <meta itemprop="name" content="5.并发编程">
-<meta itemprop="description" content="5.并发编程 ​ 上下文context 这东西是用于控制并发的。下面是一个简单的例子 func main() { // 使用context.Background()返回一个空">
+<meta itemprop="description" content="5.并发编程 ​ 上下文context 这东西是用于控制并发的。下面是一个简单的例子 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31">
 <meta itemprop="datePublished" content="2022-03-12T01:31:48&#43;08:00" />
 <meta itemprop="dateModified" content="2022-03-12T01:31:48&#43;08:00" />
-<meta itemprop="wordCount" content="11169">
+<meta itemprop="wordCount" content="11454">
 <meta itemprop="image" content="https://tva1.sinaimg.cn/large/0076Ry2fgy1frc77vhnukj31hc0u0ajl.jpg">
 
 
@@ -60,7 +60,7 @@
 <meta name="twitter:image" content="https://tva1.sinaimg.cn/large/0076Ry2fgy1frc77vhnukj31hc0u0ajl.jpg"/>
 
 <meta name="twitter:title" content="5.并发编程"/>
-<meta name="twitter:description" content="5.并发编程 ​ 上下文context 这东西是用于控制并发的。下面是一个简单的例子 func main() { // 使用context.Background()返回一个空"/>
+<meta name="twitter:description" content="5.并发编程 ​ 上下文context 这东西是用于控制并发的。下面是一个简单的例子 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -197,7 +197,7 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/01.go/"> 01.Go </a>
             </div>
-          <span class="more-meta"> 约 11169 字 </span>
+          <span class="more-meta"> 约 11454 字 </span>
           <span class="more-meta"> 预计阅读 23 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -271,69 +271,140 @@ input.PC_MARK1:focus{
 <p>​</p>
 <h2 id="上下文context">上下文context</h2>
 <p>这东西是用于控制并发的。下面是一个简单的例子</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#75715e">// 使用context.Background()返回一个空的context，作为我们的context树的根节点
-</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 然后我们使用context.WithCancel来创建一个可以取消的context
-</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 第一个返回的是context对象，第二个返回的是一个回调函数，使用这个回调函数，我们可以取消context
-</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">cancel</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">WithCancel</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Background</span>())
-    <span style="color:#75715e">// 启动一个协程，传入我们的context
-</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">go</span> <span style="color:#a6e22e">watch</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#e6db74">&#34;【监控1】&#34;</span>)
-	<span style="color:#66d9ef">go</span> <span style="color:#a6e22e">watch</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#e6db74">&#34;【监控2】&#34;</span>)
-	<span style="color:#66d9ef">go</span> <span style="color:#a6e22e">watch</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#e6db74">&#34;【监控3】&#34;</span>)
-	<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">10</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
-	<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;可以了，通知监控停止&#34;</span>)
-    <span style="color:#75715e">// 调用cancel函数，我们就可以发出取消的指令，这样我们的goroutine就会就会收到信号，结束函数
-</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">cancel</span>()
-	<span style="color:#75715e">//为了检测监控过是否停止，如果没有监控输出，就表示停止了
-</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">5</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
-}
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">watch</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">name</span> <span style="color:#66d9ef">string</span>) {
-	<span style="color:#66d9ef">for</span> {
-		<span style="color:#66d9ef">select</span> {
-        <span style="color:#75715e">// 这个ctx.done() 就是在监听context，判断是否结束了
-</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">case</span> <span style="color:#f92672">&lt;-</span><span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">Done</span>():
-			<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">name</span>, <span style="color:#e6db74">&#34;监控退出，停止了...&#34;</span>)
-			<span style="color:#66d9ef">return</span>
-		<span style="color:#66d9ef">default</span>:
-			<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">name</span>, <span style="color:#e6db74">&#34;goroutine监控中...&#34;</span>)
-			<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
-		}
-	}
-}
-<span style="color:#75715e">/**
-</span><span style="color:#75715e">【监控3】 goroutine监控中...
-</span><span style="color:#75715e">【监控1】 goroutine监控中...
-</span><span style="color:#75715e">【监控2】 goroutine监控中...
-</span><span style="color:#75715e">【监控1】 goroutine监控中...
-</span><span style="color:#75715e">【监控2】 goroutine监控中...
-</span><span style="color:#75715e">【监控3】 goroutine监控中...
-</span><span style="color:#75715e">【监控1】 goroutine监控中...
-</span><span style="color:#75715e">【监控2】 goroutine监控中...
-</span><span style="color:#75715e">【监控3】 goroutine监控中...
-</span><span style="color:#75715e">【监控1】 goroutine监控中...
-</span><span style="color:#75715e">【监控2】 goroutine监控中...
-</span><span style="color:#75715e">【监控3】 goroutine监控中...
-</span><span style="color:#75715e">【监控3】 goroutine监控中...
-</span><span style="color:#75715e">【监控1】 goroutine监控中...
-</span><span style="color:#75715e">【监控2】 goroutine监控中...
-</span><span style="color:#75715e">可以了，通知监控停止
-</span><span style="color:#75715e">【监控2】 监控退出，停止了...
-</span><span style="color:#75715e">【监控3】 监控退出，停止了...
-</span><span style="color:#75715e">【监控1】 监控退出，停止了...
-</span><span style="color:#75715e">**/</span>
-</code></pre></div><p>这就是 Context 的控制能力，它就像一个控制器一样，按下开关后，所有基于这个 Context 或者衍生的子 Context 都会收到通知，这时就可以进行清理操作了，最终释放 goroutine，这就优雅的解决了 goroutine 启动后不可控的问题。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// 使用context.Background()返回一个空的context，作为我们的context树的根节点
+</span><span class="c1"></span>    <span class="c1">// 然后我们使用context.WithCancel来创建一个可以取消的context
+</span><span class="c1"></span>    <span class="c1">// 第一个返回的是context对象，第二个返回的是一个回调函数，使用这个回调函数，我们可以取消context
+</span><span class="c1"></span>	<span class="nx">ctx</span><span class="p">,</span> <span class="nx">cancel</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithCancel</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">())</span>
+    <span class="c1">// 启动一个协程，传入我们的context
+</span><span class="c1"></span>	<span class="k">go</span> <span class="nf">watch</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="s">&#34;【监控1】&#34;</span><span class="p">)</span>
+	<span class="k">go</span> <span class="nf">watch</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="s">&#34;【监控2】&#34;</span><span class="p">)</span>
+	<span class="k">go</span> <span class="nf">watch</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="s">&#34;【监控3】&#34;</span><span class="p">)</span>
+	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;可以了，通知监控停止&#34;</span><span class="p">)</span>
+    <span class="c1">// 调用cancel函数，我们就可以发出取消的指令，这样我们的goroutine就会就会收到信号，结束函数
+</span><span class="c1"></span>	<span class="nf">cancel</span><span class="p">()</span>
+	<span class="c1">//为了检测监控过是否停止，如果没有监控输出，就表示停止了
+</span><span class="c1"></span>	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="kd">func</span> <span class="nf">watch</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">name</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">for</span> <span class="p">{</span>
+		<span class="k">select</span> <span class="p">{</span>
+        <span class="c1">// 这个ctx.done() 就是在监听context，判断是否结束了
+</span><span class="c1"></span>		<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">ctx</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="s">&#34;监控退出，停止了...&#34;</span><span class="p">)</span>
+			<span class="k">return</span>
+		<span class="k">default</span><span class="p">:</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="s">&#34;goroutine监控中...&#34;</span><span class="p">)</span>
+			<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+<span class="cm">/**
+</span><span class="cm">【监控3】 goroutine监控中...
+</span><span class="cm">【监控1】 goroutine监控中...
+</span><span class="cm">【监控2】 goroutine监控中...
+</span><span class="cm">【监控1】 goroutine监控中...
+</span><span class="cm">【监控2】 goroutine监控中...
+</span><span class="cm">【监控3】 goroutine监控中...
+</span><span class="cm">【监控1】 goroutine监控中...
+</span><span class="cm">【监控2】 goroutine监控中...
+</span><span class="cm">【监控3】 goroutine监控中...
+</span><span class="cm">【监控1】 goroutine监控中...
+</span><span class="cm">【监控2】 goroutine监控中...
+</span><span class="cm">【监控3】 goroutine监控中...
+</span><span class="cm">【监控3】 goroutine监控中...
+</span><span class="cm">【监控1】 goroutine监控中...
+</span><span class="cm">【监控2】 goroutine监控中...
+</span><span class="cm">可以了，通知监控停止
+</span><span class="cm">【监控2】 监控退出，停止了...
+</span><span class="cm">【监控3】 监控退出，停止了...
+</span><span class="cm">【监控1】 监控退出，停止了...
+</span><span class="cm">**/</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这就是 Context 的控制能力，它就像一个控制器一样，按下开关后，所有基于这个 Context 或者衍生的子 Context 都会收到通知，这时就可以进行清理操作了，最终释放 goroutine，这就优雅的解决了 goroutine 启动后不可控的问题。</p>
 <h3 id="接口方法">接口方法</h3>
 <p>context的结构体如下</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Context</span> <span style="color:#66d9ef">interface</span> {
-	<span style="color:#a6e22e">Deadline</span>() (<span style="color:#a6e22e">deadline</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Time</span>, <span style="color:#a6e22e">ok</span> <span style="color:#66d9ef">bool</span>)
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Context</span> <span class="kd">interface</span> <span class="p">{</span>
+	<span class="nf">Deadline</span><span class="p">()</span> <span class="p">(</span><span class="nx">deadline</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">,</span> <span class="nx">ok</span> <span class="kt">bool</span><span class="p">)</span>
 
-	<span style="color:#a6e22e">Done</span>() <span style="color:#f92672">&lt;-</span><span style="color:#66d9ef">chan</span> <span style="color:#66d9ef">struct</span>{}
+	<span class="nf">Done</span><span class="p">()</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{}</span>
 
-	<span style="color:#a6e22e">Err</span>() <span style="color:#66d9ef">error</span>
+	<span class="nf">Err</span><span class="p">()</span> <span class="kt">error</span>
 
-	<span style="color:#a6e22e">Value</span>(<span style="color:#a6e22e">key</span> <span style="color:#66d9ef">interface</span>{}) <span style="color:#66d9ef">interface</span>{}
-}
-</code></pre></div><p>下面简单介绍每个方法的作用</p>
+	<span class="nf">Value</span><span class="p">(</span><span class="nx">key</span> <span class="kd">interface</span><span class="p">{})</span> <span class="kd">interface</span><span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>下面简单介绍每个方法的作用</p>
 <ul>
 <li><strong>Deadline</strong> 获取设置的截止时间的意思，第一个返回式是截止时间，到了这个时间点，Context 会自动发起取消请求；第二个返回值 ok==false 时表示没有设置截止时间，如果需要取消的话，需要调用取消函数进行取消。</li>
 <li><strong>Done方法</strong>  Done 方法返回一个只读的 chan，类型为 struct{}，我们在 goroutine 中，如果该方法返回的 chan 可以读取，则意味着 parent context 已经发起了取消请求</li>
@@ -342,11 +413,21 @@ input.PC_MARK1:focus{
 </ul>
 <h3 id="创建子context">创建子context</h3>
 <p>上面我们使用context.Background返回了一个空的context，那么我们如何产生子context呢，我们可以使用context包提供的with函数</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">WithCancel</span>(<span style="color:#a6e22e">parent</span> <span style="color:#a6e22e">Context</span>) (<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">cancel</span> <span style="color:#a6e22e">CancelFunc</span>)
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">WithDeadline</span>(<span style="color:#a6e22e">parent</span> <span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">deadline</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Time</span>) (<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">CancelFunc</span>)
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">WithTimeout</span>(<span style="color:#a6e22e">parent</span> <span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">timeout</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Duration</span>) (<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">CancelFunc</span>)
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">WithValue</span>(<span style="color:#a6e22e">parent</span> <span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">val</span> <span style="color:#66d9ef">interface</span>{}) <span style="color:#a6e22e">Context</span>
-</code></pre></div><p>这四个 With 函数，接收的都有一个 partent 参数，就是父 Context，我们要基于这个父 Context 创建出子 Context 的意思，这种方式可以理解为子 Context 对父 Context 的继承，也可以理解为基于父 Context 的衍生。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">WithCancel</span><span class="p">(</span><span class="nx">parent</span> <span class="nx">Context</span><span class="p">)</span> <span class="p">(</span><span class="nx">ctx</span> <span class="nx">Context</span><span class="p">,</span> <span class="nx">cancel</span> <span class="nx">CancelFunc</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">WithDeadline</span><span class="p">(</span><span class="nx">parent</span> <span class="nx">Context</span><span class="p">,</span> <span class="nx">deadline</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">)</span> <span class="p">(</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">CancelFunc</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">WithTimeout</span><span class="p">(</span><span class="nx">parent</span> <span class="nx">Context</span><span class="p">,</span> <span class="nx">timeout</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">)</span> <span class="p">(</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">CancelFunc</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">WithValue</span><span class="p">(</span><span class="nx">parent</span> <span class="nx">Context</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">val</span> <span class="kd">interface</span><span class="p">{})</span> <span class="nx">Context</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这四个 With 函数，接收的都有一个 partent 参数，就是父 Context，我们要基于这个父 Context 创建出子 Context 的意思，这种方式可以理解为子 Context 对父 Context 的继承，也可以理解为基于父 Context 的衍生。</p>
 <p><strong>通过这些函数，就创建了一颗 Context 树，树的每个节点都可以有任意多个子节点，节点层级可以有任意多个。</strong></p>
 <ul>
 <li><strong>WithCancel</strong>  函数传递一个父 Context 作为参数，返回子 Context，以及一个取消函数用来取消 Context。</li>
@@ -356,33 +437,65 @@ input.PC_MARK1:focus{
 </ul>
 <p>前三个函数都返回一个取消函数 CancelFunc，该函数可以 <strong>取消一个 Context，以及这个节点 Context下所有的所有的 Context，</strong> 不管有多少层级。</p>
 <h3 id="context传递数据">context传递数据</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">key</span> <span style="color:#66d9ef">string</span> = <span style="color:#e6db74">&#34;name&#34;</span>
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-	<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">cancel</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">WithCancel</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Background</span>())
-	<span style="color:#75715e">//附加值
-</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">valueCtx</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">WithValue</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#a6e22e">key</span>, <span style="color:#e6db74">&#34;【监控1】&#34;</span>)
-	<span style="color:#66d9ef">go</span> <span style="color:#a6e22e">watch</span>(<span style="color:#a6e22e">valueCtx</span>)
-	<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">10</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
-	<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;可以了，通知监控停止&#34;</span>)
-	<span style="color:#a6e22e">cancel</span>()
-	<span style="color:#75715e">//为了检测监控过是否停止，如果没有监控输出，就表示停止了
-</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">5</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
-}
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">watch</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>) {
-	<span style="color:#66d9ef">for</span> {
-		<span style="color:#66d9ef">select</span> {
-		<span style="color:#66d9ef">case</span> <span style="color:#f92672">&lt;-</span><span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">Done</span>():
-		   <span style="color:#75715e">//取出值
-</span><span style="color:#75715e"></span>			<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">Value</span>(<span style="color:#a6e22e">key</span>), <span style="color:#e6db74">&#34;监控退出，停止了...&#34;</span>)
-			<span style="color:#66d9ef">return</span>
-		<span style="color:#66d9ef">default</span>:
-		<span style="color:#75715e">//取出值
-</span><span style="color:#75715e"></span>			<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">ctx</span>.<span style="color:#a6e22e">Value</span>(<span style="color:#a6e22e">key</span>), <span style="color:#e6db74">&#34;goroutine监控中...&#34;</span>)
-			<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
-		}
-	}
-}
-</code></pre></div><p>记住，使用 WithValue 传值，一般是必须的值，不要什么值都传递。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="nx">key</span> <span class="kt">string</span> <span class="p">=</span> <span class="s">&#34;name&#34;</span>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">ctx</span><span class="p">,</span> <span class="nx">cancel</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithCancel</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">())</span>
+	<span class="c1">//附加值
+</span><span class="c1"></span>	<span class="nx">valueCtx</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithValue</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="s">&#34;【监控1】&#34;</span><span class="p">)</span>
+	<span class="k">go</span> <span class="nf">watch</span><span class="p">(</span><span class="nx">valueCtx</span><span class="p">)</span>
+	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;可以了，通知监控停止&#34;</span><span class="p">)</span>
+	<span class="nf">cancel</span><span class="p">()</span>
+	<span class="c1">//为了检测监控过是否停止，如果没有监控输出，就表示停止了
+</span><span class="c1"></span>	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="kd">func</span> <span class="nf">watch</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">for</span> <span class="p">{</span>
+		<span class="k">select</span> <span class="p">{</span>
+		<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">ctx</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span>
+		   <span class="c1">//取出值
+</span><span class="c1"></span>			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="nx">key</span><span class="p">),</span> <span class="s">&#34;监控退出，停止了...&#34;</span><span class="p">)</span>
+			<span class="k">return</span>
+		<span class="k">default</span><span class="p">:</span>
+		<span class="c1">//取出值
+</span><span class="c1"></span>			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">ctx</span><span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="nx">key</span><span class="p">),</span> <span class="s">&#34;goroutine监控中...&#34;</span><span class="p">)</span>
+			<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>记住，使用 WithValue 传值，一般是必须的值，不要什么值都传递。</p>
 <h3 id="使用原则">使用原则</h3>
 <ul>
 <li>不要把 Context 放在结构体中，要以参数的方式传递</li>
@@ -399,11 +512,21 @@ input.PC_MARK1:focus{
 <p>上面这些都提供了一些较为基础的同步功能，多数情况下我们应该使用抽象层级更高的channel实现同步</p>
 <h4 id="mutex">Mutex</h4>
 <p>Go 语言的 <a href="https://draveness.me/golang/tree/sync.Mutex"><code>sync.Mutex</code></a> 由两个字段 <code>state</code> 和 <code>sema</code> 组成。其中 <code>state</code> 表示当前互斥锁的状态，而 <code>sema</code> 是用于控制锁状态的信号量。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Mutex</span> <span style="color:#66d9ef">struct</span> {
-	<span style="color:#a6e22e">state</span> <span style="color:#66d9ef">int32</span>
-	<span style="color:#a6e22e">sema</span>  <span style="color:#66d9ef">uint32</span>
-}
-</code></pre></div><h5 id="正常模式和饥饿模式">正常模式和饥饿模式</h5>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Mutex</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">state</span> <span class="kt">int32</span>
+	<span class="nx">sema</span>  <span class="kt">uint32</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h5 id="正常模式和饥饿模式">正常模式和饥饿模式</h5>
 <p>在饥饿模式中，互斥锁会直接交给等待队列最前面的 Goroutine。新的 Goroutine 在该状态下不能获取锁、也不会进入自旋状态，它们只会在队列的末尾等待。如果一个 Goroutine 获得了互斥锁并且 <strong>它在队列的末尾或者它等待的时间少于 1ms</strong> ，那么当前的互斥锁就会切换回正常模式。</p>
 <p>与饥饿模式相比，正常模式下的互斥锁能够提供更好地性能，饥饿模式的能避免 Goroutine 由于陷入等待无法获取锁而造成的高尾延时</p>
 <h5 id="使用">使用</h5>
@@ -474,33 +597,69 @@ input.PC_MARK1:focus{
 </ul>
 <p>读写互斥锁在互斥锁之上提供了额外的更细粒度的控制，能够在读操作远远多于写操作时提升性能。</p>
 <p>简单使用的例子</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">import</span> (
-	<span style="color:#e6db74">&#34;fmt&#34;</span>
-	<span style="color:#e6db74">&#34;sync&#34;</span>
-)
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-	<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">l</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">RWMutex</span>
-	<span style="color:#a6e22e">l</span> = new(<span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">RWMutex</span>)
-	<span style="color:#a6e22e">l</span>.<span style="color:#a6e22e">RUnlock</span>()　　　　<span style="color:#75715e">//１个RUnLock
-</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;1&#34;</span>)
-	<span style="color:#a6e22e">l</span>.<span style="color:#a6e22e">RLock</span>()              
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;fmt&#34;</span>
+	<span class="s">&#34;sync&#34;</span>
+<span class="p">)</span>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">l</span> <span class="o">*</span><span class="nx">sync</span><span class="p">.</span><span class="nx">RWMutex</span>
+	<span class="nx">l</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">sync</span><span class="p">.</span><span class="nx">RWMutex</span><span class="p">)</span>
+	<span class="nx">l</span><span class="p">.</span><span class="nf">RUnlock</span><span class="p">()</span>　　　　<span class="c1">//１个RUnLock
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;1&#34;</span><span class="p">)</span>
+	<span class="nx">l</span><span class="p">.</span><span class="nf">RLock</span><span class="p">()</span>              
 
-</code></pre></div><h4 id="waitgroup">WaitGroup</h4>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="waitgroup">WaitGroup</h4>
 <p><a href="https://draveness.me/golang/tree/sync.WaitGroup"><code>sync.WaitGroup</code></a> 可以等待一组 Goroutine 的返回，一个比较常见的使用场景是批量发出 RPC 或者 HTTP 请求：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#a6e22e">requests</span> <span style="color:#f92672">:=</span> []<span style="color:#f92672">*</span><span style="color:#a6e22e">Request</span>{<span style="color:#f92672">...</span>}
-<span style="color:#a6e22e">wg</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">WaitGroup</span>{}
-<span style="color:#75715e">// 把请求加入wg中
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">wg</span>.<span style="color:#a6e22e">Add</span>(len(<span style="color:#a6e22e">requests</span>))
-<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">request</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">requests</span> {
-    <span style="color:#66d9ef">go</span> <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Request</span>) {
-        <span style="color:#75715e">// 处理完一个请求就-1
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">wg</span>.<span style="color:#a6e22e">Done</span>()
-        <span style="color:#75715e">// res, err := service.call(r)
-</span><span style="color:#75715e"></span>    }(<span style="color:#a6e22e">request</span>)
-}
-<span style="color:#75715e">// 等待所有请求处理完毕
-</span><span style="color:#75715e"></span><span style="color:#a6e22e">wg</span>.<span style="color:#a6e22e">Wait</span>()
-</code></pre></div><p>通过对 <a href="https://draveness.me/golang/tree/sync.WaitGroup"><code>sync.WaitGroup</code></a> 的分析和研究，我们能够得出以下结论：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">requests</span> <span class="o">:=</span> <span class="p">[]</span><span class="o">*</span><span class="nx">Request</span><span class="p">{</span><span class="o">...</span><span class="p">}</span>
+<span class="nx">wg</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">sync</span><span class="p">.</span><span class="nx">WaitGroup</span><span class="p">{}</span>
+<span class="c1">// 把请求加入wg中
+</span><span class="c1"></span><span class="nx">wg</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nx">requests</span><span class="p">))</span>
+<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">request</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">requests</span> <span class="p">{</span>
+    <span class="k">go</span> <span class="kd">func</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// 处理完一个请求就-1
+</span><span class="c1"></span>        <span class="k">defer</span> <span class="nx">wg</span><span class="p">.</span><span class="nf">Done</span><span class="p">()</span>
+        <span class="c1">// res, err := service.call(r)
+</span><span class="c1"></span>    <span class="p">}(</span><span class="nx">request</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="c1">// 等待所有请求处理完毕
+</span><span class="c1"></span><span class="nx">wg</span><span class="p">.</span><span class="nf">Wait</span><span class="p">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>通过对 <a href="https://draveness.me/golang/tree/sync.WaitGroup"><code>sync.WaitGroup</code></a> 的分析和研究，我们能够得出以下结论：</p>
 <ul>
 <li><a href="https://draveness.me/golang/tree/sync.WaitGroup"><code>sync.WaitGroup</code></a> 必须在 <a href="https://draveness.me/golang/tree/sync.WaitGroup.Wait"><code>sync.WaitGroup.Wait</code></a> 方法返回之后才能被重新使用；</li>
 <li><a href="https://draveness.me/golang/tree/sync.WaitGroup.Done"><code>sync.WaitGroup.Done</code></a> 只是对 <a href="https://draveness.me/golang/tree/sync.WaitGroup.Add"><code>sync.WaitGroup.Add</code></a> 方法的简单封装，我们可以向 <a href="https://draveness.me/golang/tree/sync.WaitGroup.Add"><code>sync.WaitGroup.Add</code></a> 方法传入任意负数（需要保证计数器非负）快速将计数器归零以唤醒等待的 Goroutine；</li>
@@ -508,60 +667,118 @@ input.PC_MARK1:focus{
 </ul>
 <h4 id="once">Once</h4>
 <p>Go 语言标准库中 <a href="https://draveness.me/golang/tree/sync.Once"><code>sync.Once</code></a> 可以保证在 Go 程序运行期间的某段代码只会执行一次。在运行如下所示的代码时，我们会看到如下所示的运行结果：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-    <span style="color:#a6e22e">o</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">Once</span>{}
-    <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#ae81ff">10</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
-        <span style="color:#a6e22e">o</span>.<span style="color:#a6e22e">Do</span>(<span style="color:#66d9ef">func</span>() {
-            <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;only once&#34;</span>)
-        })
-    }
-}
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">o</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">sync</span><span class="p">.</span><span class="nx">Once</span><span class="p">{}</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="nx">o</span><span class="p">.</span><span class="nf">Do</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;only once&#34;</span><span class="p">)</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 
-<span style="color:#960050;background-color:#1e0010">$</span> <span style="color:#66d9ef">go</span> <span style="color:#a6e22e">run</span> <span style="color:#a6e22e">main</span>.<span style="color:#66d9ef">go</span>
-<span style="color:#a6e22e">only</span> <span style="color:#a6e22e">once</span>
-</code></pre></div><p>作为用于保证函数执行次数的 <a href="https://draveness.me/golang/tree/sync.Once"><code>sync.Once</code></a> 结构体，它使用互斥锁和 <a href="https://draveness.me/golang/tree/sync/atomic"><code>sync/atomic</code></a> 包提供的方法实现了某个函数在程序运行期间只能执行一次的语义。在使用该结构体时，我们也需要注意以下的问题：</p>
+<span class="err">$</span> <span class="k">go</span> <span class="nx">run</span> <span class="nx">main</span><span class="p">.</span><span class="k">go</span>
+<span class="nx">only</span> <span class="nx">once</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>作为用于保证函数执行次数的 <a href="https://draveness.me/golang/tree/sync.Once"><code>sync.Once</code></a> 结构体，它使用互斥锁和 <a href="https://draveness.me/golang/tree/sync/atomic"><code>sync/atomic</code></a> 包提供的方法实现了某个函数在程序运行期间只能执行一次的语义。在使用该结构体时，我们也需要注意以下的问题：</p>
 <ul>
 <li><a href="https://draveness.me/golang/tree/sync.Once.Do"><code>sync.Once.Do</code></a> 方法中传入的函数只会被执行一次，哪怕函数中发生了 <code>panic</code>；</li>
 <li>两次调用 <a href="https://draveness.me/golang/tree/sync.Once.Do"><code>sync.Once.Do</code></a> 方法传入不同的函数只会执行第一次调传入的函数；</li>
 </ul>
 <h4 id="cond">Cond</h4>
 <p>Go 语言标准库中还包含条件变量 <a href="https://draveness.me/golang/tree/sync.Cond"><code>sync.Cond</code></a>，它可以让一组的 Goroutine 都在满足特定条件时被唤醒。每一个 <a href="https://draveness.me/golang/tree/sync.Cond"><code>sync.Cond</code></a> 结构体在初始化时都需要传入一个互斥锁，我们可以通过下面的例子了解它的使用方法：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">status</span> <span style="color:#66d9ef">int64</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="nx">status</span> <span class="kt">int64</span>
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-	<span style="color:#a6e22e">c</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">NewCond</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">Mutex</span>{})
-	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#ae81ff">10</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
-		<span style="color:#66d9ef">go</span> <span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">c</span>)
-	}
-	<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">1</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
-	<span style="color:#66d9ef">go</span> <span style="color:#a6e22e">broadcast</span>(<span style="color:#a6e22e">c</span>)
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">c</span> <span class="o">:=</span> <span class="nx">sync</span><span class="p">.</span><span class="nf">NewCond</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span><span class="p">{})</span>
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="k">go</span> <span class="nf">listen</span><span class="p">(</span><span class="nx">c</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">1</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+	<span class="k">go</span> <span class="nf">broadcast</span><span class="p">(</span><span class="nx">c</span><span class="p">)</span>
 
-	<span style="color:#a6e22e">ch</span> <span style="color:#f92672">:=</span> make(<span style="color:#66d9ef">chan</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Signal</span>, <span style="color:#ae81ff">1</span>)
-	<span style="color:#a6e22e">signal</span>.<span style="color:#a6e22e">Notify</span>(<span style="color:#a6e22e">ch</span>, <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Interrupt</span>)
-	<span style="color:#f92672">&lt;-</span><span style="color:#a6e22e">ch</span>
-}
-<span style="color:#75715e">// 唤醒所有陷入等待的 Goroutine
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">broadcast</span>(<span style="color:#a6e22e">c</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">Cond</span>) {
-	<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Lock</span>()
-	<span style="color:#a6e22e">atomic</span>.<span style="color:#a6e22e">StoreInt64</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">status</span>, <span style="color:#ae81ff">1</span>)
-	<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Broadcast</span>()
-	<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Unlock</span>()
-}
-<span style="color:#75715e">// 等待特定条件的满足
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">listen</span>(<span style="color:#a6e22e">c</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">Cond</span>) {
-	<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Lock</span>()
-	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">atomic</span>.<span style="color:#a6e22e">LoadInt64</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">status</span>) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">1</span> {
-		<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Wait</span>()
-	}
-	<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;listen&#34;</span>)
-	<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Unlock</span>()
-}
+	<span class="nx">ch</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Signal</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+	<span class="nx">signal</span><span class="p">.</span><span class="nf">Notify</span><span class="p">(</span><span class="nx">ch</span><span class="p">,</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Interrupt</span><span class="p">)</span>
+	<span class="o">&lt;-</span><span class="nx">ch</span>
+<span class="p">}</span>
+<span class="c1">// 唤醒所有陷入等待的 Goroutine
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">broadcast</span><span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">sync</span><span class="p">.</span><span class="nx">Cond</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">c</span><span class="p">.</span><span class="nx">L</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+	<span class="nx">atomic</span><span class="p">.</span><span class="nf">StoreInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">status</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+	<span class="nx">c</span><span class="p">.</span><span class="nf">Broadcast</span><span class="p">()</span>
+	<span class="nx">c</span><span class="p">.</span><span class="nx">L</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+<span class="p">}</span>
+<span class="c1">// 等待特定条件的满足
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">listen</span><span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">sync</span><span class="p">.</span><span class="nx">Cond</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">c</span><span class="p">.</span><span class="nx">L</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+	<span class="k">for</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">LoadInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">status</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span> <span class="p">{</span>
+		<span class="nx">c</span><span class="p">.</span><span class="nf">Wait</span><span class="p">()</span>
+	<span class="p">}</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;listen&#34;</span><span class="p">)</span>
+	<span class="nx">c</span><span class="p">.</span><span class="nx">L</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+<span class="p">}</span>
 
-<span style="color:#960050;background-color:#1e0010">$</span> <span style="color:#66d9ef">go</span> <span style="color:#a6e22e">run</span> <span style="color:#a6e22e">main</span>.<span style="color:#66d9ef">go</span>
-<span style="color:#a6e22e">listen</span>
-<span style="color:#f92672">...</span>
-<span style="color:#a6e22e">listen</span>
-</code></pre></div><ul>
+<span class="err">$</span> <span class="k">go</span> <span class="nx">run</span> <span class="nx">main</span><span class="p">.</span><span class="k">go</span>
+<span class="nx">listen</span>
+<span class="o">...</span>
+<span class="nx">listen</span>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
 <li><a href="https://draveness.me/golang/tree/sync.Cond.Wait"><code>sync.Cond.Wait</code></a> 方法会将当前 Goroutine 陷入休眠状态，直到被唤醒</li>
 <li><a href="https://draveness.me/golang/tree/sync.Cond.Signal"><code>sync.Cond.Signal</code></a> 和 <a href="https://draveness.me/golang/tree/sync.Cond.Broadcast"><code>sync.Cond.Broadcast</code></a> 就是用来唤醒陷入休眠的 Goroutine 的方法，它们的实现有一些细微的差别：
 <ul>
@@ -580,26 +797,51 @@ input.PC_MARK1:focus{
 <h3 id="扩展原语">扩展原语</h3>
 <h4 id="errgroup">ErrGroup</h4>
 <p><a href="https://draveness.me/golang/tree/golang/sync/errgroup.Group"><code>golang/sync/errgroup.Group</code></a> 为我们在一组 Goroutine 中提供了同步、错误传播以及上下文取消的功能，我们可以使用如下所示的方式并行获取网页的数据：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">g</span> <span style="color:#a6e22e">errgroup</span>.<span style="color:#a6e22e">Group</span>
-<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">urls</span> = []<span style="color:#66d9ef">string</span>{
-    <span style="color:#e6db74">&#34;http://www.golang.org/&#34;</span>,
-    <span style="color:#e6db74">&#34;http://www.google.com/&#34;</span>,
-    <span style="color:#e6db74">&#34;http://www.somestupidname.com/&#34;</span>,
-}
-<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">urls</span> {
-    <span style="color:#a6e22e">url</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">urls</span>[<span style="color:#a6e22e">i</span>]
-    <span style="color:#a6e22e">g</span>.<span style="color:#a6e22e">Go</span>(<span style="color:#66d9ef">func</span>() <span style="color:#66d9ef">error</span> {
-        <span style="color:#a6e22e">resp</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Get</span>(<span style="color:#a6e22e">url</span>)
-        <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
-            <span style="color:#a6e22e">resp</span>.<span style="color:#a6e22e">Body</span>.<span style="color:#a6e22e">Close</span>()
-        }
-        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
-    })
-}
-<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">g</span>.<span style="color:#a6e22e">Wait</span>(); <span style="color:#a6e22e">err</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
-    <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;Successfully fetched all URLs.&#34;</span>)
-}
-</code></pre></div><p><strong>小结</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="nx">g</span> <span class="nx">errgroup</span><span class="p">.</span><span class="nx">Group</span>
+<span class="kd">var</span> <span class="nx">urls</span> <span class="p">=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span>
+    <span class="s">&#34;http://www.golang.org/&#34;</span><span class="p">,</span>
+    <span class="s">&#34;http://www.google.com/&#34;</span><span class="p">,</span>
+    <span class="s">&#34;http://www.somestupidname.com/&#34;</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">urls</span> <span class="p">{</span>
+    <span class="nx">url</span> <span class="o">:=</span> <span class="nx">urls</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span>
+    <span class="nx">g</span><span class="p">.</span><span class="nf">Go</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="kt">error</span> <span class="p">{</span>
+        <span class="nx">resp</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="nx">resp</span><span class="p">.</span><span class="nx">Body</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nx">err</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">g</span><span class="p">.</span><span class="nf">Wait</span><span class="p">();</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Successfully fetched all URLs.&#34;</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>小结</strong></p>
 <p><a href="https://draveness.me/golang/tree/golang/sync/errgroup.Group"><code>golang/sync/errgroup.Group</code></a> 的实现没有涉及底层和运行时包中的 API，它只是对基本同步语义进行了封装以提供更加复杂的功能。我们在使用时也需要注意下面几个问题：</p>
 <ul>
 <li><a href="https://draveness.me/golang/tree/golang/sync/errgroup.Group"><code>golang/sync/errgroup.Group</code></a> 在出现错误或者等待结束后会调用 <a href="https://draveness.me/golang/tree/context.Context"><code>context.Context</code></a> 的 <code>cancel</code> 方法同步取消信号；</li>
@@ -684,21 +926,41 @@ input.PC_MARK1:focus{
 </table>
 <h3 id="底层原理">底层原理</h3>
 <p>在我们创建channel时，实际上底层会创建如下的结构</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">hchan</span> <span style="color:#66d9ef">struct</span> {
-	<span style="color:#a6e22e">qcount</span>   <span style="color:#66d9ef">uint</span>
-	<span style="color:#a6e22e">dataqsiz</span> <span style="color:#66d9ef">uint</span>
-	<span style="color:#a6e22e">buf</span>      <span style="color:#a6e22e">unsafe</span>.<span style="color:#a6e22e">Pointer</span>
-	<span style="color:#a6e22e">elemsize</span> <span style="color:#66d9ef">uint16</span>
-	<span style="color:#a6e22e">closed</span>   <span style="color:#66d9ef">uint32</span>
-	<span style="color:#a6e22e">elemtype</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">_type</span>
-	<span style="color:#a6e22e">sendx</span>    <span style="color:#66d9ef">uint</span>
-	<span style="color:#a6e22e">recvx</span>    <span style="color:#66d9ef">uint</span>
-	<span style="color:#a6e22e">recvq</span>    <span style="color:#a6e22e">waitq</span>
-	<span style="color:#a6e22e">sendq</span>    <span style="color:#a6e22e">waitq</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">hchan</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">qcount</span>   <span class="kt">uint</span>
+	<span class="nx">dataqsiz</span> <span class="kt">uint</span>
+	<span class="nx">buf</span>      <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span>
+	<span class="nx">elemsize</span> <span class="kt">uint16</span>
+	<span class="nx">closed</span>   <span class="kt">uint32</span>
+	<span class="nx">elemtype</span> <span class="o">*</span><span class="nx">_type</span>
+	<span class="nx">sendx</span>    <span class="kt">uint</span>
+	<span class="nx">recvx</span>    <span class="kt">uint</span>
+	<span class="nx">recvq</span>    <span class="nx">waitq</span>
+	<span class="nx">sendq</span>    <span class="nx">waitq</span>
 
-	<span style="color:#a6e22e">lock</span> <span style="color:#a6e22e">mutex</span>
-}
-</code></pre></div><p><a href="https://draveness.me/golang/tree/runtime.hchan"><code>runtime.hchan</code></a> 结构体中的五个字段 <code>qcount</code>、<code>dataqsiz</code>、<code>buf</code>、<code>sendx</code>、<code>recv</code> 构建底层的循环队列：</p>
+	<span class="nx">lock</span> <span class="nx">mutex</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><a href="https://draveness.me/golang/tree/runtime.hchan"><code>runtime.hchan</code></a> 结构体中的五个字段 <code>qcount</code>、<code>dataqsiz</code>、<code>buf</code>、<code>sendx</code>、<code>recv</code> 构建底层的循环队列：</p>
 <ul>
 <li><code>qcount</code> — Channel 中的元素个数；</li>
 <li><code>dataqsiz</code> — Channel 中的循环队列的长度；</li>
@@ -707,11 +969,21 @@ input.PC_MARK1:focus{
 <li><code>recvx</code> — Channel 的接收操作处理到的位置；</li>
 </ul>
 <p>除此之外，<code>elemsize</code> 和 <code>elemtype</code> 分别表示当前 Channel 能够收发的元素类型和大小；<code>sendq</code> 和 <code>recvq</code> 存储了当前 Channel 由于缓冲区空间不足而阻塞的 Goroutine 列表，这些等待队列使用双向链表 <a href="https://draveness.me/golang/tree/runtime.waitq"><code>runtime.waitq</code></a> 表示，链表中所有的元素都是 <a href="https://draveness.me/golang/tree/runtime.sudog"><code>runtime.sudog</code></a> 结构：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">waitq</span> <span style="color:#66d9ef">struct</span> {
-	<span style="color:#a6e22e">first</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">sudog</span>
-	<span style="color:#a6e22e">last</span>  <span style="color:#f92672">*</span><span style="color:#a6e22e">sudog</span>
-}
-</code></pre></div><p><a href="https://draveness.me/golang/tree/runtime.sudog"><code>runtime.sudog</code></a> 表示一个在等待列表中的 Goroutine，该结构中存储了两个分别指向前后 <a href="https://draveness.me/golang/tree/runtime.sudog"><code>runtime.sudog</code></a> 的指针以构成链表。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">waitq</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">first</span> <span class="o">*</span><span class="nx">sudog</span>
+	<span class="nx">last</span>  <span class="o">*</span><span class="nx">sudog</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><a href="https://draveness.me/golang/tree/runtime.sudog"><code>runtime.sudog</code></a> 表示一个在等待列表中的 Goroutine，该结构中存储了两个分别指向前后 <a href="https://draveness.me/golang/tree/runtime.sudog"><code>runtime.sudog</code></a> 的指针以构成链表。</p>
 <p>下图是Channel 中存在等待数据的 Goroutine 时，向 Channel 发送数据的过程：</p>
 <p><img src="https://img.xiaoyou66.com/2021/04/11/711712b53fbec.png" alt="channel-direct-send"></p>
 <p>如果有缓存区，就会按照下面这样</p>
@@ -767,34 +1039,72 @@ input.PC_MARK1:focus{
 <p>- <a href="https://link.zhihu.com/?target=https%3A//golang.org/pkg/sync/atomic/%23AddUint64">func AddUint64(addr *uint64, delta uint64) (new uint64)</a></p>
 <p>- <a href="https://link.zhihu.com/?target=https%3A//golang.org/pkg/sync/atomic/%23AddUintptr">func AddUintptr(addr *uintptr, delta uintptr) (new uintptr)</a></p>
 <p>需要注意的是，第一个参数必须是指针类型的值，通过指针变量可以<strong>获取被操作数在内存中的地址，从而施加特殊的CPU指令，确保同一时间只有一个goroutine能够进行操作。</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-	<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">opts</span> <span style="color:#66d9ef">int64</span> = <span style="color:#ae81ff">0</span>
-	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#ae81ff">50</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
-		<span style="color:#66d9ef">go</span> <span style="color:#66d9ef">func</span>() {
-			<span style="color:#75715e">// 注意第一个参数必须是地址
-</span><span style="color:#75715e"></span>			<span style="color:#a6e22e">atomic</span>.<span style="color:#a6e22e">AddInt64</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">opts</span>, <span style="color:#ae81ff">3</span>) <span style="color:#75715e">//加操作
-</span><span style="color:#75715e"></span>			<span style="color:#75715e">//atomic.AddInt64(&amp;opts, -1) 减操作
-</span><span style="color:#75715e"></span>			<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Millisecond</span>)
-		}()
-	}
-	<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
-	<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;opts: &#34;</span>, <span style="color:#a6e22e">atomic</span>.<span style="color:#a6e22e">LoadInt64</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">opts</span>))
-	<span style="color:#75715e">// 最后输出的是150
-</span><span style="color:#75715e"></span>}
-</code></pre></div><p>上面的例子可以很清楚的看到，我们使用原子操作可以确保最后输出的值为150，如果我们不使用原子操作的话，那么最后的结果可能不是150</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-   <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">opts</span> <span style="color:#66d9ef">int64</span> = <span style="color:#ae81ff">0</span>
-   <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#ae81ff">50</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
-      <span style="color:#66d9ef">go</span> <span style="color:#66d9ef">func</span>() {
-         <span style="color:#a6e22e">opts</span><span style="color:#f92672">+=</span><span style="color:#ae81ff">3</span>
-         <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Millisecond</span>)
-      }()
-   }
-   <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
-   <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;opts: &#34;</span>, <span style="color:#a6e22e">atomic</span>.<span style="color:#a6e22e">LoadInt64</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">opts</span>))
-   <span style="color:#75715e">// 最后输出的是 不一定是150
-</span><span style="color:#75715e"></span>}
-</code></pre></div><h3 id="载入操作">载入操作</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">opts</span> <span class="kt">int64</span> <span class="p">=</span> <span class="mi">0</span>
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">50</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+			<span class="c1">// 注意第一个参数必须是地址
+</span><span class="c1"></span>			<span class="nx">atomic</span><span class="p">.</span><span class="nf">AddInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">opts</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="c1">//加操作
+</span><span class="c1"></span>			<span class="c1">//atomic.AddInt64(&amp;opts, -1) 减操作
+</span><span class="c1"></span>			<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Millisecond</span><span class="p">)</span>
+		<span class="p">}()</span>
+	<span class="p">}</span>
+	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;opts: &#34;</span><span class="p">,</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">LoadInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">opts</span><span class="p">))</span>
+	<span class="c1">// 最后输出的是150
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>上面的例子可以很清楚的看到，我们使用原子操作可以确保最后输出的值为150，如果我们不使用原子操作的话，那么最后的结果可能不是150</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+   <span class="kd">var</span> <span class="nx">opts</span> <span class="kt">int64</span> <span class="p">=</span> <span class="mi">0</span>
+   <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">50</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+      <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+         <span class="nx">opts</span><span class="o">+=</span><span class="mi">3</span>
+         <span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Millisecond</span><span class="p">)</span>
+      <span class="p">}()</span>
+   <span class="p">}</span>
+   <span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+   <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;opts: &#34;</span><span class="p">,</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">LoadInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">opts</span><span class="p">))</span>
+   <span class="c1">// 最后输出的是 不一定是150
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="载入操作">载入操作</h3>
 <p>atomic 包中提供了如下以Load为前缀的增减操作:</p>
 <p>- <a href="https://link.zhihu.com/?target=https%3A//golang.org/pkg/sync/atomic/%23LoadInt32">func LoadInt32(addr *int32) (val int32)</a></p>
 <p>- <a href="https://link.zhihu.com/?target=https%3A//golang.org/pkg/sync/atomic/%23LoadInt64">func LoadInt64(addr *int64) (val int64)</a></p>
@@ -803,20 +1113,39 @@ input.PC_MARK1:focus{
 <p>- <a href="https://link.zhihu.com/?target=https%3A//golang.org/pkg/sync/atomic/%23LoadUint64">func LoadUint64(addr *uint64) (val uint64)</a></p>
 <p>- <a href="https://link.zhihu.com/?target=https%3A//golang.org/pkg/sync/atomic/%23LoadUintptr">func LoadUintptr(addr *uintptr) (val uintptr)</a></p>
 <p>载入操作能够保证原子的读变量的值，<strong>当读取的时候，任何其他CPU操作都无法对该变量进行读写，其实现机制受到底层硬件的支持</strong>。见上述例子中的<code>atomic.LoadInt64(&amp;opts)</code>。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-   <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">opts</span> <span style="color:#66d9ef">int64</span> = <span style="color:#ae81ff">0</span>
-   <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#ae81ff">10</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
-      <span style="color:#66d9ef">go</span> <span style="color:#66d9ef">func</span>() {
-         <span style="color:#a6e22e">atomic</span>.<span style="color:#a6e22e">AddInt64</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">opts</span>,<span style="color:#ae81ff">1</span>)
-         <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">atomic</span>.<span style="color:#a6e22e">LoadInt64</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">opts</span>))
-         <span style="color:#75715e">//fmt.Println(opts)
-</span><span style="color:#75715e"></span>         <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Millisecond</span>)
-      }()
-   }
-   <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
-   <span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#e6db74">&#34;opts: &#34;</span>, <span style="color:#a6e22e">atomic</span>.<span style="color:#a6e22e">LoadInt64</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">opts</span>))
-}
-</code></pre></div><p>这种的使用比较简单如果要看效果的话，就比较麻烦了</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+   <span class="kd">var</span> <span class="nx">opts</span> <span class="kt">int64</span> <span class="p">=</span> <span class="mi">0</span>
+   <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+      <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+         <span class="nx">atomic</span><span class="p">.</span><span class="nf">AddInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">opts</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+         <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">atomic</span><span class="p">.</span><span class="nf">LoadInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">opts</span><span class="p">))</span>
+         <span class="c1">//fmt.Println(opts)
+</span><span class="c1"></span>         <span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Millisecond</span><span class="p">)</span>
+      <span class="p">}()</span>
+   <span class="p">}</span>
+   <span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+   <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;opts: &#34;</span><span class="p">,</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">LoadInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">opts</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这种的使用比较简单如果要看效果的话，就比较麻烦了</p>
 <h3 id="比较并交换">比较并交换</h3>
 <p>该操作简称 CAS(Compare And Swap)。 这类操作的前缀为 <code>CompareAndSwap</code> :</p>
 <p>- <a href="https://link.zhihu.com/?target=https%3A//golang.org/pkg/sync/atomic/%23CompareAndSwapInt32">func CompareAndSwapInt32(addr *int32, old, new int32) (swapped bool)</a></p>
@@ -828,16 +1157,31 @@ input.PC_MARK1:focus{
 <p>该操作在进行<strong>交换前首先确保变量的值未被更改，即仍然保持参数 <code>old</code> 所记录的值，满足此前提下才进行交换操作。CAS的做法类似操作数据库时常见的乐观锁机制</strong>。</p>
 <p>需要注意的是，当有大量的goroutine 对变量进行读写操作时，可能导致CAS操作无法成功，这时可以利用for循环多次尝试。</p>
 <p>使用示例：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">value</span> <span style="color:#66d9ef">int64</span>
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">atomicAddOp</span>(<span style="color:#a6e22e">tmp</span> <span style="color:#66d9ef">int64</span>) {
-<span style="color:#66d9ef">for</span> {
-       <span style="color:#a6e22e">oldValue</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">value</span>
-       <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">atomic</span>.<span style="color:#a6e22e">CompareAndSwapInt64</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">value</span>, <span style="color:#a6e22e">oldValue</span>, <span style="color:#a6e22e">oldValue</span><span style="color:#f92672">+</span><span style="color:#a6e22e">tmp</span>) {
-           <span style="color:#66d9ef">return</span>
-       }
-   }
-}
-</code></pre></div><h3 id="交换">交换</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="nx">value</span> <span class="kt">int64</span>
+<span class="kd">func</span> <span class="nf">atomicAddOp</span><span class="p">(</span><span class="nx">tmp</span> <span class="kt">int64</span><span class="p">)</span> <span class="p">{</span>
+<span class="k">for</span> <span class="p">{</span>
+       <span class="nx">oldValue</span> <span class="o">:=</span> <span class="nx">value</span>
+       <span class="k">if</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">CompareAndSwapInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">value</span><span class="p">,</span> <span class="nx">oldValue</span><span class="p">,</span> <span class="nx">oldValue</span><span class="o">+</span><span class="nx">tmp</span><span class="p">)</span> <span class="p">{</span>
+           <span class="k">return</span>
+       <span class="p">}</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="交换">交换</h3>
 <p>此类操作的前缀为 <code>Swap</code>：</p>
 <p>- <a href="https://link.zhihu.com/?target=https%3A//golang.org/pkg/sync/atomic/%23SwapInt32">func SwapInt32(addr *int32, new int32) (old int32)</a></p>
 <p>- <a href="https://link.zhihu.com/?target=https%3A//golang.org/pkg/sync/atomic/%23SwapInt64">func SwapInt64(addr *int64, new int64) (old int64)</a></p>
@@ -860,44 +1204,87 @@ input.PC_MARK1:focus{
 <p>CAS算法（Compare And Swap）,是原子操作的一种, CAS算法是一种有名的无锁算法。无锁编程，<strong>即不使用锁的情况下实现多线程之间的变量同步</strong>，也就是在没有线程被阻塞的情况下实现变量的同步，所以也叫非阻塞同步（Non-blocking Synchronization）。可用于在多线程编程中实现不被打断的数据交换操作，从而避免多线程同时改写某一数据时由于执行顺序不确定性以及中断的不可预知性产生的数据不一致问题。</p>
 <p>该操作通过<strong>将内存中的值与指定数据进行比较，当数值一样时将内存中的数据替换为新的值。</strong></p>
 <p>Go中的CAS操作是借用了CPU提供的原子性指令来实现。CAS操作修改共享变量时候不需要对共享变量加锁，而是通过类似乐观锁的方式进行检查，本质还是不断的占用CPU 资源换取加锁带来的开销（比如上下文切换开销）。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
-<span style="color:#f92672">import</span> (
-	<span style="color:#e6db74">&#34;fmt&#34;</span>
-	<span style="color:#e6db74">&#34;sync&#34;</span>
-	<span style="color:#e6db74">&#34;sync/atomic&#34;</span>
-)
-<span style="color:#66d9ef">var</span> (
-	<span style="color:#a6e22e">counter</span> <span style="color:#66d9ef">int32</span>          <span style="color:#75715e">//计数器
-</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">wg</span>      <span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">WaitGroup</span> <span style="color:#75715e">//信号量
-</span><span style="color:#75715e"></span>)
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
-	<span style="color:#a6e22e">threadNum</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">5</span>
-	<span style="color:#a6e22e">wg</span>.<span style="color:#a6e22e">Add</span>(<span style="color:#a6e22e">threadNum</span>)
-	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> &lt; <span style="color:#a6e22e">threadNum</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span> {
-		<span style="color:#66d9ef">go</span> <span style="color:#a6e22e">incCounter</span>(<span style="color:#a6e22e">i</span>)
-	}
-	<span style="color:#a6e22e">wg</span>.<span style="color:#a6e22e">Wait</span>()
-}
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">incCounter</span>(<span style="color:#a6e22e">index</span> <span style="color:#66d9ef">int</span>) {
-	<span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">wg</span>.<span style="color:#a6e22e">Done</span>()
-	<span style="color:#a6e22e">spinNum</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>
-	<span style="color:#66d9ef">for</span> {
-		<span style="color:#75715e">// 原子操作
-</span><span style="color:#75715e"></span>		<span style="color:#a6e22e">old</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">counter</span>
-        <span style="color:#75715e">// cas本质上是比较和交换，我们可以先获取counter的数据，然后比如我们这里想进行+1的操作
-</span><span style="color:#75715e"></span>        <span style="color:#75715e">// 此时我们就必须要把counter地址，counter的旧值，counter的新值进行替换
-</span><span style="color:#75715e"></span>        <span style="color:#75715e">// CPU会检查counter的旧值，判断是否和内存的值一样，如果一样就会交换，否则就报错
-</span><span style="color:#75715e"></span>        <span style="color:#75715e">// 我们这里就会不断进行循环修改
-</span><span style="color:#75715e"></span>		<span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">atomic</span>.<span style="color:#a6e22e">CompareAndSwapInt32</span>(<span style="color:#f92672">&amp;</span><span style="color:#a6e22e">counter</span>, <span style="color:#a6e22e">old</span>, <span style="color:#a6e22e">old</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)
-		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">ok</span> {
-			<span style="color:#66d9ef">break</span>
-		} <span style="color:#66d9ef">else</span> {
-			<span style="color:#a6e22e">spinNum</span><span style="color:#f92672">++</span>
-		}
-	}
-	<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Printf</span>(<span style="color:#e6db74">&#34;thread,%d,spinnum,%d\n&#34;</span>, <span style="color:#a6e22e">index</span>, <span style="color:#a6e22e">spinNum</span>)
-}
-</code></pre></div><p>当主函数main首先创建了5个信号量，然后开启五个线程执行incCounter方法,incCounter内部执行, 使用cas操作递增counter的值，<code>atomic.CompareAndSwapInt32</code>具有三个参数，第一个是变量的地址，第二个是变量当前值，第三个是要修改变量为多少，该函数如果发现传递的old值等于当前变量的值，则使用第三个变量替换变量的值并返回true，否则返回false。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;fmt&#34;</span>
+	<span class="s">&#34;sync&#34;</span>
+	<span class="s">&#34;sync/atomic&#34;</span>
+<span class="p">)</span>
+<span class="kd">var</span> <span class="p">(</span>
+	<span class="nx">counter</span> <span class="kt">int32</span>          <span class="c1">//计数器
+</span><span class="c1"></span>	<span class="nx">wg</span>      <span class="nx">sync</span><span class="p">.</span><span class="nx">WaitGroup</span> <span class="c1">//信号量
+</span><span class="c1"></span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">threadNum</span> <span class="o">:=</span> <span class="mi">5</span>
+	<span class="nx">wg</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nx">threadNum</span><span class="p">)</span>
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">threadNum</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="k">go</span> <span class="nf">incCounter</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="nx">wg</span><span class="p">.</span><span class="nf">Wait</span><span class="p">()</span>
+<span class="p">}</span>
+<span class="kd">func</span> <span class="nf">incCounter</span><span class="p">(</span><span class="nx">index</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="nx">wg</span><span class="p">.</span><span class="nf">Done</span><span class="p">()</span>
+	<span class="nx">spinNum</span> <span class="o">:=</span> <span class="mi">0</span>
+	<span class="k">for</span> <span class="p">{</span>
+		<span class="c1">// 原子操作
+</span><span class="c1"></span>		<span class="nx">old</span> <span class="o">:=</span> <span class="nx">counter</span>
+        <span class="c1">// cas本质上是比较和交换，我们可以先获取counter的数据，然后比如我们这里想进行+1的操作
+</span><span class="c1"></span>        <span class="c1">// 此时我们就必须要把counter地址，counter的旧值，counter的新值进行替换
+</span><span class="c1"></span>        <span class="c1">// CPU会检查counter的旧值，判断是否和内存的值一样，如果一样就会交换，否则就报错
+</span><span class="c1"></span>        <span class="c1">// 我们这里就会不断进行循环修改
+</span><span class="c1"></span>		<span class="nx">ok</span> <span class="o">:=</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">CompareAndSwapInt32</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">counter</span><span class="p">,</span> <span class="nx">old</span><span class="p">,</span> <span class="nx">old</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nx">ok</span> <span class="p">{</span>
+			<span class="k">break</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+			<span class="nx">spinNum</span><span class="o">++</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;thread,%d,spinnum,%d\n&#34;</span><span class="p">,</span> <span class="nx">index</span><span class="p">,</span> <span class="nx">spinNum</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>当主函数main首先创建了5个信号量，然后开启五个线程执行incCounter方法,incCounter内部执行, 使用cas操作递增counter的值，<code>atomic.CompareAndSwapInt32</code>具有三个参数，第一个是变量的地址，第二个是变量当前值，第三个是要修改变量为多少，该函数如果发现传递的old值等于当前变量的值，则使用第三个变量替换变量的值并返回true，否则返回false。</p>
 <p>这里之所以使用无限循环是因为在高并发下每个线程执行CAS并不是每次都成功，失败了的线程需要重写获取变量当前的值，然后重新执行CAS操作。读者可以把线程数改为10000或者更多就会发现输出<code>thread,5329,spinnum,1</code> 其中这个1就说明该线程尝试了两个CAS操作，第二次才成功。</p>
 <p>因此呢, go中<strong>CAS操作</strong>可以有效的减少使用锁所带来的开销，<strong>但是需要注意在高并发下这是使用cpu资源做交换的</strong></p>
 <h3 id="cas的问题">CAS的问题</h3>
@@ -1057,7 +1444,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

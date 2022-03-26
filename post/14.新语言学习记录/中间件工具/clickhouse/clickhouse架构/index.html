@@ -50,7 +50,7 @@
 <meta itemprop="description" content="ClickHouse架构 Clickhouse 的数据结构类似于关系型数据库，包括解析器，主要负责将SQL语句通过词法分析和语法分析，转化为计算机可以读取的抽象语">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="2493">
+<meta itemprop="wordCount" content="2513">
 
 
 
@@ -188,8 +188,8 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-14 </span>
         
-          <span class="more-meta"> 约 2493 字 </span>
-          <span class="more-meta"> 预计阅读 5 分钟 </span>
+          <span class="more-meta"> 约 2513 字 </span>
+          <span class="more-meta"> 预计阅读 6 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -264,27 +264,53 @@ input.PC_MARK1:focus{
 <p>在生产环境的绝大部分场景中都会使用MergeTree系列的表引擎。<strong>因为只有合并树系列的表引擎才支持主键索引、数据分区、数据副本和数据采样这些特性，同时也只有此系列的表引擎支持 <code>ALTER</code> 相关操作。</strong></p>
 <p>MergeTree在写入一批数据时，数据总会以数据片段的形式写入磁盘，且数据片段不可修改。为了避免片段过多，ClickHouse通过后台线程，定期合并这些数据片段，属于相同分区的数据片段会被合并一个新的片段。</p>
 <h3 id="创建mergetree表">创建MergeTree表</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-SQL" data-lang="SQL"><span style="color:#66d9ef">CREATE</span> <span style="color:#66d9ef">TABLE</span> [<span style="color:#66d9ef">IF</span> <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">EXISTS</span>] [db.]<span style="color:#66d9ef">table_name</span> [<span style="color:#66d9ef">ON</span> <span style="color:#66d9ef">CLUSTER</span> <span style="color:#66d9ef">cluster</span>]
-(
-    name1 [type1] [<span style="color:#66d9ef">DEFAULT</span><span style="color:#f92672">|</span>MATERIALIZED<span style="color:#f92672">|</span><span style="color:#66d9ef">ALIAS</span> expr1] [TTL expr1],
-    name2 [type2] [<span style="color:#66d9ef">DEFAULT</span><span style="color:#f92672">|</span>MATERIALIZED<span style="color:#f92672">|</span><span style="color:#66d9ef">ALIAS</span> expr2] [TTL expr2],
-    ...
-    <span style="color:#66d9ef">INDEX</span> index_name1 expr1 <span style="color:#66d9ef">TYPE</span> type1(...) GRANULARITY value1,
-    <span style="color:#66d9ef">INDEX</span> index_name2 expr2 <span style="color:#66d9ef">TYPE</span> type2(...) GRANULARITY value2,
-    ...
-    PROJECTION projection_name_1 (<span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">COLUMN</span> LIST EXPR<span style="color:#f92672">&gt;</span> [<span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span>] [<span style="color:#66d9ef">ORDER</span> <span style="color:#66d9ef">BY</span>]),
-    PROJECTION projection_name_2 (<span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">COLUMN</span> LIST EXPR<span style="color:#f92672">&gt;</span> [<span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span>] [<span style="color:#66d9ef">ORDER</span> <span style="color:#66d9ef">BY</span>])
-) ENGINE <span style="color:#f92672">=</span> MergeTree()
-<span style="color:#66d9ef">ORDER</span> <span style="color:#66d9ef">BY</span> expr
-[PARTITION <span style="color:#66d9ef">BY</span> expr]
-[<span style="color:#66d9ef">PRIMARY</span> <span style="color:#66d9ef">KEY</span> expr]
-[SAMPLE <span style="color:#66d9ef">BY</span> expr]
-[TTL expr
-    [<span style="color:#66d9ef">DELETE</span><span style="color:#f92672">|</span><span style="color:#66d9ef">TO</span> DISK <span style="color:#e6db74">&#39;xxx&#39;</span><span style="color:#f92672">|</span><span style="color:#66d9ef">TO</span> VOLUME <span style="color:#e6db74">&#39;xxx&#39;</span> [, ...] ]
-    [<span style="color:#66d9ef">WHERE</span> conditions]
-    [<span style="color:#66d9ef">GROUP</span> <span style="color:#66d9ef">BY</span> key_expr [<span style="color:#66d9ef">SET</span> v1 <span style="color:#f92672">=</span> aggr_func(v1) [, v2 <span style="color:#f92672">=</span> aggr_func(v2) ...]] ] ]
-[SETTINGS name<span style="color:#f92672">=</span>value, ...]
-</code></pre></div><ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-SQL" data-lang="SQL"><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="p">[</span><span class="k">IF</span> <span class="k">NOT</span> <span class="k">EXISTS</span><span class="p">]</span> <span class="p">[</span><span class="n">db</span><span class="p">.]</span><span class="k">table_name</span> <span class="p">[</span><span class="k">ON</span> <span class="k">CLUSTER</span> <span class="k">cluster</span><span class="p">]</span>
+<span class="p">(</span>
+    <span class="n">name1</span> <span class="p">[</span><span class="n">type1</span><span class="p">]</span> <span class="p">[</span><span class="k">DEFAULT</span><span class="o">|</span><span class="n">MATERIALIZED</span><span class="o">|</span><span class="k">ALIAS</span> <span class="n">expr1</span><span class="p">]</span> <span class="p">[</span><span class="n">TTL</span> <span class="n">expr1</span><span class="p">],</span>
+    <span class="n">name2</span> <span class="p">[</span><span class="n">type2</span><span class="p">]</span> <span class="p">[</span><span class="k">DEFAULT</span><span class="o">|</span><span class="n">MATERIALIZED</span><span class="o">|</span><span class="k">ALIAS</span> <span class="n">expr2</span><span class="p">]</span> <span class="p">[</span><span class="n">TTL</span> <span class="n">expr2</span><span class="p">],</span>
+    <span class="p">...</span>
+    <span class="k">INDEX</span> <span class="n">index_name1</span> <span class="n">expr1</span> <span class="k">TYPE</span> <span class="n">type1</span><span class="p">(...)</span> <span class="n">GRANULARITY</span> <span class="n">value1</span><span class="p">,</span>
+    <span class="k">INDEX</span> <span class="n">index_name2</span> <span class="n">expr2</span> <span class="k">TYPE</span> <span class="n">type2</span><span class="p">(...)</span> <span class="n">GRANULARITY</span> <span class="n">value2</span><span class="p">,</span>
+    <span class="p">...</span>
+    <span class="n">PROJECTION</span> <span class="n">projection_name_1</span> <span class="p">(</span><span class="k">SELECT</span> <span class="o">&lt;</span><span class="k">COLUMN</span> <span class="n">LIST</span> <span class="n">EXPR</span><span class="o">&gt;</span> <span class="p">[</span><span class="k">GROUP</span> <span class="k">BY</span><span class="p">]</span> <span class="p">[</span><span class="k">ORDER</span> <span class="k">BY</span><span class="p">]),</span>
+    <span class="n">PROJECTION</span> <span class="n">projection_name_2</span> <span class="p">(</span><span class="k">SELECT</span> <span class="o">&lt;</span><span class="k">COLUMN</span> <span class="n">LIST</span> <span class="n">EXPR</span><span class="o">&gt;</span> <span class="p">[</span><span class="k">GROUP</span> <span class="k">BY</span><span class="p">]</span> <span class="p">[</span><span class="k">ORDER</span> <span class="k">BY</span><span class="p">])</span>
+<span class="p">)</span> <span class="n">ENGINE</span> <span class="o">=</span> <span class="n">MergeTree</span><span class="p">()</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="n">expr</span>
+<span class="p">[</span><span class="n">PARTITION</span> <span class="k">BY</span> <span class="n">expr</span><span class="p">]</span>
+<span class="p">[</span><span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="n">expr</span><span class="p">]</span>
+<span class="p">[</span><span class="n">SAMPLE</span> <span class="k">BY</span> <span class="n">expr</span><span class="p">]</span>
+<span class="p">[</span><span class="n">TTL</span> <span class="n">expr</span>
+    <span class="p">[</span><span class="k">DELETE</span><span class="o">|</span><span class="k">TO</span> <span class="n">DISK</span> <span class="s1">&#39;xxx&#39;</span><span class="o">|</span><span class="k">TO</span> <span class="n">VOLUME</span> <span class="s1">&#39;xxx&#39;</span> <span class="p">[,</span> <span class="p">...]</span> <span class="p">]</span>
+    <span class="p">[</span><span class="k">WHERE</span> <span class="n">conditions</span><span class="p">]</span>
+    <span class="p">[</span><span class="k">GROUP</span> <span class="k">BY</span> <span class="n">key_expr</span> <span class="p">[</span><span class="k">SET</span> <span class="n">v1</span> <span class="o">=</span> <span class="n">aggr_func</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span> <span class="p">[,</span> <span class="n">v2</span> <span class="o">=</span> <span class="n">aggr_func</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span> <span class="p">...]]</span> <span class="p">]</span> <span class="p">]</span>
+<span class="p">[</span><span class="n">SETTINGS</span> <span class="n">name</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="p">...]</span>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
 <li>
 <p><code>[PARTITION BY expr]</code>：分区键，用于指定表数据使用什么标准进行分区。分区键可以是单个列字段；也可以通过元组使用多个列字段，同时也支持表达式；<strong>如果不设置分区，则默认生成一个名为<code>all</code>的分区。</strong>。合理使用分区可以有效减少数据文件扫描范围，提升查询性能。</p>
 </li>
@@ -423,7 +449,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

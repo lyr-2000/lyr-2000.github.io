@@ -50,7 +50,7 @@
 <meta itemprop="description" content="linux 下进程和线程 其实在Linux内核2.4版以前，线程的实现和管理方式就是完全按照进程方式实现的。在2.6版内核以后才有了单独的线程实现。 进程">
 <meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="1714">
+<meta itemprop="wordCount" content="1961">
 
 
 
@@ -188,7 +188,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
-          <span class="more-meta"> 约 1714 字 </span>
+          <span class="more-meta"> 约 1961 字 </span>
           <span class="more-meta"> 预计阅读 4 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -227,174 +227,378 @@ input.PC_MARK1:focus{
 <p>这句经典名言已流传数十年，各种操作系统教材都可见此描述。确实如此，这就是二者的显著区别。读者请注意“基本”二字。相信有读者看到前半句的时候就在心里思考，“进程岂不是不能调度？”，非也！<strong>进程和线程都可以被调度</strong>，否则多进程程序该如何运行呢！</p>
 <p>只是，线程是更小的可以调度的单位，也就是说，只要达到线程的水平就可以被调度了，进程自然可以被调度。<strong>它强调的是分配资源时的对象必须是进程</strong>，不会给一个线程单独分配系统管理的资源。<strong>若要运行一个任务，想要获得资源，最起码得有进程，其他子任务可以以线程身份运行</strong>，资源共享就行了。</p>
 <h3 id="cpp-实现线程">cpp 实现线程</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/types.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#75715e">#define ll long long
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">using</span> <span style="color:#66d9ef">namespace</span> std;
-<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">mythread</span>(<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span> arg) {
-    printf(<span style="color:#e6db74">&#34;child proccess , pid = [%lld] tid = [%lld] </span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
-        (ll) getpid(),
-        (ll)pthread_self());
-    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;pthread.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cp">#define ll long long
+</span><span class="cp"></span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+<span class="kt">void</span> <span class="o">*</span><span class="nf">mythread</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;child proccess , pid = [%lld] tid = [%lld] </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="n">getpid</span><span class="p">(),</span>
+        <span class="p">(</span><span class="n">ll</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">());</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 
-}
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>) {
-    <span style="color:#75715e">// printf(&#34;fork  子进程 %d\n&#34;, pid);
-</span><span style="color:#75715e"></span>    pthread_t <span style="color:#66d9ef">thread</span>;
-    <span style="color:#66d9ef">int</span> ret <span style="color:#f92672">=</span> pthread_create(
-        <span style="color:#f92672">&amp;</span><span style="color:#66d9ef">thread</span>, 
-        NULL,
-        mythread,
-        NULL 
-    );
-    <span style="color:#66d9ef">if</span> (ret ) {
-        printf(<span style="color:#e6db74">&#34; pthread_create error := [%s]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,strerror(ret));
-        <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
-    }
-    printf(<span style="color:#e6db74">&#34;current proccess , pid = [%lld]  tid = [%lld],</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
-         (ll) getpid(),
-         (ll)pthread_self());
-    sleep(<span style="color:#ae81ff">1</span>);
+<span class="p">}</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// printf(&#34;fork  子进程 %d\n&#34;, pid);
+</span><span class="c1"></span>    <span class="n">pthread_t</span> <span class="kr">thread</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="kr">thread</span><span class="p">,</span> 
+        <span class="nb">NULL</span><span class="p">,</span>
+        <span class="n">mythread</span><span class="p">,</span>
+        <span class="nb">NULL</span> 
+    <span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ret</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34; pthread_create error := [%s]</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">strerror</span><span class="p">(</span><span class="n">ret</span><span class="p">));</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;current proccess , pid = [%lld]  tid = [%lld],</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span>
+         <span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="n">getpid</span><span class="p">(),</span>
+         <span class="p">(</span><span class="n">ll</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">());</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
     
-    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-}
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
 
 
-</code></pre></div><p>编译方法：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"> gcc -o a.out main.cpp  -lpthread
+</code></pre></td></tr></table>
+</div>
+</div><p>编译方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"> gcc -o a.out main.cpp  -lpthread
  
  ./a.out
- :<span style="color:#e6db74">&lt;&lt;EOF
-</span><span style="color:#e6db74"> lyr@DESKTOP-FSVN6C0:~$ ./aout 
-</span><span style="color:#e6db74">current proccess , pid = [1137]  tid = [140435415930688],
-</span><span style="color:#e6db74">child proccess , pid = [1137] tid = [140435415926528] 
-</span><span style="color:#e6db74"> 
-</span><span style="color:#e6db74"> EOF</span>
+ :<span class="s">&lt;&lt;EOF
+</span><span class="s"> lyr@DESKTOP-FSVN6C0:~$ ./aout 
+</span><span class="s">current proccess , pid = [1137]  tid = [140435415930688],
+</span><span class="s">child proccess , pid = [1137] tid = [140435415926528] 
+</span><span class="s"> 
+</span><span class="s"> EOF</span>
  
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/types.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#75715e">#define ll long long
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">using</span> <span style="color:#66d9ef">namespace</span> std;
-<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">mythread</span>(<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span> arg) {
-    <span style="color:#66d9ef">int</span> input <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(<span style="color:#66d9ef">int</span><span style="color:#f92672">*</span>)arg;
-    printf(<span style="color:#e6db74">&#34;input := %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, input);
-    printf(<span style="color:#e6db74">&#34;child proccess , pid = [%lld] tid = [%lld] </span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
-        (ll) getpid(),
-        (ll)pthread_self());
-    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;pthread.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cp">#define ll long long
+</span><span class="cp"></span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+<span class="kt">void</span> <span class="o">*</span><span class="nf">mythread</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">input</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">;</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;input := %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">input</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;child proccess , pid = [%lld] tid = [%lld] </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="n">getpid</span><span class="p">(),</span>
+        <span class="p">(</span><span class="n">ll</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">());</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 
-}
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>) {
-    <span style="color:#75715e">// printf(&#34;fork  子进程 %d\n&#34;, pid);
-</span><span style="color:#75715e"></span>    pthread_t <span style="color:#66d9ef">thread</span>;
-    <span style="color:#66d9ef">int</span>  n <span style="color:#f92672">=</span> <span style="color:#ae81ff">39</span>;
-    <span style="color:#66d9ef">int</span> ret <span style="color:#f92672">=</span> pthread_create(
-        <span style="color:#f92672">&amp;</span><span style="color:#66d9ef">thread</span>, 
-        NULL,
-        mythread,
-        <span style="color:#f92672">&amp;</span>n 
-    );
-    <span style="color:#66d9ef">if</span> (ret ) {
-        printf(<span style="color:#e6db74">&#34; pthread_create error := [%s]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,strerror(ret));
-        <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
-    }
-    printf(<span style="color:#e6db74">&#34;current proccess , pid = [%lld]  tid = [%lld],</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
-         (ll) getpid(),
-         (ll)pthread_self());
-    sleep(<span style="color:#ae81ff">1</span>);
+<span class="p">}</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// printf(&#34;fork  子进程 %d\n&#34;, pid);
+</span><span class="c1"></span>    <span class="n">pthread_t</span> <span class="kr">thread</span><span class="p">;</span>
+    <span class="kt">int</span>  <span class="n">n</span> <span class="o">=</span> <span class="mi">39</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="kr">thread</span><span class="p">,</span> 
+        <span class="nb">NULL</span><span class="p">,</span>
+        <span class="n">mythread</span><span class="p">,</span>
+        <span class="o">&amp;</span><span class="n">n</span> 
+    <span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ret</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34; pthread_create error := [%s]</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">strerror</span><span class="p">(</span><span class="n">ret</span><span class="p">));</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;current proccess , pid = [%lld]  tid = [%lld],</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span>
+         <span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="n">getpid</span><span class="p">(),</span>
+         <span class="p">(</span><span class="n">ll</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">());</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
     
-    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-}
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
 
 
 
 
 
-</code></pre></div><p>查看文档</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">
+</code></pre></td></tr></table>
+</div>
+</div><p>查看文档</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">
 SYNOPSIS
-       <span style="color:#75715e">#include &lt;pthread.h&gt;</span>
+       <span class="c1">#include &lt;pthread.h&gt;</span>
 
-       int pthread_create<span style="color:#f92672">(</span>pthread_t *thread, const pthread_attr_t *attr,
-                          void *<span style="color:#f92672">(</span>*start_routine<span style="color:#f92672">)</span> <span style="color:#f92672">(</span>void *<span style="color:#f92672">)</span>, void *arg<span style="color:#f92672">)</span>;
+       int pthread_create<span class="o">(</span>pthread_t *thread, const pthread_attr_t *attr,
+                          void *<span class="o">(</span>*start_routine<span class="o">)</span> <span class="o">(</span>void *<span class="o">)</span>, void *arg<span class="o">)</span><span class="p">;</span>
 
        Compile and link with -pthread.
        
        
-</code></pre></div><p>这个 <code>void*</code>  相当于java 的 Object表示任意类型</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/types.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#75715e">#define ll long long
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">using</span> <span style="color:#66d9ef">namespace</span> std;
-<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Item</span> {
-    <span style="color:#66d9ef">int</span> data;
-    <span style="color:#66d9ef">char</span> name[<span style="color:#ae81ff">60</span>];
-};
-<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">mythread</span>(<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span> arg) {
-    Item input <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(Item<span style="color:#f92672">*</span>)arg;
-    printf(<span style="color:#e6db74">&#34;input := %d , name = %s </span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, input.data,input.name );
-    printf(<span style="color:#e6db74">&#34;child proccess , pid = [%lld] tid = [%lld] </span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
-        (ll) getpid(),
-        (ll)pthread_self());
-    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</code></pre></td></tr></table>
+</div>
+</div><p>这个 <code>void*</code>  相当于java 的 Object表示任意类型</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;pthread.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cp">#define ll long long
+</span><span class="cp"></span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+<span class="k">struct</span> <span class="nc">Item</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">data</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="n">name</span><span class="p">[</span><span class="mi">60</span><span class="p">];</span>
+<span class="p">};</span>
+<span class="kt">void</span> <span class="o">*</span><span class="nf">mythread</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Item</span> <span class="n">input</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">Item</span><span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">;</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;input := %d , name = %s </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">input</span><span class="p">.</span><span class="n">data</span><span class="p">,</span><span class="n">input</span><span class="p">.</span><span class="n">name</span> <span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;child proccess , pid = [%lld] tid = [%lld] </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="n">getpid</span><span class="p">(),</span>
+        <span class="p">(</span><span class="n">ll</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">());</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 
-}
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>) {
-    <span style="color:#75715e">// printf(&#34;fork  子进程 %d\n&#34;, pid);
-</span><span style="color:#75715e"></span>    pthread_t <span style="color:#66d9ef">thread</span>;
-    <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Item</span> t;
-    t.data <span style="color:#f92672">=</span> <span style="color:#ae81ff">11</span>;
-    strcpy(t.name,<span style="color:#e6db74">&#34;hello&#34;</span>);
-    <span style="color:#66d9ef">int</span> ret <span style="color:#f92672">=</span> pthread_create(
-        <span style="color:#f92672">&amp;</span><span style="color:#66d9ef">thread</span>, 
-        NULL,
-        mythread,
-        <span style="color:#f92672">&amp;</span>t
-    );
-    <span style="color:#66d9ef">if</span> (ret ) {
-        printf(<span style="color:#e6db74">&#34; pthread_create error := [%s]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,strerror(ret));
-        <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
-    }
-    printf(<span style="color:#e6db74">&#34;current proccess , pid = [%lld]  tid = [%lld],</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
-         (ll) getpid(),
-         (ll)pthread_self());
-    sleep(<span style="color:#ae81ff">1</span>);
+<span class="p">}</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// printf(&#34;fork  子进程 %d\n&#34;, pid);
+</span><span class="c1"></span>    <span class="n">pthread_t</span> <span class="kr">thread</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="nc">Item</span> <span class="n">t</span><span class="p">;</span>
+    <span class="n">t</span><span class="p">.</span><span class="n">data</span> <span class="o">=</span> <span class="mi">11</span><span class="p">;</span>
+    <span class="n">strcpy</span><span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="s">&#34;hello&#34;</span><span class="p">);</span>
+    <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="kr">thread</span><span class="p">,</span> 
+        <span class="nb">NULL</span><span class="p">,</span>
+        <span class="n">mythread</span><span class="p">,</span>
+        <span class="o">&amp;</span><span class="n">t</span>
+    <span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ret</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34; pthread_create error := [%s]</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">strerror</span><span class="p">(</span><span class="n">ret</span><span class="p">));</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;current proccess , pid = [%lld]  tid = [%lld],</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span>
+         <span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="n">getpid</span><span class="p">(),</span>
+         <span class="p">(</span><span class="n">ll</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">());</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
     
-    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-}
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
 
 
-</code></pre></div><p>编译的命令太繁琐了，可以写一个编译脚本</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">gcc -o $1  $1.c -lpthread
-<span style="color:#75715e"># 然后直接  makegcc ./main</span>   
+</code></pre></td></tr></table>
+</div>
+</div><p>编译的命令太繁琐了，可以写一个编译脚本</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">gcc -o <span class="nv">$1</span>  <span class="nv">$1</span>.c -lpthread
+<span class="c1"># 然后直接  makegcc ./main</span>   
 
-</code></pre></div><h4 id="ps--lf-查看线程信息">ps -Lf 查看线程信息</h4>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">lyr@DESKTOP-FSVN6C0:~$ ps -ef | grep aout
-lyr       <span style="color:#ae81ff">1393</span>    <span style="color:#ae81ff">12</span>  <span style="color:#ae81ff">0</span> 19:22 pts/0    00:00:00 ./aout
-lyr       <span style="color:#ae81ff">1399</span>    <span style="color:#ae81ff">12</span>  <span style="color:#ae81ff">0</span> 19:22 pts/0    00:00:00 grep --color<span style="color:#f92672">=</span>auto aout
-lyr@DESKTOP-FSVN6C0:~$ ps -Lf  <span style="color:#ae81ff">1393</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="ps--lf-查看线程信息">ps -Lf 查看线程信息</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">lyr@DESKTOP-FSVN6C0:~$ ps -ef <span class="p">|</span> grep aout
+lyr       <span class="m">1393</span>    <span class="m">12</span>  <span class="m">0</span> 19:22 pts/0    00:00:00 ./aout
+lyr       <span class="m">1399</span>    <span class="m">12</span>  <span class="m">0</span> 19:22 pts/0    00:00:00 grep --color<span class="o">=</span>auto aout
+lyr@DESKTOP-FSVN6C0:~$ ps -Lf  <span class="m">1393</span>
 UID        PID  PPID   LWP  C NLWP STIME TTY      STAT   TIME CMD
-lyr       <span style="color:#ae81ff">1393</span>    <span style="color:#ae81ff">12</span>  <span style="color:#ae81ff">1393</span>  <span style="color:#ae81ff">0</span>    <span style="color:#ae81ff">2</span> 19:22 pts/0    Tl     0:00 ./aout
-lyr       <span style="color:#ae81ff">1393</span>    <span style="color:#ae81ff">12</span>  <span style="color:#ae81ff">1394</span>  <span style="color:#ae81ff">0</span>    <span style="color:#ae81ff">2</span> 19:22 pts/0    Tl     0:00 ./aout
-</code></pre></div><h3 id="互斥锁的使用">互斥锁的使用</h3>
+lyr       <span class="m">1393</span>    <span class="m">12</span>  <span class="m">1393</span>  <span class="m">0</span>    <span class="m">2</span> 19:22 pts/0    Tl     0:00 ./aout
+lyr       <span class="m">1393</span>    <span class="m">12</span>  <span class="m">1394</span>  <span class="m">0</span>    <span class="m">2</span> 19:22 pts/0    Tl     0:00 ./aout
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="互斥锁的使用">互斥锁的使用</h3>
 <ol>
 <li>pthread_mutex_t mutex</li>
 <li>phtread_mutex_init(&amp;mutex)</li>
@@ -439,92 +643,183 @@ lyr       <span style="color:#ae81ff">1393</span>    <span style="color:#ae81ff"
 </ul>
 </li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;pthread.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-pthread_mutex_t mutex <span style="color:#f92672">=</span> PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t cond <span style="color:#f92672">=</span> PTHREAD_COND_INITIALIZER;
-<span style="color:#66d9ef">int</span> count <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>;
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cp">#include</span> <span class="cpf">&lt;pthread.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="n">pthread_mutex_t</span> <span class="n">mutex</span> <span class="o">=</span> <span class="n">PTHREAD_MUTEX_INITIALIZER</span><span class="p">;</span>
+<span class="n">pthread_cond_t</span> <span class="n">cond</span> <span class="o">=</span> <span class="n">PTHREAD_COND_INITIALIZER</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
 
-<span style="color:#75715e">//pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-</span><span style="color:#75715e">//pthread_mutex_lock(&amp;mutex);
-</span><span style="color:#75715e">//while(条件1)
-</span><span style="color:#75715e">//  pthread_cond_wait(&amp;cond, &amp;mutex);
-</span><span style="color:#75715e">//函数操作1
-</span><span style="color:#75715e">//pthread_mutex_unlock(&amp;mutex);
-</span><span style="color:#75715e">//解释：当条件1成立的时候，执行pthread_cond_wait(&amp;cond, &amp;mutex)这一句，开放互斥锁，然后线程被挂起。
-</span><span style="color:#75715e">//      当条件1不成立的时候，跳过while循环体，执行函数操作1，然后开放互斥锁
-</span><span style="color:#75715e">//      即无论走哪个分支，都会放开互斥锁
-</span><span style="color:#75715e"></span>
-<span style="color:#75715e">//此线程先启动
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span><span style="color:#f92672">*</span> <span style="color:#a6e22e">decrement</span>(<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span> arg) {
-    <span style="color:#66d9ef">while</span>(<span style="color:#ae81ff">1</span>) {
-        <span style="color:#75715e">//条件等待
-</span><span style="color:#75715e"></span>        pthread_mutex_lock(<span style="color:#f92672">&amp;</span>mutex);
-        <span style="color:#66d9ef">while</span>(count <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">0</span>) {
-            printf(<span style="color:#e6db74">&#34;count&lt;=0,thread is hanging!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-            pthread_cond_wait(<span style="color:#f92672">&amp;</span>cond, <span style="color:#f92672">&amp;</span>mutex); 
-            sleep(<span style="color:#ae81ff">1</span>);
-            printf(<span style="color:#e6db74">&#34;sleep!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-        }
-        count <span style="color:#f92672">-=</span> <span style="color:#ae81ff">1</span>;
-        pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>mutex);
+<span class="c1">//pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+</span><span class="c1">//pthread_mutex_lock(&amp;mutex);
+</span><span class="c1">//while(条件1)
+</span><span class="c1">//  pthread_cond_wait(&amp;cond, &amp;mutex);
+</span><span class="c1">//函数操作1
+</span><span class="c1">//pthread_mutex_unlock(&amp;mutex);
+</span><span class="c1">//解释：当条件1成立的时候，执行pthread_cond_wait(&amp;cond, &amp;mutex)这一句，开放互斥锁，然后线程被挂起。
+</span><span class="c1">//      当条件1不成立的时候，跳过while循环体，执行函数操作1，然后开放互斥锁
+</span><span class="c1">//      即无论走哪个分支，都会放开互斥锁
+</span><span class="c1"></span>
+<span class="c1">//此线程先启动
+</span><span class="c1"></span><span class="kt">void</span><span class="o">*</span> <span class="nf">decrement</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">//条件等待
+</span><span class="c1"></span>        <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span>
+        <span class="k">while</span><span class="p">(</span><span class="n">count</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&#34;count&lt;=0,thread is hanging!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+            <span class="n">pthread_cond_wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cond</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span> 
+            <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&#34;sleep!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="n">count</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span>
 
-        <span style="color:#66d9ef">if</span> (count <span style="color:#f92672">==</span> <span style="color:#ae81ff">9</span>) {
-            printf(<span style="color:#e6db74">&#34;count==9,thread1 is over!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-            <span style="color:#66d9ef">return</span> NULL;
-        }
-    }
-}
+        <span class="k">if</span> <span class="p">(</span><span class="n">count</span> <span class="o">==</span> <span class="mi">9</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&#34;count==9,thread1 is over!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+            <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 
-<span style="color:#75715e">//条件激发
-</span><span style="color:#75715e">//pthread_mutex_lock(&amp;mutex);
-</span><span style="color:#75715e">//函数操作2；
-</span><span style="color:#75715e">//if(条件1不成立)
-</span><span style="color:#75715e">//  pthread_cond_signal(&amp;cond);
-</span><span style="color:#75715e">//  pthread_mutex_unlock(&amp;mutex);
-</span><span style="color:#75715e">//解释：先执行函数操作2，改变条件变量，使得条件1不成立的时候，执行pthread_cond_signal(&amp;cond)这句话的意思是激发条件变量cond，使得被挂起的线程被唤醒。
-</span><span style="color:#75715e">//      pthread_cond_broadcast(&amp;cond); 激发所有由于cond条件而被挂起的线程。而signal的函数则是激发一个由于条件变量cond被挂起的线程
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">increment</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg) {
-    sleep(<span style="color:#ae81ff">1</span>);
-    <span style="color:#66d9ef">while</span>(<span style="color:#ae81ff">1</span>) {
-        pthread_mutex_lock(<span style="color:#f92672">&amp;</span>mutex);
-        count <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>;
-        <span style="color:#66d9ef">if</span>(count <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
-            printf(<span style="color:#e6db74">&#34;count=%d, change cond state!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, count);
-            pthread_cond_signal(<span style="color:#f92672">&amp;</span>cond);
-        }
-        pthread_mutex_unlock(<span style="color:#f92672">&amp;</span>mutex);
+<span class="c1">//条件激发
+</span><span class="c1">//pthread_mutex_lock(&amp;mutex);
+</span><span class="c1">//函数操作2；
+</span><span class="c1">//if(条件1不成立)
+</span><span class="c1">//  pthread_cond_signal(&amp;cond);
+</span><span class="c1">//  pthread_mutex_unlock(&amp;mutex);
+</span><span class="c1">//解释：先执行函数操作2，改变条件变量，使得条件1不成立的时候，执行pthread_cond_signal(&amp;cond)这句话的意思是激发条件变量cond，使得被挂起的线程被唤醒。
+</span><span class="c1">//      pthread_cond_broadcast(&amp;cond); 激发所有由于cond条件而被挂起的线程。而signal的函数则是激发一个由于条件变量cond被挂起的线程
+</span><span class="c1"></span>
+<span class="kt">void</span> <span class="o">*</span><span class="nf">increment</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">pthread_mutex_lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&#34;count=%d, change cond state!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">count</span><span class="p">);</span>
+            <span class="n">pthread_cond_signal</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cond</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="n">pthread_mutex_unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span>
         
-        <span style="color:#66d9ef">if</span> (count <span style="color:#f92672">==</span> <span style="color:#ae81ff">10</span>) {
-            printf(<span style="color:#e6db74">&#34;count=10,thread is over!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-            <span style="color:#66d9ef">return</span> NULL;
-        }
-    }
-}
+        <span class="k">if</span> <span class="p">(</span><span class="n">count</span> <span class="o">==</span> <span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&#34;count=10,thread is over!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+            <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>) {
-    <span style="color:#66d9ef">int</span> i1<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, i2<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>;
-    pthread_t id1, id2;
-    pthread_mutex_init(<span style="color:#f92672">&amp;</span>mutex, NULL);
-    pthread_cond_init(<span style="color:#f92672">&amp;</span>cond, NULL);
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">i2</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span>
+    <span class="n">pthread_t</span> <span class="n">id1</span><span class="p">,</span> <span class="n">id2</span><span class="p">;</span>
+    <span class="n">pthread_mutex_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">pthread_cond_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cond</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
 
-    pthread_create(<span style="color:#f92672">&amp;</span>id1, NULL, decrement, NULL);
-    pthread_create(<span style="color:#f92672">&amp;</span>id2, NULL, increment, NULL);
+    <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">id1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">decrement</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">id2</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">increment</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
 
-    i2 <span style="color:#f92672">=</span> pthread_join(id2, NULL);
-    i1 <span style="color:#f92672">=</span> pthread_join(id1, NULL);
-    <span style="color:#66d9ef">if</span> ( (i2<span style="color:#f92672">==</span><span style="color:#ae81ff">0</span>) <span style="color:#f92672">&amp;&amp;</span> (i1<span style="color:#f92672">==</span><span style="color:#ae81ff">0</span>) ) {
-        printf(<span style="color:#e6db74">&#34;count=%d, the main thread!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, count);
-        pthread_cond_destroy(<span style="color:#f92672">&amp;</span>cond);
-        pthread_mutex_destroy(<span style="color:#f92672">&amp;</span>mutex);
-        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-    }
-    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
-}
-</code></pre></div><h3 id="信号量-semaphore">信号量， semaphore</h3>
+    <span class="n">i2</span> <span class="o">=</span> <span class="n">pthread_join</span><span class="p">(</span><span class="n">id2</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">i1</span> <span class="o">=</span> <span class="n">pthread_join</span><span class="p">(</span><span class="n">id1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span> <span class="p">(</span><span class="n">i2</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">i1</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&#34;count=%d, the main thread!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">count</span><span class="p">);</span>
+        <span class="n">pthread_cond_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cond</span><span class="p">);</span>
+        <span class="n">pthread_mutex_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="信号量-semaphore">信号量， semaphore</h3>
 <p>没错， java 的 juc 也有个 semaphore ， 和 c++ 这个是一模一样的功能</p>
 <p>允许最多多少个线程同时执行。</p>
 <ol>
@@ -660,7 +955,7 @@ pthread_cond_t cond <span style="color:#f92672">=</span> PTHREAD_COND_INITIALIZE
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

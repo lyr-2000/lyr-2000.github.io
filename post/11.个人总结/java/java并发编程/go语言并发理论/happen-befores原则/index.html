@@ -50,7 +50,7 @@
 <meta itemprop="description" content="happen-befores原则 使用 happens-before 在一个 goroutine 内部，程序的执行顺序和它们的代码指定的顺序是一样的，即使编译器 或者 CPU 重排了读写顺序，从行为上来">
 <meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="924">
+<meta itemprop="wordCount" content="952">
 
 
 
@@ -188,7 +188,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
-          <span class="more-meta"> 约 924 字 </span>
+          <span class="more-meta"> 约 952 字 </span>
           <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -220,15 +220,29 @@ input.PC_MARK1:focus{
 或者 CPU 重排了读写顺序，从行为上来看，也和代码指定的顺序一样。</p>
 <p>我们来看一个例子。在下面的代码中，<strong>即使编译器或者 CPU 对 a、b、c 的初始化进行了</strong>
 <strong>重排，但是打印结果依然能保证是 1、2、3</strong>，而不会出现 1、0、0 或 1、0、1 等情况。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">foo</span>() {
-    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">a</span> = <span style="color:#ae81ff">1</span>
-    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">b</span> = <span style="color:#ae81ff">2</span>
-    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">c</span> = <span style="color:#ae81ff">3</span>
-    println(<span style="color:#a6e22e">a</span>)
-    println(<span style="color:#a6e22e">b</span>)
-    println(<span style="color:#a6e22e">c</span>)
-}
-</code></pre></div><p>在 Go 语言中，对变量进行零值的初始化就是一个写操作。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">foo</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">a</span> <span class="p">=</span> <span class="mi">1</span>
+    <span class="kd">var</span> <span class="nx">b</span> <span class="p">=</span> <span class="mi">2</span>
+    <span class="kd">var</span> <span class="nx">c</span> <span class="p">=</span> <span class="mi">3</span>
+    <span class="nb">println</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+    <span class="nb">println</span><span class="p">(</span><span class="nx">b</span><span class="p">)</span>
+    <span class="nb">println</span><span class="p">(</span><span class="nx">c</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在 Go 语言中，对变量进行零值的初始化就是一个写操作。</p>
 <ol>
 <li>如果对超过机器 word（64bit、32bit 或者其它）大小的值进行读写，那么，就可以看
 作是对拆成 word 大小的几个读写无序进行。</li>
@@ -239,17 +253,33 @@ input.PC_MARK1:focus{
 它的变量。同一个包下的多个文件，会按照文件名的排列顺序进行初始化。这个顺序被定
 义在   Go 语言规范中，而不是 Go 的内存模型规范中。你可以看看下面的例子中各个变量
 的值</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">var</span> (
-    <span style="color:#a6e22e">a</span> = <span style="color:#a6e22e">c</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">b</span> <span style="color:#75715e">// == 9
-</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">b</span> = <span style="color:#a6e22e">f</span>() <span style="color:#75715e">// == 4
-</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">c</span> = <span style="color:#a6e22e">f</span>() <span style="color:#75715e">// == 5
-</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">d</span> = <span style="color:#ae81ff">3</span> <span style="color:#75715e">// == 5 全部初始化完成后
-</span><span style="color:#75715e"></span>)
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">f</span>() <span style="color:#66d9ef">int</span> {
-	<span style="color:#a6e22e">d</span><span style="color:#f92672">++</span>
-	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">d</span>
-}
-</code></pre></div><p>Go 采用的是<strong>依赖分析技术</strong>。不过，依赖分析技术保证
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="p">(</span>
+    <span class="nx">a</span> <span class="p">=</span> <span class="nx">c</span> <span class="o">+</span> <span class="nx">b</span> <span class="c1">// == 9
+</span><span class="c1"></span>    <span class="nx">b</span> <span class="p">=</span> <span class="nf">f</span><span class="p">()</span> <span class="c1">// == 4
+</span><span class="c1"></span>    <span class="nx">c</span> <span class="p">=</span> <span class="nf">f</span><span class="p">()</span> <span class="c1">// == 5
+</span><span class="c1"></span>    <span class="nx">d</span> <span class="p">=</span> <span class="mi">3</span> <span class="c1">// == 5 全部初始化完成后
+</span><span class="c1"></span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">f</span><span class="p">()</span> <span class="kt">int</span> <span class="p">{</span>
+	<span class="nx">d</span><span class="o">++</span>
+	<span class="k">return</span> <span class="nx">d</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Go 采用的是<strong>依赖分析技术</strong>。不过，依赖分析技术保证
 的顺序只是针对同一包下的变量，而且，只有引用关系是本包变量、函数和非接口的方
 法，才能保证它们的顺序性。</p>
 <p><strong>goroutine</strong>
@@ -262,17 +292,33 @@ goroutine 中执行的，所以，在主 goroutine 看来，第 8 行肯定 happ
 行，又由于刚才的保证，第 9 行子 goroutine 的启动 happens before 第 4 行的变量输
 出，那么，我们就可以推断出，第 8 行 happens before 第 4 行。也就是说，在第 4 行打
 印 a 的值的时候，<strong>肯定会打印出“hello world”。</strong></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">a</span> <span style="color:#66d9ef">string</span>
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">f</span>() {
-	print(<span style="color:#a6e22e">a</span>)
-}
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="nx">a</span> <span class="kt">string</span>
+<span class="kd">func</span> <span class="nf">f</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nb">print</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span>
+<span class="p">}</span>
 
 
-<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">hello</span>() {
-	<span style="color:#a6e22e">a</span> = <span style="color:#e6db74">&#34;hello, world&#34;</span>
-	<span style="color:#66d9ef">go</span> <span style="color:#a6e22e">f</span>()
-}
-</code></pre></div><p>谨慎地使用这些保证，能够让你的程序按照设想的 happens-before 关系执行，但是不要
+<span class="kd">func</span> <span class="nf">hello</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">a</span> <span class="p">=</span> <span class="s">&#34;hello, world&#34;</span>
+	<span class="k">go</span> <span class="nf">f</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>谨慎地使用这些保证，能够让你的程序按照设想的 happens-before 关系执行，但是不要
 以为完全理解这些概念和保证，就可以随意地制造所谓的各种技巧，否则就很容易掉
 进“坑”里，而且会给代码埋下了很多的“定时炸弹”。</p>
 
@@ -400,7 +446,7 @@ goroutine 中执行的，所以，在主 goroutine 看来，第 8 行肯定 happ
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

@@ -50,7 +50,7 @@
 <meta itemprop="description" content="存储引擎介绍 MongoDB支持的引擎有：WiredTiger，MMAPv1和In-Memory。 从MongoDB 3.2 版本开始，WiredTig">
 <meta itemprop="datePublished" content="2021-04-06T10:50:32&#43;00:00" />
 <meta itemprop="dateModified" content="2021-04-06T10:50:32&#43;00:00" />
-<meta itemprop="wordCount" content="5076">
+<meta itemprop="wordCount" content="5078">
 
 
 
@@ -191,7 +191,7 @@ input.PC_MARK1:focus{
             <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"> 数据库 </a>
             <a href="/categories/mongodb/"> MongoDB </a>
             </div>
-          <span class="more-meta"> 约 5076 字 </span>
+          <span class="more-meta"> 约 5078 字 </span>
           <span class="more-meta"> 预计阅读 11 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -281,8 +281,15 @@ input.PC_MARK1:focus{
 <p>在讲下面两种日志之前先来认识下capped collection。</p>
 <p>MongoDB中的普通集合是动态创建的，而且可以自动增长以容纳更多的数据。MongoDB中还有另一种不同类型的集合，叫做固定集合。固定集合需要事先创建好，而且它的大小是固定的。固定集合的行为类型与循环队列一样。如果没有空间了，最老的文档会被删除以释放空间，新插入的文档会占据这块空间。</p>
 <p>比如我我们创建一个固定集合</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">db.createCollection<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;collectionName&#34;</span>,<span style="color:#f92672">{</span><span style="color:#e6db74">&#34;capped&#34;</span>:true, <span style="color:#e6db74">&#34;size&#34;</span>:100000, <span style="color:#e6db74">&#34;max&#34;</span>:100<span style="color:#f92672">})</span>
-</code></pre></div><p>创建了一个大小为100000字节的固定大小集合,文档数量为100.不管先到达哪个限制，之后插入的新文档就会把最老的文档挤出集合：<strong>固定集合的文档数量不能超过文档数量限制，也不能超过大小限制。</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">db.createCollection<span class="o">(</span><span class="s2">&#34;collectionName&#34;</span>,<span class="o">{</span><span class="s2">&#34;capped&#34;</span>:true, <span class="s2">&#34;size&#34;</span>:100000, <span class="s2">&#34;max&#34;</span>:100<span class="o">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>创建了一个大小为100000字节的固定大小集合,文档数量为100.不管先到达哪个限制，之后插入的新文档就会把最老的文档挤出集合：<strong>固定集合的文档数量不能超过文档数量限制，也不能超过大小限制。</strong></p>
 <p>固定集合创建之后就不能改变,无法将固定集合转换为非固定集合,但是可以将常规集合转换为固定集合。</p>
 <p>固定集合可以进行一种特殊的排序，称为自然排序(natural sort),自然排序返回结果集中文档的顺序就是文档在磁盘的顺序。自然顺序就是文档的插入顺序，因此自然排序得到的文档是从旧到新排列的。当然也可以按照从新到旧：</p>
 <p><strong>oplog主从日志</strong></p>
@@ -298,8 +305,15 @@ input.PC_MARK1:focus{
 <p><strong>慢查询日志</strong></p>
 <p>MongoDB中使用系统分析器(system profiler)来查找耗时过长的操作。系统分析器记录固定集合system.profile中的操作，并提供大量有关耗时过长的操作信息，但相应的mongod的整体性能也会有所下降。因此我们一般定期打开分析器来获取信息。</p>
 <p>默认情况下，系统分析器处于关闭状态，不会进行任何记录。可以在shell中运行<code>db.setProfilingLevel()</code>开启分析器</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">setProfilingLevel</span>(<span style="color:#a6e22e">level</span>,&lt;<span style="color:#a6e22e">slowms</span>&gt;) <span style="color:#ae81ff">0</span>=<span style="color:#a6e22e">off</span> <span style="color:#ae81ff">1</span>=<span style="color:#a6e22e">slow</span> <span style="color:#ae81ff">2</span>=<span style="color:#a6e22e">all</span>
-</code></pre></div><p>第一个参数是指定级别，不同的级别代表不同的意义，0表示关闭，1表示默认记录耗时大于100毫秒的操作，2表示记录所有操作。第二个参数则是自定义“耗时过长&quot;标准，比如记录所有耗时操作500ms的操作</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">db</span><span class="p">.</span><span class="nf">setProfilingLevel</span><span class="p">(</span><span class="nx">level</span><span class="p">,&lt;</span><span class="nx">slowms</span><span class="p">&gt;)</span> <span class="mi">0</span><span class="p">=</span><span class="nx">off</span> <span class="mi">1</span><span class="p">=</span><span class="nx">slow</span> <span class="mi">2</span><span class="p">=</span><span class="nx">all</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>第一个参数是指定级别，不同的级别代表不同的意义，0表示关闭，1表示默认记录耗时大于100毫秒的操作，2表示记录所有操作。第二个参数则是自定义“耗时过长&quot;标准，比如记录所有耗时操作500ms的操作</p>
 <p>如果开启了分析器而system.profile集合并不存在，MongoDB会为其建立一个大小为若干MB的固定集合(capped collection)。如希望分析器运行更长时间，可能需要更大的空间记录更多的操作。此时可以关闭分析器，删除并重新建立一个新的名为system.profile的固定集合，并令其容量符合要求。然后在数据库上重新启用分析器。</p>
 <blockquote>
 <p>可以通过db.system.profile.stats()查看集合的最大容量.</p>
@@ -433,7 +447,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

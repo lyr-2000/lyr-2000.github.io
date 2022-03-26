@@ -50,7 +50,7 @@
 <meta itemprop="description" content="clickhouse 慢查询解决方案 单表 使用 prewhere 多表 in代替 join 【等值查询】 记录： 第一次使用 clickhouse join 了 2 张表，耗时 用了 2-3 秒，速度不够 看网上的解决方法是，使用 小表 放 左边，">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="543">
+<meta itemprop="wordCount" content="595">
 
 
 
@@ -188,7 +188,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-14 </span>
         
-          <span class="more-meta"> 约 543 字 </span>
+          <span class="more-meta"> 约 595 字 </span>
           <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -231,62 +231,126 @@ input.PC_MARK1:focus{
 <p>clickhouse 会把 所有的数据从右表加载到内存，右表数据量过大，还会爆内存，这就很难受</p>
 <h3 id="谓词下推">谓词下推</h3>
 <p>这里举个例子，我们来看两个查询结果一致的 sql</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql">
- <span style="color:#66d9ef">select</span>  <span style="color:#66d9ef">count</span>(vr.id),vr.result_type  ,idc.name,crg.project_name <span style="color:#66d9ef">from</span> (
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql">
+ <span class="k">select</span>  <span class="k">count</span><span class="p">(</span><span class="n">vr</span><span class="p">.</span><span class="n">id</span><span class="p">),</span><span class="n">vr</span><span class="p">.</span><span class="n">result_type</span>  <span class="p">,</span><span class="n">idc</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="n">crg</span><span class="p">.</span><span class="n">project_name</span> <span class="k">from</span> <span class="p">(</span>
   
-	<span style="color:#66d9ef">select</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">from</span> v_result5 vr   
+	<span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">v_result5</span> <span class="n">vr</span>   
 
-	   <span style="color:#66d9ef">WHERE</span>  db_archive_year <span style="color:#f92672">=</span> <span style="color:#ae81ff">2022</span>  <span style="color:#66d9ef">and</span>  db_archive_month <span style="color:#f92672">=</span> <span style="color:#ae81ff">12</span>  
- ) vr  
+	   <span class="k">WHERE</span>  <span class="n">db_archive_year</span> <span class="o">=</span> <span class="mi">2022</span>  <span class="k">and</span>  <span class="n">db_archive_month</span> <span class="o">=</span> <span class="mi">12</span>  
+ <span class="p">)</span> <span class="n">vr</span>  
  
-  <span style="color:#66d9ef">join</span> cmdb_idc idc <span style="color:#66d9ef">on</span> vr.idc_id <span style="color:#f92672">=</span> idc.id   
+  <span class="k">join</span> <span class="n">cmdb_idc</span> <span class="n">idc</span> <span class="k">on</span> <span class="n">vr</span><span class="p">.</span><span class="n">idc_id</span> <span class="o">=</span> <span class="n">idc</span><span class="p">.</span><span class="n">id</span>   
 
- <span style="color:#66d9ef">join</span> cmdb_resource_group crg  <span style="color:#66d9ef">on</span>    crg.resource_id  <span style="color:#f92672">=</span> vr.id 
+ <span class="k">join</span> <span class="n">cmdb_resource_group</span> <span class="n">crg</span>  <span class="k">on</span>    <span class="n">crg</span><span class="p">.</span><span class="n">resource_id</span>  <span class="o">=</span> <span class="n">vr</span><span class="p">.</span><span class="n">id</span> 
  
- <span style="color:#66d9ef">and</span> crg.resource_type <span style="color:#f92672">=</span> vr.resource_type 
+ <span class="k">and</span> <span class="n">crg</span><span class="p">.</span><span class="n">resource_type</span> <span class="o">=</span> <span class="n">vr</span><span class="p">.</span><span class="n">resource_type</span> 
   
  
-  <span style="color:#66d9ef">where</span> vr.db_archive_year <span style="color:#f92672">=</span> <span style="color:#ae81ff">2022</span> <span style="color:#66d9ef">and</span> vr.db_archive_month <span style="color:#f92672">=</span> <span style="color:#ae81ff">12</span>    <span style="color:#66d9ef">and</span> vr.delete_flag <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
-    <span style="color:#66d9ef">and</span> crg.db_archive_year <span style="color:#f92672">=</span> <span style="color:#ae81ff">2022</span> <span style="color:#66d9ef">and</span> crg.db_archive_month <span style="color:#f92672">=</span> <span style="color:#ae81ff">12</span>  <span style="color:#66d9ef">and</span> crg.delete_flag <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
-    <span style="color:#66d9ef">and</span> idc.db_archive_year <span style="color:#f92672">=</span> <span style="color:#ae81ff">2022</span> <span style="color:#66d9ef">and</span> idc.db_archive_month <span style="color:#f92672">=</span> <span style="color:#ae81ff">12</span>  <span style="color:#66d9ef">and</span>  idc.delete_flag <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+  <span class="k">where</span> <span class="n">vr</span><span class="p">.</span><span class="n">db_archive_year</span> <span class="o">=</span> <span class="mi">2022</span> <span class="k">and</span> <span class="n">vr</span><span class="p">.</span><span class="n">db_archive_month</span> <span class="o">=</span> <span class="mi">12</span>    <span class="k">and</span> <span class="n">vr</span><span class="p">.</span><span class="n">delete_flag</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">and</span> <span class="n">crg</span><span class="p">.</span><span class="n">db_archive_year</span> <span class="o">=</span> <span class="mi">2022</span> <span class="k">and</span> <span class="n">crg</span><span class="p">.</span><span class="n">db_archive_month</span> <span class="o">=</span> <span class="mi">12</span>  <span class="k">and</span> <span class="n">crg</span><span class="p">.</span><span class="n">delete_flag</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">and</span> <span class="n">idc</span><span class="p">.</span><span class="n">db_archive_year</span> <span class="o">=</span> <span class="mi">2022</span> <span class="k">and</span> <span class="n">idc</span><span class="p">.</span><span class="n">db_archive_month</span> <span class="o">=</span> <span class="mi">12</span>  <span class="k">and</span>  <span class="n">idc</span><span class="p">.</span><span class="n">delete_flag</span> <span class="o">=</span> <span class="mi">0</span>
  
   
- <span style="color:#66d9ef">group</span> <span style="color:#66d9ef">by</span> crg.project_name, idc.name,vr.result_type
- <span style="color:#66d9ef">limit</span> <span style="color:#ae81ff">300</span>
+ <span class="k">group</span> <span class="k">by</span> <span class="n">crg</span><span class="p">.</span><span class="n">project_name</span><span class="p">,</span> <span class="n">idc</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="n">vr</span><span class="p">.</span><span class="n">result_type</span>
+ <span class="k">limit</span> <span class="mi">300</span>
  
  
-</code></pre></div><p>这个 sql 首次查询用 了 7秒, 后续查询 都是 接近了 1秒 ， 0.8 秒的查询速度</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>这个 sql 首次查询用 了 7秒, 后续查询 都是 接近了 1秒 ， 0.8 秒的查询速度</p>
 <p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_12_13_11_56_19image-20211213115615770.png" alt="image-20211213115615770"></p>
 <p>我们使用谓词下推，  join 里面 使用子查询，缩小 join 表的范围，就可以大大减少数据集，我们会看到 上面 有 125万条数据，明显 数据量过大了</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql">
- <span style="color:#66d9ef">select</span>  <span style="color:#66d9ef">count</span>(vr.id),vr.result_type  ,idc.name,crg.project_name <span style="color:#66d9ef">from</span> (
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql">
+ <span class="k">select</span>  <span class="k">count</span><span class="p">(</span><span class="n">vr</span><span class="p">.</span><span class="n">id</span><span class="p">),</span><span class="n">vr</span><span class="p">.</span><span class="n">result_type</span>  <span class="p">,</span><span class="n">idc</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="n">crg</span><span class="p">.</span><span class="n">project_name</span> <span class="k">from</span> <span class="p">(</span>
   
-	  <span style="color:#66d9ef">SELECT</span>
-	    id,
-	    idc_id,
-	    asset_number,
-	    cabinet_id,
-	    sn,
-	    <span style="color:#e6db74">&#39;服务器&#39;</span> <span style="color:#66d9ef">AS</span> result_type,
-	    <span style="color:#ae81ff">1</span> <span style="color:#66d9ef">AS</span> col_type,
-	    <span style="color:#ae81ff">2</span> <span style="color:#66d9ef">AS</span> resource_type,
-	    db_archive_year,
-	    db_archive_month
-	    <span style="color:#66d9ef">FROM</span> test.cmdb_physical_machine <span style="color:#66d9ef">AS</span> cpm
-	   <span style="color:#66d9ef">WHERE</span> cpm.db_archive_year <span style="color:#f92672">=</span> <span style="color:#ae81ff">2022</span>  <span style="color:#66d9ef">and</span> cpm.db_archive_month <span style="color:#f92672">=</span> <span style="color:#ae81ff">12</span>  <span style="color:#66d9ef">and</span> cpm.delete_flag <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
- ) vr  
+	  <span class="k">SELECT</span>
+	    <span class="n">id</span><span class="p">,</span>
+	    <span class="n">idc_id</span><span class="p">,</span>
+	    <span class="n">asset_number</span><span class="p">,</span>
+	    <span class="n">cabinet_id</span><span class="p">,</span>
+	    <span class="n">sn</span><span class="p">,</span>
+	    <span class="s1">&#39;服务器&#39;</span> <span class="k">AS</span> <span class="n">result_type</span><span class="p">,</span>
+	    <span class="mi">1</span> <span class="k">AS</span> <span class="n">col_type</span><span class="p">,</span>
+	    <span class="mi">2</span> <span class="k">AS</span> <span class="n">resource_type</span><span class="p">,</span>
+	    <span class="n">db_archive_year</span><span class="p">,</span>
+	    <span class="n">db_archive_month</span>
+	    <span class="k">FROM</span> <span class="n">test</span><span class="p">.</span><span class="n">cmdb_physical_machine</span> <span class="k">AS</span> <span class="n">cpm</span>
+	   <span class="k">WHERE</span> <span class="n">cpm</span><span class="p">.</span><span class="n">db_archive_year</span> <span class="o">=</span> <span class="mi">2022</span>  <span class="k">and</span> <span class="n">cpm</span><span class="p">.</span><span class="n">db_archive_month</span> <span class="o">=</span> <span class="mi">12</span>  <span class="k">and</span> <span class="n">cpm</span><span class="p">.</span><span class="n">delete_flag</span> <span class="o">=</span> <span class="mi">0</span>
+ <span class="p">)</span> <span class="n">vr</span>  
  
-  <span style="color:#66d9ef">join</span> (<span style="color:#66d9ef">select</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">from</span> cmdb_idc idc  <span style="color:#66d9ef">where</span>  idc.db_archive_year <span style="color:#f92672">=</span> <span style="color:#ae81ff">2022</span> <span style="color:#66d9ef">and</span> idc.db_archive_month <span style="color:#f92672">=</span> <span style="color:#ae81ff">12</span>  <span style="color:#66d9ef">and</span>  idc.delete_flag <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>)  idc <span style="color:#66d9ef">on</span> vr.idc_id <span style="color:#f92672">=</span> idc.id   
+  <span class="k">join</span> <span class="p">(</span><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">cmdb_idc</span> <span class="n">idc</span>  <span class="k">where</span>  <span class="n">idc</span><span class="p">.</span><span class="n">db_archive_year</span> <span class="o">=</span> <span class="mi">2022</span> <span class="k">and</span> <span class="n">idc</span><span class="p">.</span><span class="n">db_archive_month</span> <span class="o">=</span> <span class="mi">12</span>  <span class="k">and</span>  <span class="n">idc</span><span class="p">.</span><span class="n">delete_flag</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>  <span class="n">idc</span> <span class="k">on</span> <span class="n">vr</span><span class="p">.</span><span class="n">idc_id</span> <span class="o">=</span> <span class="n">idc</span><span class="p">.</span><span class="n">id</span>   
 
- <span style="color:#66d9ef">join</span> (<span style="color:#66d9ef">select</span>  <span style="color:#f92672">*</span> <span style="color:#66d9ef">from</span> cmdb_resource_group crg  <span style="color:#66d9ef">where</span>    crg.db_archive_year <span style="color:#f92672">=</span> <span style="color:#ae81ff">2022</span> <span style="color:#66d9ef">and</span> crg.db_archive_month <span style="color:#f92672">=</span> <span style="color:#ae81ff">12</span>   )  crg  <span style="color:#66d9ef">on</span>    crg.resource_id  <span style="color:#f92672">=</span> vr.id 
+ <span class="k">join</span> <span class="p">(</span><span class="k">select</span>  <span class="o">*</span> <span class="k">from</span> <span class="n">cmdb_resource_group</span> <span class="n">crg</span>  <span class="k">where</span>    <span class="n">crg</span><span class="p">.</span><span class="n">db_archive_year</span> <span class="o">=</span> <span class="mi">2022</span> <span class="k">and</span> <span class="n">crg</span><span class="p">.</span><span class="n">db_archive_month</span> <span class="o">=</span> <span class="mi">12</span>   <span class="p">)</span>  <span class="n">crg</span>  <span class="k">on</span>    <span class="n">crg</span><span class="p">.</span><span class="n">resource_id</span>  <span class="o">=</span> <span class="n">vr</span><span class="p">.</span><span class="n">id</span> 
  
- <span style="color:#66d9ef">and</span> crg.resource_type <span style="color:#f92672">=</span> vr.resource_type 
+ <span class="k">and</span> <span class="n">crg</span><span class="p">.</span><span class="n">resource_type</span> <span class="o">=</span> <span class="n">vr</span><span class="p">.</span><span class="n">resource_type</span> 
 
- <span style="color:#66d9ef">group</span> <span style="color:#66d9ef">by</span> crg.project_name, idc.name,vr.result_type
- <span style="color:#66d9ef">limit</span> <span style="color:#ae81ff">300</span>
+ <span class="k">group</span> <span class="k">by</span> <span class="n">crg</span><span class="p">.</span><span class="n">project_name</span><span class="p">,</span> <span class="n">idc</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="n">vr</span><span class="p">.</span><span class="n">result_type</span>
+ <span class="k">limit</span> <span class="mi">300</span>
  
  
-</code></pre></div><p>在 join 里面使用子查询，就减少为 几千行数据</p>
+</code></pre></td></tr></table>
+</div>
+</div><p>在 join 里面使用子查询，就减少为 几千行数据</p>
 <p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_12_13_11_58_17image-20211213115815864.png" alt="image-20211213115815864"></p>
 
     </div>
@@ -413,7 +477,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

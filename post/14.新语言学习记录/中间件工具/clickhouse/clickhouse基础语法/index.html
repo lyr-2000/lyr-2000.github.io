@@ -50,7 +50,7 @@
 <meta itemprop="description" content="clickhouse基础语法 物化视图 物化视图是一种特殊的物理表，“物化”(Materialized)视图是相对普通视图而言的。普通视图是虚拟">
 <meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="322">
+<meta itemprop="wordCount" content="363">
 
 
 
@@ -188,7 +188,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-14 </span>
         
-          <span class="more-meta"> 约 322 字 </span>
+          <span class="more-meta"> 约 363 字 </span>
           <span class="more-meta"> 预计阅读 1 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -219,53 +219,112 @@ input.PC_MARK1:focus{
 <p>物化视图是一种特殊的物理表，“物化”(Materialized)视图是相对普通视图而言的。普通视图是虚拟表，应用的局限性大，任何对视图的查询，Oracle都实际上转换为视图SQL语句的查询。这样对整体查询性能的提高，并没有实质上的好处。</p>
 <p><a href="https://www.cnblogs.com/ssqq5200936/p/15202320.html">参考博客</a></p>
 <p><a href="https://zhuanlan.zhihu.com/p/362985436">参考知乎的博客</a></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-SQL" data-lang="SQL">
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-SQL" data-lang="SQL">
      
-<span style="color:#66d9ef">create</span>  materialized <span style="color:#66d9ef">view</span> v_xxoo engine <span style="color:#f92672">=</span> Log 
- populate <span style="color:#66d9ef">as</span>  
-<span style="color:#66d9ef">select</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">from</span> cmdb_idc; 
+<span class="k">create</span>  <span class="n">materialized</span> <span class="k">view</span> <span class="n">v_xxoo</span> <span class="n">engine</span> <span class="o">=</span> <span class="n">Log</span> 
+ <span class="n">populate</span> <span class="k">as</span>  
+<span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">cmdb_idc</span><span class="p">;</span> 
      
      
 
-</code></pre></div><ul>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
 <li><code>populate</code>关键字 ：  直接把原始表的数据同步过来</li>
 </ul>
 <p>不用 populate 的 话，视图表是没有数据的</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#75715e">-- 物化视图的问题，删除 表中的数据，视图数据不会删除
-</span><span style="color:#75715e"></span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="c1">-- 物化视图的问题，删除 表中的数据，视图数据不会删除
+</span><span class="c1"></span>
 
-<span style="color:#66d9ef">create</span>  materialized  <span style="color:#66d9ef">view</span> <span style="color:#66d9ef">IF</span> <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">EXISTS</span> v_year_summary
-  engine <span style="color:#f92672">=</span> MergeTree()
-  <span style="color:#66d9ef">order</span> <span style="color:#66d9ef">by</span> (y,m,d)
-  populate
-
-
-<span style="color:#66d9ef">as</span> <span style="color:#66d9ef">select</span> YMD.<span style="color:#ae81ff">1</span> <span style="color:#66d9ef">as</span> y, YMD.<span style="color:#ae81ff">2</span> <span style="color:#66d9ef">as</span> m , YMD.<span style="color:#ae81ff">3</span> <span style="color:#66d9ef">as</span> d <span style="color:#66d9ef">from</span> v_year_summary0;
-
-
-</code></pre></div><h4 id="触发物化视图去重">触发物化视图去重</h4>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql">
-<span style="color:#66d9ef">create</span>
-materialized  <span style="color:#66d9ef">view</span> <span style="color:#66d9ef">IF</span> <span style="color:#66d9ef">NOT</span> <span style="color:#66d9ef">EXISTS</span> v_year_summary
-  engine <span style="color:#f92672">=</span> ReplacingMergeTree()
-  <span style="color:#66d9ef">order</span> <span style="color:#66d9ef">by</span> (y,m)
-  populate
-
-<span style="color:#66d9ef">as</span> (
-<span style="color:#66d9ef">select</span> ymd.<span style="color:#ae81ff">1</span> <span style="color:#66d9ef">as</span> y ,ymd.<span style="color:#ae81ff">2</span> <span style="color:#66d9ef">as</span> m , ymd.<span style="color:#ae81ff">3</span> <span style="color:#66d9ef">as</span> d <span style="color:#66d9ef">from</span> (
-
-    <span style="color:#66d9ef">select</span>  argMax( tuple(t.y,t.m,t.d) ,tuple(t.m,t.d)) <span style="color:#66d9ef">as</span> ymd  <span style="color:#66d9ef">from</span>    (
-        <span style="color:#66d9ef">select</span> db_archive_year y ,db_archive_month m ,db_archive_day d <span style="color:#66d9ef">from</span> <span style="color:#f92672">`</span>_db_archive_from_mysql_log<span style="color:#f92672">`</span> tb <span style="color:#66d9ef">where</span> tb.db_exec_status <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>) t
-        <span style="color:#66d9ef">group</span> <span style="color:#66d9ef">by</span> t.y
-
- )
-
-)
-
-OPTIMIZE <span style="color:#66d9ef">TABLE</span>  v_year_summary  <span style="color:#66d9ef">final</span>;
+<span class="k">create</span>  <span class="n">materialized</span>  <span class="k">view</span> <span class="k">IF</span> <span class="k">NOT</span> <span class="k">EXISTS</span> <span class="n">v_year_summary</span>
+  <span class="n">engine</span> <span class="o">=</span> <span class="n">MergeTree</span><span class="p">()</span>
+  <span class="k">order</span> <span class="k">by</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">d</span><span class="p">)</span>
+  <span class="n">populate</span>
 
 
-</code></pre></div>
+<span class="k">as</span> <span class="k">select</span> <span class="n">YMD</span><span class="p">.</span><span class="mi">1</span> <span class="k">as</span> <span class="n">y</span><span class="p">,</span> <span class="n">YMD</span><span class="p">.</span><span class="mi">2</span> <span class="k">as</span> <span class="n">m</span> <span class="p">,</span> <span class="n">YMD</span><span class="p">.</span><span class="mi">3</span> <span class="k">as</span> <span class="n">d</span> <span class="k">from</span> <span class="n">v_year_summary0</span><span class="p">;</span>
+
+
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="触发物化视图去重">触发物化视图去重</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql">
+<span class="k">create</span>
+<span class="n">materialized</span>  <span class="k">view</span> <span class="k">IF</span> <span class="k">NOT</span> <span class="k">EXISTS</span> <span class="n">v_year_summary</span>
+  <span class="n">engine</span> <span class="o">=</span> <span class="n">ReplacingMergeTree</span><span class="p">()</span>
+  <span class="k">order</span> <span class="k">by</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">m</span><span class="p">)</span>
+  <span class="n">populate</span>
+
+<span class="k">as</span> <span class="p">(</span>
+<span class="k">select</span> <span class="n">ymd</span><span class="p">.</span><span class="mi">1</span> <span class="k">as</span> <span class="n">y</span> <span class="p">,</span><span class="n">ymd</span><span class="p">.</span><span class="mi">2</span> <span class="k">as</span> <span class="n">m</span> <span class="p">,</span> <span class="n">ymd</span><span class="p">.</span><span class="mi">3</span> <span class="k">as</span> <span class="n">d</span> <span class="k">from</span> <span class="p">(</span>
+
+    <span class="k">select</span>  <span class="n">argMax</span><span class="p">(</span> <span class="n">tuple</span><span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">y</span><span class="p">,</span><span class="n">t</span><span class="p">.</span><span class="n">m</span><span class="p">,</span><span class="n">t</span><span class="p">.</span><span class="n">d</span><span class="p">)</span> <span class="p">,</span><span class="n">tuple</span><span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">m</span><span class="p">,</span><span class="n">t</span><span class="p">.</span><span class="n">d</span><span class="p">))</span> <span class="k">as</span> <span class="n">ymd</span>  <span class="k">from</span>    <span class="p">(</span>
+        <span class="k">select</span> <span class="n">db_archive_year</span> <span class="n">y</span> <span class="p">,</span><span class="n">db_archive_month</span> <span class="n">m</span> <span class="p">,</span><span class="n">db_archive_day</span> <span class="n">d</span> <span class="k">from</span> <span class="o">`</span><span class="n">_db_archive_from_mysql_log</span><span class="o">`</span> <span class="n">tb</span> <span class="k">where</span> <span class="n">tb</span><span class="p">.</span><span class="n">db_exec_status</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="n">t</span>
+        <span class="k">group</span> <span class="k">by</span> <span class="n">t</span><span class="p">.</span><span class="n">y</span>
+
+ <span class="p">)</span>
+
+<span class="p">)</span>
+
+<span class="n">OPTIMIZE</span> <span class="k">TABLE</span>  <span class="n">v_year_summary</span>  <span class="k">final</span><span class="p">;</span>
+
+
+</code></pre></td></tr></table>
+</div>
+</div>
     </div>
 
     <div class="post-copyright">
@@ -390,7 +449,7 @@ OPTIMIZE <span style="color:#66d9ef">TABLE</span>  v_year_summary  <span style="
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

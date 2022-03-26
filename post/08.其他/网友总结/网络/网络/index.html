@@ -50,7 +50,7 @@
 <meta itemprop="description" content="网络 OSI，TCP/IP，五层协议的体系结构 OSI分层（7层）：物理层、数据链路层、网络层、传输层、会话层、表示层、应用层 TCP/IP分层（">
 <meta itemprop="datePublished" content="2021-08-14T22:43:02&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:43:02&#43;08:00" />
-<meta itemprop="wordCount" content="21376">
+<meta itemprop="wordCount" content="21495">
 
 
 
@@ -188,7 +188,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-14 </span>
         
-          <span class="more-meta"> 约 21376 字 </span>
+          <span class="more-meta"> 约 21495 字 </span>
           <span class="more-meta"> 预计阅读 43 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -393,11 +393,21 @@ input.PC_MARK1:focus{
 <li>序列号被用来跟踪该端发送的数据量，每一个包中都包含序列号，在接收端则通过确认号用来通知发送端数据成功接收</li>
 <li>当某个主机开启一个TCP会话时，他的初始序列号（ISN）是随机的，随机序号防止攻击者利用相同ip地址和端口以及合适的序号进行恶意攻击（RFC793中建议ISN和一个假的时钟绑在一起，这个时钟会在每4微秒对ISN做加一操作，直到超过2^32，又从0开始，这需要4小时才会产生ISN的回绕问题，这几乎可以保证每个新连接的ISN不会和旧的连接的ISN产生冲突）</li>
 </ol>
-<pre><code>固定初始化序列号产生的问题：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">固定初始化序列号产生的问题：
 1. 假设ISN固定是1，Client和Server建立好一条TCP连接后，Client连续给Server发了10个包，这10个包不知怎么被链路上的路由器缓存了，这个时候碰巧Client挂掉了
 2. 然后Client用同样的端口号重新连上Server，Client又连续给Server发了几个包，假设这个时候Client的序列号变成了5
 3. 接着，之前被路由器缓存的10个数据包全部被路由到Server端了，Server给Client回复确认号10，这个时候，Client整个都不好了，这是什么情况？我的序列号才到5，你怎么给我的确认号是10了，整个都乱了
-</code></pre><ol start="3">
+</code></pre></td></tr></table>
+</div>
+</div><ol start="3">
 <li>SYN标志位和FIN标志位要占1位确认序号</li>
 <li>序列号为当前端成功发送并且收到确认序号的数据位数，确认号为当前端成功接收的数据位数</li>
 </ol>
@@ -690,7 +700,19 @@ input.PC_MARK1:focus{
 (2)立即关闭该连接，通过发送RST分组来关闭该连接，发送缓冲区中如果有未发送完的数据则丢弃<br>
 (3)将连接的关闭设置一个超时，如果socket发送缓冲区中仍残留数据，进程进入睡眠，内核进入定时状态去尽量去发送这些数据，超时后用RST关闭连接</li>
 </ol>
-<pre><code>struct linger {
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">struct linger {
      int l_onoff;
      int l_linger;
 };
@@ -698,7 +720,9 @@ input.PC_MARK1:focus{
 l_onoff为0，则该选项关闭，l_linger的值被忽略，close()用上述缺省方式关闭连接
 l_onoff非0，l_linger为0，close()用上述(2)方式关闭连接
 l_onoff非0，l_linger非0，close()用上述(3)方式关闭连接
-</code></pre><ul>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
 <li><strong>TCP选项之TCP_CORK和TCP_NODELAY</strong></li>
 </ul>
 <ol>
@@ -921,7 +945,68 @@ l_onoff非0，l_linger非0，close()用上述(3)方式关闭连接
 <ul>
 <li><strong>netfilter钩子（hooks）</strong></li>
 </ul>
-<pre><code>// 在内核协议栈中，有5个跟netfilter有关的钩子，数据包经过每个钩子时，都会检查上面是否注册有函数，如果有的话，就会调用相应的函数处理该数据包
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">// 在内核协议栈中，有5个跟netfilter有关的钩子，数据包经过每个钩子时，都会检查上面是否注册有函数，如果有的话，就会调用相应的函数处理该数据包
 // 注意：netfilter所有的钩子（hooks）都是在内核协议栈的IP层
 
          |
@@ -978,7 +1063,9 @@ l_onoff非0，l_linger非0，close()用上述(3)方式关闭连接
 // 本机收到目的IP是本机的数据包：NF_IP_PRE_ROUTING -&gt; NF_IP_LOCAL_IN
 // 本机收到目的IP不是本机的数据包：NF_IP_PRE_ROUTING -&gt; NF_IP_FORWARD -&gt; NF_IP_POST_ROUTING
 // 本机发出去的数据包：NF_IP_LOCAL_OUT -&gt; NF_IP_POST_ROUTING
-</code></pre><ul>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
 <li><strong>iptables中的表（tables）</strong></li>
 </ul>
 <ol>
@@ -998,7 +1085,61 @@ l_onoff非0，l_linger非0，close()用上述(3)方式关闭连接
 <ol>
 <li>iptables将表中的rule继续分类，让rule属于不同的链（chain），由chain来决定什么时候触发chain上的这些rule</li>
 </ol>
-<pre><code>                                    |
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">                                    |
                                     | Incoming             ++---------------------++
                                     ↓                      || raw                 ||
                            +-------------------+           || connection tracking ||
@@ -1048,7 +1189,9 @@ l_onoff非0，l_linger非0，close()用上述(3)方式关闭连接
 // FORWARD：数据包经过NF_IP_FORWARD时会触发该chain上的rule
 // OUTPUT：数据包经过NF_IP_LOCAL_OUT时会触发该chain上的rule
 // POSTROUTING：数据包经过NF_IP_POST_ROUTING时会触发该chain上的rule
-</code></pre><blockquote>
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
 <p><a href="https://segmentfault.com/a/1190000009043962">netfilter/iptables简介</a></p>
 </blockquote>
 <hr>
@@ -1222,7 +1365,7 @@ l_onoff非0，l_linger非0，close()用上述(3)方式关闭连接
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

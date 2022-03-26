@@ -50,7 +50,7 @@
 <meta itemprop="description" content="CompletableFuture 原理 异步化，是并行方案得以实施的基础，更深入地讲其实就是：利用多线程优化性能这个核心方案得以实施的基础。看到这里，相信你应该就能理解异步编">
 <meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="1632">
+<meta itemprop="wordCount" content="1746">
 
 
 
@@ -188,7 +188,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
-          <span class="more-meta"> 约 1632 字 </span>
+          <span class="more-meta"> 约 1746 字 </span>
           <span class="more-meta"> 预计阅读 4 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -223,140 +223,314 @@ input.PC_MARK1:focus{
       <h3 id="completablefuture-原理">CompletableFuture 原理</h3>
 <p><strong>异步化</strong>，是并行方案得以实施的基础，更深入地讲其实就是：<strong>利用多线程优化性能这个核心方案得以实施的基础</strong>。看到这里，相信你应该就能理解异步编程最近几年为什么会大火了，因为优化性能是互联网大厂的一个核心需求啊。Java 在 1.8 版本提供了 CompletableFuture 来支持异步编程，CompletableFuture 有可能是你见过的最复杂的工具类了，不过功能也着实让人感到震撼。</p>
 <p>默认情况下 CompletableFuture 会使用公共的 ForkJoinPool 线程池，这个线程池默认创建的线程数是 CPU 的核数（也可以通过 JVM option:-Djava.util.concurrent.ForkJoinPool.common.parallelism 来设置 ForkJoinPool 线程池的线程数）。如果所有 CompletableFuture 共享一个线程池，那么一旦有任务执行一些很慢的 I/O 操作，就会导致线程池中所有线程都阻塞在 I/O 操作上，从而造成线程饥饿，进而影响整个系统的性能。所以，强烈建议你要<strong>根据不同的业务类型创建不同的线程池，以避免互相干扰</strong>。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> CompletableFuture<span style="color:#f92672">&lt;</span>Void<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">runAsync</span><span style="color:#f92672">(</span>Runnable runnable<span style="color:#f92672">)</span>
-<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> CompletableFuture<span style="color:#f92672">&lt;</span>Void<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">runAsync</span><span style="color:#f92672">(</span>Runnable runnable<span style="color:#f92672">,</span> Executor executor<span style="color:#f92672">)</span>
-<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> CompletableFuture<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">supplyAsync</span><span style="color:#f92672">(</span>Supplier<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> supplier<span style="color:#f92672">)</span>
-<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> CompletableFuture<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">supplyAsync</span><span style="color:#f92672">(</span>Supplier<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> supplier<span style="color:#f92672">,</span> Executor executor<span style="color:#f92672">)</span>
-</code></pre></div><p>没有指定Executor的方法会使用ForkJoinPool.commonPool() 作为它的线程池执行异步代码。如果指定线程池，则使用指定的线程池运行。以下所有的方法都类同。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">static</span> <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span> <span class="nf">runAsync</span><span class="o">(</span><span class="n">Runnable</span> <span class="n">runnable</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">static</span> <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span> <span class="nf">runAsync</span><span class="o">(</span><span class="n">Runnable</span> <span class="n">runnable</span><span class="o">,</span> <span class="n">Executor</span> <span class="n">executor</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">static</span> <span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="nf">supplyAsync</span><span class="o">(</span><span class="n">Supplier</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="n">supplier</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">static</span> <span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="nf">supplyAsync</span><span class="o">(</span><span class="n">Supplier</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="n">supplier</span><span class="o">,</span> <span class="n">Executor</span> <span class="n">executor</span><span class="o">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>没有指定Executor的方法会使用ForkJoinPool.commonPool() 作为它的线程池执行异步代码。如果指定线程池，则使用指定的线程池运行。以下所有的方法都类同。</p>
 <ul>
 <li>runAsync方法不支持返回值。</li>
 <li>supplyAsync可以支持返回值。</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> CompletableFuture<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">thenApply</span><span style="color:#f92672">(</span>Function<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,?</span> <span style="color:#66d9ef">extends</span> U<span style="color:#f92672">&gt;</span> fn<span style="color:#f92672">)</span>
-<span style="color:#66d9ef">public</span> <span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> CompletableFuture<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">thenApplyAsync</span><span style="color:#f92672">(</span>Function<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,?</span> <span style="color:#66d9ef">extends</span> U<span style="color:#f92672">&gt;</span> fn<span style="color:#f92672">)</span>
-<span style="color:#66d9ef">public</span> <span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> CompletableFuture<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">thenApplyAsync</span><span style="color:#f92672">(</span>Function<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,?</span> <span style="color:#66d9ef">extends</span> U<span style="color:#f92672">&gt;</span> fn<span style="color:#f92672">,</span> Executor executor<span style="color:#f92672">)</span>
-</code></pre></div><p>当一个线程依赖另一个线程时，可以使用 thenApply 方法来把这两个线程串行化。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="nf">thenApply</span><span class="o">(</span><span class="n">Function</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,?</span> <span class="kd">extends</span> <span class="n">U</span><span class="o">&gt;</span> <span class="n">fn</span><span class="o">)</span>
+<span class="kd">public</span> <span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="nf">thenApplyAsync</span><span class="o">(</span><span class="n">Function</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,?</span> <span class="kd">extends</span> <span class="n">U</span><span class="o">&gt;</span> <span class="n">fn</span><span class="o">)</span>
+<span class="kd">public</span> <span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="nf">thenApplyAsync</span><span class="o">(</span><span class="n">Function</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,?</span> <span class="kd">extends</span> <span class="n">U</span><span class="o">&gt;</span> <span class="n">fn</span><span class="o">,</span> <span class="n">Executor</span> <span class="n">executor</span><span class="o">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>当一个线程依赖另一个线程时，可以使用 thenApply 方法来把这两个线程串行化。</p>
 <p>Function&lt;? super T,? extends U&gt;
 T：上一个任务返回结果的类型
 U：当前任务的返回值类型</p>
 <h4 id="handle-方法-相当于-finally">handle 方法 相当于 finally</h4>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> CompletionStage<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">handle</span><span style="color:#f92672">(</span>BiFunction<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,</span> Throwable<span style="color:#f92672">,</span> <span style="color:#f92672">?</span> <span style="color:#66d9ef">extends</span> U<span style="color:#f92672">&gt;</span> fn<span style="color:#f92672">);</span>
-<span style="color:#66d9ef">public</span> <span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> CompletionStage<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">handleAsync</span><span style="color:#f92672">(</span>BiFunction<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,</span> Throwable<span style="color:#f92672">,</span> <span style="color:#f92672">?</span> <span style="color:#66d9ef">extends</span> U<span style="color:#f92672">&gt;</span> fn<span style="color:#f92672">);</span>
-<span style="color:#66d9ef">public</span> <span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> CompletionStage<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">handleAsync</span><span style="color:#f92672">(</span>BiFunction<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,</span> Throwable<span style="color:#f92672">,</span> <span style="color:#f92672">?</span> <span style="color:#66d9ef">extends</span> U<span style="color:#f92672">&gt;</span> fn<span style="color:#f92672">,</span>Executor executor<span style="color:#f92672">);</span>
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">//无返回值
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">runAsync</span><span style="color:#f92672">()</span> <span style="color:#66d9ef">throws</span> Exception <span style="color:#f92672">{</span>
-    CompletableFuture<span style="color:#f92672">&lt;</span>Void<span style="color:#f92672">&gt;</span> future <span style="color:#f92672">=</span> CompletableFuture<span style="color:#f92672">.</span><span style="color:#a6e22e">runAsync</span><span style="color:#f92672">(()</span> <span style="color:#f92672">-&gt;</span> <span style="color:#f92672">{</span>
-        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
-            TimeUnit<span style="color:#f92672">.</span><span style="color:#a6e22e">SECONDS</span><span style="color:#f92672">.</span><span style="color:#a6e22e">sleep</span><span style="color:#f92672">(</span>1<span style="color:#f92672">);</span>
-        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>InterruptedException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        <span style="color:#f92672">}</span>
-        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;run end ...&#34;</span><span style="color:#f92672">);</span>
-    <span style="color:#f92672">});</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="n">CompletionStage</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="nf">handle</span><span class="o">(</span><span class="n">BiFunction</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,</span> <span class="n">Throwable</span><span class="o">,</span> <span class="o">?</span> <span class="kd">extends</span> <span class="n">U</span><span class="o">&gt;</span> <span class="n">fn</span><span class="o">);</span>
+<span class="kd">public</span> <span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="n">CompletionStage</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="nf">handleAsync</span><span class="o">(</span><span class="n">BiFunction</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,</span> <span class="n">Throwable</span><span class="o">,</span> <span class="o">?</span> <span class="kd">extends</span> <span class="n">U</span><span class="o">&gt;</span> <span class="n">fn</span><span class="o">);</span>
+<span class="kd">public</span> <span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="n">CompletionStage</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="nf">handleAsync</span><span class="o">(</span><span class="n">BiFunction</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,</span> <span class="n">Throwable</span><span class="o">,</span> <span class="o">?</span> <span class="kd">extends</span> <span class="n">U</span><span class="o">&gt;</span> <span class="n">fn</span><span class="o">,</span><span class="n">Executor</span> <span class="n">executor</span><span class="o">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">//无返回值
+</span><span class="c1"></span><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">runAsync</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">&gt;</span> <span class="n">future</span> <span class="o">=</span> <span class="n">CompletableFuture</span><span class="o">.</span><span class="na">runAsync</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">TimeUnit</span><span class="o">.</span><span class="na">SECONDS</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="n">1</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="o">}</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;run end ...&#34;</span><span class="o">);</span>
+    <span class="o">});</span>
     
-    future<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">();</span>
-<span style="color:#f92672">}</span>
+    <span class="n">future</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+<span class="o">}</span>
 
-<span style="color:#75715e">//有返回值
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">supplyAsync</span><span style="color:#f92672">()</span> <span style="color:#66d9ef">throws</span> Exception <span style="color:#f92672">{</span>         
-    CompletableFuture<span style="color:#f92672">&lt;</span>Long<span style="color:#f92672">&gt;</span> future <span style="color:#f92672">=</span> CompletableFuture<span style="color:#f92672">.</span><span style="color:#a6e22e">supplyAsync</span><span style="color:#f92672">(()</span> <span style="color:#f92672">-&gt;</span> <span style="color:#f92672">{</span>
-        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
-            TimeUnit<span style="color:#f92672">.</span><span style="color:#a6e22e">SECONDS</span><span style="color:#f92672">.</span><span style="color:#a6e22e">sleep</span><span style="color:#f92672">(</span>1<span style="color:#f92672">);</span>
-        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>InterruptedException e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        <span style="color:#f92672">}</span>
-        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;run end ...&#34;</span><span style="color:#f92672">);</span>
-        <span style="color:#66d9ef">return</span> System<span style="color:#f92672">.</span><span style="color:#a6e22e">currentTimeMillis</span><span style="color:#f92672">();</span>
-    <span style="color:#f92672">});</span>
+<span class="c1">//有返回值
+</span><span class="c1"></span><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">supplyAsync</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>         
+    <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">Long</span><span class="o">&gt;</span> <span class="n">future</span> <span class="o">=</span> <span class="n">CompletableFuture</span><span class="o">.</span><span class="na">supplyAsync</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">TimeUnit</span><span class="o">.</span><span class="na">SECONDS</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="n">1</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="o">}</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;run end ...&#34;</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
+    <span class="o">});</span>
 
-    <span style="color:#66d9ef">long</span> time <span style="color:#f92672">=</span> future<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">();</span>
-    System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;time = &#34;</span><span style="color:#f92672">+</span>time<span style="color:#f92672">);</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><h2 id="2计算结果完成时的回调方法">2、计算结果完成时的回调方法</h2>
+    <span class="kt">long</span> <span class="n">time</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;time = &#34;</span><span class="o">+</span><span class="n">time</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="2计算结果完成时的回调方法">2、计算结果完成时的回调方法</h2>
 <p>当CompletableFuture的计算结果完成，或者抛出异常的时候，可以执行特定的Action。主要是下面的方法：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> CompletableFuture<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">whenComplete</span><span style="color:#f92672">(</span>BiConsumer<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,?</span> <span style="color:#66d9ef">super</span> Throwable<span style="color:#f92672">&gt;</span> action<span style="color:#f92672">)</span>
-<span style="color:#66d9ef">public</span> CompletableFuture<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">whenCompleteAsync</span><span style="color:#f92672">(</span>BiConsumer<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,?</span> <span style="color:#66d9ef">super</span> Throwable<span style="color:#f92672">&gt;</span> action<span style="color:#f92672">)</span>
-<span style="color:#66d9ef">public</span> CompletableFuture<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">whenCompleteAsync</span><span style="color:#f92672">(</span>BiConsumer<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,?</span> <span style="color:#66d9ef">super</span> Throwable<span style="color:#f92672">&gt;</span> action<span style="color:#f92672">,</span> Executor executor<span style="color:#f92672">)</span>
-<span style="color:#66d9ef">public</span> CompletableFuture<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">exceptionally</span><span style="color:#f92672">(</span>Function<span style="color:#f92672">&lt;</span>Throwable<span style="color:#f92672">,?</span> <span style="color:#66d9ef">extends</span> T<span style="color:#f92672">&gt;</span> fn<span style="color:#f92672">)</span>
-</code></pre></div><h2 id="4-handle-方法">4、 handle 方法</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nf">whenComplete</span><span class="o">(</span><span class="n">BiConsumer</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,?</span> <span class="kd">super</span> <span class="n">Throwable</span><span class="o">&gt;</span> <span class="n">action</span><span class="o">)</span>
+<span class="kd">public</span> <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nf">whenCompleteAsync</span><span class="o">(</span><span class="n">BiConsumer</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,?</span> <span class="kd">super</span> <span class="n">Throwable</span><span class="o">&gt;</span> <span class="n">action</span><span class="o">)</span>
+<span class="kd">public</span> <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nf">whenCompleteAsync</span><span class="o">(</span><span class="n">BiConsumer</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,?</span> <span class="kd">super</span> <span class="n">Throwable</span><span class="o">&gt;</span> <span class="n">action</span><span class="o">,</span> <span class="n">Executor</span> <span class="n">executor</span><span class="o">)</span>
+<span class="kd">public</span> <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nf">exceptionally</span><span class="o">(</span><span class="n">Function</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">,?</span> <span class="kd">extends</span> <span class="n">T</span><span class="o">&gt;</span> <span class="n">fn</span><span class="o">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="4-handle-方法">4、 handle 方法</h2>
 <p>handle 是执行任务完成时对结果的处理。
 handle 方法和 thenApply 方法处理方式基本一样。不同的是 handle 是在任务完成后再执行，还可以处理异常的任务。thenApply 只可以执行正常的任务，任务出现异常则不执行 thenApply 方法。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">handle</span><span style="color:#f92672">()</span> <span style="color:#66d9ef">throws</span> Exception<span style="color:#f92672">{</span>
-    CompletableFuture<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;</span> future <span style="color:#f92672">=</span> CompletableFuture<span style="color:#f92672">.</span><span style="color:#a6e22e">supplyAsync</span><span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> Supplier<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;()</span> <span style="color:#f92672">{</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">handle</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span><span class="o">{</span>
+    <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">future</span> <span class="o">=</span> <span class="n">CompletableFuture</span><span class="o">.</span><span class="na">supplyAsync</span><span class="o">(</span><span class="k">new</span> <span class="n">Supplier</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;()</span> <span class="o">{</span>
 
-        <span style="color:#a6e22e">@Override</span>
-        <span style="color:#66d9ef">public</span> Integer <span style="color:#a6e22e">get</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-            <span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span> 10<span style="color:#f92672">/</span>0<span style="color:#f92672">;</span>
-            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> Random<span style="color:#f92672">().</span><span style="color:#a6e22e">nextInt</span><span style="color:#f92672">(</span>10<span style="color:#f92672">);</span>
-        <span style="color:#f92672">}</span>
-    <span style="color:#f92672">}).</span><span style="color:#a6e22e">handle</span><span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> BiFunction<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">,</span> Throwable<span style="color:#f92672">,</span> Integer<span style="color:#f92672">&gt;()</span> <span style="color:#f92672">{</span>
-        <span style="color:#a6e22e">@Override</span>
-        <span style="color:#66d9ef">public</span> Integer <span style="color:#a6e22e">apply</span><span style="color:#f92672">(</span>Integer param<span style="color:#f92672">,</span> Throwable throwable<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-            <span style="color:#66d9ef">int</span> result <span style="color:#f92672">=</span> <span style="color:#f92672">-</span>1<span style="color:#f92672">;</span>
-            <span style="color:#66d9ef">if</span><span style="color:#f92672">(</span>throwable<span style="color:#f92672">==</span><span style="color:#66d9ef">null</span><span style="color:#f92672">){</span>
-                result <span style="color:#f92672">=</span> param <span style="color:#f92672">*</span> 2<span style="color:#f92672">;</span>
-            <span style="color:#f92672">}</span><span style="color:#66d9ef">else</span><span style="color:#f92672">{</span>
-                System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>throwable<span style="color:#f92672">.</span><span style="color:#a6e22e">getMessage</span><span style="color:#f92672">());</span>
-            <span style="color:#f92672">}</span>
-            <span style="color:#66d9ef">return</span> result<span style="color:#f92672">;</span>
-        <span style="color:#f92672">}</span>
-     <span style="color:#f92672">});</span>
-    System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>future<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">());</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><h2 id="7thencombine-合并任务">7、thenCombine 合并任务</h2>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="n">Integer</span> <span class="nf">get</span><span class="o">()</span> <span class="o">{</span>
+            <span class="kt">int</span> <span class="n">i</span><span class="o">=</span> <span class="n">10</span><span class="o">/</span><span class="n">0</span><span class="o">;</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">10</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}).</span><span class="na">handle</span><span class="o">(</span><span class="k">new</span> <span class="n">BiFunction</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">,</span> <span class="n">Throwable</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="n">Integer</span> <span class="nf">apply</span><span class="o">(</span><span class="n">Integer</span> <span class="n">param</span><span class="o">,</span> <span class="n">Throwable</span> <span class="n">throwable</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="o">-</span><span class="n">1</span><span class="o">;</span>
+            <span class="k">if</span><span class="o">(</span><span class="n">throwable</span><span class="o">==</span><span class="kc">null</span><span class="o">){</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">param</span> <span class="o">*</span> <span class="n">2</span><span class="o">;</span>
+            <span class="o">}</span><span class="k">else</span><span class="o">{</span>
+                <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">throwable</span><span class="o">.</span><span class="na">getMessage</span><span class="o">());</span>
+            <span class="o">}</span>
+            <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+        <span class="o">}</span>
+     <span class="o">});</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">future</span><span class="o">.</span><span class="na">get</span><span class="o">());</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="7thencombine-合并任务">7、thenCombine 合并任务</h2>
 <p>thenCombine 会把 两个 CompletionStage 的任务都执行完成后，把两个任务的结果一块交给 thenCombine 来处理。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#f92672">&lt;</span>U<span style="color:#f92672">,</span>V<span style="color:#f92672">&gt;</span> CompletionStage<span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">thenCombine</span><span style="color:#f92672">(</span>CompletionStage<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">extends</span> U<span style="color:#f92672">&gt;</span> other<span style="color:#f92672">,</span>BiFunction<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,?</span> <span style="color:#66d9ef">super</span> U<span style="color:#f92672">,?</span> <span style="color:#66d9ef">extends</span> V<span style="color:#f92672">&gt;</span> fn<span style="color:#f92672">);</span>
-<span style="color:#66d9ef">public</span> <span style="color:#f92672">&lt;</span>U<span style="color:#f92672">,</span>V<span style="color:#f92672">&gt;</span> CompletionStage<span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">thenCombineAsync</span><span style="color:#f92672">(</span>CompletionStage<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">extends</span> U<span style="color:#f92672">&gt;</span> other<span style="color:#f92672">,</span>BiFunction<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,?</span> <span style="color:#66d9ef">super</span> U<span style="color:#f92672">,?</span> <span style="color:#66d9ef">extends</span> V<span style="color:#f92672">&gt;</span> fn<span style="color:#f92672">);</span>
-<span style="color:#66d9ef">public</span> <span style="color:#f92672">&lt;</span>U<span style="color:#f92672">,</span>V<span style="color:#f92672">&gt;</span> CompletionStage<span style="color:#f92672">&lt;</span>V<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">thenCombineAsync</span><span style="color:#f92672">(</span>CompletionStage<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">extends</span> U<span style="color:#f92672">&gt;</span> other<span style="color:#f92672">,</span>BiFunction<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,?</span> <span style="color:#66d9ef">super</span> U<span style="color:#f92672">,?</span> <span style="color:#66d9ef">extends</span> V<span style="color:#f92672">&gt;</span> fn<span style="color:#f92672">,</span>Executor executor<span style="color:#f92672">);</span>
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">thenCombine</span><span style="color:#f92672">()</span> <span style="color:#66d9ef">throws</span> Exception <span style="color:#f92672">{</span>
-    CompletableFuture<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> future1 <span style="color:#f92672">=</span> CompletableFuture<span style="color:#f92672">.</span><span style="color:#a6e22e">supplyAsync</span><span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> Supplier<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;()</span> <span style="color:#f92672">{</span>
-        <span style="color:#a6e22e">@Override</span>
-        <span style="color:#66d9ef">public</span> String <span style="color:#a6e22e">get</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-            <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;hello&#34;</span><span style="color:#f92672">;</span>
-        <span style="color:#f92672">}</span>
-    <span style="color:#f92672">});</span>
-    CompletableFuture<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> future2 <span style="color:#f92672">=</span> CompletableFuture<span style="color:#f92672">.</span><span style="color:#a6e22e">supplyAsync</span><span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> Supplier<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;()</span> <span style="color:#f92672">{</span>
-        <span style="color:#a6e22e">@Override</span>
-        <span style="color:#66d9ef">public</span> String <span style="color:#a6e22e">get</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-            <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#34;hello&#34;</span><span style="color:#f92672">;</span>
-        <span style="color:#f92672">}</span>
-    <span style="color:#f92672">});</span>
-    CompletableFuture<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> result <span style="color:#f92672">=</span> future1<span style="color:#f92672">.</span><span style="color:#a6e22e">thenCombine</span><span style="color:#f92672">(</span>future2<span style="color:#f92672">,</span> <span style="color:#66d9ef">new</span> BiFunction<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">,</span> String<span style="color:#f92672">,</span> String<span style="color:#f92672">&gt;()</span> <span style="color:#f92672">{</span>
-        <span style="color:#a6e22e">@Override</span>
-        <span style="color:#66d9ef">public</span> String <span style="color:#a6e22e">apply</span><span style="color:#f92672">(</span>String t<span style="color:#f92672">,</span> String u<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-            <span style="color:#66d9ef">return</span> t<span style="color:#f92672">+</span><span style="color:#e6db74">&#34; &#34;</span><span style="color:#f92672">+</span>u<span style="color:#f92672">;</span>
-        <span style="color:#f92672">}</span>
-    <span style="color:#f92672">});</span>
-    System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>result<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">());</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><h2 id="13thencompose-方法">13、thenCompose 方法</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="o">&lt;</span><span class="n">U</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">CompletionStage</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span> <span class="nf">thenCombine</span><span class="o">(</span><span class="n">CompletionStage</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="n">U</span><span class="o">&gt;</span> <span class="n">other</span><span class="o">,</span><span class="n">BiFunction</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,?</span> <span class="kd">super</span> <span class="n">U</span><span class="o">,?</span> <span class="kd">extends</span> <span class="n">V</span><span class="o">&gt;</span> <span class="n">fn</span><span class="o">);</span>
+<span class="kd">public</span> <span class="o">&lt;</span><span class="n">U</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">CompletionStage</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span> <span class="nf">thenCombineAsync</span><span class="o">(</span><span class="n">CompletionStage</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="n">U</span><span class="o">&gt;</span> <span class="n">other</span><span class="o">,</span><span class="n">BiFunction</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,?</span> <span class="kd">super</span> <span class="n">U</span><span class="o">,?</span> <span class="kd">extends</span> <span class="n">V</span><span class="o">&gt;</span> <span class="n">fn</span><span class="o">);</span>
+<span class="kd">public</span> <span class="o">&lt;</span><span class="n">U</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">CompletionStage</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span> <span class="nf">thenCombineAsync</span><span class="o">(</span><span class="n">CompletionStage</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="n">U</span><span class="o">&gt;</span> <span class="n">other</span><span class="o">,</span><span class="n">BiFunction</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,?</span> <span class="kd">super</span> <span class="n">U</span><span class="o">,?</span> <span class="kd">extends</span> <span class="n">V</span><span class="o">&gt;</span> <span class="n">fn</span><span class="o">,</span><span class="n">Executor</span> <span class="n">executor</span><span class="o">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">thenCombine</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">future1</span> <span class="o">=</span> <span class="n">CompletableFuture</span><span class="o">.</span><span class="na">supplyAsync</span><span class="o">(</span><span class="k">new</span> <span class="n">Supplier</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="n">String</span> <span class="nf">get</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="s">&#34;hello&#34;</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">});</span>
+    <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">future2</span> <span class="o">=</span> <span class="n">CompletableFuture</span><span class="o">.</span><span class="na">supplyAsync</span><span class="o">(</span><span class="k">new</span> <span class="n">Supplier</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="n">String</span> <span class="nf">get</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="s">&#34;hello&#34;</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">});</span>
+    <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">future1</span><span class="o">.</span><span class="na">thenCombine</span><span class="o">(</span><span class="n">future2</span><span class="o">,</span> <span class="k">new</span> <span class="n">BiFunction</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="n">String</span> <span class="nf">apply</span><span class="o">(</span><span class="n">String</span> <span class="n">t</span><span class="o">,</span> <span class="n">String</span> <span class="n">u</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">t</span><span class="o">+</span><span class="s">&#34; &#34;</span><span class="o">+</span><span class="n">u</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">});</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">result</span><span class="o">.</span><span class="na">get</span><span class="o">());</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="13thencompose-方法">13、thenCompose 方法</h2>
 <p>thenCompose 方法允许你对两个 CompletionStage 进行流水线操作，第一个操作完成时，将其结果作为参数传递给第二个操作。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> CompletableFuture<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">thenCompose</span><span style="color:#f92672">(</span>Function<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,</span> <span style="color:#f92672">?</span> <span style="color:#66d9ef">extends</span> CompletionStage<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;&gt;</span> fn<span style="color:#f92672">);</span>
-<span style="color:#66d9ef">public</span> <span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> CompletableFuture<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">thenComposeAsync</span><span style="color:#f92672">(</span>Function<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,</span> <span style="color:#f92672">?</span> <span style="color:#66d9ef">extends</span> CompletionStage<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;&gt;</span> fn<span style="color:#f92672">)</span> <span style="color:#f92672">;</span>
-<span style="color:#66d9ef">public</span> <span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> CompletableFuture<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">thenComposeAsync</span><span style="color:#f92672">(</span>Function<span style="color:#f92672">&lt;?</span> <span style="color:#66d9ef">super</span> T<span style="color:#f92672">,</span> <span style="color:#f92672">?</span> <span style="color:#66d9ef">extends</span> CompletionStage<span style="color:#f92672">&lt;</span>U<span style="color:#f92672">&gt;&gt;</span> fn<span style="color:#f92672">,</span> Executor executor<span style="color:#f92672">)</span> <span style="color:#f92672">;</span>
-</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">thenCompose</span><span style="color:#f92672">()</span> <span style="color:#66d9ef">throws</span> Exception <span style="color:#f92672">{</span>
-        CompletableFuture<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;</span> f <span style="color:#f92672">=</span> CompletableFuture<span style="color:#f92672">.</span><span style="color:#a6e22e">supplyAsync</span><span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> Supplier<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;()</span> <span style="color:#f92672">{</span>
-            <span style="color:#a6e22e">@Override</span>
-            <span style="color:#66d9ef">public</span> Integer <span style="color:#a6e22e">get</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-                <span style="color:#66d9ef">int</span> t <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Random<span style="color:#f92672">().</span><span style="color:#a6e22e">nextInt</span><span style="color:#f92672">(</span>3<span style="color:#f92672">);</span>
-                System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;t1=&#34;</span><span style="color:#f92672">+</span>t<span style="color:#f92672">);</span>
-                <span style="color:#66d9ef">return</span> t<span style="color:#f92672">;</span>
-            <span style="color:#f92672">}</span>
-        <span style="color:#f92672">}).</span><span style="color:#a6e22e">thenCompose</span><span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> Function<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">,</span> CompletionStage<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;&gt;()</span> <span style="color:#f92672">{</span>
-            <span style="color:#a6e22e">@Override</span>
-            <span style="color:#66d9ef">public</span> CompletionStage<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">apply</span><span style="color:#f92672">(</span>Integer param<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-                <span style="color:#66d9ef">return</span> CompletableFuture<span style="color:#f92672">.</span><span style="color:#a6e22e">supplyAsync</span><span style="color:#f92672">(</span><span style="color:#66d9ef">new</span> Supplier<span style="color:#f92672">&lt;</span>Integer<span style="color:#f92672">&gt;()</span> <span style="color:#f92672">{</span>
-                    <span style="color:#a6e22e">@Override</span>
-                    <span style="color:#66d9ef">public</span> Integer <span style="color:#a6e22e">get</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-                        <span style="color:#66d9ef">int</span> t <span style="color:#f92672">=</span> param <span style="color:#f92672">*</span>2<span style="color:#f92672">;</span>
-                        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;t2=&#34;</span><span style="color:#f92672">+</span>t<span style="color:#f92672">);</span>
-                        <span style="color:#66d9ef">return</span> t<span style="color:#f92672">;</span>
-                    <span style="color:#f92672">}</span>
-                <span style="color:#f92672">});</span>
-            <span style="color:#f92672">}</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="nf">thenCompose</span><span class="o">(</span><span class="n">Function</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,</span> <span class="o">?</span> <span class="kd">extends</span> <span class="n">CompletionStage</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;&gt;</span> <span class="n">fn</span><span class="o">);</span>
+<span class="kd">public</span> <span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="nf">thenComposeAsync</span><span class="o">(</span><span class="n">Function</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,</span> <span class="o">?</span> <span class="kd">extends</span> <span class="n">CompletionStage</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;&gt;</span> <span class="n">fn</span><span class="o">)</span> <span class="o">;</span>
+<span class="kd">public</span> <span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;</span> <span class="nf">thenComposeAsync</span><span class="o">(</span><span class="n">Function</span><span class="o">&lt;?</span> <span class="kd">super</span> <span class="n">T</span><span class="o">,</span> <span class="o">?</span> <span class="kd">extends</span> <span class="n">CompletionStage</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&gt;&gt;</span> <span class="n">fn</span><span class="o">,</span> <span class="n">Executor</span> <span class="n">executor</span><span class="o">)</span> <span class="o">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">thenCompose</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+        <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="n">CompletableFuture</span><span class="o">.</span><span class="na">supplyAsync</span><span class="o">(</span><span class="k">new</span> <span class="n">Supplier</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="n">Integer</span> <span class="nf">get</span><span class="o">()</span> <span class="o">{</span>
+                <span class="kt">int</span> <span class="n">t</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">(</span><span class="n">3</span><span class="o">);</span>
+                <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;t1=&#34;</span><span class="o">+</span><span class="n">t</span><span class="o">);</span>
+                <span class="k">return</span> <span class="n">t</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}).</span><span class="na">thenCompose</span><span class="o">(</span><span class="k">new</span> <span class="n">Function</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">,</span> <span class="n">CompletionStage</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;&gt;()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="n">CompletionStage</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="nf">apply</span><span class="o">(</span><span class="n">Integer</span> <span class="n">param</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="n">CompletableFuture</span><span class="o">.</span><span class="na">supplyAsync</span><span class="o">(</span><span class="k">new</span> <span class="n">Supplier</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;()</span> <span class="o">{</span>
+                    <span class="nd">@Override</span>
+                    <span class="kd">public</span> <span class="n">Integer</span> <span class="nf">get</span><span class="o">()</span> <span class="o">{</span>
+                        <span class="kt">int</span> <span class="n">t</span> <span class="o">=</span> <span class="n">param</span> <span class="o">*</span><span class="n">2</span><span class="o">;</span>
+                        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;t2=&#34;</span><span class="o">+</span><span class="n">t</span><span class="o">);</span>
+                        <span class="k">return</span> <span class="n">t</span><span class="o">;</span>
+                    <span class="o">}</span>
+                <span class="o">});</span>
+            <span class="o">}</span>
             
-        <span style="color:#f92672">});</span>
-        System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;thenCompose result : &#34;</span><span style="color:#f92672">+</span>f<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">());</span>
-    <span style="color:#f92672">}</span>
-</code></pre></div><h2 id="回调地狱">回调地狱</h2>
+        <span class="o">});</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;thenCompose result : &#34;</span><span class="o">+</span><span class="n">f</span><span class="o">.</span><span class="na">get</span><span class="o">());</span>
+    <span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="回调地狱">回调地狱</h2>
 <h2 id="总结">总结</h2>
 <p>曾经一提到<strong>异步编程</strong>，大家脑海里都会随之浮现回调函数，例如在 JavaScript 里面异步问题基本上都是靠回调函数来解决的，回调函数在处理异常以及复杂的异步任务关系时往往力不从心，对此业界还发明了个名词：<strong>回调地狱</strong>（Callback Hell）。应该说在前些年，异步编程还是声名狼藉的。</p>
 <p>不过最近几年，伴随着<a href="http://reactivex.io/intro.html">ReactiveX</a>的发展（Java 语言的实现版本是 <strong>RxJava</strong>），回调地狱已经被完美解决了，异步编程已经慢慢开始成熟，Java 语言也开始官方支持异步编程：在 1.8 版本提供了 CompletableFuture，在 Java 9 版本则提供了更加完备的 <strong>Flow API</strong>，<strong>异步编程目前已经完全工业化</strong>。因此，学好异步编程还是很有必要的。</p>
@@ -482,7 +656,7 @@ handle 方法和 thenApply 方法处理方式基本一样。不同的是 handle 
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

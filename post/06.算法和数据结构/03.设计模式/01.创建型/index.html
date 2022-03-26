@@ -50,7 +50,7 @@
 <meta itemprop="description" content="创建型模式关注点是如何创建对象，其核心思想是要把对象的创建和使用相分离，这样使得两者能相对独立地变换。创建型模式包括： 工厂方法：Factor">
 <meta itemprop="datePublished" content="2021-03-21T20:42:24&#43;00:00" />
 <meta itemprop="dateModified" content="2021-03-21T20:42:24&#43;00:00" />
-<meta itemprop="wordCount" content="3073">
+<meta itemprop="wordCount" content="3287">
 
 
 
@@ -191,7 +191,7 @@ input.PC_MARK1:focus{
             <a href="/categories/%E7%AE%97%E6%B3%95%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/"> 算法和数据结构 </a>
             <a href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"> 设计模式 </a>
             </div>
-          <span class="more-meta"> 约 3073 字 </span>
+          <span class="more-meta"> 约 3287 字 </span>
           <span class="more-meta"> 预计阅读 7 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -244,90 +244,207 @@ input.PC_MARK1:focus{
 <p>代码定义</p>
 </blockquote>
 <p>首先我们定义一个抽象工厂，里面有两个实现类</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">AbstractFactory</span> <span style="color:#f92672">{</span>
-    <span style="color:#75715e">// 创建Html文档:
-</span><span style="color:#75715e"></span>    HtmlDocument <span style="color:#a6e22e">createHtml</span><span style="color:#f92672">(</span>String md<span style="color:#f92672">);</span>
-    <span style="color:#75715e">// 创建Word文档:
-</span><span style="color:#75715e"></span>    WordDocument <span style="color:#a6e22e">createWord</span><span style="color:#f92672">(</span>String md<span style="color:#f92672">);</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><p>然后在这个抽象工厂里面的两个方法因为实现笔记负责所以需要再定义两个接口</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// Html文档接口:
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">HtmlDocument</span> <span style="color:#f92672">{</span>
-    String <span style="color:#a6e22e">toHtml</span><span style="color:#f92672">();</span>
-    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">save</span><span style="color:#f92672">(</span>Path path<span style="color:#f92672">)</span> <span style="color:#66d9ef">throws</span> IOException<span style="color:#f92672">;</span>
-<span style="color:#f92672">}</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">AbstractFactory</span> <span class="o">{</span>
+    <span class="c1">// 创建Html文档:
+</span><span class="c1"></span>    <span class="n">HtmlDocument</span> <span class="nf">createHtml</span><span class="o">(</span><span class="n">String</span> <span class="n">md</span><span class="o">);</span>
+    <span class="c1">// 创建Word文档:
+</span><span class="c1"></span>    <span class="n">WordDocument</span> <span class="nf">createWord</span><span class="o">(</span><span class="n">String</span> <span class="n">md</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>然后在这个抽象工厂里面的两个方法因为实现笔记负责所以需要再定义两个接口</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">// Html文档接口:
+</span><span class="c1"></span><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">HtmlDocument</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="nf">toHtml</span><span class="o">();</span>
+    <span class="kt">void</span> <span class="nf">save</span><span class="o">(</span><span class="n">Path</span> <span class="n">path</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span><span class="o">;</span>
+<span class="o">}</span>
 
-<span style="color:#75715e">// Word文档接口:
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">WordDocument</span> <span style="color:#f92672">{</span>
-    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">save</span><span style="color:#f92672">(</span>Path path<span style="color:#f92672">)</span> <span style="color:#66d9ef">throws</span> IOException<span style="color:#f92672">;</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><p>我们有两个厂商提供服务，这个厂商只需要实现这两个接口就行了</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">FastHtmlDocument</span> <span style="color:#66d9ef">implements</span> HtmlDocument <span style="color:#f92672">{</span>
-    <span style="color:#66d9ef">public</span> String <span style="color:#a6e22e">toHtml</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-        <span style="color:#f92672">...</span>
-    <span style="color:#f92672">}</span>
-    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">save</span><span style="color:#f92672">(</span>Path path<span style="color:#f92672">)</span> <span style="color:#66d9ef">throws</span> IOException <span style="color:#f92672">{</span>
-        <span style="color:#f92672">...</span>
-    <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
+<span class="c1">// Word文档接口:
+</span><span class="c1"></span><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">WordDocument</span> <span class="o">{</span>
+    <span class="kt">void</span> <span class="nf">save</span><span class="o">(</span><span class="n">Path</span> <span class="n">path</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>我们有两个厂商提供服务，这个厂商只需要实现这两个接口就行了</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">FastHtmlDocument</span> <span class="kd">implements</span> <span class="n">HtmlDocument</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">toHtml</span><span class="o">()</span> <span class="o">{</span>
+        <span class="o">...</span>
+    <span class="o">}</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">save</span><span class="o">(</span><span class="n">Path</span> <span class="n">path</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+        <span class="o">...</span>
+    <span class="o">}</span>
+<span class="o">}</span>
 
-<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">FastWordDocument</span> <span style="color:#66d9ef">implements</span> WordDocument <span style="color:#f92672">{</span>
-    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">save</span><span style="color:#f92672">(</span>Path path<span style="color:#f92672">)</span> <span style="color:#66d9ef">throws</span> IOException <span style="color:#f92672">{</span>
-        <span style="color:#f92672">...</span>
-    <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><p>实现接口后还需要提供一个工厂来生产产品</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">FastFactory</span> <span style="color:#66d9ef">implements</span> AbstractFactory <span style="color:#f92672">{</span>
-    <span style="color:#66d9ef">public</span> HtmlDocument <span style="color:#a6e22e">createHtml</span><span style="color:#f92672">(</span>String md<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> FastHtmlDocument<span style="color:#f92672">(</span>md<span style="color:#f92672">);</span>
-    <span style="color:#f92672">}</span>
-    <span style="color:#66d9ef">public</span> WordDocument <span style="color:#a6e22e">createWord</span><span style="color:#f92672">(</span>String md<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> FastWordDocument<span style="color:#f92672">(</span>md<span style="color:#f92672">);</span>
-    <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><p>然后我们只需要下面这样调用就行了</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 创建AbstractFactory，实际类型是FastFactory:
-</span><span style="color:#75715e"></span>AbstractFactory factory <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> FastFactory<span style="color:#f92672">();</span>
-<span style="color:#75715e">// 生成Html文档:
-</span><span style="color:#75715e"></span>HtmlDocument html <span style="color:#f92672">=</span> factory<span style="color:#f92672">.</span><span style="color:#a6e22e">createHtml</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;#Hello\nHello, world!&#34;</span><span style="color:#f92672">);</span>
-html<span style="color:#f92672">.</span><span style="color:#a6e22e">save</span><span style="color:#f92672">(</span>Paths<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;.&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;fast.html&#34;</span><span style="color:#f92672">));</span>
-<span style="color:#75715e">// 生成Word文档:
-</span><span style="color:#75715e"></span>WordDocument word <span style="color:#f92672">=</span> factory<span style="color:#f92672">.</span><span style="color:#a6e22e">createWord</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;#Hello\nHello, world!&#34;</span><span style="color:#f92672">);</span>
-word<span style="color:#f92672">.</span><span style="color:#a6e22e">save</span><span style="color:#f92672">(</span>Paths<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;.&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;fast.doc&#34;</span><span style="color:#f92672">));</span>
-</code></pre></div><p>如果需要使用其他厂商提供的服务，只需要让其他厂商实现这个方法就行</p>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">FastWordDocument</span> <span class="kd">implements</span> <span class="n">WordDocument</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">save</span><span class="o">(</span><span class="n">Path</span> <span class="n">path</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+        <span class="o">...</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>实现接口后还需要提供一个工厂来生产产品</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">FastFactory</span> <span class="kd">implements</span> <span class="n">AbstractFactory</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="n">HtmlDocument</span> <span class="nf">createHtml</span><span class="o">(</span><span class="n">String</span> <span class="n">md</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">FastHtmlDocument</span><span class="o">(</span><span class="n">md</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="kd">public</span> <span class="n">WordDocument</span> <span class="nf">createWord</span><span class="o">(</span><span class="n">String</span> <span class="n">md</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">FastWordDocument</span><span class="o">(</span><span class="n">md</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>然后我们只需要下面这样调用就行了</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">// 创建AbstractFactory，实际类型是FastFactory:
+</span><span class="c1"></span><span class="n">AbstractFactory</span> <span class="n">factory</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FastFactory</span><span class="o">();</span>
+<span class="c1">// 生成Html文档:
+</span><span class="c1"></span><span class="n">HtmlDocument</span> <span class="n">html</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="na">createHtml</span><span class="o">(</span><span class="s">&#34;#Hello\nHello, world!&#34;</span><span class="o">);</span>
+<span class="n">html</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">Paths</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">&#34;.&#34;</span><span class="o">,</span> <span class="s">&#34;fast.html&#34;</span><span class="o">));</span>
+<span class="c1">// 生成Word文档:
+</span><span class="c1"></span><span class="n">WordDocument</span> <span class="n">word</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="na">createWord</span><span class="o">(</span><span class="s">&#34;#Hello\nHello, world!&#34;</span><span class="o">);</span>
+<span class="n">word</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">Paths</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">&#34;.&#34;</span><span class="o">,</span> <span class="s">&#34;fast.doc&#34;</span><span class="o">));</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>如果需要使用其他厂商提供的服务，只需要让其他厂商实现这个方法就行</p>
 <p>如果我们要同时使用GoodDoc Soft的服务怎么办？因为用了抽象工厂模式，GoodDoc Soft只需要根据我们定义的抽象工厂和抽象产品接口，实现自己的实际工厂和实际产品即可：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 实际工厂:
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">GoodFactory</span> <span style="color:#66d9ef">implements</span> AbstractFactory <span style="color:#f92672">{</span>
-    <span style="color:#66d9ef">public</span> HtmlDocument <span style="color:#a6e22e">createHtml</span><span style="color:#f92672">(</span>String md<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> GoodHtmlDocument<span style="color:#f92672">(</span>md<span style="color:#f92672">);</span>
-    <span style="color:#f92672">}</span>
-    <span style="color:#66d9ef">public</span> WordDocument <span style="color:#a6e22e">createWord</span><span style="color:#f92672">(</span>String md<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> GoodWordDocument<span style="color:#f92672">(</span>md<span style="color:#f92672">);</span>
-    <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">// 实际工厂:
+</span><span class="c1"></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">GoodFactory</span> <span class="kd">implements</span> <span class="n">AbstractFactory</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="n">HtmlDocument</span> <span class="nf">createHtml</span><span class="o">(</span><span class="n">String</span> <span class="n">md</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">GoodHtmlDocument</span><span class="o">(</span><span class="n">md</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="kd">public</span> <span class="n">WordDocument</span> <span class="nf">createWord</span><span class="o">(</span><span class="n">String</span> <span class="n">md</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">GoodWordDocument</span><span class="o">(</span><span class="n">md</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
 
-<span style="color:#75715e">// 实际产品:
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">GoodHtmlDocument</span> <span style="color:#66d9ef">implements</span> HtmlDocument <span style="color:#f92672">{</span>
-    <span style="color:#f92672">...</span>
-<span style="color:#f92672">}</span>
+<span class="c1">// 实际产品:
+</span><span class="c1"></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">GoodHtmlDocument</span> <span class="kd">implements</span> <span class="n">HtmlDocument</span> <span class="o">{</span>
+    <span class="o">...</span>
+<span class="o">}</span>
 
-<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">GoodWordDocument</span> <span style="color:#66d9ef">implements</span> HtmlDocument <span style="color:#f92672">{</span>
-    <span style="color:#f92672">...</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><p>当然还有下面这种进阶型用法</p>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">GoodWordDocument</span> <span class="kd">implements</span> <span class="n">HtmlDocument</span> <span class="o">{</span>
+    <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>当然还有下面这种进阶型用法</p>
 <p>注意到客户端代码除了通过<code>new</code>创建了<code>FastFactory</code>或<code>GoodFactory</code>外，其余代码只引用了产品接口，并未引用任何实际产品（例如，<code>FastHtmlDocument</code>），如果把创建工厂的代码放到<code>AbstractFactory</code>中，就可以连实际工厂也屏蔽了：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">AbstractFactory</span> <span style="color:#f92672">{</span>
-    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> AbstractFactory <span style="color:#a6e22e">createFactory</span><span style="color:#f92672">(</span>String name<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>name<span style="color:#f92672">.</span><span style="color:#a6e22e">equalsIgnoreCase</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;fast&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
-            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> FastFactory<span style="color:#f92672">();</span>
-        <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>name<span style="color:#f92672">.</span><span style="color:#a6e22e">equalsIgnoreCase</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;good&#34;</span><span style="color:#f92672">))</span> <span style="color:#f92672">{</span>
-            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> GoodFactory<span style="color:#f92672">();</span>
-        <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
-            <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> IllegalArgumentException<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Invalid factory name&#34;</span><span style="color:#f92672">);</span>
-        <span style="color:#f92672">}</span>
-    <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><h2 id="生成器-builder">生成器 Builder</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">AbstractFactory</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">AbstractFactory</span> <span class="nf">createFactory</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">name</span><span class="o">.</span><span class="na">equalsIgnoreCase</span><span class="o">(</span><span class="s">&#34;fast&#34;</span><span class="o">))</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">FastFactory</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">name</span><span class="o">.</span><span class="na">equalsIgnoreCase</span><span class="o">(</span><span class="s">&#34;good&#34;</span><span class="o">))</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">GoodFactory</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Invalid factory name&#34;</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="生成器-builder">生成器 Builder</h2>
 <blockquote>
 <p><em>将一个复杂对象的构建与它的表示分离，使得同样的构建过程可以创建不同的表示</em></p>
 </blockquote>
@@ -335,127 +452,277 @@ word<span style="color:#f92672">.</span><span style="color:#a6e22e">save</span><
 <p>当我们使用Builder的时候，一般来说，是因为创建这个对象的步骤比较多，每个步骤都需要一个零部件，最终组合成一个完整的对象。</p>
 <p>我们仍然以Markdown转HTML为例，因为直接编写一个完整的转换器比较困难，但如果针对类似下面的一行文本：</p>
 <p>很多时候，我们可以简化Builder模式，以链式调用的方式来创建对象。例如，我们经常编写这样的代码：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">StringBuilder builder <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
-builder<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>secure <span style="color:#f92672">?</span> <span style="color:#e6db74">&#34;https://&#34;</span> <span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;http://&#34;</span><span style="color:#f92672">)</span>
-       <span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;www.liaoxuefeng.com&#34;</span><span style="color:#f92672">)</span>
-       <span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;/&#34;</span><span style="color:#f92672">)</span>
-       <span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;?t=0&#34;</span><span style="color:#f92672">);</span>
-String url <span style="color:#f92672">=</span> builder<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">();</span>
-</code></pre></div><p>由于我们经常需要构造URL字符串，可以使用Builder模式编写一个URLBuilder，调用方式如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">String url <span style="color:#f92672">=</span> URLBuilder<span style="color:#f92672">.</span><span style="color:#a6e22e">builder</span><span style="color:#f92672">()</span> <span style="color:#75715e">// 创建Builder
-</span><span style="color:#75715e"></span>        <span style="color:#f92672">.</span><span style="color:#a6e22e">setDomain</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;www.liaoxuefeng.com&#34;</span><span style="color:#f92672">)</span> <span style="color:#75715e">// 设置domain
-</span><span style="color:#75715e"></span>        <span style="color:#f92672">.</span><span style="color:#a6e22e">setScheme</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;https&#34;</span><span style="color:#f92672">)</span> <span style="color:#75715e">// 设置scheme
-</span><span style="color:#75715e"></span>        <span style="color:#f92672">.</span><span style="color:#a6e22e">setPath</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;/&#34;</span><span style="color:#f92672">)</span> <span style="color:#75715e">// 设置路径
-</span><span style="color:#75715e"></span>        <span style="color:#f92672">.</span><span style="color:#a6e22e">setQuery</span><span style="color:#f92672">(</span>Map<span style="color:#f92672">.</span><span style="color:#a6e22e">of</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;a&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;123&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;q&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;K&amp;R&#34;</span><span style="color:#f92672">))</span> <span style="color:#75715e">// 设置query
-</span><span style="color:#75715e"></span>        <span style="color:#f92672">.</span><span style="color:#a6e22e">build</span><span style="color:#f92672">();</span> <span style="color:#75715e">// 完成build
-</span></code></pre></div><p>这个东西很好理解，但是我们应该如何去实现呢？我们就拿上面那个URL Builder来作为例子，下面是实现方法：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">URLBuilder</span> <span style="color:#f92672">{</span>
-	<span style="color:#66d9ef">private</span> String scheme <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;http&#34;</span><span style="color:#f92672">;</span>
-	<span style="color:#66d9ef">private</span> <span style="color:#66d9ef">int</span> port <span style="color:#f92672">=</span> <span style="color:#f92672">-</span>1<span style="color:#f92672">;</span>
-	<span style="color:#66d9ef">private</span> String domain <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
-	<span style="color:#66d9ef">private</span> String path <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;/&#34;</span><span style="color:#f92672">;</span>
-	<span style="color:#66d9ef">private</span> String username <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
-	<span style="color:#66d9ef">private</span> String password <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
-	<span style="color:#66d9ef">private</span> Map<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">,</span> String<span style="color:#f92672">&gt;</span> query <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
-	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> URLBuilder <span style="color:#a6e22e">builder</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> URLBuilder<span style="color:#f92672">();</span>
-	<span style="color:#f92672">}</span>
-	<span style="color:#66d9ef">public</span> String <span style="color:#a6e22e">build</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-		StringBuilder sb <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> StringBuilder<span style="color:#f92672">();</span>
-		sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>scheme<span style="color:#f92672">).</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;://&#34;</span><span style="color:#f92672">);</span>
-		<span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>username <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">&amp;&amp;</span> password <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-			sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>username<span style="color:#f92672">).</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;:&#39;</span><span style="color:#f92672">).</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>password<span style="color:#f92672">).</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;@&#39;</span><span style="color:#f92672">);</span>
-		<span style="color:#f92672">}</span>
-		sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>domain<span style="color:#f92672">);</span>
-		<span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>port <span style="color:#f92672">&gt;=</span> 0<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-			sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;:&#39;</span><span style="color:#f92672">).</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>port<span style="color:#f92672">);</span>
-		<span style="color:#f92672">}</span>
-		sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>path<span style="color:#f92672">);</span>
-		<span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>query <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span>query<span style="color:#f92672">.</span><span style="color:#a6e22e">isEmpty</span><span style="color:#f92672">())</span> <span style="color:#f92672">{</span>
-			query<span style="color:#f92672">.</span><span style="color:#a6e22e">forEach</span><span style="color:#f92672">((</span>k<span style="color:#f92672">,</span> v<span style="color:#f92672">)</span> <span style="color:#f92672">-&gt;</span> <span style="color:#f92672">{</span>
-				sb<span style="color:#f92672">.</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>k<span style="color:#f92672">).</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;=&#39;</span><span style="color:#f92672">).</span><span style="color:#a6e22e">append</span><span style="color:#f92672">(</span>URLEncoder<span style="color:#f92672">.</span><span style="color:#a6e22e">encode</span><span style="color:#f92672">(</span>v<span style="color:#f92672">,</span> StandardCharsets<span style="color:#f92672">.</span><span style="color:#a6e22e">UTF_8</span><span style="color:#f92672">));</span>
-			<span style="color:#f92672">});</span>
-		<span style="color:#f92672">}</span>
-		<span style="color:#66d9ef">return</span> sb<span style="color:#f92672">.</span><span style="color:#a6e22e">toString</span><span style="color:#f92672">();</span>
-	<span style="color:#f92672">}</span>
-	<span style="color:#66d9ef">public</span> URLBuilder <span style="color:#a6e22e">setScheme</span><span style="color:#f92672">(</span>String scheme<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-		<span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">scheme</span> <span style="color:#f92672">=</span> Objects<span style="color:#f92672">.</span><span style="color:#a6e22e">requireNonNull</span><span style="color:#f92672">(</span>scheme<span style="color:#f92672">);</span>
-		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">;</span>
-	<span style="color:#f92672">}</span>
-	<span style="color:#66d9ef">public</span> URLBuilder <span style="color:#a6e22e">setDomain</span><span style="color:#f92672">(</span>String domain<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-		<span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">domain</span> <span style="color:#f92672">=</span> Objects<span style="color:#f92672">.</span><span style="color:#a6e22e">requireNonNull</span><span style="color:#f92672">(</span>domain<span style="color:#f92672">);</span>
-		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">;</span>
-	<span style="color:#f92672">}</span>
-	<span style="color:#66d9ef">public</span> URLBuilder <span style="color:#a6e22e">setPath</span><span style="color:#f92672">(</span>String path<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-		<span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">path</span> <span style="color:#f92672">=</span> Objects<span style="color:#f92672">.</span><span style="color:#a6e22e">requireNonNull</span><span style="color:#f92672">(</span>path<span style="color:#f92672">);</span>
-		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">;</span>
-	<span style="color:#f92672">}</span>
-	<span style="color:#66d9ef">public</span> URLBuilder <span style="color:#a6e22e">setQuery</span><span style="color:#f92672">(</span>Map<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">,</span> String<span style="color:#f92672">&gt;</span> query<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-		<span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">query</span> <span style="color:#f92672">=</span> query<span style="color:#f92672">;</span>
-		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">;</span>
-	<span style="color:#f92672">}</span>
-	<span style="color:#66d9ef">public</span> URLBuilder <span style="color:#a6e22e">setPort</span><span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> port<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-		<span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>port <span style="color:#f92672">&lt;</span> 0 <span style="color:#f92672">||</span> port <span style="color:#f92672">&gt;</span> 65535<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-			<span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> IllegalArgumentException<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Invalid port&#34;</span><span style="color:#f92672">);</span>
-		<span style="color:#f92672">}</span>
-		<span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">port</span> <span style="color:#f92672">=</span> port<span style="color:#f92672">;</span>
-		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">;</span>
-	<span style="color:#f92672">}</span>
-	<span style="color:#66d9ef">public</span> URLBuilder <span style="color:#a6e22e">setCredential</span><span style="color:#f92672">(</span>String username<span style="color:#f92672">,</span> String password<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
-		<span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">username</span> <span style="color:#f92672">=</span> Objects<span style="color:#f92672">.</span><span style="color:#a6e22e">requireNonNull</span><span style="color:#f92672">(</span>username<span style="color:#f92672">);</span>
-		<span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">password</span> <span style="color:#f92672">=</span> Objects<span style="color:#f92672">.</span><span style="color:#a6e22e">requireNonNull</span><span style="color:#f92672">(</span>password<span style="color:#f92672">);</span>
-		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">;</span>
-	<span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><h2 id="原型-prototype">原型 Prototype</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="n">StringBuilder</span> <span class="n">builder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringBuilder</span><span class="o">();</span>
+<span class="n">builder</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">secure</span> <span class="o">?</span> <span class="s">&#34;https://&#34;</span> <span class="o">:</span> <span class="s">&#34;http://&#34;</span><span class="o">)</span>
+       <span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="s">&#34;www.liaoxuefeng.com&#34;</span><span class="o">)</span>
+       <span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="s">&#34;/&#34;</span><span class="o">)</span>
+       <span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="s">&#34;?t=0&#34;</span><span class="o">);</span>
+<span class="n">String</span> <span class="n">url</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>由于我们经常需要构造URL字符串，可以使用Builder模式编写一个URLBuilder，调用方式如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="n">String</span> <span class="n">url</span> <span class="o">=</span> <span class="n">URLBuilder</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span> <span class="c1">// 创建Builder
+</span><span class="c1"></span>        <span class="o">.</span><span class="na">setDomain</span><span class="o">(</span><span class="s">&#34;www.liaoxuefeng.com&#34;</span><span class="o">)</span> <span class="c1">// 设置domain
+</span><span class="c1"></span>        <span class="o">.</span><span class="na">setScheme</span><span class="o">(</span><span class="s">&#34;https&#34;</span><span class="o">)</span> <span class="c1">// 设置scheme
+</span><span class="c1"></span>        <span class="o">.</span><span class="na">setPath</span><span class="o">(</span><span class="s">&#34;/&#34;</span><span class="o">)</span> <span class="c1">// 设置路径
+</span><span class="c1"></span>        <span class="o">.</span><span class="na">setQuery</span><span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="s">&#34;a&#34;</span><span class="o">,</span> <span class="s">&#34;123&#34;</span><span class="o">,</span> <span class="s">&#34;q&#34;</span><span class="o">,</span> <span class="s">&#34;K&amp;R&#34;</span><span class="o">))</span> <span class="c1">// 设置query
+</span><span class="c1"></span>        <span class="o">.</span><span class="na">build</span><span class="o">();</span> <span class="c1">// 完成build
+</span></code></pre></td></tr></table>
+</div>
+</div><p>这个东西很好理解，但是我们应该如何去实现呢？我们就拿上面那个URL Builder来作为例子，下面是实现方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">URLBuilder</span> <span class="o">{</span>
+	<span class="kd">private</span> <span class="n">String</span> <span class="n">scheme</span> <span class="o">=</span> <span class="s">&#34;http&#34;</span><span class="o">;</span>
+	<span class="kd">private</span> <span class="kt">int</span> <span class="n">port</span> <span class="o">=</span> <span class="o">-</span><span class="n">1</span><span class="o">;</span>
+	<span class="kd">private</span> <span class="n">String</span> <span class="n">domain</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+	<span class="kd">private</span> <span class="n">String</span> <span class="n">path</span> <span class="o">=</span> <span class="s">&#34;/&#34;</span><span class="o">;</span>
+	<span class="kd">private</span> <span class="n">String</span> <span class="n">username</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+	<span class="kd">private</span> <span class="n">String</span> <span class="n">password</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+	<span class="kd">private</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">query</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+	<span class="kd">public</span> <span class="kd">static</span> <span class="n">URLBuilder</span> <span class="nf">builder</span><span class="o">()</span> <span class="o">{</span>
+		<span class="k">return</span> <span class="k">new</span> <span class="n">URLBuilder</span><span class="o">();</span>
+	<span class="o">}</span>
+	<span class="kd">public</span> <span class="n">String</span> <span class="nf">build</span><span class="o">()</span> <span class="o">{</span>
+		<span class="n">StringBuilder</span> <span class="n">sb</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringBuilder</span><span class="o">();</span>
+		<span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">scheme</span><span class="o">).</span><span class="na">append</span><span class="o">(</span><span class="s">&#34;://&#34;</span><span class="o">);</span>
+		<span class="k">if</span> <span class="o">(</span><span class="n">username</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">password</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+			<span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">username</span><span class="o">).</span><span class="na">append</span><span class="o">(</span><span class="sc">&#39;:&#39;</span><span class="o">).</span><span class="na">append</span><span class="o">(</span><span class="n">password</span><span class="o">).</span><span class="na">append</span><span class="o">(</span><span class="sc">&#39;@&#39;</span><span class="o">);</span>
+		<span class="o">}</span>
+		<span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">domain</span><span class="o">);</span>
+		<span class="k">if</span> <span class="o">(</span><span class="n">port</span> <span class="o">&gt;=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+			<span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="sc">&#39;:&#39;</span><span class="o">).</span><span class="na">append</span><span class="o">(</span><span class="n">port</span><span class="o">);</span>
+		<span class="o">}</span>
+		<span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">path</span><span class="o">);</span>
+		<span class="k">if</span> <span class="o">(</span><span class="n">query</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">query</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">())</span> <span class="o">{</span>
+			<span class="n">query</span><span class="o">.</span><span class="na">forEach</span><span class="o">((</span><span class="n">k</span><span class="o">,</span> <span class="n">v</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="o">{</span>
+				<span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">k</span><span class="o">).</span><span class="na">append</span><span class="o">(</span><span class="sc">&#39;=&#39;</span><span class="o">).</span><span class="na">append</span><span class="o">(</span><span class="n">URLEncoder</span><span class="o">.</span><span class="na">encode</span><span class="o">(</span><span class="n">v</span><span class="o">,</span> <span class="n">StandardCharsets</span><span class="o">.</span><span class="na">UTF_8</span><span class="o">));</span>
+			<span class="o">});</span>
+		<span class="o">}</span>
+		<span class="k">return</span> <span class="n">sb</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+	<span class="o">}</span>
+	<span class="kd">public</span> <span class="n">URLBuilder</span> <span class="nf">setScheme</span><span class="o">(</span><span class="n">String</span> <span class="n">scheme</span><span class="o">)</span> <span class="o">{</span>
+		<span class="k">this</span><span class="o">.</span><span class="na">scheme</span> <span class="o">=</span> <span class="n">Objects</span><span class="o">.</span><span class="na">requireNonNull</span><span class="o">(</span><span class="n">scheme</span><span class="o">);</span>
+		<span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+	<span class="o">}</span>
+	<span class="kd">public</span> <span class="n">URLBuilder</span> <span class="nf">setDomain</span><span class="o">(</span><span class="n">String</span> <span class="n">domain</span><span class="o">)</span> <span class="o">{</span>
+		<span class="k">this</span><span class="o">.</span><span class="na">domain</span> <span class="o">=</span> <span class="n">Objects</span><span class="o">.</span><span class="na">requireNonNull</span><span class="o">(</span><span class="n">domain</span><span class="o">);</span>
+		<span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+	<span class="o">}</span>
+	<span class="kd">public</span> <span class="n">URLBuilder</span> <span class="nf">setPath</span><span class="o">(</span><span class="n">String</span> <span class="n">path</span><span class="o">)</span> <span class="o">{</span>
+		<span class="k">this</span><span class="o">.</span><span class="na">path</span> <span class="o">=</span> <span class="n">Objects</span><span class="o">.</span><span class="na">requireNonNull</span><span class="o">(</span><span class="n">path</span><span class="o">);</span>
+		<span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+	<span class="o">}</span>
+	<span class="kd">public</span> <span class="n">URLBuilder</span> <span class="nf">setQuery</span><span class="o">(</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">query</span><span class="o">)</span> <span class="o">{</span>
+		<span class="k">this</span><span class="o">.</span><span class="na">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">;</span>
+		<span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+	<span class="o">}</span>
+	<span class="kd">public</span> <span class="n">URLBuilder</span> <span class="nf">setPort</span><span class="o">(</span><span class="kt">int</span> <span class="n">port</span><span class="o">)</span> <span class="o">{</span>
+		<span class="k">if</span> <span class="o">(</span><span class="n">port</span> <span class="o">&lt;</span> <span class="n">0</span> <span class="o">||</span> <span class="n">port</span> <span class="o">&gt;</span> <span class="n">65535</span><span class="o">)</span> <span class="o">{</span>
+			<span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Invalid port&#34;</span><span class="o">);</span>
+		<span class="o">}</span>
+		<span class="k">this</span><span class="o">.</span><span class="na">port</span> <span class="o">=</span> <span class="n">port</span><span class="o">;</span>
+		<span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+	<span class="o">}</span>
+	<span class="kd">public</span> <span class="n">URLBuilder</span> <span class="nf">setCredential</span><span class="o">(</span><span class="n">String</span> <span class="n">username</span><span class="o">,</span> <span class="n">String</span> <span class="n">password</span><span class="o">)</span> <span class="o">{</span>
+		<span class="k">this</span><span class="o">.</span><span class="na">username</span> <span class="o">=</span> <span class="n">Objects</span><span class="o">.</span><span class="na">requireNonNull</span><span class="o">(</span><span class="n">username</span><span class="o">);</span>
+		<span class="k">this</span><span class="o">.</span><span class="na">password</span> <span class="o">=</span> <span class="n">Objects</span><span class="o">.</span><span class="na">requireNonNull</span><span class="o">(</span><span class="n">password</span><span class="o">);</span>
+		<span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="原型-prototype">原型 Prototype</h2>
 <blockquote>
 <p>用原型实例指定创建对象的种类，并且通过拷贝这些原型创建新的对象。</p>
 </blockquote>
 <p>原型模式，即Prototype，是指创建新对象的时候，根据现有的一个原型来创建。</p>
 <p>我们举个例子：如果我们已经有了一个<code>String[]</code>数组，想再创建一个一模一样的<code>String[]</code>数组，怎么写？</p>
 <p>实际上创建过程很简单，就是把现有数组的元素复制到新数组。如果我们把这个创建过程封装一下，就成了原型模式。用代码实现如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 原型:
-</span><span style="color:#75715e"></span>String<span style="color:#f92672">[]</span> original <span style="color:#f92672">=</span> <span style="color:#f92672">{</span> <span style="color:#e6db74">&#34;Apple&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;Pear&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;Banana&#34;</span> <span style="color:#f92672">};</span>
-<span style="color:#75715e">// 新对象:
-</span><span style="color:#75715e"></span>String<span style="color:#f92672">[]</span> copy <span style="color:#f92672">=</span> Arrays<span style="color:#f92672">.</span><span style="color:#a6e22e">copyOf</span><span style="color:#f92672">(</span>original<span style="color:#f92672">,</span> original<span style="color:#f92672">.</span><span style="color:#a6e22e">length</span><span style="color:#f92672">);</span>
-</code></pre></div><p>普通类如何拷贝？</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Student</span> <span style="color:#66d9ef">implements</span> Cloneable <span style="color:#f92672">{</span>
-    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">int</span> id<span style="color:#f92672">;</span>
-    <span style="color:#66d9ef">private</span> String name<span style="color:#f92672">;</span>
-    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">int</span> score<span style="color:#f92672">;</span>
-    <span style="color:#75715e">// 复制新对象并返回:
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> Object <span style="color:#a6e22e">clone</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-        Student std <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Student<span style="color:#f92672">();</span>
-        std<span style="color:#f92672">.</span><span style="color:#a6e22e">id</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">id</span><span style="color:#f92672">;</span>
-        std<span style="color:#f92672">.</span><span style="color:#a6e22e">name</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">name</span><span style="color:#f92672">;</span>
-        std<span style="color:#f92672">.</span><span style="color:#a6e22e">score</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">score</span><span style="color:#f92672">;</span>
-        <span style="color:#66d9ef">return</span> std<span style="color:#f92672">;</span>
-    <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><p>使用的时候，因为<code>clone()</code>的方法签名是定义在<code>Object</code>中，返回类型也是<code>Object</code>，所以要强制转型，比较麻烦：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">Student std1 <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Student<span style="color:#f92672">();</span>
-std1<span style="color:#f92672">.</span><span style="color:#a6e22e">setId</span><span style="color:#f92672">(</span>123<span style="color:#f92672">);</span>
-std1<span style="color:#f92672">.</span><span style="color:#a6e22e">setName</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;Bob&#34;</span><span style="color:#f92672">);</span>
-std1<span style="color:#f92672">.</span><span style="color:#a6e22e">setScore</span><span style="color:#f92672">(</span>88<span style="color:#f92672">);</span>
-<span style="color:#75715e">// 复制新对象:
-</span><span style="color:#75715e"></span>Student std2 <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>Student<span style="color:#f92672">)</span> std1<span style="color:#f92672">.</span><span style="color:#a6e22e">clone</span><span style="color:#f92672">();</span>
-System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>std1<span style="color:#f92672">);</span>
-System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>std2<span style="color:#f92672">);</span>
-System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span><span style="color:#f92672">.</span><span style="color:#a6e22e">println</span><span style="color:#f92672">(</span>std1 <span style="color:#f92672">==</span> std2<span style="color:#f92672">);</span> <span style="color:#75715e">// false
-</span></code></pre></div><p>实际上，使用原型模式更好的方式是定义一个<code>copy()</code>方法，返回明确的类型：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Student</span> <span style="color:#f92672">{</span>
-    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">int</span> id<span style="color:#f92672">;</span>
-    <span style="color:#66d9ef">private</span> String name<span style="color:#f92672">;</span>
-    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">int</span> score<span style="color:#f92672">;</span>
-    <span style="color:#66d9ef">public</span> Student <span style="color:#a6e22e">copy</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-        Student std <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Student<span style="color:#f92672">();</span>
-        std<span style="color:#f92672">.</span><span style="color:#a6e22e">id</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">id</span><span style="color:#f92672">;</span>
-        std<span style="color:#f92672">.</span><span style="color:#a6e22e">name</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">name</span><span style="color:#f92672">;</span>
-        std<span style="color:#f92672">.</span><span style="color:#a6e22e">score</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">score</span><span style="color:#f92672">;</span>
-        <span style="color:#66d9ef">return</span> std<span style="color:#f92672">;</span>
-    <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><p>原型模式应用不是很广泛，因为很多实例会持有类似文件、Socket这样的资源，而这些资源是无法复制给另一个对象共享的，只有存储简单类型的“值”对象可以复制。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="c1">// 原型:
+</span><span class="c1"></span><span class="n">String</span><span class="o">[]</span> <span class="n">original</span> <span class="o">=</span> <span class="o">{</span> <span class="s">&#34;Apple&#34;</span><span class="o">,</span> <span class="s">&#34;Pear&#34;</span><span class="o">,</span> <span class="s">&#34;Banana&#34;</span> <span class="o">};</span>
+<span class="c1">// 新对象:
+</span><span class="c1"></span><span class="n">String</span><span class="o">[]</span> <span class="n">copy</span> <span class="o">=</span> <span class="n">Arrays</span><span class="o">.</span><span class="na">copyOf</span><span class="o">(</span><span class="n">original</span><span class="o">,</span> <span class="n">original</span><span class="o">.</span><span class="na">length</span><span class="o">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>普通类如何拷贝？</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Student</span> <span class="kd">implements</span> <span class="n">Cloneable</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">id</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">score</span><span class="o">;</span>
+    <span class="c1">// 复制新对象并返回:
+</span><span class="c1"></span>    <span class="kd">public</span> <span class="n">Object</span> <span class="nf">clone</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">Student</span> <span class="n">std</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Student</span><span class="o">();</span>
+        <span class="n">std</span><span class="o">.</span><span class="na">id</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">id</span><span class="o">;</span>
+        <span class="n">std</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">name</span><span class="o">;</span>
+        <span class="n">std</span><span class="o">.</span><span class="na">score</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">score</span><span class="o">;</span>
+        <span class="k">return</span> <span class="n">std</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>使用的时候，因为<code>clone()</code>的方法签名是定义在<code>Object</code>中，返回类型也是<code>Object</code>，所以要强制转型，比较麻烦：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="n">Student</span> <span class="n">std1</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Student</span><span class="o">();</span>
+<span class="n">std1</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="n">123</span><span class="o">);</span>
+<span class="n">std1</span><span class="o">.</span><span class="na">setName</span><span class="o">(</span><span class="s">&#34;Bob&#34;</span><span class="o">);</span>
+<span class="n">std1</span><span class="o">.</span><span class="na">setScore</span><span class="o">(</span><span class="n">88</span><span class="o">);</span>
+<span class="c1">// 复制新对象:
+</span><span class="c1"></span><span class="n">Student</span> <span class="n">std2</span> <span class="o">=</span> <span class="o">(</span><span class="n">Student</span><span class="o">)</span> <span class="n">std1</span><span class="o">.</span><span class="na">clone</span><span class="o">();</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">std1</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">std2</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">std1</span> <span class="o">==</span> <span class="n">std2</span><span class="o">);</span> <span class="c1">// false
+</span></code></pre></td></tr></table>
+</div>
+</div><p>实际上，使用原型模式更好的方式是定义一个<code>copy()</code>方法，返回明确的类型：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Student</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">id</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">score</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="n">Student</span> <span class="nf">copy</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">Student</span> <span class="n">std</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Student</span><span class="o">();</span>
+        <span class="n">std</span><span class="o">.</span><span class="na">id</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">id</span><span class="o">;</span>
+        <span class="n">std</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">name</span><span class="o">;</span>
+        <span class="n">std</span><span class="o">.</span><span class="na">score</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">score</span><span class="o">;</span>
+        <span class="k">return</span> <span class="n">std</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>原型模式应用不是很广泛，因为很多实例会持有类似文件、Socket这样的资源，而这些资源是无法复制给另一个对象共享的，只有存储简单类型的“值”对象可以复制。</p>
 <h2 id="单例-singleton">单例 Singleton</h2>
 <p><a href="https://www.liaoxuefeng.com/wiki/1252599548343744/1281319214514210">单例 - 廖雪峰的官方网站 (liaoxuefeng.com)</a></p>
 <blockquote>
@@ -463,48 +730,109 @@ System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span>
 </blockquote>
 <p>单例模式（Singleton）的目的是为了保证在一个进程中，某个类有且仅有一个实例。</p>
 <p>因为这个类只有一个实例，因此，自然不能让调用方使用<code>new Xyz()</code>来创建实例了。所以，单例的构造方法必须是<code>private</code>，这样就防止了调用方自己创建实例，但是在类的内部，是可以用一个静态字段来引用唯一创建的实例的：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Singleton</span> <span style="color:#f92672">{</span>
-    <span style="color:#75715e">// 静态字段引用唯一实例:
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> Singleton INSTANCE <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Singleton<span style="color:#f92672">();</span>
-    <span style="color:#75715e">// private构造方法保证外部无法实例化:
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">Singleton</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-    <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><p>那么问题来了，外部调用方如何获得这个唯一实例？答案是提供一个静态方法，直接返回实例：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Singleton</span> <span style="color:#f92672">{</span>
-    <span style="color:#75715e">// 静态字段引用唯一实例:
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> Singleton INSTANCE <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Singleton<span style="color:#f92672">();</span>
-    <span style="color:#75715e">// 通过静态方法返回实例:
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> Singleton <span style="color:#a6e22e">getInstance</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-        <span style="color:#66d9ef">return</span> INSTANCE<span style="color:#f92672">;</span>
-    <span style="color:#f92672">}</span>
-    <span style="color:#75715e">// private构造方法保证外部无法实例化:
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">Singleton</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-    <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><p>或者直接把<code>static</code>变量暴露给外部：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Singleton</span> <span style="color:#f92672">{</span>
-    <span style="color:#75715e">// 静态字段引用唯一实例:
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> Singleton INSTANCE <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Singleton<span style="color:#f92672">();</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Singleton</span> <span class="o">{</span>
+    <span class="c1">// 静态字段引用唯一实例:
+</span><span class="c1"></span>    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">Singleton</span> <span class="n">INSTANCE</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Singleton</span><span class="o">();</span>
+    <span class="c1">// private构造方法保证外部无法实例化:
+</span><span class="c1"></span>    <span class="kd">private</span> <span class="nf">Singleton</span><span class="o">()</span> <span class="o">{</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>那么问题来了，外部调用方如何获得这个唯一实例？答案是提供一个静态方法，直接返回实例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Singleton</span> <span class="o">{</span>
+    <span class="c1">// 静态字段引用唯一实例:
+</span><span class="c1"></span>    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">Singleton</span> <span class="n">INSTANCE</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Singleton</span><span class="o">();</span>
+    <span class="c1">// 通过静态方法返回实例:
+</span><span class="c1"></span>    <span class="kd">public</span> <span class="kd">static</span> <span class="n">Singleton</span> <span class="nf">getInstance</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">INSTANCE</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="c1">// private构造方法保证外部无法实例化:
+</span><span class="c1"></span>    <span class="kd">private</span> <span class="nf">Singleton</span><span class="o">()</span> <span class="o">{</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>或者直接把<code>static</code>变量暴露给外部：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Singleton</span> <span class="o">{</span>
+    <span class="c1">// 静态字段引用唯一实例:
+</span><span class="c1"></span>    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">Singleton</span> <span class="n">INSTANCE</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Singleton</span><span class="o">();</span>
 
-    <span style="color:#75715e">// private构造方法保证外部无法实例化:
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">private</span> <span style="color:#a6e22e">Singleton</span><span style="color:#f92672">()</span> <span style="color:#f92672">{</span>
-    <span style="color:#f92672">}</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><p>所以，单例模式的实现方式很简单：</p>
+    <span class="c1">// private构造方法保证外部无法实例化:
+</span><span class="c1"></span>    <span class="kd">private</span> <span class="nf">Singleton</span><span class="o">()</span> <span class="o">{</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>所以，单例模式的实现方式很简单：</p>
 <ol>
 <li>只有<code>private</code>构造方法，确保外部无法实例化；</li>
 <li>通过<code>private static</code>变量持有唯一实例，保证全局唯一性；</li>
 <li>通过<code>public static</code>方法返回此唯一实例，使外部调用方能获取到实例。</li>
 </ol>
 <p>Java标准库有一些类就是单例，例如<code>Runtime</code>这个类：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">Runtime runtime <span style="color:#f92672">=</span> Runtime<span style="color:#f92672">.</span><span style="color:#a6e22e">getRuntime</span><span style="color:#f92672">();</span>
-</code></pre></div><p>那我们什么时候应该用Singleton呢？实际上，很多程序，尤其是Web程序，大部分服务类都应该被视作Singleton，如果全部按Singleton的写法写，会非常麻烦，所以，通常是通过约定让框架（例如Spring）来实例化这些类，保证只有一个实例，调用方自觉通过框架获取实例而不是<code>new</code>操作符：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#a6e22e">@Component</span> <span style="color:#75715e">// 表示一个单例组件
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyService</span> <span style="color:#f92672">{</span>
-    <span style="color:#f92672">...</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><p>因此，除非确有必要，否则Singleton模式一般以“约定”为主，不会刻意实现它。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="n">Runtime</span> <span class="n">runtime</span> <span class="o">=</span> <span class="n">Runtime</span><span class="o">.</span><span class="na">getRuntime</span><span class="o">();</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>那我们什么时候应该用Singleton呢？实际上，很多程序，尤其是Web程序，大部分服务类都应该被视作Singleton，如果全部按Singleton的写法写，会非常麻烦，所以，通常是通过约定让框架（例如Spring）来实例化这些类，保证只有一个实例，调用方自觉通过框架获取实例而不是<code>new</code>操作符：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="nd">@Component</span> <span class="c1">// 表示一个单例组件
+</span><span class="c1"></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyService</span> <span class="o">{</span>
+    <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>因此，除非确有必要，否则Singleton模式一般以“约定”为主，不会刻意实现它。</p>
 <p><strong>小结</strong></p>
 <p>Singleton模式是为了保证一个程序的运行期间，某个类有且只有一个全局唯一实例；</p>
 <p>Singleton模式既可以严格实现，也可以以约定的方式把普通类视作单例。</p>
@@ -635,7 +963,7 @@ System<span style="color:#f92672">.</span><span style="color:#a6e22e">out</span>
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>

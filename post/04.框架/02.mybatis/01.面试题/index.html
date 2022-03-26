@@ -50,7 +50,7 @@
 <meta itemprop="description" content="因为没找到好的项目结构，所以这里就先说面试题吧 同学的一次面试 mybatis的优缺点 与JDBC相比，减少了50%以上的代码量 MyBatis是最">
 <meta itemprop="datePublished" content="2021-03-23T21:00:12&#43;00:00" />
 <meta itemprop="dateModified" content="2021-03-23T21:00:12&#43;00:00" />
-<meta itemprop="wordCount" content="5512">
+<meta itemprop="wordCount" content="5528">
 
 
 
@@ -191,7 +191,7 @@ input.PC_MARK1:focus{
             <a href="/categories/%E6%A1%86%E6%9E%B6/"> 框架 </a>
             <a href="/categories/mybatis/"> mybatis </a>
             </div>
-          <span class="more-meta"> 约 5512 字 </span>
+          <span class="more-meta"> 约 5528 字 </span>
           <span class="more-meta"> 预计阅读 12 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -280,24 +280,52 @@ input.PC_MARK1:focus{
 <p>Dao 接口，就是人们常说的 <code>Mapper</code>接口，接口的全限名，就是映射文件中的 namespace 的值，接口的方法名，就是映射文件中<code>MappedStatement</code>的 id 值，接口方法内的参数，就是传递给 sql 的参数。<code>Mapper</code>接口是没有实现类的，当调用接口方法时，接口全限名+方法名拼接字符串作为 key 值，可唯一定位一个<code>MappedStatement</code>，举例：<code>com.mybatis3.mappers.StudentDao.findStudentById</code>，可以唯一找到 namespace 为<code>com.mybatis3.mappers.StudentDao</code>下面<code>id = findStudentById</code>的<code>MappedStatement</code>。在 MyBatis 中，每一个<code>&lt;select&gt;</code>、<code>&lt;insert&gt;</code>、<code>&lt;update&gt;</code>、<code>&lt;delete&gt;</code>标签，都会被解析为一个<code>MappedStatement</code>对象。</p>
 <p>Dao 接口里的方法可以重载，但是Mybatis的XML里面的ID不允许重复。</p>
 <p>Mybatis版本3.3.0，亲测如下：</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">/**
-</span><span style="color:#75715e"> * Mapper接口里面方法重载
-</span><span style="color:#75715e"> */</span>
-<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">StuMapper</span> <span style="color:#f92672">{</span>
-	List<span style="color:#f92672">&lt;</span>Student<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">getAllStu</span><span style="color:#f92672">();</span>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="cm">/**
+</span><span class="cm"> * Mapper接口里面方法重载
+</span><span class="cm"> */</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">StuMapper</span> <span class="o">{</span>
+	<span class="n">List</span><span class="o">&lt;</span><span class="n">Student</span><span class="o">&gt;</span> <span class="nf">getAllStu</span><span class="o">();</span>
    
-	List<span style="color:#f92672">&lt;</span>Student<span style="color:#f92672">&gt;</span> <span style="color:#a6e22e">getAllStu</span><span style="color:#f92672">(</span><span style="color:#a6e22e">@Param</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;id&#34;</span><span style="color:#f92672">)</span> Integer id<span style="color:#f92672">);</span>
-<span style="color:#f92672">}</span>
-</code></pre></div><p>然后在 <code>StuMapper.xml</code> 中利用Mybatis的动态sql就可以实现。</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#f92672">&lt;</span>select id<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;getAllStu&#34;</span> resultType<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;com.pojo.Student&#34;</span><span style="color:#f92672">&gt;</span>
- 		select <span style="color:#f92672">*</span> from student
-        <span style="color:#f92672">&lt;</span>where<span style="color:#f92672">&gt;</span>
-        <span style="color:#f92672">&lt;</span><span style="color:#66d9ef">if</span> test<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;id != null&#34;</span><span style="color:#f92672">&gt;</span>
-            id <span style="color:#f92672">=</span> <span style="color:#960050;background-color:#1e0010">#</span><span style="color:#f92672">{</span>id<span style="color:#f92672">}</span>
-    	<span style="color:#f92672">&lt;/</span><span style="color:#66d9ef">if</span><span style="color:#f92672">&gt;</span>
-        <span style="color:#f92672">&lt;/</span>where<span style="color:#f92672">&gt;</span>
- <span style="color:#f92672">&lt;/</span>select<span style="color:#f92672">&gt;</span>
-</code></pre></div><p>能正常运行，并能得到相应的结果，这样就实现了在Dao接口中写重载方法。</p>
+	<span class="n">List</span><span class="o">&lt;</span><span class="n">Student</span><span class="o">&gt;</span> <span class="nf">getAllStu</span><span class="o">(</span><span class="nd">@Param</span><span class="o">(</span><span class="s">&#34;id&#34;</span><span class="o">)</span> <span class="n">Integer</span> <span class="n">id</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>然后在 <code>StuMapper.xml</code> 中利用Mybatis的动态sql就可以实现。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-java" data-lang="java"><span class="o">&lt;</span><span class="n">select</span> <span class="n">id</span><span class="o">=</span><span class="s">&#34;getAllStu&#34;</span> <span class="n">resultType</span><span class="o">=</span><span class="s">&#34;com.pojo.Student&#34;</span><span class="o">&gt;</span>
+ 		<span class="n">select</span> <span class="o">*</span> <span class="n">from</span> <span class="n">student</span>
+        <span class="o">&lt;</span><span class="n">where</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="k">if</span> <span class="n">test</span><span class="o">=</span><span class="s">&#34;id != null&#34;</span><span class="o">&gt;</span>
+            <span class="n">id</span> <span class="o">=</span> <span class="err">#</span><span class="o">{</span><span class="n">id</span><span class="o">}</span>
+    	<span class="o">&lt;/</span><span class="k">if</span><span class="o">&gt;</span>
+        <span class="o">&lt;/</span><span class="n">where</span><span class="o">&gt;</span>
+ <span class="o">&lt;/</span><span class="n">select</span><span class="o">&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>能正常运行，并能得到相应的结果，这样就实现了在Dao接口中写重载方法。</p>
 <p><strong>Mybatis 的 Dao 接口可以有多个重载方法，但是多个接口对应的映射必须只有一个，否则启动会报错。</strong></p>
 <p>Dao 接口的工作原理是 JDK 动态代理，MyBatis 运行时会使用 JDK 动态代理为 Dao 接口生成代理 proxy 对象，代理对象 proxy 会拦截接口方法，转而执行<code>MappedStatement</code>所代表的 sql，然后将 sql 执行结果返回。</p>
 <h3 id="mybatis-是如何进行分页的分页插件的原理是什么">MyBatis 是如何进行分页的？分页插件的原理是什么？</h3>
@@ -469,7 +497,7 @@ input.PC_MARK1:focus{
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
