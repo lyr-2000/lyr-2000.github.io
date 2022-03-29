@@ -51,7 +51,7 @@
 <meta itemprop="description" content="rust语法 ​ 安装rust遇到的问题 1 2 3 rustup toolchain install stable-x86_64-pc-windows-gnu rustup default stable-x86_64-pc-windows-gnu shadowing特性 声明相同名字的变量，前面的变量会被隐藏 1 2 3 4 5 6 7 8 9 10 11 12">
 <meta itemprop="datePublished" content="2022-03-16T17:46:48&#43;08:00" />
 <meta itemprop="dateModified" content="2022-03-16T17:46:48&#43;08:00" />
-<meta itemprop="wordCount" content="552">
+<meta itemprop="wordCount" content="2621">
 <meta itemprop="image" content="https://tva2.sinaimg.cn/large/0072Vf1pgy1foxkibab1zj31hc0u0dy7.jpg">
 
 
@@ -197,8 +197,8 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/rust/"> rust </a>
             </div>
-          <span class="more-meta"> 约 552 字 </span>
-          <span class="more-meta"> 预计阅读 2 分钟 </span>
+          <span class="more-meta"> 约 2621 字 </span>
+          <span class="more-meta"> 预计阅读 6 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -216,6 +216,16 @@ input.PC_MARK1:focus{
             <li><a href="#数据类型">数据类型</a></li>
             <li><a href="#字符类型">字符类型</a></li>
             <li><a href="#智能指针">智能指针</a></li>
+          </ul>
+        </li>
+        <li><a href="#reference-counting">reference counting</a></li>
+        <li><a href="#理解-boxrcrefcell">理解 Box、Rc、RefCell</a></li>
+        <li><a href="#enum-数据结构">enum 数据结构</a></li>
+        <li><a href="#option-数据结构">Option 数据结构</a>
+          <ul>
+            <li><a href="#模式匹配">模式匹配</a></li>
+            <li><a href="#unwarp方法">unwarp方法</a></li>
+            <li><a href="#所有权">所有权</a></li>
           </ul>
         </li>
       </ul>
@@ -503,6 +513,400 @@ rustup default stable-x86_64-pc-windows-gnu
 </span><span class="w">
 </span><span class="w">
 </span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p><a href="https://www.bilibili.com/video/BV1hp4y1k7SV?p=90">rc学习视频</a></p>
+<p><img src="https://pic1.zhimg.com/80/v2-03aa976f85a5e6400f64fb2f3677c6b8_720w.jpg" alt="https://pic1.zhimg.com/80/v2-03aa976f85a5e6400f64fb2f3677c6b8_720w.jpg"></p>
+<h2 id="reference-counting">reference counting</h2>
+<p><code>Rc&lt;T&gt;</code>支持多重所有权，它名称中的Rc是Referencecounting（引用计数）的缩写。对于了解垃圾回收概念的同学理解起来会更顺畅一些，<code>Rc&lt;T&gt;</code>类型会在内部维护一个引用次数计数器，用于确认这个值是否仍在使用。如果对一个值的引用次数为零，那么就意味着这个值可以被安全地清理掉，而不会触发引用失效的问题：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">rc</span>::<span class="n">Rc</span><span class="p">;</span><span class="w"> </span><span class="c1">// 引入Rc
+</span><span class="c1"></span><span class="cp">#[derive(Debug)]</span><span class="w">
+</span><span class="w"></span><span class="k">enum</span> <span class="nc">List</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">  </span><span class="n">Cons</span><span class="p">(</span><span class="kt">i32</span><span class="p">,</span><span class="w"> </span><span class="n">Rc</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&gt;</span><span class="p">),</span><span class="w"> </span><span class="c1">// 替换Box为Rc
+</span><span class="c1"></span><span class="w">  </span><span class="n">Nil</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="c1">// 创建Rc实例
+</span><span class="c1"></span><span class="kd">let</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rc</span>::<span class="n">new</span><span class="p">(</span><span class="n">List</span>::<span class="n">Cons</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">Rc</span>::<span class="n">new</span><span class="p">(</span><span class="n">List</span>::<span class="n">Cons</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">Rc</span>::<span class="n">new</span><span class="p">(</span><span class="n">List</span>::<span class="n">Nil</span><span class="p">)</span><span class="w">
+</span><span class="w">  </span><span class="p">))</span><span class="w">
+</span><span class="w"></span><span class="p">));</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="c1">// 这里的Rc::clone只是增加的引用计数，虽然使用a.clone也可以实现，但是数据会被深拷贝
+</span><span class="c1"></span><span class="kd">let</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">List</span>::<span class="n">Cons</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">Rc</span>::<span class="n">clone</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">));</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="c1">// 再次增加引用次数
+</span><span class="c1"></span><span class="kd">let</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">List</span>::<span class="n">Cons</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">Rc</span>::<span class="n">clone</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">));</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{:?}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">);</span><span class="w"> </span><span class="c1">// Cons(3, Cons(5, Cons(10, Nil)))
+</span><span class="c1"></span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{:?}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">);</span><span class="w"> </span><span class="c1">// Cons(4, Cons(5, Cons(10, Nil)))
+</span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="kd">let</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Rc</span>::<span class="n">new</span><span class="p">(</span><span class="n">List</span>::<span class="n">Cons</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">Rc</span>::<span class="n">new</span><span class="p">(</span><span class="n">List</span>::<span class="n">Cons</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">Rc</span>::<span class="n">new</span><span class="p">(</span><span class="n">List</span>::<span class="n">Nil</span><span class="p">)</span><span class="w">
+</span><span class="w">  </span><span class="p">))</span><span class="w">
+</span><span class="w"></span><span class="p">));</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;创建a之后的引用计数：{}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">Rc</span>::<span class="n">strong_count</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">));</span><span class="w">
+</span><span class="w"></span><span class="c1">// 创建a之后的引用计数：1
+</span><span class="c1"></span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">List</span>::<span class="n">Cons</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">Rc</span>::<span class="n">clone</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">));</span><span class="w">
+</span><span class="w"></span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;创建b之后的引用计数：{}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">Rc</span>::<span class="n">strong_count</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">));</span><span class="w">
+</span><span class="w"></span><span class="c1">// 创建b之后的引用计数：2
+</span><span class="c1"></span><span class="w">
+</span><span class="w"></span><span class="c1">// 进入新的作用域
+</span><span class="c1"></span><span class="p">{</span><span class="w">
+</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">List</span>::<span class="n">Cons</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Rc</span>::<span class="n">clone</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">));</span><span class="w">
+</span><span class="w"> </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;创建c之后的引用计数：{}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">Rc</span>::<span class="n">strong_count</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">));</span><span class="w">
+</span><span class="w">  </span><span class="c1">// 创建c之后的引用计数：3
+</span><span class="c1"></span><span class="p">}</span><span class="w"> </span><span class="c1">// c离开作用域时自动将引用计数减1。
+</span><span class="c1"></span><span class="w">
+</span><span class="w"></span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;销毁c之后的引用计数：{}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">Rc</span>::<span class="n">strong_count</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">));</span><span class="w">
+</span><span class="w"></span><span class="c1">// 销毁c之后的引用计数：2
+</span></code></pre></td></tr></table>
+</div>
+</div><h2 id="理解-boxrcrefcell">理解 Box、Rc、RefCell</h2>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_03_29_00_56_22image-20220329005622017.png" alt="image-20220329005622017"></p>
+<p><a href="https://www.bilibili.com/video/BV1hp4y1k7SV?p=91&amp;spm_id_from=pageDriver">参考视频第11分钟</a></p>
+<h2 id="enum-数据结构">enum 数据结构</h2>
+<p>看代码，rust 不像java，数据可以直接附加到枚举的变体中，而不是那种单例类。</p>
+<p><a href="https://www.bilibili.com/video/BV1hp4y1k7SV?p=23">参考学习视频</a></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">enum</span> <span class="nc">Book</span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">Yuwen</span><span class="p">(</span><span class="nb">String</span><span class="p">),</span><span class="w"> </span><span class="c1">//语文
+</span><span class="c1"></span><span class="w">    </span><span class="n">Shuxue</span><span class="p">(</span><span class="nb">String</span><span class="p">),</span><span class="c1">//数学
+</span><span class="c1"></span><span class="w">    
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">main</span><span class="p">(){</span><span class="w">
+</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;Rust Programming&#34;</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="c1">//rust 的 enum是可以 用户自己设置值的，不像java 那种单例类
+</span><span class="c1"></span><span class="w">    </span><span class="c1">//数据可以直接附加到枚举的变体中
+</span><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">b1</span><span class="o">=</span><span class="n">Book</span>::<span class="n">Yuwen</span><span class="p">(</span><span class="nb">String</span>::<span class="n">from</span><span class="p">(</span><span class="s">&#34;床前明月光&#34;</span><span class="p">));</span><span class="w">
+</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{}&#34;</span><span class="p">,</span><span class="n">work</span><span class="p">(</span><span class="n">b1</span><span class="p">));</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">b2</span><span class="o">=</span><span class="n">Book</span>::<span class="n">Shuxue</span><span class="p">(</span><span class="nb">String</span>::<span class="n">from</span><span class="p">(</span><span class="s">&#34;x+y=0&#34;</span><span class="p">));</span><span class="w">
+</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{}&#34;</span><span class="p">,</span><span class="n">work</span><span class="p">(</span><span class="n">b2</span><span class="p">));</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">work</span><span class="p">(</span><span class="n">book</span>:<span class="nc">Book</span><span class="p">)</span>-&gt;<span class="nb">String</span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">book</span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">Book</span>::<span class="n">Yuwen</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span><span class="o">=&gt;</span><span class="n">s1</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">Book</span>::<span class="n">Shuxue</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span><span class="o">=&gt;</span><span class="n">s2</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><h2 id="option-数据结构">Option 数据结构</h2>
+<p>Option是rust非常好用的数据结构，用来解决 Null 空指针问题，是rust安全基石重要一环。其本质是一个 Enum 结构。本文对option进行模式匹配用于获取 option 包装的值的简单用法。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">pub</span><span class="w"> </span><span class="k">enum</span> <span class="nb">Option</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="nb">None</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="nb">Some</span><span class="p">(</span><span class="n">T</span><span class="p">),</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><h3 id="模式匹配">模式匹配</h3>
+<p>Option 是一个Enum，通过模式匹配获取其变体</p>
+<p>Some(T) 变体</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="kd">let</span><span class="w"> </span><span class="n">opt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="s">&#34;hello&#34;</span><span class="p">.</span><span class="n">to_string</span><span class="p">());</span><span class="w">
+</span><span class="w"></span><span class="k">match</span><span class="w"> </span><span class="n">opt</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="nb">Some</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;Some: x={}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">),</span><span class="w"> </span><span class="c1">// Some: x=hello
+</span><span class="c1"></span><span class="w">    </span><span class="nb">None</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;None&#34;</span><span class="p">)</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="c1">// 判断 Some 还是 None
+</span><span class="c1"></span><span class="kd">let</span><span class="w"> </span><span class="n">opt</span>:<span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">None</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="k">match</span><span class="w"> </span><span class="n">opt</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="nb">Some</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;Some: x={}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">),</span><span class="w"> 
+</span><span class="w">    </span><span class="nb">None</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;None&#34;</span><span class="p">)</span><span class="w"> </span><span class="c1">// None
+</span><span class="c1"></span><span class="p">}</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">enum</span> <span class="nc">Coin</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">Penny</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">Dime</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="n">Quarter</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">value_in_cents</span><span class="p">(</span><span class="n">coin</span>: <span class="nc">Coin</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kt">u8</span> <span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="n">Coin</span>::<span class="n">Penny</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">Coin</span>::<span class="n">Dime</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="n">Coin</span>::<span class="n">Quarter</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w">    </span><span class="c1">//依次按照分支进行匹配
+</span><span class="c1"></span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><h4 id="绑定值写法">绑定值写法</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">plus_one</span><span class="p">(</span><span class="n">x</span>: <span class="nb">Option</span><span class="o">&lt;</span><span class="kt">i32</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Option</span><span class="o">&lt;</span><span class="kt">i32</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> 
+</span><span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="nb">None</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">None</span><span class="p">,</span><span class="w">          
+</span><span class="w">        </span><span class="nb">Some</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> 
+</span><span class="w">        </span><span class="c1">//上面相当于 将Option 里面存的东西赋值给 i ，就可以使用 i这个变量了
+</span><span class="c1"></span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">five</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">six</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">plus_one</span><span class="p">(</span><span class="n">five</span><span class="p">);</span><span class="w"> 
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">none</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">plus_one</span><span class="p">(</span><span class="nb">None</span><span class="p">);</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><h4 id="if-let-写法">if let 写法</h4>
+<p>只关心一种匹配的时候使用</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="cm">/*
+</span><span class="cm">let v = Some(0u8);
+</span><span class="cm">match v {
+</span><span class="cm"> 	Some(3) =&gt; println!(&#34;hello&#34;),
+</span><span class="cm"> 	_ =&gt; (),
+</span><span class="cm">}
+</span><span class="cm">*/</span><span class="w">
+</span><span class="w"></span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;three&#34;</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><h3 id="unwarp方法">unwarp方法</h3>
+<p>Option 有很多有用的方法。unwarp 方法用于获取 Some(x) 中 的 x 值。如果 Option是 None 变体，则该方法会 pannic。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="kd">let</span><span class="w"> </span><span class="n">opt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="s">&#34;hello&#34;</span><span class="p">.</span><span class="n">to_string</span><span class="p">());</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">opt</span><span class="p">.</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span><span class="w"></span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span><span class="w"> </span><span class="c1">// s
+</span></code></pre></td></tr></table>
+</div>
+</div><p>opt 通过 unwarp 方法获取变体 Some(x) 中的 x。若 opt 是 None 变体，unwarp 方法会pannic</p>
+<p>uwranp的源码：</p>
+<p>从 unwarp的源码可以看出，它本质也是模式匹配的一种简写。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">pub</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">fn</span> <span class="nf">unwrap</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">T</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="bp">self</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">        </span><span class="nb">Some</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">val</span><span class="p">,</span><span class="w">
+</span><span class="w">        </span><span class="nb">None</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">panic</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;called `Option::unwrap()` on a `None` value&#34;</span><span class="p">),</span><span class="w">
+</span><span class="w">    </span><span class="p">}</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><h3 id="所有权">所有权</h3>
+<p>Option的模式匹配和 unwarp 方法涉及所有权move语义。(x指没有实现 Copy trait的类型)</p>
+<p>就像赋值，参数传递一样。直接模式匹配会涉及所有权move</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="kd">let</span><span class="w"> </span><span class="n">opt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="s">&#34;hello&#34;</span><span class="p">.</span><span class="n">to_string</span><span class="p">());</span><span class="w">
+</span><span class="w"></span><span class="kd">let</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">opt</span><span class="p">.</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{:?}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">opt</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="c1">// ---下面是报错信息
+</span><span class="c1"></span><span class="mi">48</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="kd">let</span><span class="w"> </span><span class="n">opt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="s">&#34;hello&#34;</span><span class="p">.</span><span class="n">to_string</span><span class="p">());</span><span class="w">
+</span><span class="w">    </span><span class="o">|</span><span class="w">         </span><span class="o">---</span><span class="w"> </span><span class="k">move</span><span class="w"> </span><span class="n">occurs</span><span class="w"> </span><span class="n">because</span><span class="w"> </span><span class="err">`</span><span class="n">opt</span><span class="err">`</span><span class="w"> </span><span class="n">has</span><span class="w"> </span><span class="k">type</span> <span class="err">`</span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="err">`</span><span class="p">,</span><span class="w"> </span><span class="n">which</span><span class="w"> </span><span class="n">does</span><span class="w"> </span><span class="n">not</span><span class="w"> </span><span class="n">implement</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="err">`</span><span class="nb">Copy</span><span class="err">`</span><span class="w"> </span><span class="k">trait</span><span class="w">
+</span><span class="w"></span><span class="mi">49</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="kd">let</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">opt</span><span class="p">.</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span><span class="w">    </span><span class="o">|</span><span class="w">                 </span><span class="o">--------</span><span class="w"> </span><span class="err">`</span><span class="n">opt</span><span class="err">`</span><span class="w"> </span><span class="n">moved</span><span class="w"> </span><span class="n">due</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">this</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="n">call</span><span class="w">
+</span><span class="w"></span><span class="mi">50</span><span class="w">  </span><span class="o">|</span><span class="w"> 
+</span><span class="w"></span><span class="mi">51</span><span class="w">  </span><span class="o">|</span><span class="w">     </span><span class="n">println</span><span class="o">!</span><span class="p">(</span><span class="s">&#34;{:?}&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">opt</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="o">|</span><span class="w">                      </span><span class="o">^^^</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="n">borrowed</span><span class="w"> </span><span class="n">here</span><span class="w"> </span><span class="n">after</span><span class="w"> </span><span class="k">move</span><span class="w">
+</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>Option<T> 是 rust 类型安全重要思想的体现之一。它本质是一个 Enum 类型，有两个变体，Some(x) 和 None。当表示没有值的时候，可以使用 None。其语义类似其他语言如 Python的None，Golang 的 nil， java 的null。但是又跟其他语言有本质的不同。rust 的 None 是 Option 类型。而不是 其他任何类型。而其他语言的 None nil 可以是任何其他类型或引用类型。Null 可以是 字串，也可以是 指针。这就埋下了很多安全隐患。</p>
+<p>Rust 的中表示可有可无的时候使用 Option。有值的时候需要使用 Some 变体。解出 Some(x) 中的 x 值方法是模式匹配。同时标注库也提供了便捷方法如 unwrap。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-rust" data-lang="rust"><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">y</span>: <span class="nb">Option</span><span class="o">&lt;</span><span class="kt">i8</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span><span class="w">
+</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">a</span>: <span class="nb">Option</span><span class="o">&lt;</span><span class="kt">i8</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">None</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="p">}</span><span class="w">
 </span></code></pre></td></tr></table>
 </div>
 </div>
