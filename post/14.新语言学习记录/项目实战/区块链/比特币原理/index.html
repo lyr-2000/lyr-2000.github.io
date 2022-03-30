@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>raft算法-分布式系统的挑战 - 凌冬的个人博客</title>
+  <title>比特币原理 - 凌冬的个人博客</title>
   <meta name="renderer" content="webkit" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="LYR" /><meta name="description" content="分布式系统的挑战 一个分布式系统中，任意一台机器出故障了 不应该影响多台机器 分布式系统遇到的问题 时序性 timing运行在不同网络下的机器中的进程" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+<meta name="author" content="lyr" /><meta name="description" content="比特币原理 ​ 参考学习视频" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
 
 
 
@@ -26,7 +26,7 @@
 <meta name="generator" content="Hugo 0.74.2 with theme even" />
 
 
-<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/%E5%88%86%E5%B8%83%E5%BC%8F%E5%9F%BA%E7%A1%80/raft%E7%AE%97%E6%B3%95/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%8C%91%E6%88%98/" />
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/%E5%8C%BA%E5%9D%97%E9%93%BE/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8E%9F%E7%90%86/" />
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -40,23 +40,27 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
 
-<meta property="og:title" content="raft算法-分布式系统的挑战" />
-<meta property="og:description" content="分布式系统的挑战 一个分布式系统中，任意一台机器出故障了 不应该影响多台机器 分布式系统遇到的问题 时序性 timing运行在不同网络下的机器中的进程" />
+<meta property="og:title" content="比特币原理" />
+<meta property="og:description" content="比特币原理 ​ 参考学习视频" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/%E5%88%86%E5%B8%83%E5%BC%8F%E5%9F%BA%E7%A1%80/raft%E7%AE%97%E6%B3%95/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%8C%91%E6%88%98/" />
-<meta property="article:published_time" content="2022-02-14T22:42:48+08:00" />
-<meta property="article:modified_time" content="2022-02-14T22:42:48+08:00" />
-<meta itemprop="name" content="raft算法-分布式系统的挑战">
-<meta itemprop="description" content="分布式系统的挑战 一个分布式系统中，任意一台机器出故障了 不应该影响多台机器 分布式系统遇到的问题 时序性 timing运行在不同网络下的机器中的进程">
-<meta itemprop="datePublished" content="2022-02-14T22:42:48&#43;08:00" />
-<meta itemprop="dateModified" content="2022-02-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="241">
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/%E5%8C%BA%E5%9D%97%E9%93%BE/%E6%AF%94%E7%89%B9%E5%B8%81%E5%8E%9F%E7%90%86/" />
+<meta property="og:image" content="https://tva4.sinaimg.cn/large/006ZFECEgy1fr1x6if0ikj31hc0u04qp.jpg" />
+<meta property="article:published_time" content="2022-03-30T21:20:48+08:00" />
+<meta property="article:modified_time" content="2022-03-30T21:20:48+08:00" />
+<meta itemprop="name" content="比特币原理">
+<meta itemprop="description" content="比特币原理 ​ 参考学习视频">
+<meta itemprop="datePublished" content="2022-03-30T21:20:48&#43;08:00" />
+<meta itemprop="dateModified" content="2022-03-30T21:20:48&#43;08:00" />
+<meta itemprop="wordCount" content="12">
+<meta itemprop="image" content="https://tva4.sinaimg.cn/large/006ZFECEgy1fr1x6if0ikj31hc0u04qp.jpg">
 
 
 
-<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="raft算法-分布式系统的挑战"/>
-<meta name="twitter:description" content="分布式系统的挑战 一个分布式系统中，任意一台机器出故障了 不应该影响多台机器 分布式系统遇到的问题 时序性 timing运行在不同网络下的机器中的进程"/>
+<meta itemprop="keywords" content="区块链," /><meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://tva4.sinaimg.cn/large/006ZFECEgy1fr1x6if0ikj31hc0u04qp.jpg"/>
+
+<meta name="twitter:title" content="比特币原理"/>
+<meta name="twitter:description" content="比特币原理 ​ 参考学习视频"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -175,7 +179,10 @@ input.PC_MARK1:focus{
 
     </header>
 	
-	
+	<div class="customByLyr">
+  
+			<img class="lazyload"  draggable="false"  data-original="https://tva4.sinaimg.cn/large/006ZFECEgy1fr1x6if0ikj31hc0u04qp.jpg" />
+		</div>
 
     <main id="main" class="main">
       <div class="content-wrapper">
@@ -183,12 +190,14 @@ input.PC_MARK1:focus{
           <article class="post">
     
     <header class="post-header">
-      <h1 class="post-title">raft算法-分布式系统的挑战</h1>
+      <h1 class="post-title">比特币原理</h1>
 
       <div class="post-meta">
-        <span class="post-time"> 2022-02-14 </span>
-        
-          <span class="more-meta"> 约 241 字 </span>
+        <span class="post-time"> 2022-03-30 </span>
+        <div class="post-category">
+            <a href="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/"> 区块链 </a>
+            </div>
+          <span class="more-meta"> 约 12 字 </span>
           <span class="more-meta"> 预计阅读 1 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -201,7 +210,7 @@ input.PC_MARK1:focus{
   <ul>
     <li>
       <ul>
-        <li><a href="#分布式系统的挑战">分布式系统的挑战</a></li>
+        <li><a href="#比特币原理">比特币原理</a></li>
       </ul>
     </li>
   </ul>
@@ -210,50 +219,21 @@ input.PC_MARK1:focus{
 </div>
 
     <div class="post-content">
-      <h2 id="分布式系统的挑战">分布式系统的挑战</h2>
-<p>一个分布式系统中，任意一台机器出故障了 不应该影响多台机器</p>
-<p>分布式系统遇到的问题</p>
-<ol>
-<li>时序性
-<ol>
-<li>timing运行在不同网络下的机器中的进程如何判断一些事件发生的顺序</li>
-</ol>
-</li>
-<li>并发性
-<ol>
-<li>concurrency 运行在不同网络下的机器中的进程如何共享资源，而互不干扰。比如访问共同的数据库</li>
-</ol>
-</li>
-<li>健壮性
-<ol>
-<li>应对网络的不稳定性以及硬件的不稳定性</li>
-</ol>
-</li>
-<li>一致性
-<ol>
-<li>如何保证无论访问哪个服务节点，都能获得相同的结果</li>
-</ol>
-</li>
-</ol>
-<p>分布式共识的应用</p>
-<ol>
-<li>逻辑时间的共识，来决定事件发生的顺序</li>
-<li>互斥性的共识，用于决定谁正拥有访问的资源</li>
-<li>协调性的共识，谁是当下的leader</li>
-</ol>
-<p><a href="https://www.bilibili.com/video/BV1Wy4y1K7zF">学习视频</a></p>
+      <h2 id="比特币原理">比特币原理</h2>
+<p>​</p>
+<p><a href="https://www.bilibili.com/video/BV145411t7qp?spm_id_from=333.337.search-card.all.click">参考学习视频</a></p>
 
     </div>
 
     <div class="post-copyright">
   <p class="copyright-item">
     <span class="item-title">文章作者</span>
-    <span class="item-content">LYR</span>
+    <span class="item-content">lyr</span>
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
     <span class="item-content">
-        2022-02-14
+        2022-03-30
         
     </span>
   </p>
@@ -275,10 +255,16 @@ input.PC_MARK1:focus{
       </label>
   </div>
 </div><footer class="post-footer">
-      
+      <div class="post-tags">
+          <a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/">区块链</a>
+          </div>
       <nav class="post-nav">
         
-        
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/casbin%E6%9D%83%E9%99%90%E5%AE%9E%E6%88%98/casbin%E6%9D%83%E9%99%90%E8%AE%A4%E8%AF%81%E5%8E%9F%E7%90%86/">
+            <span class="next-text nav-default">Casbin权限认证原理</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
       </nav>
     </footer>
   </article>
@@ -291,8 +277,8 @@ input.PC_MARK1:focus{
     <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
     <script type="text/javascript">
       var gitalk = new Gitalk({
-        id: '2022-02-14 22:42:48 \u002b0800 \u002b0800',
-        title: 'raft算法-分布式系统的挑战',
+        id: '2022-03-30 21:20:48 \u002b0800 \u002b0800',
+        title: '比特币原理',
         clientID: '604ae0a4eff099135503',
         clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
         repo: 'lyr-2000.github.io',

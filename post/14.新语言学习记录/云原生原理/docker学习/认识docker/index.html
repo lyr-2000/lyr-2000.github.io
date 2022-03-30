@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>认识docker - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="认识docker ​ 最近的三年多时间，关注容器圈的话应该会知道这么几个事情： 容器技术持续火爆 Kubernetes(k8s)成为容器编排管理的标" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/docker%E5%AD%A6%E4%B9%A0/%E8%AE%A4%E8%AF%86docker/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="认识docker" />
+<meta property="og:description" content="认识docker ​ 最近的三年多时间，关注容器圈的话应该会知道这么几个事情： 容器技术持续火爆 Kubernetes(k8s)成为容器编排管理的标" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/docker%E5%AD%A6%E4%B9%A0/%E8%AE%A4%E8%AF%86docker/" />
+<meta property="og:image" content="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxli7783pj31hc0u0n9g.jpg" />
+<meta property="article:published_time" content="2022-03-30T17:31:48+08:00" />
+<meta property="article:modified_time" content="2022-03-30T17:31:48+08:00" />
+<meta itemprop="name" content="认识docker">
+<meta itemprop="description" content="认识docker ​ 最近的三年多时间，关注容器圈的话应该会知道这么几个事情： 容器技术持续火爆 Kubernetes(k8s)成为容器编排管理的标">
+<meta itemprop="datePublished" content="2022-03-30T17:31:48&#43;08:00" />
+<meta itemprop="dateModified" content="2022-03-30T17:31:48&#43;08:00" />
+<meta itemprop="wordCount" content="2017">
+<meta itemprop="image" content="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxli7783pj31hc0u0n9g.jpg">
+
+
+
+<meta itemprop="keywords" content="Docker学习," /><meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxli7783pj31hc0u0n9g.jpg"/>
+
+<meta name="twitter:title" content="认识docker"/>
+<meta name="twitter:description" content="认识docker ​ 最近的三年多时间，关注容器圈的话应该会知道这么几个事情： 容器技术持续火爆 Kubernetes(k8s)成为容器编排管理的标"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body>
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+<link rel="stylesheet" href="/custom/css/post.css">
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	<div class="customByLyr">
+  
+			<img class="lazyload"  draggable="false"  data-original="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxli7783pj31hc0u0n9g.jpg" />
+		</div>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">认识docker</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-03-30 </span>
+        <div class="post-category">
+            <a href="/categories/docker%E5%AD%A6%E4%B9%A0/"> Docker学习 </a>
+            </div>
+          <span class="more-meta"> 约 2017 字 </span>
+          <span class="more-meta"> 预计阅读 5 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#认识docker">认识docker</a>
+      <ul>
+        <li><a href="#你将学到哪些">你将学到哪些</a>
+          <ul>
+            <li><a href="#流程示意">流程示意</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h1 id="认识docker">认识docker</h1>
+<p>​</p>
+<p>最近的三年多时间，关注容器圈的话应该会知道这么几个事情：</p>
+<ul>
+<li>
+<p>容器技术持续火爆</p>
+</li>
+<li>
+<p>Kubernetes(k8s)成为容器编排管理的标准</p>
+</li>
+<li>
+<p>国内外厂商均已开始了全面拥抱Kubernetes的转型， 无数中小型企业已经落地 Kubernetes，或正走落地的道路上 。基于目前的发展趋势可以预见，未来几年以kubernetes平台为核心的容器运维管理、DevOps等将迎来全面的发展。</p>
+</li>
+</ul>
+<p>本着实践为核心的思想 , 分别讲述三个事情：</p>
+<ul>
+<li>
+<p>项目的容器化</p>
+<p>教大家如何把公司的项目做成容器，并且运行在docker环境中</p>
+</li>
+<li>
+<p>使用Kubernetes集群来管理容器化的项目</p>
+<p>带大家一步一步部署k8s集群，并把容器化后的demo项目使用k8s来管理起来</p>
+</li>
+<li>
+<p>使用Jenkins和Kubernetes集成，实现demo项目的持续集成/持续交付(CI/CD)</p>
+<p>会使用k8s管理应用生命周期后，还差最后的环节，就是如何把开发、测试、部署的流程使用自动化工具整合起来，最后一部分呢，课程会教会大家如何优雅的使用gitlab+Jenkins+k8s构建企业级的DevOps平台</p>
+</li>
+</ul>
+<h2 id="你将学到哪些">你将学到哪些</h2>
+<ul>
+<li>
+<p>Docker相关</p>
+<ul>
+<li>如何使用Dockerfile快速构建镜像</li>
+<li>Docker镜像、容器、仓库的常用操作</li>
+<li>Docker容器的网络（Bridge下的SNAT、DNAT）</li>
+</ul>
+</li>
+<li>
+<p>Kubernetes相关</p>
+<ul>
+<li>集群的快速搭建</li>
+<li>kubernetes的架构及工作流程</li>
+<li>使用Pod控制器管理业务应用的生命周期</li>
+<li>使用CoreDNS、Service和Ingress实现服务发现、负载均衡及四层、七层网络的访问</li>
+<li>Kubernetes的认证授权体系</li>
+</ul>
+</li>
+<li>
+<p>使用EFK构建集群业务应用的日志收集系统</p>
+</li>
+<li>
+<p>基于Gitlab+Jenkins+k8s构建DevOps平台</p>
+<ul>
+<li>Jenkins介绍及流水线的使用</li>
+<li>Jenkinsfile及多分支流水线的实际应用</li>
+<li>Jenkins集成sonarQube、Docker、Kubernetes</li>
+<li>使用groovy编写sharedLibrary，实现CI/CD流程的优化</li>
+</ul>
+</li>
+</ul>
+<p><a href="https://www.bilibili.com/video/BV1j5411S7Qn?spm_id_from=333.337.search-card.all.click">学习视频</a></p>
+<h3 id="流程示意">流程示意</h3>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_03_30_17_34_52image-20220330173451788.png" alt="image-20220330173451788"></p>
+<h4 id="认识docker-1">认识docker</h4>
+<h5 id="怎么出现的">怎么出现的</h5>
+<ul>
+<li>
+<p>轻量、高效的虚拟化</p>
+<p>Docker 公司位于旧金山,原名dotCloud，底层利用了Linux容器技术（在操作系统中实现资源隔离与限制）。为了方便创建和管理这些容器，dotCloud 开发了一套内部工具，之后被命名为“Docker”。Docker就是这样诞生的。</p>
+<p>（思考为啥要用Linux容器技术？）</p>
+</li>
+</ul>
+<p>Hypervisor： 一种运行在基础物理服务器和操作系统之间的中间软件层，可允许多个操作系统和应用共享硬件 。常见的VMware的 Workstation 、ESXi、微软的Hyper-V或者思杰的XenServer。</p>
+<p>Container Runtime：通过Linux内核虚拟化能力管理多个容器，多个容器共享一套操作系统内核。因此摘掉了内核占用的空间及运行所需要的耗时，使得容器极其轻量与快速。</p>
+<ul>
+<li>软件交付过程中的环境依赖</li>
+</ul>
+<h5 id="几个知识点">几个知识点</h5>
+<ul>
+<li>
+<p>可以把应用程序代码及运行依赖环境打包成镜像，作为交付介质，在各环境部署</p>
+</li>
+<li>
+<p>可以将镜像（image）启动成为容器(container)，并且提供多容器的生命周期进行管理（启、停、删）</p>
+</li>
+<li>
+<p>container容器之间相互隔离，且每个容器可以设置资源限额</p>
+</li>
+<li>
+<p>提供轻量级虚拟化功能，容器就是在宿主机中的一个个的虚拟的空间，彼此相互隔离，完全独立</p>
+</li>
+<li>
+<p>CS架构的软件产品</p>
+</li>
+</ul>
+<h5 id="发展史">发展史</h5>
+<p>13年成立，15年开始，迎来了飞速发展。</p>
+<p>Docker 1.8之前，使用<a href="https://linuxcontainers.org/fr/lxc/introduction/">LXC</a>，Docker在上层做了封装， 把LXC复杂的容器创建与使用方式简化为自己的一套命令体系。</p>
+<p><a href="https://www.zhihu.com/question/268288911/answer/335458760">lxc介绍文章</a></p>
+<p>之后，为了实现跨平台等复杂的场景，Docker抽出了libcontainer项目，把对namespace、cgroup的操作封装在libcontainer项目里，支持不同的平台类型。</p>
+<p>2015年6月，Docker牵头成立了 OCI（Open Container Initiative开放容器计划）组织，<strong>这个组织的目的是建立起一个围绕容器的通用标准</strong> 。 容器格式标准是一种不受上层结构绑定的协议，即不限于某种特定操作系统、硬件、CPU架构、公有云等 ， 允许任何人在遵循该标准的情况下开发应用容器技术，这使得容器技术有了一个更广阔的发展空间。</p>
+<p>OCI成立后，libcontainer 交给OCI组织来维护，但是libcontainer中只包含了与kernel交互的库，<strong>因此基于libcontainer项目，后面又加入了一个CLI工具，并且项目改名为runC</strong> (<a href="https://github.com/opencontainers/runc">https://github.com/opencontainers/runc</a> )， <strong>目前runC已经成为一个功能强大的runtime工具。</strong></p>
+<p>Docker也做了架构调整。将容器运行时相关的程序从docker daemon剥离出来，形成了<strong>containerd</strong>。containerd向上为Docker Daemon提供了<code>gRPC接口</code>，使得Docker Daemon屏蔽下面的结构变化，确保原有接口向下兼容。向下通过<code>containerd-shim</code>结合<code>runC</code>，使得引擎可以独立升级，避免之前Docker Daemon升级会导致所有容器不可用的问题。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-03-30
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/docker%E5%AD%A6%E4%B9%A0/">Docker学习</a>
+          </div>
+      <nav class="post-nav">
+        
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/docker%E5%AD%A6%E4%B9%A0/docker-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+            <span class="next-text nav-default">docker 文件系统</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-03-30 17:31:48 \u002b0800 \u002b0800',
+        title: '认识docker',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-08-01 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+
+
+
+<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script defer="defer" async src="/js/custom/docsearch.min.js" ></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+  <script  src="/custom/img/lazyload.min.js"></script>
+  <script defer="defer" async src="/custom/post/back_btn.js"></script>
+  
+
+</body>
+</html>
