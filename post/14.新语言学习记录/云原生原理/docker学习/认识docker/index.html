@@ -51,7 +51,7 @@
 <meta itemprop="description" content="认识docker ​ 最近的三年多时间，关注容器圈的话应该会知道这么几个事情： 容器技术持续火爆 Kubernetes(k8s)成为容器编排管理的标">
 <meta itemprop="datePublished" content="2022-03-30T17:31:48&#43;08:00" />
 <meta itemprop="dateModified" content="2022-03-30T17:31:48&#43;08:00" />
-<meta itemprop="wordCount" content="2017">
+<meta itemprop="wordCount" content="2456">
 <meta itemprop="image" content="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxli7783pj31hc0u0n9g.jpg">
 
 
@@ -197,7 +197,7 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/docker%E5%AD%A6%E4%B9%A0/"> Docker学习 </a>
             </div>
-          <span class="more-meta"> 约 2017 字 </span>
+          <span class="more-meta"> 约 2456 字 </span>
           <span class="more-meta"> 预计阅读 5 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -215,6 +215,8 @@ input.PC_MARK1:focus{
             <li><a href="#流程示意">流程示意</a></li>
           </ul>
         </li>
+        <li><a href="#docker-网络">Docker 网络</a></li>
+        <li><a href="#查看-docker-的-network">查看 docker 的 network</a></li>
       </ul>
     </li>
   </ul>
@@ -328,7 +330,78 @@ input.PC_MARK1:focus{
 <p>2015年6月，Docker牵头成立了 OCI（Open Container Initiative开放容器计划）组织，<strong>这个组织的目的是建立起一个围绕容器的通用标准</strong> 。 容器格式标准是一种不受上层结构绑定的协议，即不限于某种特定操作系统、硬件、CPU架构、公有云等 ， 允许任何人在遵循该标准的情况下开发应用容器技术，这使得容器技术有了一个更广阔的发展空间。</p>
 <p>OCI成立后，libcontainer 交给OCI组织来维护，但是libcontainer中只包含了与kernel交互的库，<strong>因此基于libcontainer项目，后面又加入了一个CLI工具，并且项目改名为runC</strong> (<a href="https://github.com/opencontainers/runc">https://github.com/opencontainers/runc</a> )， <strong>目前runC已经成为一个功能强大的runtime工具。</strong></p>
 <p>Docker也做了架构调整。将容器运行时相关的程序从docker daemon剥离出来，形成了<strong>containerd</strong>。containerd向上为Docker Daemon提供了<code>gRPC接口</code>，使得Docker Daemon屏蔽下面的结构变化，确保原有接口向下兼容。向下通过<code>containerd-shim</code>结合<code>runC</code>，使得引擎可以独立升级，避免之前Docker Daemon升级会导致所有容器不可用的问题。</p>
+<h2 id="docker-网络">Docker 网络</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">docker network ls
+</code></pre></td></tr></table>
+</div>
+</div><p><img src="https://img-blog.csdnimg.cn/20190702223222117.png" alt="https://img-blog.csdnimg.cn/20190702223222117.png"></p>
+<table>
+<thead>
+<tr>
+<th>网络模式</th>
+<th>介绍</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Host【主机】</td>
+<td>容器不虚拟出自己的网卡，配置自己的ip</td>
+</tr>
+<tr>
+<td>Bridge【桥接】</td>
+<td>此模式会为每一个容器分配、设置IP等，并将容器连接到一个docker0虚拟网桥，通过docker0网桥以及Iptables nat表配置与宿主机通信。</td>
+</tr>
+<tr>
+<td>None</td>
+<td>该模式关闭了容器的网络功能。</td>
+</tr>
+<tr>
+<td>Container</td>
+<td>创建的容器不会创建自己的网卡，配置自己的IP，而是和一个指定的容器共享IP、端口范围。</td>
+</tr>
+<tr>
+<td>自定义网络</td>
+<td>略</td>
+</tr>
+</tbody>
+</table>
+<p><a href="https://blog.csdn.net/meltsnow/article/details/94490994">参考文章</a></p>
+<h2 id="查看-docker-的-network">查看 docker 的 network</h2>
+<blockquote>
+<p>给你个全的，你在Linux环境下多试下就明白了：
+$0 这个程式的执行名字
+$n 这个程式的第n个参数值，n=1…9
+$* 这个程式的所有参数,此选项参数可超过9个。
+$# 这个程式的参数个数
+$$ 这个程式的PID(脚本运行的当前进程ID号)
+$! 执行上一个背景指令的PID(后台运行的最后一个进程的进程ID号)
+$? 执行上一个指令的返回值 (显示最后命令的退出状态。0表示没有错误，其他任何值表明有错误)
+$- 显示shell使用的当前选项，与set命令功能相同</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">ll /proc/14464/ns
+<span class="c1"># 查看对应的进程下面的 namespace</span> 
 
+<span class="c1"># 查看当前进程的 ns</span>
+ls /proc/<span class="nv">$$</span>/ns
+
+</code></pre></td></tr></table>
+</div>
+</div>
     </div>
 
     <div class="post-copyright">
