@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>文件权限UGO,ACL - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="文件权限 UGO ，acl 权限对象 属主： u 属组： g 其他人： o 权限类型 读 r 4 写 w 2 执行 x 1 chown 可以修改文件所有者 chgrp 可以改变属组 1 2 3 4 5 6 7 8 9 10 11 12 13" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/%E6%9D%82%E8%AE%B0/%E9%83%A8%E7%BD%B2%E6%80%BB%E7%BB%93/%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90-ugoacl/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="文件权限UGO,ACL" />
+<meta property="og:description" content="文件权限 UGO ，acl 权限对象 属主： u 属组： g 其他人： o 权限类型 读 r 4 写 w 2 执行 x 1 chown 可以修改文件所有者 chgrp 可以改变属组 1 2 3 4 5 6 7 8 9 10 11 12 13" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/%E6%9D%82%E8%AE%B0/%E9%83%A8%E7%BD%B2%E6%80%BB%E7%BB%93/%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90-ugoacl/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="文件权限UGO,ACL">
+<meta itemprop="description" content="文件权限 UGO ，acl 权限对象 属主： u 属组： g 其他人： o 权限类型 读 r 4 写 w 2 执行 x 1 chown 可以修改文件所有者 chgrp 可以改变属组 1 2 3 4 5 6 7 8 9 10 11 12 13">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="977">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="文件权限UGO,ACL"/>
+<meta name="twitter:description" content="文件权限 UGO ，acl 权限对象 属主： u 属组： g 其他人： o 权限类型 读 r 4 写 w 2 执行 x 1 chown 可以修改文件所有者 chgrp 可以改变属组 1 2 3 4 5 6 7 8 9 10 11 12 13"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body>
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+<link rel="stylesheet" href="/custom/css/post.css">
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">文件权限UGO,ACL</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+          <span class="more-meta"> 约 977 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#文件权限-ugo-acl">文件权限 UGO ，acl</a></li>
+            <li><a href="#使用演示">使用演示</a></li>
+            <li><a href="#acl-方式修改文件权限">acl 方式修改文件权限</a></li>
+            <li><a href="#mask-的使用方法">mask 的使用方法</a></li>
+            <li><a href="#总结">总结</a></li>
+            <li><a href="#suid-高级权限">suid 高级权限</a></li>
+            <li><a href="#chattr">chattr</a></li>
+            <li><a href="#让-root-也无法删除-面试重点">让 root 也无法删除 【面试重点】</a></li>
+            <li><a href="#umask原理进程掩码">umask原理【进程掩码】</a></li>
+            <li><a href="#文件重定向">文件重定向</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h3 id="文件权限-ugo-acl">文件权限 UGO ，acl</h3>
+<p><strong>权限对象</strong></p>
+<p>属主： u</p>
+<p>属组： g</p>
+<p>其他人： o</p>
+<p><strong>权限类型</strong></p>
+<p>读 r 4</p>
+<p>写 w  2</p>
+<p>执行 x  1</p>
+<p>chown 可以修改文件所有者</p>
+<p>chgrp 可以改变属组</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">sudo chgrp vagrant test.php
+<span class="c1"># 改成 vagrant 组</span>
+
+ sudo chown vagrant test.php
+ <span class="c1"># 改成 vagrant 用户</span>
+ 
+ :<span class="s">&lt;&lt;EOF
+</span><span class="s"> -rw-r--r--  1 root root  53 Oct  5 19:20 .user.ini
+</span><span class="s">[vagrant@localhost www.php.learn]$ sudo chgrp vagrant test.php
+</span><span class="s">[vagrant@localhost www.php.learn]$ ls -al
+</span><span class="s">total 20
+</span><span class="s">drwxr-xr-x  2 www  www      89 Oct  5 20:58 .
+</span><span class="s">drwxr-xr-x. 3 root root     27 Oct  5 19:20 ..
+</span><span class="s">-rwxr--r--  1 root root    479 Oct  5 19:20 404.html
+</span><span class="s">-rw-r--r--  1 root root      1 Oct  5 19:20 .htaccess
+</span><span class="s">-rwxr--r--  1 root root    377 Oct  5 19:22 index.php
+</span><span class="s">-rw-r--r--  1 root vagrant 484 Oct  5 20:58 test.php
+</span><span class="s">-rw-r--r--  1 root root     53 Oct  5 19:20 .user.ini
+</span><span class="s">[vagrant@localhost www.php.learn]$ sudo chown vagrant test.php
+</span><span class="s">[vagrant@localhost www.php.learn]$ ls -al
+</span><span class="s">total 20
+</span><span class="s">drwxr-xr-x  2 www     www      89 Oct  5 20:58 .
+</span><span class="s">drwxr-xr-x. 3 root    root     27 Oct  5 19:20 ..
+</span><span class="s">-rwxr--r--  1 root    root    479 Oct  5 19:20 404.html
+</span><span class="s">-rw-r--r--  1 root    root      1 Oct  5 19:20 .htaccess
+</span><span class="s">-rwxr--r--  1 root    root    377 Oct  5 19:22 index.php
+</span><span class="s">-rw-r--r--  1 vagrant vagrant 484 Oct  5 20:58 test.php
+</span><span class="s">-rw-r--r--  1 root    root     53 Oct  5 19:20 .user.ini
+</span><span class="s">
+</span><span class="s"> # 你们看 这就是 改用户和 组了
+</span><span class="s">  
+</span><span class="s"> EOF</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="使用演示">使用演示</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">chmod <span class="nv">a</span><span class="o">=</span>rwx  test.php
+chmod <span class="nv">u</span><span class="o">=</span>rwx test.php
+chmod <span class="nv">u</span><span class="o">=</span>rwx,g<span class="o">=</span>rw,o<span class="o">=</span>r test.php
+chmod u+x test.php
+chmod u-w test.php
+chmod <span class="m">000</span> test.php <span class="c1"># 删除全部权限</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="acl-方式修改文件权限">acl 方式修改文件权限</h3>
+<p><strong>了解即可</strong></p>
+<p><a href="https://www.bilibili.com/video/BV1zb41147pu?p=37">学习教程</a></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">getfacl ./test.php
+
+setfacl -m u:alice:rw ./test.php
+<span class="c1"># m 就是 modify 修改的意思</span>
+<span class="c1"># 设置  Alice的 权限 为 rw</span>
+
+setfacl -m user:jack:rwx ./test.php
+getfacl test.php
+
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="mask-的使用方法">mask 的使用方法</h3>
+<p><a href="https://www.bilibili.com/video/BV1zb41147pu?p=39">mask 使用方法记录</a></p>
+<h3 id="总结">总结</h3>
+<ul>
+<li>chmod 修改 基本权限</li>
+<li>facl 修改特别的权限</li>
+</ul>
+<h3 id="suid-高级权限">suid 高级权限</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">ll -d /root
+<span class="c1"># 其他用户进不了 root 目录</span>
+chmod g+s  /home/hr
+<span class="c1"># 加上了 suid 权限 ，属组 就会被下面继承</span>
+
+<span class="c1"># 设置文件粘滞位</span>
+chmod o+t /home/dir
+<span class="c1"># 只能被 root，文件所有者，目录所有者删除</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>suid 4</p>
+<p>sgid  2</p>
+<p>sticky  1  粘滞位</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">chmod u+s file
+chmod g+s dir
+
+chmod o+t dir
+<span class="c1"># 文件只能被我 或者 root删除</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="chattr">chattr</h3>
+<p>Linux文件除了具有基本权限rwx，及特殊权限（SUID、SGID、SBIT（Sticky））外，还有几个更接近底层的文件），我们可通过lsattr查看这些属性，并通过chattr来修改这些属性</p>
+<h3 id="让-root-也无法删除-面试重点">让 root 也无法删除 【面试重点】</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># chattr +a app111.txt</span>
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># lsattr app111.txt</span>
+-----a-------e-- app111.txt
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># rm app111.txt</span>
+rm: remove regular file ‘app111.txt’? y
+rm: cannot remove ‘app111.txt’: Operation not permitted
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span>#
+</code></pre></td></tr></table>
+</div>
+</div><p>通过 chattr +a 属性，有了 a 属性 就无法被删除，只能被追加文件</p>
+<p>通常我们会给日志 加这个权限，防止我们删除日志</p>
+<ul>
+<li>a 只能追加</li>
+<li>i  immutable 不可改变
+<ul>
+<li>只能 cat 查看 ，不能修改</li>
+<li>etc/passwd 不能修改</li>
+</ul>
+</li>
+<li>A 不会去更新访问时间 【不用】</li>
+<li>=  直接 去掉原来的所有权限 【也别用， 尽量用 chattr -a 的方式减去属性】</li>
+</ul>
+<h3 id="umask原理进程掩码">umask原理【进程掩码】</h3>
+<p>比如  umask  0022</p>
+<p>我们新建的文件 ，要减去 组 和 其他人的  写权限(w =2)</p>
+<p>umask 0777 ，</p>
+<p>去掉新建文件的  所有人的 rwx 权限</p>
+<p><strong>进程 新建，目录默认权限 会受到umask 影响， umask 表示要减去的权限</strong></p>
+<p>每个进程 都有自己的 umask</p>
+<p>我们可以修改 useradd 的 umask</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">vi /etc/login.defs
+<span class="c1"># 找到 UMASK 并且可以修改</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>修改 shell umask 永久值</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">vi /etc/profile
+<span class="c1"># 永久修改 umask</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="文件重定向">文件重定向</h3>
+<p><strong>推荐使用 案例4</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_06_15_27_09image-20211006152709477.png" alt="image-20211006152709477"></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">mysql -uroot -p123 &lt; bbs.sql
+
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/%E6%9D%82%E8%AE%B0/%E9%83%A8%E7%BD%B2%E6%80%BB%E7%BB%93/%E5%BF%AB%E6%8D%B7%E9%94%AE%E8%AE%B0%E5%BD%95/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">快捷键记录</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/%E6%9D%82%E8%AE%B0/%E9%83%A8%E7%BD%B2%E6%80%BB%E7%BB%93/%E6%9F%A5%E6%BC%8F%E8%A1%A5%E7%BC%BA%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%80%BB%E7%BB%93/">
+            <span class="next-text nav-default">查漏补缺快捷键总结</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2021-08-17 13:48:22 \u002b0800 \u002b0800',
+        title: '文件权限UGO,ACL',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-08-01 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+
+
+
+<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script defer="defer" async src="/js/custom/docsearch.min.js" ></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+  <script  src="/custom/img/lazyload.min.js"></script>
+  <script defer="defer" async src="/custom/post/back_btn.js"></script>
+  
+
+</body>
+</html>

@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>shell-sed - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="shell sed 学习 既然 sed 和awk都是Linux常见的命令，也是处理文件的常用的命令，但是两者还有哪些区别（除了 sed 一般对行进行操作，awk 对列进行操作）" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/%E6%9D%82%E8%AE%B0/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/shell%E5%91%BD%E4%BB%A4%E7%BB%86%E5%88%86/shell-sed/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="shell-sed" />
+<meta property="og:description" content="shell sed 学习 既然 sed 和awk都是Linux常见的命令，也是处理文件的常用的命令，但是两者还有哪些区别（除了 sed 一般对行进行操作，awk 对列进行操作）" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/%E6%9D%82%E8%AE%B0/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/shell%E5%91%BD%E4%BB%A4%E7%BB%86%E5%88%86/shell-sed/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="shell-sed">
+<meta itemprop="description" content="shell sed 学习 既然 sed 和awk都是Linux常见的命令，也是处理文件的常用的命令，但是两者还有哪些区别（除了 sed 一般对行进行操作，awk 对列进行操作）">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="2634">
+
+
+
+<meta itemprop="keywords" content="shell命令学习,shell指令," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="shell-sed"/>
+<meta name="twitter:description" content="shell sed 学习 既然 sed 和awk都是Linux常见的命令，也是处理文件的常用的命令，但是两者还有哪些区别（除了 sed 一般对行进行操作，awk 对列进行操作）"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body>
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+<link rel="stylesheet" href="/custom/css/post.css">
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">shell-sed</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+          <span class="more-meta"> 约 2634 字 </span>
+          <span class="more-meta"> 预计阅读 6 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#shell-sed-学习">shell sed 学习</a></li>
+            <li><a href="#pattern详解">pattern详解</a></li>
+            <li><a href="#打印-10-20行">打印 10-20行</a></li>
+          </ul>
+        </li>
+        <li><a href="#sed-编辑命令详解">sed 编辑命令详解</a>
+          <ul>
+            <li></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h3 id="shell-sed-学习">shell sed 学习</h3>
+<p>既然 sed 和awk都是Linux常见的命令，也是处理文件的常用的命令，但是两者还有哪些区别（除了 sed 一般对行进行操作，awk 对列进行操作）？</p>
+<p>多操作几次，亲自感受比什么都清晰。</p>
+<p>要说区别，说来说去，还就是行和列。</p>
+<p>sed读取一行，以行作为单位，进行处理。</p>
+<p>awk读取一行，切割成字段，以字段为单位，进行细节处理。</p>
+<p>不过因为正则的特性以及这两种工具内的逻辑，sed和awk基本都能互相替代，只不过sed能简单处理的换成awk可能很复杂，awk能简单处理的换成sed可能会很复杂。</p>
+<p>一般来说，sed+cut和awk功能上比较接近。perl则等于sed+awk+grep+cut+&hellip;&hellip;</p>
+<p>作者：骏马金龙
+链接：https://www.zhihu.com/question/297858714/answer/508075537
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</p>
+<p>sed(stream editor) 流编辑器， 对标准输入逐行读取</p>
+<ul>
+<li>第一种形式 stdout | sed  [option] &ldquo;pattern comand&rdquo;</li>
+<li>第二种形式  sed [option] &ldquo;pattern command&rdquo;  file</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_03_22_45_29image-20211003224528891.png" alt="image-20211003224528891"></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">lyr@DESKTOP-FSVN6C0:~$ cat app.sh  <span class="p">|</span> sed -n <span class="s1">&#39;/#/p&#39;</span>
+<span class="c1">#!/bin/bash</span>
+<span class="c1">#Author:LYR</span>
+<span class="c1">#Time:2021-10-03 17:35:05</span>
+<span class="c1">#Name:app.sh</span>
+lyr@DESKTOP-FSVN6C0:~$ cat app.sh  <span class="p">|</span> sed  <span class="s1">&#39;/#/p&#39;</span>
+<span class="c1">#!/bin/bash</span>
+<span class="c1">#!/bin/bash</span>
+<span class="c1">#Author:LYR</span>
+<span class="c1">#Author:LYR</span>
+<span class="c1">#Time:2021-10-03 17:35:05</span>
+<span class="c1">#Time:2021-10-03 17:35:05</span>
+<span class="c1">#Name:app.sh</span>
+<span class="c1">#Name:app.sh</span>
+
+
+
+
+
+
+
+
+
+awk <span class="s1">&#39;BEGIN{w=20;num=&#34;hello&#34;;w++; print num,w}&#39;</span><span class="p">;</span>
+
+
+
+lyr@DESKTOP-FSVN6C0:~$ sed -n -e <span class="s1">&#39;/#/p&#39;</span> -e <span class="s1">&#39;/print/p&#39;</span> app.sh
+<span class="c1">#!/bin/bash</span>
+<span class="c1">#Author:LYR</span>
+<span class="c1">#Time:2021-10-03 17:35:05</span>
+<span class="c1">#Name:app.sh</span>
+awk <span class="s1">&#39;BEGIN{w=20;num=&#34;hello&#34;;w++; print num,w}&#39;</span><span class="p">;</span>
+
+<span class="c1"># 这里我们可以看到 ， 多个匹配模式 可以用 -e</span>
+<span class="c1"># 有点类型 grep</span>
+
+
+</code></pre></td></tr></table>
+</div>
+</div><p>我们可以看到 ，如果 不加 -n 就会打印2次， 加 -n 表示静默模式， 就只打印匹配的行</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">lyr@DESKTOP-FSVN6C0:~$ <span class="nb">echo</span> <span class="s2">&#34;pythondd &#34;</span> &gt; app.sh
+
+lyr@DESKTOP-FSVN6C0:~$ sed -n -f edit.sed  app.sh
+pythondd
+lyr@DESKTOP-FSVN6C0:~$ <span class="nb">echo</span> <span class="s2">&#34;love  &#34;</span> &gt;&gt; app.sh
+lyr@DESKTOP-FSVN6C0:~$ sed -n -f edit.sed  app.sh
+pythondd
+lyr@DESKTOP-FSVN6C0:~$
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="pattern详解">pattern详解</h3>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_03_22_50_03image-20211003225003050.png" alt="image-20211003225003050"></p>
+<h4 id="练习">练习</h4>
+<ol>
+<li>将 python 变为 PYTHON</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">lyr@DESKTOP-FSVN6C0:~$ cat app.sh <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&#34;-----------&#34;</span> <span class="o">&amp;&amp;</span>  sed -n -i  <span class="s1">&#39;s/python/PYTHON/g;p&#39;</span>  app.sh  <span class="o">&amp;&amp;</span> cat app.sh
+pythondd
+love
+-----------
+PYTHONdd
+love
+lyr@DESKTOP-FSVN6C0:~$
+<span class="c1"># -i 参数就是直接修改文件</span>
+<span class="c1"># -i 等于就是把输出，直接盖掉 app.sh ， 如果不加 -n ,就会越来越多</span>
+<span class="c1"># ;p 的话就是 print 打印</span>
+
+
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">lyr@DESKTOP-FSVN6C0:~$ <span class="nb">echo</span> <span class="s2">&#34;python i love it &#34;</span> &gt; app.sh
+lyr@DESKTOP-FSVN6C0:~$ cat app.sh <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&#34;-----------&#34;</span> <span class="o">&amp;&amp;</span>  sed  -n -i  <span class="s1">&#39;s/python/PYTHON/g;p&#39;</span>  app.sh  <span class="o">&amp;&amp;</span> cat app.sh
+python i love it
+-----------
+PYTHON i love it
+</code></pre></td></tr></table>
+</div>
+</div><p>sed 一般就直接修改文件比较爽</p>
+<h3 id="打印-10-20行">打印 10-20行</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">lyr@DESKTOP-FSVN6C0:~$ sed -n <span class="s1">&#39;17p&#39;</span> /etc/passwd
+gnats❌41:41:Gnats Bug-Reporting System <span class="o">(</span>admin<span class="o">)</span>:/var/lib/gnats:/usr/sbin/nologin
+lyr@DESKTOP-FSVN6C0:~$ sed -n <span class="s1">&#39;10,20p&#39;</span> /etc/passwd
+news❌9:9:news:/var/spool/news:/usr/sbin/nologin
+
+lyr@DESKTOP-FSVN6C0:~$ sed -n <span class="s1">&#39;10,+3p&#39;</span> /etc/passwd
+news❌9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp❌10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy❌13:13:proxy:/bin:/usr/sbin/nologin
+www-data❌33:33:www-data:/var/www:/usr/sbin/nologin
+<span class="c1"># 打印 第10 行 ，再 + 3行</span>
+
+lyr@DESKTOP-FSVN6C0:~$ sed -n <span class="s2">&#34;/bash/p&#34;</span> /etc/passwd
+root❌0:0:root:/root:/bin/bash
+lyr❌1000:1000:,,,:/home/lyr:/bin/bash
+<span class="c1"># 打印 包含 bash字符串的</span>
+
+lyr@DESKTOP-FSVN6C0:~$ sed -n <span class="s2">&#34;/\/bash/p&#34;</span> /etc/passwd
+root❌0:0:root:/root:/bin/bash
+lyr❌1000:1000:,,,:/home/lyr:/bin/bash
+<span class="c1"># 打印 包含 /bash 字符串的文本</span>
+
+
+ sed -n <span class="s1">&#39;4,/^lyr/p&#39;</span> /etc/passwd
+ <span class="c1"># 从第4行开始，直到找到 lyr 开头的行</span>
+ 
+lyr@DESKTOP-FSVN6C0:~$ <span class="nv">a</span><span class="o">=</span><span class="m">4</span>
+lyr@DESKTOP-FSVN6C0:~$ sed -n <span class="s2">&#34;</span><span class="nv">$a</span><span class="s2">,5p&#34;</span> /etc/passwd
+sys❌3:3:sys:/dev:/usr/sbin/nologin
+sync❌4:65534:sync:/bin:/bin/sync
+<span class="c1"># 打印  4-5行</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="sed-编辑命令详解">sed 编辑命令详解</h2>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_03_23_01_48image-20211003230148031.png" alt="image-20211003230148031"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_03_23_02_03image-20211003230203134.png" alt="image-20211003230203134"></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">lyr@DESKTOP-FSVN6C0:~$ head -n <span class="m">1</span> passwd  <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&#34;=====&#34;</span> <span class="o">&amp;&amp;</span> sed -i <span class="s1">&#39;1d&#39;</span> passwd  <span class="o">&amp;&amp;</span> head -n <span class="m">1</span> ./passwd
+bin❌2:2:bin:/bin:/usr/sbin/nologin
+<span class="o">=====</span>
+sys❌3:3:sys:/dev:/usr/sbin/nologin
+<span class="c1"># 这里 调用 d 直接 删除 第一行，然后 打印的就是 第二行了</span>
+
+<span class="c1"># 删除第1行到 第3行</span>
+
+
+lyr@DESKTOP-FSVN6C0:~$ head -n <span class="m">4</span> passwd  <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&#34;=====&#34;</span> <span class="o">&amp;&amp;</span> sed -i <span class="s1">&#39;1,3d&#39;</span> passwd  <span class="o">&amp;&amp;</span> head -n <span class="m">4</span> ./passwd
+sys❌3:3:sys:/dev:/usr/sbin/nologin
+sync❌4:65534:sync:/bin:/bin/sync
+games❌5:60:games:/usr/games:/usr/sbin/nologin
+man❌6:12:man:/var/cache/man:/usr/sbin/nologin
+<span class="o">=====</span>
+man❌6:12:man:/var/cache/man:/usr/sbin/nologin
+lp❌7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail❌8:8:mail:/var/mail:/usr/sbin/nologin
+news❌9:9:news:/var/spool/news:/usr/sbin/nologin
+
+<span class="c1"># 这里 我们就删除了 1-3 行了</span>
+
+
+<span class="c1"># 删除 所有 /sbin/nologin</span>
+
+lyr@DESKTOP-FSVN6C0:~$ head -n <span class="m">4</span> ./passwd  <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&#34;=====&#34;</span> <span class="o">&amp;&amp;</span> sed -i <span class="s1">&#39;/\/sbin\/nologin/d&#39;</span> passwd
+  <span class="o">&amp;&amp;</span> head -n <span class="m">4</span> ./passwd
+  
+man❌6:12:man:/var/cache/man:/usr/sbin/nologin
+lp❌7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail❌8:8:mail:/var/mail:/usr/sbin/nologin
+news❌9:9:news:/var/spool/news:/usr/sbin/nologin
+<span class="o">=====</span>
+tss❌106:111:TPM software stack,,,:/var/lib/tpm:/bin/false
+pollinate❌111:1::/var/cache/pollinate:/bin/false
+lyr❌1000:1000:,,,:/home/lyr:/bin/bash
+postgres❌1001:1001::/home/postgres:/bin/sh
+
+
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="直接追加内容">直接追加内容</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">postgres❌1001:1001::/home/postgres:/bin/sh
+lyr@DESKTOP-FSVN6C0:~$ head -n <span class="m">4</span> ./passwd  <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&#34;=====&#34;</span> <span class="o">&amp;&amp;</span> sed -i <span class="s1">&#39;/lyr/a it is me!!!&#39;</span> passwd  <span class="o">&amp;&amp;</span> head -n <span class="m">4</span> ./passwd
+
+tss❌106:111:TPM software stack,,,:/var/lib/tpm:/bin/false
+pollinate❌111:1::/var/cache/pollinate:/bin/false
+lyr❌1000:1000:,,,:/home/lyr:/bin/bash
+postgres❌1001:1001::/home/postgres:/bin/sh
+<span class="o">=====</span>
+tss❌106:111:TPM software stack,,,:/var/lib/tpm:/bin/false
+pollinate❌111:1::/var/cache/pollinate:/bin/false
+lyr❌1000:1000:,,,:/home/lyr:/bin/bash
+it is me!!!
+<span class="c1"># 匹配到 lyr 这行后，后面追加 it is me!!</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_03_23_16_13image-20211003231613473.png" alt="image-20211003231613473"></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">lyr@DESKTOP-FSVN6C0:~$ <span class="nb">echo</span> <span class="s2">&#34;hadoop python&#34;</span> &gt; passwd
+lyr@DESKTOP-FSVN6C0:~$ cat passwd <span class="o">&amp;&amp;</span> sh ./app.sh <span class="o">&amp;&amp;</span> cat passwd
+hadoop python
+HADOOP python
+lyr@DESKTOP-FSVN6C0:~$ cat app.sh
+<span class="c1">#!/bin/bash</span>
+<span class="c1">#Author:LYR</span>
+<span class="c1">#Time:2021-10-03 23:24:40</span>
+<span class="c1">#Name:app.sh</span>
+
+
+<span class="nv">old_str</span><span class="o">=</span>hadoop
+<span class="nv">new_str</span><span class="o">=</span>HADOOP
+
+
+sed -i <span class="s2">&#34;s/</span><span class="nv">$old_str</span><span class="s2">/</span><span class="nv">$new_str</span><span class="s2">/g&#34;</span> ./passwd
+
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/">shell命令学习</a>
+          <a href="/tags/shell%E6%8C%87%E4%BB%A4/">shell指令</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/%E6%9D%82%E8%AE%B0/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/shell%E5%91%BD%E4%BB%A4%E7%BB%86%E5%88%86/shell-loop/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">shell-loop</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/%E6%9D%82%E8%AE%B0/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/shell%E5%91%BD%E4%BB%A4%E7%BB%86%E5%88%86/shell-sort/">
+            <span class="next-text nav-default">shell-sort</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2021-08-17 13:48:22 \u002b0800 \u002b0800',
+        title: 'shell-sed',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-08-01 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+
+
+
+<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script defer="defer" async src="/js/custom/docsearch.min.js" ></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+  <script  src="/custom/img/lazyload.min.js"></script>
+  <script defer="defer" async src="/custom/post/back_btn.js"></script>
+  
+
+</body>
+</html>
