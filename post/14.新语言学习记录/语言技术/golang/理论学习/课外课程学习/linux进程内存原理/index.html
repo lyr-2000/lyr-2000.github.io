@@ -16,14 +16,14 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="LYR" /><meta name="description" content="linux 进程 内存原理 1 2 3 # 查看页表大小 getconf PAGE_SIZE # 答案是 4096 ，单位是 k 虚拟内存 和 物理内存 会有映射关系 linux 使用的是多级索引页表 Linux采用了一种同时适用于" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+<meta name="author" content="LYR" /><meta name="description" content="linux 进程 内存原理 1 2 3 4 # 查看页表大小 getconf PAGE_SIZE # 答案是 4096 ，单位是 k 虚拟内存 和 物理内存 会有映射关系 linux 使用的是多级索引页表 Linux采用了一种同时适用" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
 
 
 
 
 
 
-<meta name="generator" content="Hugo 0.97.3 with theme even" />
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/linux%E8%BF%9B%E7%A8%8B%E5%86%85%E5%AD%98%E5%8E%9F%E7%90%86/" />
@@ -41,19 +41,22 @@
 
 
 <meta property="og:title" content="linux 进程内存原理" />
-<meta property="og:description" content="linux 进程 内存原理 1 2 3 # 查看页表大小 getconf PAGE_SIZE # 答案是 4096 ，单位是 k 虚拟内存 和 物理内存 会有映射关系 linux 使用的是多级索引页表 Linux采用了一种同时适用于" />
+<meta property="og:description" content="linux 进程 内存原理 1 2 3 4 # 查看页表大小 getconf PAGE_SIZE # 答案是 4096 ，单位是 k 虚拟内存 和 物理内存 会有映射关系 linux 使用的是多级索引页表 Linux采用了一种同时适用" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/linux%E8%BF%9B%E7%A8%8B%E5%86%85%E5%AD%98%E5%8E%9F%E7%90%86/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/linux%E8%BF%9B%E7%A8%8B%E5%86%85%E5%AD%98%E5%8E%9F%E7%90%86/" />
 <meta property="article:published_time" content="2021-08-14T22:42:48+08:00" />
 <meta property="article:modified_time" content="2021-08-14T22:42:48+08:00" />
-
 <meta itemprop="name" content="linux 进程内存原理">
-<meta itemprop="description" content="linux 进程 内存原理 1 2 3 # 查看页表大小 getconf PAGE_SIZE # 答案是 4096 ，单位是 k 虚拟内存 和 物理内存 会有映射关系 linux 使用的是多级索引页表 Linux采用了一种同时适用于"><meta itemprop="datePublished" content="2021-08-14T22:42:48+08:00" />
-<meta itemprop="dateModified" content="2021-08-14T22:42:48+08:00" />
-<meta itemprop="wordCount" content="1762">
+<meta itemprop="description" content="linux 进程 内存原理 1 2 3 4 # 查看页表大小 getconf PAGE_SIZE # 答案是 4096 ，单位是 k 虚拟内存 和 物理内存 会有映射关系 linux 使用的是多级索引页表 Linux采用了一种同时适用">
+<meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
+<meta itemprop="wordCount" content="1764">
+
+
+
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="linux 进程内存原理"/>
-<meta name="twitter:description" content="linux 进程 内存原理 1 2 3 # 查看页表大小 getconf PAGE_SIZE # 答案是 4096 ，单位是 k 虚拟内存 和 物理内存 会有映射关系 linux 使用的是多级索引页表 Linux采用了一种同时适用于"/>
+<meta name="twitter:description" content="linux 进程 内存原理 1 2 3 4 # 查看页表大小 getconf PAGE_SIZE # 答案是 4096 ，单位是 k 虚拟内存 和 物理内存 会有映射关系 linux 使用的是多级索引页表 Linux采用了一种同时适用"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -185,7 +188,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-14 </span>
         
-          <span class="more-meta"> 约 1762 字 </span>
+          <span class="more-meta"> 约 1764 字 </span>
           <span class="more-meta"> 预计阅读 4 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -219,15 +222,17 @@ input.PC_MARK1:focus{
       <h3 id="linux-进程-内存原理">linux 进程 内存原理</h3>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
+</span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 查看页表大小</span>
-</span></span><span class="line"><span class="cl">getconf PAGE_SIZE
-</span></span><span class="line"><span class="cl"><span class="c1"># 答案是 4096  ，单位是 k</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 查看页表大小</span>
+getconf PAGE_SIZE
+<span class="c1"># 答案是 4096  ，单位是 k</span>
+
+</code></pre></td></tr></table>
 </div>
 </div><p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_11_29_20_47_42image-20211129204739656.png" alt="image-20211129204739656"></p>
 <p>虚拟内存 和 物理内存 会有映射关系</p>
@@ -324,13 +329,15 @@ G的主要几种状态：</p>
 <p><a href="https://blog.csdn.net/tugouxp/article/details/120165100?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-0.no_search_link&amp;spm=1001.2101.3001.4242.1">参考文档</a></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
+</span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">perf top -p &lt;pid&gt;
-</span></span><span class="line"><span class="cl"><span class="c1"># perf 是一个 比较特殊的命令，可以用来分析进程信息</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-bash" data-lang="bash">perf top -p &lt;pid&gt;
+<span class="c1"># perf 是一个 比较特殊的命令，可以用来分析进程信息</span>
+
+</code></pre></td></tr></table>
 </div>
 </div>
     </div>
@@ -465,7 +472,7 @@ G的主要几种状态：</p>
 
 
 
-<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
+<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
   <script type="text/javascript">
     window.MathJax = {
       tex: {

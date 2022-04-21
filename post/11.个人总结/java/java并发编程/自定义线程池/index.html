@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.97.3 with theme even" />
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E8%87%AA%E5%AE%9A%E4%B9%89%E7%BA%BF%E7%A8%8B%E6%B1%A0/" />
@@ -43,14 +43,17 @@
 <meta property="og:title" content="自定义线程池的方法" />
 <meta property="og:description" content="如何自定义线程池 corePoolSize 核心线程数 maximumPoolSize 最大线程数 keepAliveTime 线程存活时间【超出核心线程数的那部分】 unit 时间单位 workQueue 任务队列 threadFactory, 线程工厂，自定义线程的名字【用户自定义" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E8%87%AA%E5%AE%9A%E4%B9%89%E7%BA%BF%E7%A8%8B%E6%B1%A0/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E8%87%AA%E5%AE%9A%E4%B9%89%E7%BA%BF%E7%A8%8B%E6%B1%A0/" />
 <meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
 <meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
-
 <meta itemprop="name" content="自定义线程池的方法">
-<meta itemprop="description" content="如何自定义线程池 corePoolSize 核心线程数 maximumPoolSize 最大线程数 keepAliveTime 线程存活时间【超出核心线程数的那部分】 unit 时间单位 workQueue 任务队列 threadFactory, 线程工厂，自定义线程的名字【用户自定义"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
-<meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
-<meta itemprop="wordCount" content="1272">
+<meta itemprop="description" content="如何自定义线程池 corePoolSize 核心线程数 maximumPoolSize 最大线程数 keepAliveTime 线程存活时间【超出核心线程数的那部分】 unit 时间单位 workQueue 任务队列 threadFactory, 线程工厂，自定义线程的名字【用户自定义">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="1273">
+
+
+
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="自定义线程池的方法"/>
 <meta name="twitter:description" content="如何自定义线程池 corePoolSize 核心线程数 maximumPoolSize 最大线程数 keepAliveTime 线程存活时间【超出核心线程数的那部分】 unit 时间单位 workQueue 任务队列 threadFactory, 线程工厂，自定义线程的名字【用户自定义"/>
@@ -185,7 +188,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
-          <span class="more-meta"> 约 1272 字 </span>
+          <span class="more-meta"> 约 1273 字 </span>
           <span class="more-meta"> 预计阅读 3 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -252,23 +255,25 @@ input.PC_MARK1:focus{
 </ul>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span><span class="lnt">5
 </span><span class="lnt">6
 </span><span class="lnt">7
+</span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"> <span class="kd">public</span> <span class="nf">ThreadPoolExecutor</span><span class="o">(</span><span class="kt">int</span> <span class="n">corePoolSize</span><span class="o">,</span><span class="c1">// 线程池的核心线程数量
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                              <span class="kt">int</span> <span class="n">maximumPoolSize</span><span class="o">,</span><span class="c1">// 线程池的最大线程数
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                              <span class="kt">long</span> <span class="n">keepAliveTime</span><span class="o">,</span><span class="c1">// 当线程数大于核心线程数时，多余的空闲线程存活的最长时间
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                              <span class="n">TimeUnit</span> <span class="n">unit</span><span class="o">,</span><span class="c1">// 时间单位
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                              <span class="n">BlockingQueue</span><span class="o">&lt;</span><span class="n">Runnable</span><span class="o">&gt;</span> <span class="n">workQueue</span><span class="o">,</span><span class="c1">// 任务队列，用来储存等待执行任务的队列
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                              <span class="n">ThreadFactory</span> <span class="n">threadFactory</span><span class="o">,</span><span class="c1">// 线程工厂，用来创建线程，一般默认即可
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                              <span class="n">RejectedExecutionHandler</span> <span class="n">handler</span><span class="o">)</span> <span class="c1">// 拒绝策略，当提交的任务过多而不能及时处理时，我们可以定制策略来处理任务
-</span></span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-java" data-lang="java"> <span class="kd">public</span> <span class="nf">ThreadPoolExecutor</span><span class="o">(</span><span class="kt">int</span> <span class="n">corePoolSize</span><span class="o">,</span><span class="c1">// 线程池的核心线程数量
+</span><span class="c1"></span>                              <span class="kt">int</span> <span class="n">maximumPoolSize</span><span class="o">,</span><span class="c1">// 线程池的最大线程数
+</span><span class="c1"></span>                              <span class="kt">long</span> <span class="n">keepAliveTime</span><span class="o">,</span><span class="c1">// 当线程数大于核心线程数时，多余的空闲线程存活的最长时间
+</span><span class="c1"></span>                              <span class="n">TimeUnit</span> <span class="n">unit</span><span class="o">,</span><span class="c1">// 时间单位
+</span><span class="c1"></span>                              <span class="n">BlockingQueue</span><span class="o">&lt;</span><span class="n">Runnable</span><span class="o">&gt;</span> <span class="n">workQueue</span><span class="o">,</span><span class="c1">// 任务队列，用来储存等待执行任务的队列
+</span><span class="c1"></span>                              <span class="n">ThreadFactory</span> <span class="n">threadFactory</span><span class="o">,</span><span class="c1">// 线程工厂，用来创建线程，一般默认即可
+</span><span class="c1"></span>                              <span class="n">RejectedExecutionHandler</span> <span class="n">handler</span><span class="o">)</span> <span class="c1">// 拒绝策略，当提交的任务过多而不能及时处理时，我们可以定制策略来处理任务
+</span><span class="c1"></span>
+</code></pre></td></tr></table>
 </div>
 </div><p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_08_20_14__01_04image-20210820140104734.png" alt="image-20210820140104734"></p>
 <h3 id="线程池原理">线程池原理</h3>
@@ -316,9 +321,9 @@ input.PC_MARK1:focus{
 </div><footer class="post-footer">
       
       <nav class="post-nav">
-        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%8E%9F%E7%90%86/">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E7%90%86%E8%A7%A3%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E6%9C%AC%E8%B4%A8/">
             <i class="iconfont icon-left"></i>
-            <span class="prev-text nav-default">协程的原理</span>
+            <span class="prev-text nav-default">线程安全的本质</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
         <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/cyclicbarrier/">
@@ -414,7 +419,7 @@ input.PC_MARK1:focus{
 
 
 
-<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
+<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
   <script type="text/javascript">
     window.MathJax = {
       tex: {

@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.97.3 with theme even" />
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/linux%E5%86%85%E6%A0%B8%E7%90%86%E8%A7%A3/linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%8E%9F%E7%90%86/linux_file_storage_inode/" />
@@ -43,14 +43,17 @@
 <meta property="og:title" content="linux file storage_inode" />
 <meta property="og:description" content="文件存储结构 大部分的Linux文件系统（如ext2、ext3）规定，一个文件由目录项、inode和数据块组成 目录项：包括文件名和inode节" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/linux%E5%86%85%E6%A0%B8%E7%90%86%E8%A7%A3/linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%8E%9F%E7%90%86/linux_file_storage_inode/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/linux%E5%86%85%E6%A0%B8%E7%90%86%E8%A7%A3/linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%8E%9F%E7%90%86/linux_file_storage_inode/" />
 <meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
 <meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
-
 <meta itemprop="name" content="linux file storage_inode">
-<meta itemprop="description" content="文件存储结构 大部分的Linux文件系统（如ext2、ext3）规定，一个文件由目录项、inode和数据块组成 目录项：包括文件名和inode节"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
-<meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
-<meta itemprop="wordCount" content="2143">
+<meta itemprop="description" content="文件存储结构 大部分的Linux文件系统（如ext2、ext3）规定，一个文件由目录项、inode和数据块组成 目录项：包括文件名和inode节">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="2154">
+
+
+
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="linux file storage_inode"/>
 <meta name="twitter:description" content="文件存储结构 大部分的Linux文件系统（如ext2、ext3）规定，一个文件由目录项、inode和数据块组成 目录项：包括文件名和inode节"/>
@@ -185,7 +188,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
-          <span class="more-meta"> 约 2143 字 </span>
+          <span class="more-meta"> 约 2154 字 </span>
           <span class="more-meta"> 预计阅读 5 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -232,7 +235,7 @@ input.PC_MARK1:focus{
 </ul>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -245,25 +248,27 @@ input.PC_MARK1:focus{
 </span><span class="lnt">11
 </span><span class="lnt">12
 </span><span class="lnt">13
+</span><span class="lnt">14
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">stat test.sh
-</span></span><span class="line"><span class="cl">:<span class="s">&lt;&lt;EOF
-</span></span></span><span class="line"><span class="cl"><span class="s">文件：test.sh
-</span></span></span><span class="line"><span class="cl"><span class="s">  大小：90              块：8          IO 块：4096   普通文件
-</span></span></span><span class="line"><span class="cl"><span class="s">设备：810h/2064d        Inode：3620        硬链接：1
-</span></span></span><span class="line"><span class="cl"><span class="s">权限：(0764/-rwxrw-r--)  Uid：( 1000/     lyr)   Gid：( 1000/     lyr)
-</span></span></span><span class="line"><span class="cl"><span class="s">最近访问：2021-09-21 23:25:30.164995900 +0800
-</span></span></span><span class="line"><span class="cl"><span class="s">最近更改：2021-09-21 23:25:25.564995900 +0800
-</span></span></span><span class="line"><span class="cl"><span class="s">最近改动：2021-09-21 23:25:25.684995900 +0800
-</span></span></span><span class="line"><span class="cl"><span class="s">创建时间：-
-</span></span></span><span class="line"><span class="cl"><span class="s">
-</span></span></span><span class="line"><span class="cl"><span class="s">EOF</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-bash" data-lang="bash">
+stat test.sh
+:<span class="s">&lt;&lt;EOF
+</span><span class="s">文件：test.sh
+</span><span class="s">  大小：90              块：8          IO 块：4096   普通文件
+</span><span class="s">设备：810h/2064d        Inode：3620        硬链接：1
+</span><span class="s">权限：(0764/-rwxrw-r--)  Uid：( 1000/     lyr)   Gid：( 1000/     lyr)
+</span><span class="s">最近访问：2021-09-21 23:25:30.164995900 +0800
+</span><span class="s">最近更改：2021-09-21 23:25:25.564995900 +0800
+</span><span class="s">最近改动：2021-09-21 23:25:25.684995900 +0800
+</span><span class="s">创建时间：-
+</span><span class="s">
+</span><span class="s">EOF</span>
+
+</code></pre></td></tr></table>
 </div>
-</div><p>操作系统读取硬盘的时候，不会一个扇区一个扇区地读取，这样效率太低，而是一次性连续读取多个扇区，即一次性读取一个&quot;块&quot;（block）。这种由多个扇区组成的&quot;块&quot;，是文件存取的最小单位。，即连续八个 sector组成一个 block。</p>
-<p><strong>文件数据都储存在&quot;块&quot;中</strong>，那么很显然，<strong>我们还必须找到一个地方储存文件</strong>的<strong>元信息</strong>，比如文件的创建者、文件的创建日期、文件的大小等等。这种<strong>储存文件元信息的区域就叫做inode</strong>，中文译名为&quot;索引节点&quot;。</p>
+</div><p>操作系统读取硬盘的时候，不会一个扇区一个扇区地读取，这样效率太低，而是一次性连续读取多个扇区，即一次性读取一个&quot;块&rdquo;（block）。这种由多个扇区组成的&quot;块&rdquo;，是文件存取的最小单位。，即连续八个 sector组成一个 block。</p>
+<p><strong>文件数据都储存在&quot;块&quot;中</strong>，那么很显然，<strong>我们还必须找到一个地方储存文件</strong>的<strong>元信息</strong>，比如文件的创建者、文件的创建日期、文件的大小等等。这种<strong>储存文件元信息的区域就叫做inode</strong>，中文译名为&quot;索引节点&rdquo;。</p>
 <p>inode包含文件的元信息，具体来说有以下内容：</p>
 <ul>
 <li>文件的字节数。</li>
@@ -285,23 +290,23 @@ input.PC_MARK1:focus{
 <p>查看每个inode节点的大小，可以用如下命令：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo dumpe2fs -h /dev/hda <span class="p">|</span> grep <span class="s2">&#34;Inode size&#34;</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-bash" data-lang="bash">sudo dumpe2fs -h /dev/hda <span class="p">|</span> grep <span class="s2">&#34;Inode size&#34;</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>由于<strong>每个文件都必须有一个inode</strong>，因此有可能<strong>发生inode已经用光</strong>，<strong>但是硬盘还未存满的情况</strong>。这时，就无法在硬盘上创建新文件。</p>
 <h3 id="查看inode-的-id">查看inode 的 id</h3>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ls -i app.sh
-</span></span><span class="line"><span class="cl"><span class="c1"># 51738 app.sh</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-bash" data-lang="bash">ls -i app.sh
+<span class="c1"># 51738 app.sh</span>
+</code></pre></td></tr></table>
 </div>
 </div><h2 id="3-目录项">3. 目录项</h2>
 <p>Linux系统中，目录（directory）也是一种文件。打开目录，实际上就是打开目录文件。</p>
@@ -309,36 +314,36 @@ input.PC_MARK1:focus{
 <p>ls命令只列出目录文件中的所有文件名：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ls /etc
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-bash" data-lang="bash">ls /etc
+</code></pre></td></tr></table>
 </div>
 </div><h1 id="软硬链接">软硬链接</h1>
 <h3 id="41-硬链接">4.1. 硬链接</h3>
-<p>一般情况下，文件名和inode号码是&quot;一一对应&quot;关系，每个inode号码对应一个文件名。但是，Linux系统允许，<strong>多个文件名指向同一个inode号码</strong>。这意味着，可以用不同的文件名访问同样的内容；<strong>对文件内容进行修改，会影响到所有文件名</strong>；但是，<strong>删除一个文件名，不影响另一个文件名的访问</strong>。这种情况就被称为&quot;硬链接&quot;（hard link）。</p>
+<p>一般情况下，文件名和inode号码是&quot;一一对应&quot;关系，每个inode号码对应一个文件名。但是，Linux系统允许，<strong>多个文件名指向同一个inode号码</strong>。这意味着，可以用不同的文件名访问同样的内容；<strong>对文件内容进行修改，会影响到所有文件名</strong>；但是，<strong>删除一个文件名，不影响另一个文件名的访问</strong>。这种情况就被称为&quot;硬链接&rdquo;（hard link）。</p>
 <p>ln命令可以创建硬链接</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ln source_file target_file
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-bash" data-lang="bash">ln source_file target_file
+</code></pre></td></tr></table>
 </div>
-</div><p>这里顺便说一下目录文件的&quot;链接数&quot;。<strong>创建目录时</strong>，默认<strong>会生成两个目录项</strong>：&quot;.&ldquo;和&rdquo;..&quot;。<strong>前者的inode号码就是当前目录的inode号码，等同于当前目录的&quot;硬链接&quot;</strong>；<strong>后者的inode号码就是当前目录的父目录的inode号码</strong>，<strong>等同于父目录的&quot;硬链接&quot;</strong>。所以，<strong>任何一个目录的&quot;硬链接&quot;总数</strong>，总是等于2加上它的子目录总数（含隐藏目录）,这里的2是父目录对其的“硬链接”和当前目录下的&quot;.硬链接“。</p>
+</div><p>这里顺便说一下目录文件的&quot;链接数&rdquo;。<strong>创建目录时</strong>，默认<strong>会生成两个目录项</strong>：&rdquo;.&ldquo;和&rdquo;..&quot;。<strong>前者的inode号码就是当前目录的inode号码，等同于当前目录的&quot;硬链接&rdquo;</strong>；<strong>后者的inode号码就是当前目录的父目录的inode号码</strong>，<strong>等同于父目录的&quot;硬链接&rdquo;</strong>。所以，<strong>任何一个目录的&quot;硬链接&quot;总数</strong>，总是等于2加上它的子目录总数（含隐藏目录）,这里的2是父目录对其的“硬链接”和当前目录下的&rdquo;.硬链接“。</p>
 <h3 id="软链接">软链接</h3>
-<p>除了硬链接以外，还有一种特殊情况。文件A和文件B的inode号码虽然不一样，但是文件A的内容是文件B的路径。读取文件A时，系统会自动将访问者导向文件B。因此，无论打开哪一个文件，最终读取的都是文件B。这时，文件A就称为文件B的&quot;软链接&quot;（soft link）或者&quot;符号链接（symbolic link）。</p>
+<p>除了硬链接以外，还有一种特殊情况。文件A和文件B的inode号码虽然不一样，但是文件A的内容是文件B的路径。读取文件A时，系统会自动将访问者导向文件B。因此，无论打开哪一个文件，最终读取的都是文件B。这时，文件A就称为文件B的&quot;软链接&rdquo;（soft link）或者&quot;符号链接（symbolic link）。</p>
 <p>这意味着，文件A依赖于文件B而存在，如果删除了文件B，打开文件A就会报错：&ldquo;No such file or directory&rdquo;。这是软链接与硬链接最大的不同：文件A指向文件B的文件名，而不是文件B的inode号码，文件B的inode&quot;链接数&quot;不会因此发生变化。</p>
 <p>ln -s命令可以创建软链接</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ln -s source_file target_file
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-bash" data-lang="bash">ln -s source_file target_file
+</code></pre></td></tr></table>
 </div>
 </div><p>相当于快捷方式这样子喽</p>
 
@@ -474,7 +479,7 @@ input.PC_MARK1:focus{
 
 
 
-<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
+<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
   <script type="text/javascript">
     window.MathJax = {
       tex: {

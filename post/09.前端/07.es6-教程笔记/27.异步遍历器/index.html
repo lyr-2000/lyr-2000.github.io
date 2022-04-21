@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.97.3 with theme even" />
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/09.%E5%89%8D%E7%AB%AF/07.es6-%E6%95%99%E7%A8%8B%E7%AC%94%E8%AE%B0/27.%E5%BC%82%E6%AD%A5%E9%81%8D%E5%8E%86%E5%99%A8/" />
@@ -43,14 +43,17 @@
 <meta property="og:title" content="异步遍历器" />
 <meta property="og:description" content="异步遍历器 同步遍历器的问题 《遍历器》一章说过，Iterator 接口是一种数据遍历的协议，只要调用遍历器对象的next方法，就会得到一个对象，" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/09.%E5%89%8D%E7%AB%AF/07.es6-%E6%95%99%E7%A8%8B%E7%AC%94%E8%AE%B0/27.%E5%BC%82%E6%AD%A5%E9%81%8D%E5%8E%86%E5%99%A8/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/09.%E5%89%8D%E7%AB%AF/07.es6-%E6%95%99%E7%A8%8B%E7%AC%94%E8%AE%B0/27.%E5%BC%82%E6%AD%A5%E9%81%8D%E5%8E%86%E5%99%A8/" />
 <meta property="article:published_time" content="2020-02-09T16:00:29+00:00" />
 <meta property="article:modified_time" content="2020-02-09T16:00:29+00:00" />
-
 <meta itemprop="name" content="异步遍历器">
-<meta itemprop="description" content="异步遍历器 同步遍历器的问题 《遍历器》一章说过，Iterator 接口是一种数据遍历的协议，只要调用遍历器对象的next方法，就会得到一个对象，"><meta itemprop="datePublished" content="2020-02-09T16:00:29+00:00" />
-<meta itemprop="dateModified" content="2020-02-09T16:00:29+00:00" />
+<meta itemprop="description" content="异步遍历器 同步遍历器的问题 《遍历器》一章说过，Iterator 接口是一种数据遍历的协议，只要调用遍历器对象的next方法，就会得到一个对象，">
+<meta itemprop="datePublished" content="2020-02-09T16:00:29&#43;00:00" />
+<meta itemprop="dateModified" content="2020-02-09T16:00:29&#43;00:00" />
 <meta itemprop="wordCount" content="4629">
+
+
+
 <meta itemprop="keywords" content="ES6," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="异步遍历器"/>
 <meta name="twitter:description" content="异步遍历器 同步遍历器的问题 《遍历器》一章说过，Iterator 接口是一种数据遍历的协议，只要调用遍历器对象的next方法，就会得到一个对象，"/>
@@ -219,7 +222,7 @@ input.PC_MARK1:focus{
 <!-- more -->
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -237,29 +240,29 @@ input.PC_MARK1:focus{
 </span><span class="lnt">16
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">function</span> <span class="nx">idMaker</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="kd">let</span> <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="p">{</span> <span class="nx">value</span><span class="o">:</span> <span class="nx">index</span><span class="o">++</span><span class="p">,</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span> <span class="p">};</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">  <span class="p">};</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">it</span> <span class="o">=</span> <span class="nx">idMaker</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span> <span class="c1">// 0
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span> <span class="c1">// 1
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span> <span class="c1">// 2
-</span></span></span><span class="line"><span class="cl"><span class="c1">// ...
-</span></span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">idMaker</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="p">{</span> <span class="nx">value</span><span class="o">:</span> <span class="nx">index</span><span class="o">++</span><span class="p">,</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span> <span class="p">};</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">it</span> <span class="o">=</span> <span class="nx">idMaker</span><span class="p">();</span>
+
+<span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span> <span class="c1">// 0
+</span><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span> <span class="c1">// 1
+</span><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span> <span class="c1">// 2
+</span><span class="c1">// ...
+</span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，变量<code>it</code>是一个遍历器（iterator）。每次调用<code>it.next()</code>方法，就返回一个对象，表示当前遍历位置的信息。</p>
 <p>这里隐含着一个规定，<code>it.next()</code>方法必须是同步的，只要调用就必须立刻返回值。也就是说，一旦执行<code>it.next()</code>方法，就必须同步地得到<code>value</code>和<code>done</code>这两个属性。如果遍历指针正好指向同步操作，当然没有问题，但对于异步操作，就不太合适了。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -274,26 +277,26 @@ input.PC_MARK1:focus{
 </span><span class="lnt">13
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">function</span> <span class="nx">idMaker</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="kd">let</span> <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">setTimeout</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">          <span class="nx">resolve</span><span class="p">({</span> <span class="nx">value</span><span class="o">:</span> <span class="nx">index</span><span class="o">++</span><span class="p">,</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span> <span class="p">});</span>
-</span></span><span class="line"><span class="cl">        <span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">      <span class="p">});</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">  <span class="p">};</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">idMaker</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">setTimeout</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+          <span class="nx">resolve</span><span class="p">({</span> <span class="nx">value</span><span class="o">:</span> <span class="nx">index</span><span class="o">++</span><span class="p">,</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span> <span class="p">});</span>
+        <span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
+      <span class="p">});</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，<code>next()</code>方法返回的是一个 Promise 对象，这样就不行，不符合 Iterator 协议，只要代码里面包含异步操作都不行。也就是说，Iterator 协议里面<code>next()</code>方法只能包含同步操作。</p>
 <p>目前的解决方法是，将异步操作包装成 Thunk 函数或者 Promise 对象，即<code>next()</code>方法返回值的<code>value</code>属性是一个 Thunk 函数或者 Promise 对象，等待以后返回真正的值，而<code>done</code>属性则还是同步产生的。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -314,26 +317,26 @@ input.PC_MARK1:focus{
 </span><span class="lnt">19
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">function</span> <span class="nx">idMaker</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="kd">let</span> <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">value</span><span class="o">:</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">(</span><span class="nx">resolve</span> <span class="p">=&gt;</span> <span class="nx">setTimeout</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="nx">resolve</span><span class="p">(</span><span class="nx">index</span><span class="o">++</span><span class="p">),</span> <span class="mi">1000</span><span class="p">)),</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span>
-</span></span><span class="line"><span class="cl">      <span class="p">};</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">  <span class="p">};</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">it</span> <span class="o">=</span> <span class="nx">idMaker</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">o</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">o</span><span class="p">))</span> <span class="c1">// 1
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">o</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">o</span><span class="p">))</span> <span class="c1">// 2
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">o</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">o</span><span class="p">))</span> <span class="c1">// 3
-</span></span></span><span class="line"><span class="cl"><span class="c1">// ...
-</span></span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">idMaker</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="p">{</span>
+        <span class="nx">value</span><span class="o">:</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">(</span><span class="nx">resolve</span> <span class="p">=&gt;</span> <span class="nx">setTimeout</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="nx">resolve</span><span class="p">(</span><span class="nx">index</span><span class="o">++</span><span class="p">),</span> <span class="mi">1000</span><span class="p">)),</span>
+        <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span>
+      <span class="p">};</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">it</span> <span class="o">=</span> <span class="nx">idMaker</span><span class="p">();</span>
+
+<span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">o</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">o</span><span class="p">))</span> <span class="c1">// 1
+</span><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">o</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">o</span><span class="p">))</span> <span class="c1">// 2
+</span><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">o</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">o</span><span class="p">))</span> <span class="c1">// 3
+</span><span class="c1">// ...
+</span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，<code>value</code>属性的返回值是一个 Promise 对象，用来放置异步操作。但是这样写很麻烦，不太符合直觉，语义也比较绕。</p>
 <p>ES2018 <a href="https://github.com/tc39/proposal-async-iteration">引入</a>了“异步遍历器”（Async Iterator），为异步操作提供原生的遍历器接口，即<code>value</code>和<code>done</code>这两个属性都是异步产生。</p>
@@ -341,26 +344,26 @@ input.PC_MARK1:focus{
 <p>异步遍历器的最大的语法特点，就是调用遍历器的<code>next</code>方法，返回的是一个 Promise 对象。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="nx">asyncIterator</span>
-</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="nx">next</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="nx">then</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="p">({</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">done</span> <span class="p">})</span> <span class="p">=&gt;</span> <span class="cm">/* ... */</span>
-</span></span><span class="line"><span class="cl">  <span class="p">);</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">asyncIterator</span>
+  <span class="p">.</span><span class="nx">next</span><span class="p">()</span>
+  <span class="p">.</span><span class="nx">then</span><span class="p">(</span>
+    <span class="p">({</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">done</span> <span class="p">})</span> <span class="p">=&gt;</span> <span class="cm">/* ... */</span>
+  <span class="p">);</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，<code>asyncIterator</code>是一个异步遍历器，调用<code>next</code>方法以后，返回一个 Promise 对象。因此，可以使用<code>then</code>方法指定，这个 Promise 对象的状态变为<code>resolve</code>以后的回调函数。回调函数的参数，则是一个具有<code>value</code>和<code>done</code>两个属性的对象，这个跟同步遍历器是一样的。</p>
 <p>我们知道，一个对象的同步遍历器的接口，部署在<code>Symbol.iterator</code>属性上面。同样地，对象的异步遍历器接口，部署在<code>Symbol.asyncIterator</code>属性上面。不管是什么样的对象，只要它的<code>Symbol.asyncIterator</code>属性有值，就表示应该对它进行异步遍历。</p>
 <p>下面是一个异步遍历器的例子。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -378,29 +381,29 @@ input.PC_MARK1:focus{
 </span><span class="lnt">16
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">asyncIterable</span> <span class="o">=</span> <span class="nx">createAsyncIterable</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]);</span>
-</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">asyncIterator</span> <span class="o">=</span> <span class="nx">asyncIterable</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">asyncIterator</span><span class="p">]();</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nx">asyncIterator</span>
-</span></span><span class="line"><span class="cl"><span class="p">.</span><span class="nx">next</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">iterResult1</span> <span class="p">=&gt;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">iterResult1</span><span class="p">);</span> <span class="c1">// { value: &#39;a&#39;, done: false }
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">return</span> <span class="nx">asyncIterator</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl"><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">iterResult2</span> <span class="p">=&gt;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">iterResult2</span><span class="p">);</span> <span class="c1">// { value: &#39;b&#39;, done: false }
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">return</span> <span class="nx">asyncIterator</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl"><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">iterResult3</span> <span class="p">=&gt;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">iterResult3</span><span class="p">);</span> <span class="c1">// { value: undefined, done: true }
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">});</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kr">const</span> <span class="nx">asyncIterable</span> <span class="o">=</span> <span class="nx">createAsyncIterable</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]);</span>
+<span class="kr">const</span> <span class="nx">asyncIterator</span> <span class="o">=</span> <span class="nx">asyncIterable</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">asyncIterator</span><span class="p">]();</span>
+
+<span class="nx">asyncIterator</span>
+<span class="p">.</span><span class="nx">next</span><span class="p">()</span>
+<span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">iterResult1</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">iterResult1</span><span class="p">);</span> <span class="c1">// { value: &#39;a&#39;, done: false }
+</span><span class="c1"></span>  <span class="k">return</span> <span class="nx">asyncIterator</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
+<span class="p">})</span>
+<span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">iterResult2</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">iterResult2</span><span class="p">);</span> <span class="c1">// { value: &#39;b&#39;, done: false }
+</span><span class="c1"></span>  <span class="k">return</span> <span class="nx">asyncIterator</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
+<span class="p">})</span>
+<span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">iterResult3</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">iterResult3</span><span class="p">);</span> <span class="c1">// { value: undefined, done: true }
+</span><span class="c1"></span><span class="p">});</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，异步遍历器其实返回了两次值。第一次调用的时候，返回一个 Promise 对象；等到 Promise 对象<code>resolve</code>了，再返回一个表示当前数据成员信息的对象。这就是说，异步遍历器与同步遍历器最终行为是一致的，只是会先返回 Promise 对象，作为中介。</p>
 <p>由于异步遍历器的<code>next</code>方法，返回的是一个 Promise 对象。因此，可以把它放在<code>await</code>命令后面。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -412,23 +415,23 @@ input.PC_MARK1:focus{
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span> <span class="nx">f</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">asyncIterable</span> <span class="o">=</span> <span class="nx">createAsyncIterable</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]);</span>
-</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">asyncIterator</span> <span class="o">=</span> <span class="nx">asyncIterable</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">asyncIterator</span><span class="p">]();</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="kr">await</span> <span class="nx">asyncIterator</span><span class="p">.</span><span class="nx">next</span><span class="p">());</span>
-</span></span><span class="line"><span class="cl">  <span class="c1">// { value: &#39;a&#39;, done: false }
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="kr">await</span> <span class="nx">asyncIterator</span><span class="p">.</span><span class="nx">next</span><span class="p">());</span>
-</span></span><span class="line"><span class="cl">  <span class="c1">// { value: &#39;b&#39;, done: false }
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="kr">await</span> <span class="nx">asyncIterator</span><span class="p">.</span><span class="nx">next</span><span class="p">());</span>
-</span></span><span class="line"><span class="cl">  <span class="c1">// { value: undefined, done: true }
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">async</span> <span class="kd">function</span> <span class="nx">f</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">asyncIterable</span> <span class="o">=</span> <span class="nx">createAsyncIterable</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]);</span>
+  <span class="kr">const</span> <span class="nx">asyncIterator</span> <span class="o">=</span> <span class="nx">asyncIterable</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">asyncIterator</span><span class="p">]();</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">await</span> <span class="nx">asyncIterator</span><span class="p">.</span><span class="nx">next</span><span class="p">());</span>
+  <span class="c1">// { value: &#39;a&#39;, done: false }
+</span><span class="c1"></span>  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">await</span> <span class="nx">asyncIterator</span><span class="p">.</span><span class="nx">next</span><span class="p">());</span>
+  <span class="c1">// { value: &#39;b&#39;, done: false }
+</span><span class="c1"></span>  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">await</span> <span class="nx">asyncIterator</span><span class="p">.</span><span class="nx">next</span><span class="p">());</span>
+  <span class="c1">// { value: undefined, done: true }
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，<code>next</code>方法用<code>await</code>处理以后，就不必使用<code>then</code>方法了。整个流程已经很接近同步处理了。</p>
 <p>注意，异步遍历器的<code>next</code>方法是可以连续调用的，不必等到上一步产生的 Promise 对象<code>resolve</code>以后再调用。这种情况下，<code>next</code>方法会累积起来，自动按照每一步的顺序运行下去。下面是一个例子，把所有的<code>next</code>方法放在<code>Promise.all</code>方法里面。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -437,19 +440,19 @@ input.PC_MARK1:focus{
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">asyncIterable</span> <span class="o">=</span> <span class="nx">createAsyncIterable</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]);</span>
-</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">asyncIterator</span> <span class="o">=</span> <span class="nx">asyncIterable</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">asyncIterator</span><span class="p">]();</span>
-</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="p">[{</span><span class="nx">value</span><span class="o">:</span> <span class="nx">v1</span><span class="p">},</span> <span class="p">{</span><span class="nx">value</span><span class="o">:</span> <span class="nx">v2</span><span class="p">}]</span> <span class="o">=</span> <span class="kr">await</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">([</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">asyncIterator</span><span class="p">.</span><span class="nx">next</span><span class="p">(),</span> <span class="nx">asyncIterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="p">]);</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">v1</span><span class="p">,</span> <span class="nx">v2</span><span class="p">);</span> <span class="c1">// a b
-</span></span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kr">const</span> <span class="nx">asyncIterable</span> <span class="o">=</span> <span class="nx">createAsyncIterable</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]);</span>
+<span class="kr">const</span> <span class="nx">asyncIterator</span> <span class="o">=</span> <span class="nx">asyncIterable</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">asyncIterator</span><span class="p">]();</span>
+<span class="kr">const</span> <span class="p">[{</span><span class="nx">value</span><span class="o">:</span> <span class="nx">v1</span><span class="p">},</span> <span class="p">{</span><span class="nx">value</span><span class="o">:</span> <span class="nx">v2</span><span class="p">}]</span> <span class="o">=</span> <span class="nx">await</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">([</span>
+  <span class="nx">asyncIterator</span><span class="p">.</span><span class="nx">next</span><span class="p">(),</span> <span class="nx">asyncIterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span>
+<span class="p">]);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">v1</span><span class="p">,</span> <span class="nx">v2</span><span class="p">);</span> <span class="c1">// a b
+</span></code></pre></td></tr></table>
 </div>
 </div><p>另一种用法是一次性调用所有的<code>next</code>方法，然后<code>await</code>最后一步操作。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -459,21 +462,21 @@ input.PC_MARK1:focus{
 </span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span> <span class="nx">runner</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">writer</span> <span class="o">=</span> <span class="nx">openFile</span><span class="p">(</span><span class="s1">&#39;someFile.txt&#39;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">writer</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">writer</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="s1">&#39;world&#39;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="kr">await</span> <span class="nx">writer</span><span class="p">.</span><span class="k">return</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nx">runner</span><span class="p">();</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">async</span> <span class="kd">function</span> <span class="nx">runner</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">writer</span> <span class="o">=</span> <span class="nx">openFile</span><span class="p">(</span><span class="s1">&#39;someFile.txt&#39;</span><span class="p">);</span>
+  <span class="nx">writer</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">);</span>
+  <span class="nx">writer</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="s1">&#39;world&#39;</span><span class="p">);</span>
+  <span class="nx">await</span> <span class="nx">writer</span><span class="p">.</span><span class="k">return</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="nx">runner</span><span class="p">();</span>
+</code></pre></td></tr></table>
 </div>
 </div><h2 id="for-awaitof">for await&hellip;of</h2>
 <p>前面介绍过，<code>for...of</code>循环用于遍历同步的 Iterator 接口。新引入的<code>for await...of</code>循环，则是用于遍历异步的 Iterator 接口。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -482,20 +485,20 @@ input.PC_MARK1:focus{
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span> <span class="nx">f</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="kr">await</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">x</span> <span class="k">of</span> <span class="nx">createAsyncIterable</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]))</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="c1">// a
-</span></span></span><span class="line"><span class="cl"><span class="c1">// b
-</span></span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">async</span> <span class="kd">function</span> <span class="nx">f</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">for</span> <span class="nx">await</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">x</span> <span class="k">of</span> <span class="nx">createAsyncIterable</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]))</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1">// a
+</span><span class="c1">// b
+</span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，<code>createAsyncIterable()</code>返回一个拥有异步遍历器接口的对象，<code>for...of</code>循环自动调用这个对象的异步遍历器的<code>next</code>方法，会得到一个 Promise 对象。<code>await</code>用来处理这个 Promise 对象，一旦<code>resolve</code>，就把得到的值（<code>x</code>）传入<code>for...of</code>的循环体。</p>
 <p><code>for await...of</code>循环的一个用途，是部署了 asyncIterable 操作的异步接口，可以直接放入这个循环。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -504,20 +507,20 @@ input.PC_MARK1:focus{
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">body</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span> <span class="nx">f</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="kr">await</span><span class="p">(</span><span class="kr">const</span> <span class="nx">data</span> <span class="k">of</span> <span class="nx">req</span><span class="p">)</span> <span class="nx">body</span> <span class="o">+=</span> <span class="nx">data</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">parsed</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">body</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;got&#39;</span><span class="p">,</span> <span class="nx">parsed</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">body</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+
+<span class="nx">async</span> <span class="kd">function</span> <span class="nx">f</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">for</span> <span class="nx">await</span><span class="p">(</span><span class="kr">const</span> <span class="nx">data</span> <span class="k">of</span> <span class="nx">req</span><span class="p">)</span> <span class="nx">body</span> <span class="o">+=</span> <span class="nx">data</span><span class="p">;</span>
+  <span class="kr">const</span> <span class="nx">parsed</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">body</span><span class="p">);</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;got&#39;</span><span class="p">,</span> <span class="nx">parsed</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，<code>req</code>是一个 asyncIterable 对象，用来异步读取数据。可以看到，使用<code>for await...of</code>循环以后，代码会非常简洁。</p>
 <p>如果<code>next</code>方法返回的 Promise 对象被<code>reject</code>，<code>for await...of</code>就会报错，要用<code>try...catch</code>捕捉。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -528,21 +531,21 @@ input.PC_MARK1:focus{
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="k">try</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="kr">await</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">x</span> <span class="k">of</span> <span class="nx">createRejectingIterable</span><span class="p">())</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">async</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="k">try</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="nx">await</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">x</span> <span class="k">of</span> <span class="nx">createRejectingIterable</span><span class="p">())</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>注意，<code>for await...of</code>循环也可以用于同步遍历器。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -551,19 +554,19 @@ input.PC_MARK1:focus{
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="p">(</span><span class="kr">async</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="kr">await</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">x</span> <span class="k">of</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">])</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">})();</span>
-</span></span><span class="line"><span class="cl"><span class="c1">// a
-</span></span></span><span class="line"><span class="cl"><span class="c1">// b
-</span></span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="p">(</span><span class="nx">async</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="k">for</span> <span class="nx">await</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">x</span> <span class="k">of</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">])</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">})();</span>
+<span class="c1">// a
+</span><span class="c1">// b
+</span></code></pre></td></tr></table>
 </div>
 </div><p>Node v10 支持异步遍历器，Stream 就部署了这个接口。下面是读取文件的传统写法与异步遍历器写法的差异。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -591,40 +594,40 @@ input.PC_MARK1:focus{
 </span><span class="lnt">26
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="c1">// 传统写法
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">function</span> <span class="nx">main</span><span class="p">(</span><span class="nx">inputFilePath</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">readStream</span> <span class="o">=</span> <span class="nx">fs</span><span class="p">.</span><span class="nx">createReadStream</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">inputFilePath</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="p">{</span> <span class="nx">encoding</span><span class="o">:</span> <span class="s1">&#39;utf8&#39;</span><span class="p">,</span> <span class="nx">highWaterMark</span><span class="o">:</span> <span class="mi">1024</span> <span class="p">}</span>
-</span></span><span class="line"><span class="cl">  <span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">readStream</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">chunk</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;&gt;&gt;&gt; &#39;</span><span class="o">+</span><span class="nx">chunk</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="p">});</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">readStream</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;### DONE ###&#39;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="p">});</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1">// 异步遍历器写法
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kr">async</span> <span class="kd">function</span> <span class="nx">main</span><span class="p">(</span><span class="nx">inputFilePath</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">readStream</span> <span class="o">=</span> <span class="nx">fs</span><span class="p">.</span><span class="nx">createReadStream</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">inputFilePath</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="p">{</span> <span class="nx">encoding</span><span class="o">:</span> <span class="s1">&#39;utf8&#39;</span><span class="p">,</span> <span class="nx">highWaterMark</span><span class="o">:</span> <span class="mi">1024</span> <span class="p">}</span>
-</span></span><span class="line"><span class="cl">  <span class="p">);</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="kr">await</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">chunk</span> <span class="k">of</span> <span class="nx">readStream</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;&gt;&gt;&gt; &#39;</span><span class="o">+</span><span class="nx">chunk</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;### DONE ###&#39;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// 传统写法
+</span><span class="c1"></span><span class="kd">function</span> <span class="nx">main</span><span class="p">(</span><span class="nx">inputFilePath</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">readStream</span> <span class="o">=</span> <span class="nx">fs</span><span class="p">.</span><span class="nx">createReadStream</span><span class="p">(</span>
+    <span class="nx">inputFilePath</span><span class="p">,</span>
+    <span class="p">{</span> <span class="nx">encoding</span><span class="o">:</span> <span class="s1">&#39;utf8&#39;</span><span class="p">,</span> <span class="nx">highWaterMark</span><span class="o">:</span> <span class="mi">1024</span> <span class="p">}</span>
+  <span class="p">);</span>
+  <span class="nx">readStream</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">chunk</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;&gt;&gt;&gt; &#39;</span><span class="o">+</span><span class="nx">chunk</span><span class="p">);</span>
+  <span class="p">});</span>
+  <span class="nx">readStream</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;### DONE ###&#39;</span><span class="p">);</span>
+  <span class="p">});</span>
+<span class="p">}</span>
+
+<span class="c1">// 异步遍历器写法
+</span><span class="c1"></span><span class="nx">async</span> <span class="kd">function</span> <span class="nx">main</span><span class="p">(</span><span class="nx">inputFilePath</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">readStream</span> <span class="o">=</span> <span class="nx">fs</span><span class="p">.</span><span class="nx">createReadStream</span><span class="p">(</span>
+    <span class="nx">inputFilePath</span><span class="p">,</span>
+    <span class="p">{</span> <span class="nx">encoding</span><span class="o">:</span> <span class="s1">&#39;utf8&#39;</span><span class="p">,</span> <span class="nx">highWaterMark</span><span class="o">:</span> <span class="mi">1024</span> <span class="p">}</span>
+  <span class="p">);</span>
+
+  <span class="k">for</span> <span class="nx">await</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">chunk</span> <span class="k">of</span> <span class="nx">readStream</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;&gt;&gt;&gt; &#39;</span><span class="o">+</span><span class="nx">chunk</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;### DONE ###&#39;</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><h2 id="异步-generator-函数">异步 Generator 函数</h2>
 <p>就像 Generator 函数返回一个同步遍历器对象一样，异步 Generator 函数的作用，是返回一个异步遍历器对象。</p>
 <p>在语法上，异步 Generator 函数就是<code>async</code>函数与 Generator 函数的结合。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -632,19 +635,19 @@ input.PC_MARK1:focus{
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">gen</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="k">yield</span> <span class="s1">&#39;hello&#39;</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">genObj</span> <span class="o">=</span> <span class="nx">gen</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl"><span class="nx">genObj</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">x</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">));</span>
-</span></span><span class="line"><span class="cl"><span class="c1">// { value: &#39;hello&#39;, done: false }
-</span></span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">gen</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">yield</span> <span class="s1">&#39;hello&#39;</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kr">const</span> <span class="nx">genObj</span> <span class="o">=</span> <span class="nx">gen</span><span class="p">();</span>
+<span class="nx">genObj</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">x</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">));</span>
+<span class="c1">// { value: &#39;hello&#39;, done: false }
+</span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，<code>gen</code>是一个异步 Generator 函数，执行后返回一个异步 Iterator 对象。对该对象调用<code>next</code>方法，返回一个 Promise 对象。</p>
 <p>异步遍历器的设计目的之一，就是 Generator 函数处理同步操作和异步操作时，能够使用同一套接口。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -665,32 +668,32 @@ input.PC_MARK1:focus{
 </span><span class="lnt">19
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="c1">// 同步 Generator 函数
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">function</span><span class="o">*</span> <span class="nx">map</span><span class="p">(</span><span class="nx">iterable</span><span class="p">,</span> <span class="nx">func</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">iter</span> <span class="o">=</span> <span class="nx">iterable</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]();</span>
-</span></span><span class="line"><span class="cl">  <span class="k">while</span> <span class="p">(</span><span class="kc">true</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="kr">const</span> <span class="p">{</span><span class="nx">value</span><span class="p">,</span> <span class="nx">done</span><span class="p">}</span> <span class="o">=</span> <span class="nx">iter</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="k">yield</span> <span class="nx">func</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1">// 异步 Generator 函数
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kr">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">map</span><span class="p">(</span><span class="nx">iterable</span><span class="p">,</span> <span class="nx">func</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">iter</span> <span class="o">=</span> <span class="nx">iterable</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">asyncIterator</span><span class="p">]();</span>
-</span></span><span class="line"><span class="cl">  <span class="k">while</span> <span class="p">(</span><span class="kc">true</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="kr">const</span> <span class="p">{</span><span class="nx">value</span><span class="p">,</span> <span class="nx">done</span><span class="p">}</span> <span class="o">=</span> <span class="kr">await</span> <span class="nx">iter</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="k">yield</span> <span class="nx">func</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// 同步 Generator 函数
+</span><span class="c1"></span><span class="kd">function</span><span class="o">*</span> <span class="nx">map</span><span class="p">(</span><span class="nx">iterable</span><span class="p">,</span> <span class="nx">func</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">iter</span> <span class="o">=</span> <span class="nx">iterable</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]();</span>
+  <span class="k">while</span> <span class="p">(</span><span class="kc">true</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">{</span><span class="nx">value</span><span class="p">,</span> <span class="nx">done</span><span class="p">}</span> <span class="o">=</span> <span class="nx">iter</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="nx">func</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// 异步 Generator 函数
+</span><span class="c1"></span><span class="nx">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">map</span><span class="p">(</span><span class="nx">iterable</span><span class="p">,</span> <span class="nx">func</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">iter</span> <span class="o">=</span> <span class="nx">iterable</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">asyncIterator</span><span class="p">]();</span>
+  <span class="k">while</span> <span class="p">(</span><span class="kc">true</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">{</span><span class="nx">value</span><span class="p">,</span> <span class="nx">done</span><span class="p">}</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">iter</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="nx">func</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，<code>map</code>是一个 Generator 函数，第一个参数是可遍历对象<code>iterable</code>，第二个参数是一个回调函数<code>func</code>。<code>map</code>的作用是将<code>iterable</code>每一步返回的值，使用<code>func</code>进行处理。上面有两个版本的<code>map</code>，前一个处理同步遍历器，后一个处理异步遍历器，可以看到两个版本的写法基本上是一致的。</p>
 <p>下面是另一个异步 Generator 函数的例子。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -703,59 +706,59 @@ input.PC_MARK1:focus{
 </span><span class="lnt">11
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">readLines</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="kd">let</span> <span class="nx">file</span> <span class="o">=</span> <span class="kr">await</span> <span class="nx">fileOpen</span><span class="p">(</span><span class="nx">path</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">try</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="nx">file</span><span class="p">.</span><span class="nx">EOF</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">      <span class="k">yield</span> <span class="kr">await</span> <span class="nx">file</span><span class="p">.</span><span class="nx">readLine</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">finally</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="kr">await</span> <span class="nx">file</span><span class="p">.</span><span class="nx">close</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">readLines</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">let</span> <span class="nx">file</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">fileOpen</span><span class="p">(</span><span class="nx">path</span><span class="p">);</span>
+
+  <span class="k">try</span> <span class="p">{</span>
+    <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="nx">file</span><span class="p">.</span><span class="nx">EOF</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">yield</span> <span class="nx">await</span> <span class="nx">file</span><span class="p">.</span><span class="nx">readLine</span><span class="p">();</span>
+    <span class="p">}</span>
+  <span class="p">}</span> <span class="k">finally</span> <span class="p">{</span>
+    <span class="nx">await</span> <span class="nx">file</span><span class="p">.</span><span class="nx">close</span><span class="p">();</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，异步操作前面使用<code>await</code>关键字标明，即<code>await</code>后面的操作，应该返回 Promise 对象。凡是使用<code>yield</code>关键字的地方，就是<code>next</code>方法停下来的地方，它后面的表达式的值（即<code>await file.readLine()</code>的值），会作为<code>next()</code>返回对象的<code>value</code>属性，这一点是与同步 Generator 函数一致的。</p>
 <p>异步 Generator 函数内部，能够同时使用<code>await</code>和<code>yield</code>命令。可以这样理解，<code>await</code>命令用于将外部操作产生的值输入函数内部，<code>yield</code>命令用于将函数内部的值输出。</p>
 <p>上面代码定义的异步 Generator 函数的用法如下。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="p">(</span><span class="kr">async</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="kr">await</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">line</span> <span class="k">of</span> <span class="nx">readLines</span><span class="p">(</span><span class="nx">filePath</span><span class="p">))</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">line</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">})()</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="p">(</span><span class="nx">async</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="k">for</span> <span class="nx">await</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">line</span> <span class="k">of</span> <span class="nx">readLines</span><span class="p">(</span><span class="nx">filePath</span><span class="p">))</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">line</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">})()</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>异步 Generator 函数可以与<code>for await...of</code>循环结合起来使用。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">prefixLines</span><span class="p">(</span><span class="nx">asyncIterable</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="kr">await</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">line</span> <span class="k">of</span> <span class="nx">asyncIterable</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="k">yield</span> <span class="s1">&#39;&gt; &#39;</span> <span class="o">+</span> <span class="nx">line</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">prefixLines</span><span class="p">(</span><span class="nx">asyncIterable</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">for</span> <span class="nx">await</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">line</span> <span class="k">of</span> <span class="nx">asyncIterable</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">yield</span> <span class="s1">&#39;&gt; &#39;</span> <span class="o">+</span> <span class="nx">line</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>异步 Generator 函数的返回值是一个异步 Iterator，即每次调用它的<code>next</code>方法，会返回一个 Promise 对象，也就是说，跟在<code>yield</code>命令后面的，应该是一个 Promise 对象。如果像上面那个例子那样，<code>yield</code>命令后面是一个字符串，会被自动包装成一个 Promise 对象。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -774,24 +777,24 @@ input.PC_MARK1:focus{
 </span><span class="lnt">17
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">function</span> <span class="nx">fetchRandom</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">url</span> <span class="o">=</span> <span class="s1">&#39;https://www.random.org/decimal-fractions/&#39;</span>
-</span></span><span class="line"><span class="cl">    <span class="o">+</span> <span class="s1">&#39;?num=1&amp;dec=10&amp;col=1&amp;format=plain&amp;rnd=new&#39;</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="nx">fetch</span><span class="p">(</span><span class="nx">url</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">asyncGenerator</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Start&#39;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="kr">await</span> <span class="nx">fetchRandom</span><span class="p">();</span> <span class="c1">// (A)
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">yield</span> <span class="s1">&#39;Result: &#39;</span> <span class="o">+</span> <span class="kr">await</span> <span class="nx">result</span><span class="p">.</span><span class="nx">text</span><span class="p">();</span> <span class="c1">// (B)
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Done&#39;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">ag</span> <span class="o">=</span> <span class="nx">asyncGenerator</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl"><span class="nx">ag</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">then</span><span class="p">(({</span><span class="nx">value</span><span class="p">,</span> <span class="nx">done</span><span class="p">})</span> <span class="p">=&gt;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl"><span class="p">})</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">fetchRandom</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">url</span> <span class="o">=</span> <span class="s1">&#39;https://www.random.org/decimal-fractions/&#39;</span>
+    <span class="o">+</span> <span class="s1">&#39;?num=1&amp;dec=10&amp;col=1&amp;format=plain&amp;rnd=new&#39;</span><span class="p">;</span>
+  <span class="k">return</span> <span class="nx">fetch</span><span class="p">(</span><span class="nx">url</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nx">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">asyncGenerator</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Start&#39;</span><span class="p">);</span>
+  <span class="kr">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">fetchRandom</span><span class="p">();</span> <span class="c1">// (A)
+</span><span class="c1"></span>  <span class="k">yield</span> <span class="s1">&#39;Result: &#39;</span> <span class="o">+</span> <span class="nx">await</span> <span class="nx">result</span><span class="p">.</span><span class="nx">text</span><span class="p">();</span> <span class="c1">// (B)
+</span><span class="c1"></span>  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Done&#39;</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kr">const</span> <span class="nx">ag</span> <span class="o">=</span> <span class="nx">asyncGenerator</span><span class="p">();</span>
+<span class="nx">ag</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">then</span><span class="p">(({</span><span class="nx">value</span><span class="p">,</span> <span class="nx">done</span><span class="p">})</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+<span class="p">})</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，<code>ag</code>是<code>asyncGenerator</code>函数返回的异步遍历器对象。调用<code>ag.next()</code>以后，上面代码的执行顺序如下。</p>
 <ol>
@@ -805,7 +808,7 @@ input.PC_MARK1:focus{
 <p>A 和 B 两行的作用类似于下面的代码。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -817,22 +820,22 @@ input.PC_MARK1:focus{
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="k">return</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">fetchRandom</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">result</span> <span class="p">=&gt;</span> <span class="nx">result</span><span class="p">.</span><span class="nx">text</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">result</span> <span class="p">=&gt;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">     <span class="nx">resolve</span><span class="p">({</span>
-</span></span><span class="line"><span class="cl">       <span class="nx">value</span><span class="o">:</span> <span class="s1">&#39;Result: &#39;</span> <span class="o">+</span> <span class="nx">result</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">       <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">     <span class="p">});</span>
-</span></span><span class="line"><span class="cl">  <span class="p">});</span>
-</span></span><span class="line"><span class="cl"><span class="p">});</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="k">return</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">fetchRandom</span><span class="p">()</span>
+  <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">result</span> <span class="p">=&gt;</span> <span class="nx">result</span><span class="p">.</span><span class="nx">text</span><span class="p">())</span>
+  <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">result</span> <span class="p">=&gt;</span> <span class="p">{</span>
+     <span class="nx">resolve</span><span class="p">({</span>
+       <span class="nx">value</span><span class="o">:</span> <span class="s1">&#39;Result: &#39;</span> <span class="o">+</span> <span class="nx">result</span><span class="p">,</span>
+       <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+     <span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>如果异步 Generator 函数抛出错误，会导致 Promise 对象的状态变为<code>reject</code>，然后抛出的错误被<code>catch</code>方法捕获。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -841,19 +844,19 @@ input.PC_MARK1:focus{
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">asyncGenerator</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;Problem!&#39;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nx">asyncGenerator</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="p">.</span><span class="nx">next</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="p">.</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">err</span><span class="p">));</span> <span class="c1">// Error: Problem!
-</span></span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">asyncGenerator</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;Problem!&#39;</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nx">asyncGenerator</span><span class="p">()</span>
+<span class="p">.</span><span class="nx">next</span><span class="p">()</span>
+<span class="p">.</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span> <span class="p">=&gt;</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">err</span><span class="p">));</span> <span class="c1">// Error: Problem!
+</span></code></pre></td></tr></table>
 </div>
 </div><p>注意，普通的 async 函数返回的是一个 Promise 对象，而异步 Generator 函数返回的是一个异步 Iterator 对象。可以这样理解，async 函数和异步 Generator 函数，是封装异步操作的两种方法，都用来达到同一种目的。区别在于，前者自带执行器，后者通过<code>for await...of</code>执行，或者自己编写执行器。下面就是一个异步 Generator 函数的执行器。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -865,23 +868,23 @@ input.PC_MARK1:focus{
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span> <span class="nx">takeAsync</span><span class="p">(</span><span class="nx">asyncIterable</span><span class="p">,</span> <span class="nx">count</span> <span class="o">=</span> <span class="kc">Infinity</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="p">[];</span>
-</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">iterator</span> <span class="o">=</span> <span class="nx">asyncIterable</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">asyncIterator</span><span class="p">]();</span>
-</span></span><span class="line"><span class="cl">  <span class="k">while</span> <span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">length</span> <span class="o">&lt;</span> <span class="nx">count</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="kr">const</span> <span class="p">{</span><span class="nx">value</span><span class="p">,</span> <span class="nx">done</span><span class="p">}</span> <span class="o">=</span> <span class="kr">await</span> <span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">result</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="nx">result</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">async</span> <span class="kd">function</span> <span class="nx">takeAsync</span><span class="p">(</span><span class="nx">asyncIterable</span><span class="p">,</span> <span class="nx">count</span> <span class="o">=</span> <span class="kc">Infinity</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="kr">const</span> <span class="nx">iterator</span> <span class="o">=</span> <span class="nx">asyncIterable</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">asyncIterator</span><span class="p">]();</span>
+  <span class="k">while</span> <span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">length</span> <span class="o">&lt;</span> <span class="nx">count</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">const</span> <span class="p">{</span><span class="nx">value</span><span class="p">,</span> <span class="nx">done</span><span class="p">}</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+    <span class="nx">result</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="nx">result</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，异步 Generator 函数产生的异步遍历器，会通过<code>while</code>循环自动执行，每当<code>await iterator.next()</code>完成，就会进入下一轮循环。一旦<code>done</code>属性变为<code>true</code>，就会跳出循环，异步遍历器执行结束。</p>
 <p>下面是这个自动执行器的一个使用实例。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -896,61 +899,61 @@ input.PC_MARK1:focus{
 </span><span class="lnt">13
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span> <span class="nx">f</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="kr">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">gen</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="k">yield</span> <span class="s1">&#39;a&#39;</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="k">yield</span> <span class="s1">&#39;b&#39;</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="k">yield</span> <span class="s1">&#39;c&#39;</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="kr">await</span> <span class="nx">takeAsync</span><span class="p">(</span><span class="nx">gen</span><span class="p">());</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nx">f</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span> <span class="c1">// [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">})</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">async</span> <span class="kd">function</span> <span class="nx">f</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">gen</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">yield</span> <span class="s1">&#39;a&#39;</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="s1">&#39;b&#39;</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="s1">&#39;c&#39;</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="nx">await</span> <span class="nx">takeAsync</span><span class="p">(</span><span class="nx">gen</span><span class="p">());</span>
+<span class="p">}</span>
+
+<span class="nx">f</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span> <span class="c1">// [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]
+</span><span class="c1"></span><span class="p">})</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>异步 Generator 函数出现以后，JavaScript 就有了四种函数形式：普通函数、async 函数、Generator 函数和异步 Generator 函数。请注意区分每种函数的不同之处。基本上，如果是一系列按照顺序执行的异步操作（比如读取文件，然后写入新内容，再存入硬盘），可以使用 async 函数；如果是一系列产生相同数据结构的异步操作（比如一行一行读取文件），可以使用异步 Generator 函数。</p>
 <p>异步 Generator 函数也可以通过<code>next</code>方法的参数，接收外部传入的数据。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">writer</span> <span class="o">=</span> <span class="nx">openFile</span><span class="p">(</span><span class="s1">&#39;someFile.txt&#39;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl"><span class="nx">writer</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">);</span> <span class="c1">// 立即执行
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">writer</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="s1">&#39;world&#39;</span><span class="p">);</span> <span class="c1">// 立即执行
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kr">await</span> <span class="nx">writer</span><span class="p">.</span><span class="k">return</span><span class="p">();</span> <span class="c1">// 等待写入结束
-</span></span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kr">const</span> <span class="nx">writer</span> <span class="o">=</span> <span class="nx">openFile</span><span class="p">(</span><span class="s1">&#39;someFile.txt&#39;</span><span class="p">);</span>
+<span class="nx">writer</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">);</span> <span class="c1">// 立即执行
+</span><span class="c1"></span><span class="nx">writer</span><span class="p">.</span><span class="nx">next</span><span class="p">(</span><span class="s1">&#39;world&#39;</span><span class="p">);</span> <span class="c1">// 立即执行
+</span><span class="c1"></span><span class="nx">await</span> <span class="nx">writer</span><span class="p">.</span><span class="k">return</span><span class="p">();</span> <span class="c1">// 等待写入结束
+</span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，<code>openFile</code>是一个异步 Generator 函数。<code>next</code>方法的参数，向该函数内部的操作传入数据。每次<code>next</code>方法都是同步执行的，最后的<code>await</code>命令用于等待整个写入操作结束。</p>
 <p>最后，同步的数据结构，也可以使用异步 Generator 函数。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">createAsyncIterable</span><span class="p">(</span><span class="nx">syncIterable</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">elem</span> <span class="k">of</span> <span class="nx">syncIterable</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="k">yield</span> <span class="nx">elem</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">createAsyncIterable</span><span class="p">(</span><span class="nx">syncIterable</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">elem</span> <span class="k">of</span> <span class="nx">syncIterable</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">yield</span> <span class="nx">elem</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，由于没有异步操作，所以也就没有使用<code>await</code>关键字。</p>
 <h2 id="yield-语句">yield* 语句</h2>
 <p><code>yield*</code>语句也可以跟一个异步遍历器。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -962,23 +965,23 @@ input.PC_MARK1:focus{
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">gen1</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="k">yield</span> <span class="s1">&#39;a&#39;</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">yield</span> <span class="s1">&#39;b&#39;</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="mi">2</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kr">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">gen2</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="c1">// result 最终会等于 2
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kr">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="k">yield</span><span class="o">*</span> <span class="nx">gen1</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">gen1</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">yield</span> <span class="s1">&#39;a&#39;</span><span class="p">;</span>
+  <span class="k">yield</span> <span class="s1">&#39;b&#39;</span><span class="p">;</span>
+  <span class="k">return</span> <span class="mi">2</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">async</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">gen2</span><span class="p">()</span> <span class="p">{</span>
+  <span class="c1">// result 最终会等于 2
+</span><span class="c1"></span>  <span class="kr">const</span> <span class="nx">result</span> <span class="o">=</span> <span class="k">yield</span><span class="o">*</span> <span class="nx">gen1</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，<code>gen2</code>函数里面的<code>result</code>变量，最后的值是<code>2</code>。</p>
 <p>与同步 Generator 函数一样，<code>for await...of</code>循环会展开<code>yield*</code>。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -987,14 +990,14 @@ input.PC_MARK1:focus{
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="p">(</span><span class="kr">async</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="kr">await</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">x</span> <span class="k">of</span> <span class="nx">gen2</span><span class="p">())</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">  <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">})();</span>
-</span></span><span class="line"><span class="cl"><span class="c1">// a
-</span></span></span><span class="line"><span class="cl"><span class="c1">// b
-</span></span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="p">(</span><span class="nx">async</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="k">for</span> <span class="nx">await</span> <span class="p">(</span><span class="kr">const</span> <span class="nx">x</span> <span class="k">of</span> <span class="nx">gen2</span><span class="p">())</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">})();</span>
+<span class="c1">// a
+</span><span class="c1">// b
+</span></code></pre></td></tr></table>
 </div>
 </div>
     </div>
@@ -1033,13 +1036,13 @@ input.PC_MARK1:focus{
           <a href="/tags/es6/">ES6</a>
           </div>
       <nav class="post-nav">
-        <a class="prev" href="/post/09.%E5%89%8D%E7%AB%AF/07.es6-%E6%95%99%E7%A8%8B%E7%AC%94%E8%AE%B0/09.%E6%95%B0%E7%BB%84%E7%9A%84%E6%89%A9%E5%B1%95/">
+        <a class="prev" href="/post/09.%E5%89%8D%E7%AB%AF/07.es6-%E6%95%99%E7%A8%8B%E7%AC%94%E8%AE%B0/11.%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%96%B0%E5%A2%9E%E6%96%B9%E6%B3%95/">
             <i class="iconfont icon-left"></i>
-            <span class="prev-text nav-default">数组的扩展</span>
+            <span class="prev-text nav-default">对象的新增方法</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
-        <a class="next" href="/post/09.%E5%89%8D%E7%AB%AF/07.es6-%E6%95%99%E7%A8%8B%E7%AC%94%E8%AE%B0/06.%E6%AD%A3%E5%88%99%E7%9A%84%E6%89%A9%E5%B1%95/">
-            <span class="next-text nav-default">正则的扩展</span>
+        <a class="next" href="/post/09.%E5%89%8D%E7%AB%AF/07.es6-%E6%95%99%E7%A8%8B%E7%AC%94%E8%AE%B0/07.%E6%95%B0%E5%80%BC%E7%9A%84%E6%89%A9%E5%B1%95/">
+            <span class="next-text nav-default">数值的扩展</span>
             <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
@@ -1131,7 +1134,7 @@ input.PC_MARK1:focus{
 
 
 
-<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
+<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
   <script type="text/javascript">
     window.MathJax = {
       tex: {

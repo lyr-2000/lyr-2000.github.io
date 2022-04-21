@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.97.3 with theme even" />
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/go%E8%AF%AD%E8%A8%80%E5%B9%B6%E5%8F%91%E7%90%86%E8%AE%BA/sync.pool/" />
@@ -43,14 +43,17 @@
 <meta property="og:title" content="sync.Pool" />
 <meta property="og:description" content="pool 的使用方法 像数据库连接、TCP 的长连接，这些连接在创建的时候是一个非常耗时的操 作。如果每次都创建一个新的连接对象，耗时较长，很可能整个业务" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/go%E8%AF%AD%E8%A8%80%E5%B9%B6%E5%8F%91%E7%90%86%E8%AE%BA/sync.pool/" /><meta property="article:section" content="post" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/go%E8%AF%AD%E8%A8%80%E5%B9%B6%E5%8F%91%E7%90%86%E8%AE%BA/sync.pool/" />
 <meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
 <meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
-
 <meta itemprop="name" content="sync.Pool">
-<meta itemprop="description" content="pool 的使用方法 像数据库连接、TCP 的长连接，这些连接在创建的时候是一个非常耗时的操 作。如果每次都创建一个新的连接对象，耗时较长，很可能整个业务"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
-<meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="description" content="pool 的使用方法 像数据库连接、TCP 的长连接，这些连接在创建的时候是一个非常耗时的操 作。如果每次都创建一个新的连接对象，耗时较长，很可能整个业务">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
 <meta itemprop="wordCount" content="2486">
+
+
+
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="sync.Pool"/>
 <meta name="twitter:description" content="pool 的使用方法 像数据库连接、TCP 的长连接，这些连接在创建的时候是一个非常耗时的操 作。如果每次都创建一个新的连接对象，耗时较长，很可能整个业务"/>
@@ -232,7 +235,7 @@ slice，比如，著名的静态网站生成工具 Hugo 中，就包含这样的
 看一下下面这段代码：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+<pre class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -246,19 +249,19 @@ slice，比如，著名的静态网站生成工具 Hugo 中，就包含这样的
 </span><span class="lnt">12
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">buffers</span> <span class="p">=</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">Pool</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">New</span><span class="p">:</span> <span class="kd">func</span><span class="p">()</span> <span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    	<span class="k">return</span> <span class="nb">new</span><span class="p">(</span><span class="nx">bytes</span><span class="p">.</span><span class="nx">Buffer</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">},</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">GetBuffer</span><span class="p">()</span> <span class="o">*</span><span class="nx">bytes</span><span class="p">.</span><span class="nx">Buffer</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">buffers</span><span class="p">.</span><span class="nf">Get</span><span class="p">().(</span><span class="o">*</span><span class="nx">bytes</span><span class="p">.</span><span class="nx">Buffer</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">PutBuffer</span><span class="p">(</span><span class="nx">buf</span> <span class="o">*</span><span class="nx">bytes</span><span class="p">.</span><span class="nx">Buffer</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">buf</span><span class="p">.</span><span class="nf">Reset</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">buffers</span><span class="p">.</span><span class="nf">Put</span><span class="p">(</span><span class="nx">buf</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="nx">buffers</span> <span class="p">=</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">Pool</span><span class="p">{</span>
+    <span class="nx">New</span><span class="p">:</span> <span class="kd">func</span><span class="p">()</span> <span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
+    	<span class="k">return</span> <span class="nb">new</span><span class="p">(</span><span class="nx">bytes</span><span class="p">.</span><span class="nx">Buffer</span><span class="p">)</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+<span class="kd">func</span> <span class="nf">GetBuffer</span><span class="p">()</span> <span class="o">*</span><span class="nx">bytes</span><span class="p">.</span><span class="nx">Buffer</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="nx">buffers</span><span class="p">.</span><span class="nf">Get</span><span class="p">().(</span><span class="o">*</span><span class="nx">bytes</span><span class="p">.</span><span class="nx">Buffer</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="kd">func</span> <span class="nf">PutBuffer</span><span class="p">(</span><span class="nx">buf</span> <span class="o">*</span><span class="nx">bytes</span><span class="p">.</span><span class="nx">Buffer</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">buf</span><span class="p">.</span><span class="nf">Reset</span><span class="p">()</span>
+	<span class="nx">buffers</span><span class="p">.</span><span class="nf">Put</span><span class="p">(</span><span class="nx">buf</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><p><strong>sync.Pool 的坑</strong>
 到这里，我们就掌握了 sync.Pool 的使用方法和实现原理，接下来，我要再和你聊聊容易
@@ -466,7 +469,7 @@ Pool。</p>
 
 
 
-<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
+<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
   <script type="text/javascript">
     window.MathJax = {
       tex: {
