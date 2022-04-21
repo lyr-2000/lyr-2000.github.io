@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.74.2 with theme even" />
+<meta name="generator" content="Hugo 0.97.3 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E6%A1%86%E6%9E%B6%E4%BD%BF%E7%94%A8/shiro%E6%A1%86%E6%9E%B6/" />
@@ -43,17 +43,14 @@
 <meta property="og:title" content="shiro框架使用总结" />
 <meta property="og:description" content="shiro使用总结 口述： 自定义一个 realm 调用 login 方法，shiro 自动 去从 realm 里面获取用户信息， 然后 我这个 realm 注入 usermapper ，userMapper 或者 userService 获取 用户" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E6%A1%86%E6%9E%B6%E4%BD%BF%E7%94%A8/shiro%E6%A1%86%E6%9E%B6/" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E6%A1%86%E6%9E%B6%E4%BD%BF%E7%94%A8/shiro%E6%A1%86%E6%9E%B6/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
 <meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+
 <meta itemprop="name" content="shiro框架使用总结">
-<meta itemprop="description" content="shiro使用总结 口述： 自定义一个 realm 调用 login 方法，shiro 自动 去从 realm 里面获取用户信息， 然后 我这个 realm 注入 usermapper ，userMapper 或者 userService 获取 用户">
-<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="description" content="shiro使用总结 口述： 自定义一个 realm 调用 login 方法，shiro 自动 去从 realm 里面获取用户信息， 然后 我这个 realm 注入 usermapper ，userMapper 或者 userService 获取 用户"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
 <meta itemprop="wordCount" content="423">
-
-
-
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="shiro框架使用总结"/>
 <meta name="twitter:description" content="shiro使用总结 口述： 自定义一个 realm 调用 login 方法，shiro 自动 去从 realm 里面获取用户信息， 然后 我这个 realm 注入 usermapper ，userMapper 或者 userService 获取 用户"/>
@@ -215,7 +212,7 @@ input.PC_MARK1:focus{
 <p>调用 login 方法，shiro 自动 去从 realm 里面获取用户信息，  然后 我这个 realm 注入 usermapper ，userMapper 或者 userService 获取 用户的信息， 获取信息之后 就 存入 session，大概就是这个样子 【面试总结】</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -254,44 +251,44 @@ input.PC_MARK1:focus{
 </span><span class="lnt">37
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">package</span> <span class="nn">com.aaa.ssm.realm</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.aaa.ssm.entity.Users</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.aaa.ssm.service.UserService</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.apache.shiro.authc.*</span><span class="kn">import</span> <span class="nn">org.apache.shiro.authz.AuthorizationInfo</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.apache.shiro.realm.AuthorizingRealm</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.apache.shiro.realm.Realm</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.apache.shiro.subject.PrincipalCollection</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.springframework.beans.factory.annotation.Autowired</span><span class="o">;</span>
-<span class="cm">/**
-</span><span class="cm">* 实现自定义域
-</span><span class="cm">* Authorization 授权（权限校验）
-</span><span class="cm">*
-</span><span class="cm">* Authentication 认证（登录校验）
-</span><span class="cm">*
-</span><span class="cm">*/</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">AuthRealm</span> <span class="kd">extends</span> <span class="n">AuthorizingRealm</span> <span class="o">{</span>
-<span class="nd">@Autowired</span>
-<span class="kd">private</span> <span class="n">UserService</span> <span class="n">userService</span><span class="o">;</span>
-<span class="c1">//获取授权信息
-</span><span class="c1"></span><span class="kd">protected</span> <span class="n">AuthorizationInfo</span> <span class="nf">doGetAuthorizationInfo</span><span class="o">(</span><span class="n">PrincipalCollection</span> <span class="n">principalCollection</span><span class="o">)</span> <span class="o">{</span>
-	<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-<span class="o">}</span><span class="c1">//获取认证信息
-</span><span class="c1"></span><span class="kd">protected</span> <span class="n">AuthenticationInfo</span> <span class="nf">doGetAuthenticationInfo</span><span class="o">(</span><span class="n">AuthenticationToken</span> <span class="n">token</span><span class="o">)</span> <span class="kd">throws</span>
-<span class="n">AuthenticationException</span> <span class="o">{</span>
-<span class="c1">//获取用户名 不过一般往shiro中放置用户身份信息的时候，不直接放用户名字符串，放用户对象
-</span><span class="c1"></span>	<span class="n">String</span> <span class="n">username</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="na">getPrincipal</span><span class="o">().</span><span class="na">toString</span><span class="o">();</span>
-<span class="c1">//有了用户名，要根据用户名在数据库中查询用户对象
-</span><span class="c1"></span>	<span class="n">Users</span> <span class="n">user</span> <span class="o">=</span> <span class="n">userService</span><span class="o">.</span><span class="na">findByUsername</span><span class="o">(</span><span class="n">username</span><span class="o">);</span>
-<span class="c1">//判断如果用户对象不存在，抛出UnknownAccountException
-</span><span class="c1"></span>	<span class="k">if</span><span class="o">(</span><span class="n">user</span><span class="o">==</span><span class="kc">null</span><span class="o">){</span>
-		<span class="k">throw</span> <span class="k">new</span> <span class="n">UnknownAccountException</span><span class="o">(</span><span class="s">&#34;用户名不存在&#34;</span><span class="o">);</span>
-	<span class="o">}</span>
-<span class="c1">//封装用户的身份对象 返回这个身份对象
-</span><span class="c1"></span>	<span class="n">SimpleAuthenticationInfo</span> <span class="n">info</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SimpleAuthenticationInfo</span><span class="o">(</span><span class="n">user</span><span class="o">,</span><span class="n">user</span><span class="o">.</span><span class="na">getPassword</span><span class="o">(),</span><span class="s">&#34;authRealm&#34;</span><span class="o">);</span>
-	<span class="k">return</span> <span class="n">info</span><span class="o">;</span>
-	<span class="o">}</span>
-<span class="o">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nn">com.aaa.ssm.realm</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.aaa.ssm.entity.Users</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.aaa.ssm.service.UserService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.apache.shiro.authc.*</span><span class="kn">import</span> <span class="nn">org.apache.shiro.authz.AuthorizationInfo</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.apache.shiro.realm.AuthorizingRealm</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.apache.shiro.realm.Realm</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.apache.shiro.subject.PrincipalCollection</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.springframework.beans.factory.annotation.Autowired</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">* 实现自定义域
+</span></span></span><span class="line"><span class="cl"><span class="cm">* Authorization 授权（权限校验）
+</span></span></span><span class="line"><span class="cl"><span class="cm">*
+</span></span></span><span class="line"><span class="cl"><span class="cm">* Authentication 认证（登录校验）
+</span></span></span><span class="line"><span class="cl"><span class="cm">*
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AuthRealm</span> <span class="kd">extends</span> <span class="n">AuthorizingRealm</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Autowired</span>
+</span></span><span class="line"><span class="cl"><span class="kd">private</span> <span class="n">UserService</span> <span class="n">userService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//获取授权信息
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">protected</span> <span class="n">AuthorizationInfo</span> <span class="nf">doGetAuthorizationInfo</span><span class="o">(</span><span class="n">PrincipalCollection</span> <span class="n">principalCollection</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span><span class="c1">//获取认证信息
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">protected</span> <span class="n">AuthenticationInfo</span> <span class="nf">doGetAuthenticationInfo</span><span class="o">(</span><span class="n">AuthenticationToken</span> <span class="n">token</span><span class="o">)</span> <span class="kd">throws</span>
+</span></span><span class="line"><span class="cl"><span class="n">AuthenticationException</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//获取用户名 不过一般往shiro中放置用户身份信息的时候，不直接放用户名字符串，放用户对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">String</span> <span class="n">username</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="na">getPrincipal</span><span class="o">().</span><span class="na">toString</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//有了用户名，要根据用户名在数据库中查询用户对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">Users</span> <span class="n">user</span> <span class="o">=</span> <span class="n">userService</span><span class="o">.</span><span class="na">findByUsername</span><span class="o">(</span><span class="n">username</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//判断如果用户对象不存在，抛出UnknownAccountException
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span><span class="o">(</span><span class="n">user</span><span class="o">==</span><span class="kc">null</span><span class="o">){</span>
+</span></span><span class="line"><span class="cl">		<span class="k">throw</span> <span class="k">new</span> <span class="n">UnknownAccountException</span><span class="o">(</span><span class="s">&#34;用户名不存在&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">	<span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//封装用户的身份对象 返回这个身份对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">SimpleAuthenticationInfo</span> <span class="n">info</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SimpleAuthenticationInfo</span><span class="o">(</span><span class="n">user</span><span class="o">,</span><span class="n">user</span><span class="o">.</span><span class="na">getPassword</span><span class="o">(),</span><span class="s">&#34;authRealm&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">info</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">	<span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div>
     </div>
@@ -426,7 +423,7 @@ input.PC_MARK1:focus{
 
 
 
-<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
   <script type="text/javascript">
     window.MathJax = {
       tex: {

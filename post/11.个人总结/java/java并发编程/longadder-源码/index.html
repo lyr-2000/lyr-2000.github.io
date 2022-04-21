@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.74.2 with theme even" />
+<meta name="generator" content="Hugo 0.97.3 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/longadder-%E6%BA%90%E7%A0%81/" />
@@ -43,17 +43,14 @@
 <meta property="og:title" content="LongAdder源码" />
 <meta property="og:description" content="LongAdder源码学习 学习视频参考 在 JDK1.8 中，Java 提供了一个新的原子类 LongAdder。LongAdder 在高并发场景下会比 AtomicInteger 和 AtomicLong 的性" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/longadder-%E6%BA%90%E7%A0%81/" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/longadder-%E6%BA%90%E7%A0%81/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
 <meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+
 <meta itemprop="name" content="LongAdder源码">
-<meta itemprop="description" content="LongAdder源码学习 学习视频参考 在 JDK1.8 中，Java 提供了一个新的原子类 LongAdder。LongAdder 在高并发场景下会比 AtomicInteger 和 AtomicLong 的性">
-<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="958">
-
-
-
+<meta itemprop="description" content="LongAdder源码学习 学习视频参考 在 JDK1.8 中，Java 提供了一个新的原子类 LongAdder。LongAdder 在高并发场景下会比 AtomicInteger 和 AtomicLong 的性"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="wordCount" content="957">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="LongAdder源码"/>
 <meta name="twitter:description" content="LongAdder源码学习 学习视频参考 在 JDK1.8 中，Java 提供了一个新的原子类 LongAdder。LongAdder 在高并发场景下会比 AtomicInteger 和 AtomicLong 的性"/>
@@ -188,7 +185,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
-          <span class="more-meta"> 约 958 字 </span>
+          <span class="more-meta"> 约 957 字 </span>
           <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -224,7 +221,7 @@ input.PC_MARK1:focus{
 <p>LongAdder 在操作后的返回值只是一个近似准确的数值，但是 LongAdder 最终返回的是一个准确的数值， 所以在一些对实时性要求比较高的场景下，LongAdder 并不能取代 AtomicInteger 或 AtomicLong。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -244,31 +241,29 @@ input.PC_MARK1:focus{
 </span><span class="lnt">18
 </span><span class="lnt">19
 </span><span class="lnt">20
-</span><span class="lnt">21
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-java" data-lang="java">     <span class="cm">/** Number of CPUS, to place bound on table size */</span>
-    <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">NCPU</span> <span class="o">=</span> <span class="n">Runtime</span><span class="o">.</span><span class="na">getRuntime</span><span class="o">().</span><span class="na">availableProcessors</span><span class="o">();</span>
-
-    <span class="cm">/**
-</span><span class="cm">     * 单元格表。当非空时，大小为 2 的功率。
-</span><span class="cm">     */</span>
-    <span class="kd">transient</span> <span class="kd">volatile</span> <span class="n">Cell</span><span class="o">[]</span> <span class="n">cells</span><span class="o">;</span>
-
-    <span class="cm">/**
-</span><span class="cm">     * 基本值，主要用于没有争用时，但也作为
-</span><span class="cm">     * 在表初始化比赛期间的回退。通过 CAS 更新。
-</span><span class="cm">     */</span>
-    <span class="kd">transient</span> <span class="kd">volatile</span> <span class="kt">long</span> <span class="n">base</span><span class="o">;</span>
-
-    <span class="cm">/**
-</span><span class="cm">     * 调整大小和/或创建单元格时使用的旋转锁（通过 CAS 锁定）。
-</span><span class="cm">     * 1表示加锁，0表示没加锁
-</span><span class="cm">     *  创建和扩容的时候，都是置为1
-</span><span class="cm">     */</span>
-    <span class="kd">transient</span> <span class="kd">volatile</span> <span class="kt">int</span> <span class="n">cellsBusy</span><span class="o">;</span>
-
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">     <span class="cm">/** Number of CPUS, to place bound on table size */</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">NCPU</span> <span class="o">=</span> <span class="n">Runtime</span><span class="o">.</span><span class="na">getRuntime</span><span class="o">().</span><span class="na">availableProcessors</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * 单元格表。当非空时，大小为 2 的功率。
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">transient</span> <span class="kd">volatile</span> <span class="n">Cell</span><span class="o">[]</span> <span class="n">cells</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * 基本值，主要用于没有争用时，但也作为
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * 在表初始化比赛期间的回退。通过 CAS 更新。
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">transient</span> <span class="kd">volatile</span> <span class="kt">long</span> <span class="n">base</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * 调整大小和/或创建单元格时使用的旋转锁（通过 CAS 锁定）。
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * 1表示加锁，0表示没加锁
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *  创建和扩容的时候，都是置为1
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">transient</span> <span class="kd">volatile</span> <span class="kt">int</span> <span class="n">cellsBusy</span><span class="o">;</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="缓存行伪共享问题">缓存行伪共享问题</h3>
 <p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_08_18_14__44_36image-20210818144436503.png" alt="image-20210818144436503"></p>
@@ -284,7 +279,7 @@ input.PC_MARK1:focus{
 <p>无论谁修改成功，其他的 cell都会缓存行失效， 解决的方法就是 加 padding， 让一个 cell 占用整个缓存行</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -298,19 +293,19 @@ input.PC_MARK1:focus{
 </span><span class="lnt">12
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-fallback" data-lang="fallback">*表项属于Cell类;
-    原子长填充的一种变体
-*(通过@sun.misc.Contended)来减少缓存争用。
-    填充
-*对于大多数原子来说是多余的，因为它们通常是
-*不规则地分散在内存中，因此不会产生太多干扰
-*彼此之间。
-    但是驻留在数组中的原子对象会
-*倾向于相邻放置，大多数也是如此
-*经常共享缓存线(具有巨大的负面性能)
-*冲击)没有这个预防措施。
-前后 加了 128字节的空隙， 
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">*表项属于Cell类;
+</span></span><span class="line"><span class="cl">    原子长填充的一种变体
+</span></span><span class="line"><span class="cl">*(通过@sun.misc.Contended)来减少缓存争用。
+</span></span><span class="line"><span class="cl">    填充
+</span></span><span class="line"><span class="cl">*对于大多数原子来说是多余的，因为它们通常是
+</span></span><span class="line"><span class="cl">*不规则地分散在内存中，因此不会产生太多干扰
+</span></span><span class="line"><span class="cl">*彼此之间。
+</span></span><span class="line"><span class="cl">    但是驻留在数组中的原子对象会
+</span></span><span class="line"><span class="cl">*倾向于相邻放置，大多数也是如此
+</span></span><span class="line"><span class="cl">*经常共享缓存线(具有巨大的负面性能)
+</span></span><span class="line"><span class="cl">*冲击)没有这个预防措施。
+</span></span><span class="line"><span class="cl">前后 加了 128字节的空隙， 
+</span></span></code></pre></td></tr></table>
 </div>
 </div>
     </div>
@@ -347,9 +342,9 @@ input.PC_MARK1:focus{
 </div><footer class="post-footer">
       
       <nav class="post-nav">
-        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80/">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java_%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87%E5%88%87%E6%8D%A2%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98/">
             <i class="iconfont icon-left"></i>
-            <span class="prev-text nav-default">java并发编程基础学习</span>
+            <span class="prev-text nav-default">java多线程上下文切换</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
         <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/netty-%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8Bnio-reactor%E6%A8%A1%E5%9E%8B/">
@@ -445,7 +440,7 @@ input.PC_MARK1:focus{
 
 
 
-<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
   <script type="text/javascript">
     window.MathJax = {
       tex: {

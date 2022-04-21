@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.74.2 with theme even" />
+<meta name="generator" content="Hugo 0.97.3 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/09.%E5%89%8D%E7%AB%AF/07.es6-%E6%95%99%E7%A8%8B%E7%AC%94%E8%AE%B0/17.iterator-%E5%92%8C-for-of-%E5%BE%AA%E7%8E%AF/" />
@@ -43,17 +43,14 @@
 <meta property="og:title" content="Iterator 和 for-of 循环" />
 <meta property="og:description" content="Iterator 和 for&hellip;of 循环 Iterator（遍历器）的概念 JavaScript 原有的表示“集合”的数据结构，主要是数组（Array）和对象（Object），ES6 又添加了Ma" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/09.%E5%89%8D%E7%AB%AF/07.es6-%E6%95%99%E7%A8%8B%E7%AC%94%E8%AE%B0/17.iterator-%E5%92%8C-for-of-%E5%BE%AA%E7%8E%AF/" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/09.%E5%89%8D%E7%AB%AF/07.es6-%E6%95%99%E7%A8%8B%E7%AC%94%E8%AE%B0/17.iterator-%E5%92%8C-for-of-%E5%BE%AA%E7%8E%AF/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2020-02-09T16:00:29+00:00" />
 <meta property="article:modified_time" content="2020-02-09T16:00:29+00:00" />
+
 <meta itemprop="name" content="Iterator 和 for-of 循环">
-<meta itemprop="description" content="Iterator 和 for&hellip;of 循环 Iterator（遍历器）的概念 JavaScript 原有的表示“集合”的数据结构，主要是数组（Array）和对象（Object），ES6 又添加了Ma">
-<meta itemprop="datePublished" content="2020-02-09T16:00:29&#43;00:00" />
-<meta itemprop="dateModified" content="2020-02-09T16:00:29&#43;00:00" />
-<meta itemprop="wordCount" content="7962">
-
-
-
+<meta itemprop="description" content="Iterator 和 for&hellip;of 循环 Iterator（遍历器）的概念 JavaScript 原有的表示“集合”的数据结构，主要是数组（Array）和对象（Object），ES6 又添加了Ma"><meta itemprop="datePublished" content="2020-02-09T16:00:29+00:00" />
+<meta itemprop="dateModified" content="2020-02-09T16:00:29+00:00" />
+<meta itemprop="wordCount" content="7966">
 <meta itemprop="keywords" content="ES6," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Iterator 和 for-of 循环"/>
 <meta name="twitter:description" content="Iterator 和 for&hellip;of 循环 Iterator（遍历器）的概念 JavaScript 原有的表示“集合”的数据结构，主要是数组（Array）和对象（Object），ES6 又添加了Ma"/>
@@ -190,7 +187,7 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/es6-%E6%95%99%E7%A8%8B%E7%AC%94%E8%AE%B0/"> 《ES6 教程》笔记 </a>
             </div>
-          <span class="more-meta"> 约 7962 字 </span>
+          <span class="more-meta"> 约 7966 字 </span>
           <span class="more-meta"> 预计阅读 16 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -242,7 +239,7 @@ input.PC_MARK1:focus{
 <p>下面是一个模拟<code>next</code>方法返回值的例子。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -260,23 +257,23 @@ input.PC_MARK1:focus{
 </span><span class="lnt">16
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">it</span> <span class="o">=</span> <span class="nx">makeIterator</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]);</span>
-
-<span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: &#34;a&#34;, done: false }
-</span><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: &#34;b&#34;, done: false }
-</span><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: undefined, done: true }
-</span><span class="c1"></span>
-<span class="kd">function</span> <span class="nx">makeIterator</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span> <span class="p">{</span>
-  <span class="kd">var</span> <span class="nx">nextIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-  <span class="k">return</span> <span class="p">{</span>
-    <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-      <span class="k">return</span> <span class="nx">nextIndex</span> <span class="o">&lt;</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span> <span class="o">?</span>
-        <span class="p">{</span><span class="nx">value</span><span class="o">:</span> <span class="nx">array</span><span class="p">[</span><span class="nx">nextIndex</span><span class="o">++</span><span class="p">],</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span><span class="p">}</span> <span class="o">:</span>
-        <span class="p">{</span><span class="nx">value</span><span class="o">:</span> <span class="kc">undefined</span><span class="p">,</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">true</span><span class="p">};</span>
-    <span class="p">}</span>
-  <span class="p">};</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">it</span> <span class="o">=</span> <span class="nx">makeIterator</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: &#34;a&#34;, done: false }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: &#34;b&#34;, done: false }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: undefined, done: true }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kd">function</span> <span class="nx">makeIterator</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">var</span> <span class="nx">nextIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="nx">nextIndex</span> <span class="o">&lt;</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span> <span class="o">?</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="nx">value</span><span class="o">:</span> <span class="nx">array</span><span class="p">[</span><span class="nx">nextIndex</span><span class="o">++</span><span class="p">],</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span><span class="p">}</span> <span class="o">:</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="nx">value</span><span class="o">:</span> <span class="kc">undefined</span><span class="p">,</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">true</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码定义了一个<code>makeIterator</code>函数，它是一个遍历器生成函数，作用就是返回一个遍历器对象。对数组<code>['a', 'b']</code>执行这个函数，就会返回该数组的遍历器对象（即指针对象）<code>it</code>。</p>
 <p>指针对象的<code>next</code>方法，用来移动指针。开始时，指针指向数组的开始位置。然后，每次调用<code>next</code>方法，指针就会指向数组的下一个成员。第一次调用，指向<code>a</code>；第二次调用，指向<code>b</code>。</p>
@@ -285,7 +282,7 @@ input.PC_MARK1:focus{
 <p>对于遍历器对象来说，<code>done: false</code>和<code>value: undefined</code>属性都是可以省略的，因此上面的<code>makeIterator</code>函数可以简写成下面的形式。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -297,22 +294,22 @@ input.PC_MARK1:focus{
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">makeIterator</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span> <span class="p">{</span>
-  <span class="kd">var</span> <span class="nx">nextIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-  <span class="k">return</span> <span class="p">{</span>
-    <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-      <span class="k">return</span> <span class="nx">nextIndex</span> <span class="o">&lt;</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span> <span class="o">?</span>
-        <span class="p">{</span><span class="nx">value</span><span class="o">:</span> <span class="nx">array</span><span class="p">[</span><span class="nx">nextIndex</span><span class="o">++</span><span class="p">]}</span> <span class="o">:</span>
-        <span class="p">{</span><span class="nx">done</span><span class="o">:</span> <span class="kc">true</span><span class="p">};</span>
-    <span class="p">}</span>
-  <span class="p">};</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">function</span> <span class="nx">makeIterator</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">var</span> <span class="nx">nextIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="nx">nextIndex</span> <span class="o">&lt;</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span> <span class="o">?</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="nx">value</span><span class="o">:</span> <span class="nx">array</span><span class="p">[</span><span class="nx">nextIndex</span><span class="o">++</span><span class="p">]}</span> <span class="o">:</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="nx">done</span><span class="o">:</span> <span class="kc">true</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>由于 Iterator 只是把接口规格加到数据结构之上，所以，遍历器与它所遍历的那个数据结构，实际上是分开的，完全可以写出没有对应数据结构的遍历器对象，或者说用遍历器对象模拟出数据结构。下面是一个无限运行的遍历器对象的例子。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -330,29 +327,29 @@ input.PC_MARK1:focus{
 </span><span class="lnt">16
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">it</span> <span class="o">=</span> <span class="nx">idMaker</span><span class="p">();</span>
-
-<span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span> <span class="c1">// 0
-</span><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span> <span class="c1">// 1
-</span><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span> <span class="c1">// 2
-</span><span class="c1">// ...
-</span><span class="c1"></span>
-<span class="kd">function</span> <span class="nx">idMaker</span><span class="p">()</span> <span class="p">{</span>
-  <span class="kd">var</span> <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-
-  <span class="k">return</span> <span class="p">{</span>
-    <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-      <span class="k">return</span> <span class="p">{</span><span class="nx">value</span><span class="o">:</span> <span class="nx">index</span><span class="o">++</span><span class="p">,</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span><span class="p">};</span>
-    <span class="p">}</span>
-  <span class="p">};</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">it</span> <span class="o">=</span> <span class="nx">idMaker</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span> <span class="c1">// 0
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span> <span class="c1">// 1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">it</span><span class="p">.</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span> <span class="c1">// 2
+</span></span></span><span class="line"><span class="cl"><span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kd">function</span> <span class="nx">idMaker</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">var</span> <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="p">{</span><span class="nx">value</span><span class="o">:</span> <span class="nx">index</span><span class="o">++</span><span class="p">,</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面的例子中，遍历器生成函数<code>idMaker</code>，返回一个遍历器对象（即指针对象）。但是并没有对应的数据结构，或者说，遍历器对象自己描述了一个数据结构出来。</p>
 <p>如果使用 TypeScript 的写法，遍历器接口（Iterable）、指针对象（Iterator）和<code>next</code>方法返回值的规格可以描述如下。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -366,19 +363,19 @@ input.PC_MARK1:focus{
 </span><span class="lnt">12
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kr">interface</span> <span class="nx">Iterable</span> <span class="p">{</span>
-  <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]()</span> <span class="o">:</span> <span class="nx">Iterator</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="kr">interface</span> <span class="nx">Iterator</span> <span class="p">{</span>
-  <span class="nx">next</span><span class="p">(</span><span class="nx">value</span><span class="o">?:</span> <span class="nx">any</span><span class="p">)</span> <span class="o">:</span> <span class="nx">IterationResult</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="kr">interface</span> <span class="nx">IterationResult</span> <span class="p">{</span>
-  <span class="nx">value</span><span class="o">:</span> <span class="nx">any</span><span class="p">,</span>
-  <span class="nx">done</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">interface</span> <span class="nx">Iterable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]()</span> <span class="o">:</span> <span class="nx">Iterator</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kr">interface</span> <span class="nx">Iterator</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">next</span><span class="p">(</span><span class="nx">value</span><span class="o">?:</span> <span class="nx">any</span><span class="p">)</span> <span class="o">:</span> <span class="nx">IterationResult</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kr">interface</span> <span class="nx">IterationResult</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">value</span><span class="o">:</span> <span class="nx">any</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">done</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><h2 id="默认-iterator-接口">默认 Iterator 接口</h2>
 <p>I<strong>terator 接口的目的，就是为所有数据结构，提供了一种统一的访问机制，即<code>for...of</code>循环（详见下文）</strong>。当使用<code>for...of</code>循环遍历某种数据结构时，该循环会自动去寻找 Iterator 接口。</p>
@@ -386,7 +383,7 @@ input.PC_MARK1:focus{
 <p>ES6 规定，<strong>默认的 Iterator 接口部署在数据结构的<code>Symbol.iterator</code>属性</strong>，或者说，一个数据结构只要具有<code>Symbol.iterator</code>属性，就可以认为是“可遍历的”（iterable）。<code>Symbol.iterator</code>属性本身是一个函数，就是当前数据结构默认的遍历器生成函数。执行这个函数，就会返回一个遍历器。至于属性名<code>Symbol.iterator</code>，它是一个表达式，返回<code>Symbol</code>对象的<code>iterator</code>属性，这是一个预定义好的、类型为 Symbol 的特殊值，所以要放在方括号内（参见《Symbol》一章）。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -400,19 +397,19 @@ input.PC_MARK1:focus{
 </span><span class="lnt">12
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kr">const</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span> <span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="p">{</span>
-      <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="p">{</span>
-          <span class="nx">value</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
-          <span class="nx">done</span><span class="o">:</span> <span class="kc">true</span>
-        <span class="p">};</span>
-      <span class="p">}</span>
-    <span class="p">};</span>
-  <span class="p">}</span>
-<span class="p">};</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span> <span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="nx">value</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">          <span class="nx">done</span><span class="o">:</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">        <span class="p">};</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">};</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，对象<code>obj</code>是可遍历的（iterable），因为具有<code>Symbol.iterator</code>属性。执行这个属性，会返回一个遍历器对象。该对象的根本特征就是具有<code>next</code>方法。每次调用<code>next</code>方法，都会返回一个代表当前成员的信息对象，具有<code>value</code>和<code>done</code>两个属性。</p>
 <p>ES6 的有些数据结构原生具备 Iterator 接口（比如数组），即不用任何处理，就可以被<code>for...of</code>循环遍历。原因在于，这些数据结构原生部署了<code>Symbol.iterator</code>属性（详见下文），另外一些数据结构没有（比如对象）。凡是部署了<code>Symbol.iterator</code>属性的数据结构，就称为部署了遍历器接口。调用这个接口，就会返回一个遍历器对象。</p>
@@ -429,7 +426,7 @@ input.PC_MARK1:focus{
 <p>下面的例子是数组的<code>Symbol.iterator</code>属性。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -438,14 +435,14 @@ input.PC_MARK1:focus{
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">];</span>
-<span class="kd">let</span> <span class="nx">iter</span> <span class="o">=</span> <span class="nx">arr</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]();</span>
-
-<span class="nx">iter</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: &#39;a&#39;, done: false }
-</span><span class="c1"></span><span class="nx">iter</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: &#39;b&#39;, done: false }
-</span><span class="c1"></span><span class="nx">iter</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: &#39;c&#39;, done: false }
-</span><span class="c1"></span><span class="nx">iter</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: undefined, done: true }
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">iter</span> <span class="o">=</span> <span class="nx">arr</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">iter</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: &#39;a&#39;, done: false }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">iter</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: &#39;b&#39;, done: false }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">iter</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: &#39;c&#39;, done: false }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">iter</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: undefined, done: true }
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，变量<code>arr</code>是一个数组，原生就具有遍历器接口，部署在<code>arr</code>的<code>Symbol.iterator</code>属性上面。所以，调用这个属性，就得到遍历器对象。</p>
 <p>对于原生部署 Iterator 接口的数据结构，不用自己写遍历器生成函数，<code>for...of</code>循环会自动遍历它们。除此之外，其他数据结构（主要是对象）的 Iterator 接口，都需要自己在<code>Symbol.iterator</code>属性上面部署，这样才会被<code>for...of</code>循环遍历。</p>
@@ -453,7 +450,7 @@ input.PC_MARK1:focus{
 <p>一个对象如果要具备可被<code>for...of</code>循环调用的 Iterator 接口，就必须在<code>Symbol.iterator</code>的属性上部署遍历器生成方法（原型链上的对象具有该方法也可）。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -480,38 +477,38 @@ input.PC_MARK1:focus{
 </span><span class="lnt">25
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kr">class</span> <span class="nx">RangeIterator</span> <span class="p">{</span>
-  <span class="nx">constructor</span><span class="p">(</span><span class="nx">start</span><span class="p">,</span> <span class="nx">stop</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="nx">start</span><span class="p">;</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">stop</span> <span class="o">=</span> <span class="nx">stop</span><span class="p">;</span>
-  <span class="p">}</span>
-
-  <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]()</span> <span class="p">{</span> <span class="k">return</span> <span class="k">this</span><span class="p">;</span> <span class="p">}</span>
-
-  <span class="nx">next</span><span class="p">()</span> <span class="p">{</span>
-    <span class="kd">var</span> <span class="nx">value</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nx">value</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">stop</span><span class="p">)</span> <span class="p">{</span>
-      <span class="k">this</span><span class="p">.</span><span class="nx">value</span><span class="o">++</span><span class="p">;</span>
-      <span class="k">return</span> <span class="p">{</span><span class="nx">done</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span> <span class="nx">value</span><span class="o">:</span> <span class="nx">value</span><span class="p">};</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="p">{</span><span class="nx">done</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">value</span><span class="o">:</span> <span class="kc">undefined</span><span class="p">};</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-
-<span class="kd">function</span> <span class="nx">range</span><span class="p">(</span><span class="nx">start</span><span class="p">,</span> <span class="nx">stop</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">return</span> <span class="k">new</span> <span class="nx">RangeIterator</span><span class="p">(</span><span class="nx">start</span><span class="p">,</span> <span class="nx">stop</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">value</span> <span class="k">of</span> <span class="nx">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span> <span class="c1">// 0, 1, 2
-</span><span class="c1"></span><span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">class</span> <span class="nx">RangeIterator</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">constructor</span><span class="p">(</span><span class="nx">start</span><span class="p">,</span> <span class="nx">stop</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">this</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="nx">start</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">this</span><span class="p">.</span><span class="nx">stop</span> <span class="o">=</span> <span class="nx">stop</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]()</span> <span class="p">{</span> <span class="k">return</span> <span class="k">this</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nx">next</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nx">value</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nx">value</span> <span class="o">&lt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">stop</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">this</span><span class="p">.</span><span class="nx">value</span><span class="o">++</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="p">{</span><span class="nx">done</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span> <span class="nx">value</span><span class="o">:</span> <span class="nx">value</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">{</span><span class="nx">done</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">value</span><span class="o">:</span> <span class="kc">undefined</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">function</span> <span class="nx">range</span><span class="p">(</span><span class="nx">start</span><span class="p">,</span> <span class="nx">stop</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="k">new</span> <span class="nx">RangeIterator</span><span class="p">(</span><span class="nx">start</span><span class="p">,</span> <span class="nx">stop</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">value</span> <span class="k">of</span> <span class="nx">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span> <span class="c1">// 0, 1, 2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码是一个类部署 Iterator 接口的写法。<code>Symbol.iterator</code>属性对应一个函数，执行后返回当前对象的遍历器对象。</p>
 <p>下面是通过遍历器实现指针结构的例子。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -545,45 +542,45 @@ input.PC_MARK1:focus{
 </span><span class="lnt">32
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">Obj</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">this</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
-  <span class="k">this</span><span class="p">.</span><span class="nx">next</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="nx">Obj</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-  <span class="kd">var</span> <span class="nx">iterator</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">next</span><span class="o">:</span> <span class="nx">next</span> <span class="p">};</span>
-
-  <span class="kd">var</span> <span class="nx">current</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
-
-  <span class="kd">function</span> <span class="nx">next</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nx">current</span><span class="p">)</span> <span class="p">{</span>
-      <span class="kd">var</span> <span class="nx">value</span> <span class="o">=</span> <span class="nx">current</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
-      <span class="nx">current</span> <span class="o">=</span> <span class="nx">current</span><span class="p">.</span><span class="nx">next</span><span class="p">;</span>
-      <span class="k">return</span> <span class="p">{</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span> <span class="nx">value</span><span class="o">:</span> <span class="nx">value</span> <span class="p">};</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-      <span class="k">return</span> <span class="p">{</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">true</span> <span class="p">};</span>
-    <span class="p">}</span>
-  <span class="p">}</span>
-  <span class="k">return</span> <span class="nx">iterator</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kd">var</span> <span class="nx">one</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Obj</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">two</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Obj</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">three</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Obj</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
-
-<span class="nx">one</span><span class="p">.</span><span class="nx">next</span> <span class="o">=</span> <span class="nx">two</span><span class="p">;</span>
-<span class="nx">two</span><span class="p">.</span><span class="nx">next</span> <span class="o">=</span> <span class="nx">three</span><span class="p">;</span>
-
-<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="k">of</span> <span class="nx">one</span><span class="p">){</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">i</span><span class="p">);</span> <span class="c1">// 1, 2, 3
-</span><span class="c1"></span><span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">function</span> <span class="nx">Obj</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">this</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">this</span><span class="p">.</span><span class="nx">next</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">Obj</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">var</span> <span class="nx">iterator</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">next</span><span class="o">:</span> <span class="nx">next</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kd">var</span> <span class="nx">current</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kd">function</span> <span class="nx">next</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nx">current</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="kd">var</span> <span class="nx">value</span> <span class="o">=</span> <span class="nx">current</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="nx">current</span> <span class="o">=</span> <span class="nx">current</span><span class="p">.</span><span class="nx">next</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="p">{</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span> <span class="nx">value</span><span class="o">:</span> <span class="nx">value</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="p">{</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">true</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="nx">iterator</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">one</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Obj</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">two</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Obj</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">three</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Obj</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">one</span><span class="p">.</span><span class="nx">next</span> <span class="o">=</span> <span class="nx">two</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="nx">two</span><span class="p">.</span><span class="nx">next</span> <span class="o">=</span> <span class="nx">three</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="k">of</span> <span class="nx">one</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">i</span><span class="p">);</span> <span class="c1">// 1, 2, 3
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码首先在构造函数的原型链上部署<code>Symbol.iterator</code>方法，调用该方法会返回遍历器对象<code>iterator</code>，调用该对象的<code>next</code>方法，在返回一个值的同时，自动将内部指针移到下一个实例。</p>
 <p>下面是另一个为对象添加 Iterator 接口的例子。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -604,49 +601,49 @@ input.PC_MARK1:focus{
 </span><span class="lnt">19
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="nx">data</span><span class="o">:</span> <span class="p">[</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;world&#39;</span> <span class="p">],</span>
-  <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]()</span> <span class="p">{</span>
-    <span class="kr">const</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
-    <span class="kd">let</span> <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">return</span> <span class="p">{</span>
-      <span class="nx">next</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nx">index</span> <span class="o">&lt;</span> <span class="nx">self</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
-          <span class="k">return</span> <span class="p">{</span>
-            <span class="nx">value</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">data</span><span class="p">[</span><span class="nx">index</span><span class="o">++</span><span class="p">],</span>
-            <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span>
-          <span class="p">};</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-          <span class="k">return</span> <span class="p">{</span> <span class="nx">value</span><span class="o">:</span> <span class="kc">undefined</span><span class="p">,</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">true</span> <span class="p">};</span>
-        <span class="p">}</span>
-      <span class="p">}</span>
-    <span class="p">};</span>
-  <span class="p">}</span>
-<span class="p">};</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">data</span><span class="o">:</span> <span class="p">[</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;world&#39;</span> <span class="p">],</span>
+</span></span><span class="line"><span class="cl">  <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kr">const</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nx">next</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="nx">index</span> <span class="o">&lt;</span> <span class="nx">self</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="k">return</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">value</span><span class="o">:</span> <span class="nx">self</span><span class="p">.</span><span class="nx">data</span><span class="p">[</span><span class="nx">index</span><span class="o">++</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">          <span class="p">};</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="k">return</span> <span class="p">{</span> <span class="nx">value</span><span class="o">:</span> <span class="kc">undefined</span><span class="p">,</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">true</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">};</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>对于类似数组的对象（存在数值键名和<code>length</code>属性），部署 Iterator 接口，有一个简便方法，就是<code>Symbol.iterator</code>方法直接引用数组的 Iterator 接口。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">NodeList</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">];</span>
-<span class="c1">// 或者
-</span><span class="c1"></span><span class="nx">NodeList</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span> <span class="o">=</span> <span class="p">[][</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">];</span>
-
-<span class="p">[...</span><span class="nb">document</span><span class="p">.</span><span class="nx">querySelectorAll</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">)]</span> <span class="c1">// 可以执行了
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="nx">NodeList</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 或者
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">NodeList</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span> <span class="o">=</span> <span class="p">[][</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[...</span><span class="nb">document</span><span class="p">.</span><span class="nx">querySelectorAll</span><span class="p">(</span><span class="s1">&#39;div&#39;</span><span class="p">)]</span> <span class="c1">// 可以执行了
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>NodeList 对象是类似数组的对象，本来就具有遍历接口，可以直接遍历。上面代码中，我们将它的遍历接口改成数组的<code>Symbol.iterator</code>属性，可以看到没有任何影响。</p>
 <p>下面是另一个<strong>类似数组的对象调用数组的<code>Symbol.iterator</code>方法的例子</strong>。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -658,22 +655,22 @@ input.PC_MARK1:focus{
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">iterable</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="mi">0</span><span class="o">:</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span>
-  <span class="mi">1</span><span class="o">:</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span>
-  <span class="mi">2</span><span class="o">:</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span>
-  <span class="nx">length</span><span class="o">:</span> <span class="mi">3</span><span class="p">,</span>
-  <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span><span class="o">:</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span>
-<span class="p">};</span>
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">item</span> <span class="k">of</span> <span class="nx">iterable</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">item</span><span class="p">);</span> <span class="c1">// &#39;a&#39;, &#39;b&#39;, &#39;c&#39;
-</span><span class="c1"></span><span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">iterable</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="mi">0</span><span class="o">:</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="mi">1</span><span class="o">:</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="mi">2</span><span class="o">:</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">length</span><span class="o">:</span> <span class="mi">3</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span><span class="o">:</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">item</span> <span class="k">of</span> <span class="nx">iterable</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">item</span><span class="p">);</span> <span class="c1">// &#39;a&#39;, &#39;b&#39;, &#39;c&#39;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>注意，<strong>普通对象部署数组的<code>Symbol.iterator</code>方法，并无效果</strong>。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -685,40 +682,40 @@ input.PC_MARK1:focus{
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">iterable</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="nx">a</span><span class="o">:</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span>
-  <span class="nx">b</span><span class="o">:</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span>
-  <span class="nx">c</span><span class="o">:</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span>
-  <span class="nx">length</span><span class="o">:</span> <span class="mi">3</span><span class="p">,</span>
-  <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span><span class="o">:</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span>
-<span class="p">};</span>
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">item</span> <span class="k">of</span> <span class="nx">iterable</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">item</span><span class="p">);</span> <span class="c1">// undefined, undefined, undefined
-</span><span class="c1"></span><span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">iterable</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">a</span><span class="o">:</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">b</span><span class="o">:</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">c</span><span class="o">:</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">length</span><span class="o">:</span> <span class="mi">3</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span><span class="o">:</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">item</span> <span class="k">of</span> <span class="nx">iterable</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">item</span><span class="p">);</span> <span class="c1">// undefined, undefined, undefined
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>如果<code>Symbol.iterator</code>方法对应的不是遍历器生成函数（即会返回一个遍历器对象），解释引擎将会报错。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{};</span>
-
-<span class="nx">obj</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="mi">1</span><span class="p">;</span>
-
-<span class="p">[...</span><span class="nx">obj</span><span class="p">]</span> <span class="c1">// TypeError: [] is not a function
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">obj</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[...</span><span class="nx">obj</span><span class="p">]</span> <span class="c1">// TypeError: [] is not a function
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，变量<code>obj</code>的<code>Symbol.iterator</code>方法对应的不是遍历器生成函数，因此报错。</p>
 <p>有了遍历器接口，数据结构就可以用<code>for...of</code>循环遍历（详见下文），也可以使用<code>while</code>循环遍历。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -727,14 +724,14 @@ input.PC_MARK1:focus{
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">$iterator</span> <span class="o">=</span> <span class="nx">ITERABLE</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]();</span>
-<span class="kd">var</span> <span class="nx">$result</span> <span class="o">=</span> <span class="nx">$iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
-<span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="nx">$result</span><span class="p">.</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
-  <span class="kd">var</span> <span class="nx">x</span> <span class="o">=</span> <span class="nx">$result</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
-  <span class="c1">// ...
-</span><span class="c1"></span>  <span class="nx">$result</span> <span class="o">=</span> <span class="nx">$iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">$iterator</span> <span class="o">=</span> <span class="nx">ITERABLE</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]();</span>
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">$result</span> <span class="o">=</span> <span class="nx">$iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="nx">$result</span><span class="p">.</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">var</span> <span class="nx">x</span> <span class="o">=</span> <span class="nx">$result</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">$result</span> <span class="o">=</span> <span class="nx">$iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，<code>ITERABLE</code>代表某种可遍历的数据结构，<code>$iterator</code>是它的遍历器对象。遍历器对象每次移动指针（<code>next</code>方法），都检查一下返回值的<code>done</code>属性，如果遍历还没结束，就移动遍历器对象的指针到下一步（<code>next</code>方法），不断循环。</p>
 <h2 id="调用-iterator-接口的场合">调用 Iterator 接口的场合</h2>
@@ -743,7 +740,7 @@ input.PC_MARK1:focus{
 <p>对数组和 Set 结构进行解构赋值时，会默认调用<code>Symbol.iterator</code>方法。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -752,20 +749,20 @@ input.PC_MARK1:focus{
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">set</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Set</span><span class="p">().</span><span class="nx">add</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">).</span><span class="nx">add</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">).</span><span class="nx">add</span><span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">);</span>
-
-<span class="kd">let</span> <span class="p">[</span><span class="nx">x</span><span class="p">,</span><span class="nx">y</span><span class="p">]</span> <span class="o">=</span> <span class="nx">set</span><span class="p">;</span>
-<span class="c1">// x=&#39;a&#39;; y=&#39;b&#39;
-</span><span class="c1"></span>
-<span class="kd">let</span> <span class="p">[</span><span class="nx">first</span><span class="p">,</span> <span class="p">...</span><span class="nx">rest</span><span class="p">]</span> <span class="o">=</span> <span class="nx">set</span><span class="p">;</span>
-<span class="c1">// first=&#39;a&#39;; rest=[&#39;b&#39;,&#39;c&#39;];
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">set</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Set</span><span class="p">().</span><span class="nx">add</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">).</span><span class="nx">add</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">).</span><span class="nx">add</span><span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="p">[</span><span class="nx">x</span><span class="p">,</span><span class="nx">y</span><span class="p">]</span> <span class="o">=</span> <span class="nx">set</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// x=&#39;a&#39;; y=&#39;b&#39;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="p">[</span><span class="nx">first</span><span class="p">,</span> <span class="p">...</span><span class="nx">rest</span><span class="p">]</span> <span class="o">=</span> <span class="nx">set</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// first=&#39;a&#39;; rest=[&#39;b&#39;,&#39;c&#39;];
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p><strong>（2）扩展运算符</strong></p>
 <p>扩展运算符（&hellip;）也会调用默认的 Iterator 接口。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -775,31 +772,31 @@ input.PC_MARK1:focus{
 </span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// 例一
-</span><span class="c1"></span><span class="kd">var</span> <span class="nx">str</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span><span class="p">;</span>
-<span class="p">[...</span><span class="nx">str</span><span class="p">]</span> <span class="c1">//  [&#39;h&#39;,&#39;e&#39;,&#39;l&#39;,&#39;l&#39;,&#39;o&#39;]
-</span><span class="c1"></span>
-<span class="c1">// 例二
-</span><span class="c1"></span><span class="kd">let</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">];</span>
-<span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="p">...</span><span class="nx">arr</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">]</span>
-<span class="c1">// [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;]
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="c1">// 例一
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">var</span> <span class="nx">str</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">[...</span><span class="nx">str</span><span class="p">]</span> <span class="c1">//  [&#39;h&#39;,&#39;e&#39;,&#39;l&#39;,&#39;l&#39;,&#39;o&#39;]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 例二
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">let</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="p">...</span><span class="nx">arr</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;]
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码的扩展运算符内部就调用 Iterator 接口。</p>
 <p>实际上，这提供了一种简便机制，可以将任何部署了 Iterator 接口的数据结构，转为数组。也就是说，<strong>只要某个数据结构部署了 Iterator 接口，就可以对它使用扩展运算符，将其转为数组</strong>。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[...</span><span class="nx">iterable</span><span class="p">];</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[...</span><span class="nx">iterable</span><span class="p">];</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p><strong>（3）yield*</strong></p>
 <p><code>yield*</code>后面跟的是一个可遍历的结构，它会调用该结构的遍历器接口。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -815,21 +812,21 @@ input.PC_MARK1:focus{
 </span><span class="lnt">14
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">generator</span> <span class="o">=</span> <span class="kd">function</span><span class="o">*</span> <span class="p">()</span> <span class="p">{</span>
-  <span class="k">yield</span> <span class="mi">1</span><span class="p">;</span>
-  <span class="k">yield</span><span class="o">*</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">];</span>
-  <span class="k">yield</span> <span class="mi">5</span><span class="p">;</span>
-<span class="p">};</span>
-
-<span class="kd">var</span> <span class="nx">iterator</span> <span class="o">=</span> <span class="nx">generator</span><span class="p">();</span>
-
-<span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: 1, done: false }
-</span><span class="c1"></span><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: 2, done: false }
-</span><span class="c1"></span><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: 3, done: false }
-</span><span class="c1"></span><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: 4, done: false }
-</span><span class="c1"></span><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: 5, done: false }
-</span><span class="c1"></span><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: undefined, done: true }
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">generator</span> <span class="o">=</span> <span class="kd">function</span><span class="o">*</span> <span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">yield</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">yield</span><span class="o">*</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="k">yield</span> <span class="mi">5</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">iterator</span> <span class="o">=</span> <span class="nx">generator</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: 1, done: false }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: 2, done: false }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: 3, done: false }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: 4, done: false }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: 5, done: false }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span> <span class="c1">// { value: undefined, done: true }
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p><strong>（4）其他场合</strong></p>
 <p>由于数组的遍历会调用遍历器接口，所以任何接受数组作为参数的场合，其实都调用了遍历器接口。下面是一些例子。</p>
@@ -844,7 +841,7 @@ input.PC_MARK1:focus{
 <p><strong>字符串是一个类似数组的对象，也原生具有 Iterator 接口</strong>。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -855,22 +852,22 @@ input.PC_MARK1:focus{
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">someString</span> <span class="o">=</span> <span class="s2">&#34;hi&#34;</span><span class="p">;</span>
-<span class="k">typeof</span> <span class="nx">someString</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span>
-<span class="c1">// &#34;function&#34;
-</span><span class="c1"></span>
-<span class="kd">var</span> <span class="nx">iterator</span> <span class="o">=</span> <span class="nx">someString</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]();</span>
-
-<span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span>  <span class="c1">// { value: &#34;h&#34;, done: false }
-</span><span class="c1"></span><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span>  <span class="c1">// { value: &#34;i&#34;, done: false }
-</span><span class="c1"></span><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span>  <span class="c1">// { value: undefined, done: true }
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">someString</span> <span class="o">=</span> <span class="s2">&#34;hi&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">typeof</span> <span class="nx">someString</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// &#34;function&#34;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">iterator</span> <span class="o">=</span> <span class="nx">someString</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span>  <span class="c1">// { value: &#34;h&#34;, done: false }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span>  <span class="c1">// { value: &#34;i&#34;, done: false }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">iterator</span><span class="p">.</span><span class="nx">next</span><span class="p">()</span>  <span class="c1">// { value: undefined, done: true }
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，调用<code>Symbol.iterator</code>方法返回一个遍历器对象，在这个遍历器上可以调用 next 方法，实现对于字符串的遍历。</p>
 <p>可以覆盖原生的<code>Symbol.iterator</code>方法，达到修改遍历器行为的目的。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -892,34 +889,34 @@ input.PC_MARK1:focus{
 </span><span class="lnt">20
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">str</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">String</span><span class="p">(</span><span class="s2">&#34;hi&#34;</span><span class="p">);</span>
-
-<span class="p">[...</span><span class="nx">str</span><span class="p">]</span> <span class="c1">// [&#34;h&#34;, &#34;i&#34;]
-</span><span class="c1"></span>
-<span class="nx">str</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-  <span class="k">return</span> <span class="p">{</span>
-    <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_first</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">_first</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
-        <span class="k">return</span> <span class="p">{</span> <span class="nx">value</span><span class="o">:</span> <span class="s2">&#34;bye&#34;</span><span class="p">,</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span> <span class="p">};</span>
-      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="p">{</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">true</span> <span class="p">};</span>
-      <span class="p">}</span>
-    <span class="p">},</span>
-    <span class="nx">_first</span><span class="o">:</span> <span class="kc">true</span>
-  <span class="p">};</span>
-<span class="p">};</span>
-
-<span class="p">[...</span><span class="nx">str</span><span class="p">]</span> <span class="c1">// [&#34;bye&#34;]
-</span><span class="c1"></span><span class="nx">str</span> <span class="c1">// &#34;hi&#34;
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">str</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">String</span><span class="p">(</span><span class="s2">&#34;hi&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[...</span><span class="nx">str</span><span class="p">]</span> <span class="c1">// [&#34;h&#34;, &#34;i&#34;]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="nx">str</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">next</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_first</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="p">.</span><span class="nx">_first</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="p">{</span> <span class="nx">value</span><span class="o">:</span> <span class="s2">&#34;bye&#34;</span><span class="p">,</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="p">{</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">true</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">_first</span><span class="o">:</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">  <span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[...</span><span class="nx">str</span><span class="p">]</span> <span class="c1">// [&#34;bye&#34;]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">str</span> <span class="c1">// &#34;hi&#34;
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，字符串 str 的<code>Symbol.iterator</code>方法被修改了，所以扩展运算符（<code>...</code>）返回的值变成了<code>bye</code>，而字符串本身还是<code>hi</code>。</p>
 <h2 id="iterator-接口与-generator-函数">Iterator 接口与 Generator 函数</h2>
 <p><code>Symbol.iterator</code>方法的最简单实现，还是使用下一章要介绍的 Generator 函数。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -944,30 +941,30 @@ input.PC_MARK1:focus{
 </span><span class="lnt">23
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">myIterable</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span><span class="o">:</span> <span class="kd">function</span><span class="o">*</span> <span class="p">()</span> <span class="p">{</span>
-    <span class="k">yield</span> <span class="mi">1</span><span class="p">;</span>
-    <span class="k">yield</span> <span class="mi">2</span><span class="p">;</span>
-    <span class="k">yield</span> <span class="mi">3</span><span class="p">;</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-<span class="p">[...</span><span class="nx">myIterable</span><span class="p">]</span> <span class="c1">// [1, 2, 3]
-</span><span class="c1"></span>
-<span class="c1">// 或者采用下面的简洁写法
-</span><span class="c1"></span>
-<span class="kd">let</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="o">*</span> <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]()</span> <span class="p">{</span>
-    <span class="k">yield</span> <span class="s1">&#39;hello&#39;</span><span class="p">;</span>
-    <span class="k">yield</span> <span class="s1">&#39;world&#39;</span><span class="p">;</span>
-  <span class="p">}</span>
-<span class="p">};</span>
-
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">x</span> <span class="k">of</span> <span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="c1">// &#34;hello&#34;
-</span><span class="c1">// &#34;world&#34;
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">myIterable</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span><span class="o">:</span> <span class="kd">function</span><span class="o">*</span> <span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">yield</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">yield</span> <span class="mi">2</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">yield</span> <span class="mi">3</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">[...</span><span class="nx">myIterable</span><span class="p">]</span> <span class="c1">// [1, 2, 3]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 或者采用下面的简洁写法
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="o">*</span> <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">yield</span> <span class="s1">&#39;hello&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">yield</span> <span class="s1">&#39;world&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">x</span> <span class="k">of</span> <span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// &#34;hello&#34;
+</span></span></span><span class="line"><span class="cl"><span class="c1">// &#34;world&#34;
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，<code>Symbol.iterator</code>方法几乎不用部署任何代码，只要用 yield 命令给出每一步的返回值即可。</p>
 <h2 id="遍历器对象的-returnthrow">遍历器对象的 return()，throw()</h2>
@@ -975,7 +972,7 @@ input.PC_MARK1:focus{
 <p><code>return</code>方法的使用场合是，如果<code>for...of</code>循环提前退出（通常是因为出错，或者有<code>break</code>语句），就会调用<code>return</code>方法。如果一个对象在完成遍历前，需要清理或释放资源，就可以部署<code>return</code>方法。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -992,27 +989,27 @@ input.PC_MARK1:focus{
 </span><span class="lnt">15
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">readLinesSync</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">return</span> <span class="p">{</span>
-    <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]()</span> <span class="p">{</span>
-      <span class="k">return</span> <span class="p">{</span>
-        <span class="nx">next</span><span class="p">()</span> <span class="p">{</span>
-          <span class="k">return</span> <span class="p">{</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span> <span class="p">};</span>
-        <span class="p">},</span>
-        <span class="k">return</span><span class="p">()</span> <span class="p">{</span>
-          <span class="nx">file</span><span class="p">.</span><span class="nx">close</span><span class="p">();</span>
-          <span class="k">return</span> <span class="p">{</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">true</span> <span class="p">};</span>
-        <span class="p">}</span>
-      <span class="p">};</span>
-    <span class="p">},</span>
-  <span class="p">};</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">function</span> <span class="nx">readLinesSync</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">next</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="k">return</span> <span class="p">{</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">false</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl">        <span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="nx">file</span><span class="p">.</span><span class="nx">close</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">          <span class="k">return</span> <span class="p">{</span> <span class="nx">done</span><span class="o">:</span> <span class="kc">true</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">      <span class="p">};</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，函数<code>readLinesSync</code>接受一个文件对象作为参数，返回一个遍历器对象，其中除了<code>next</code>方法，还部署了<code>return</code>方法。下面的两种情况，都会触发执行<code>return</code>方法。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -1025,18 +1022,18 @@ input.PC_MARK1:focus{
 </span><span class="lnt">11
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// 情况一
-</span><span class="c1"></span><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">line</span> <span class="k">of</span> <span class="nx">readLinesSync</span><span class="p">(</span><span class="nx">fileName</span><span class="p">))</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">line</span><span class="p">);</span>
-  <span class="k">break</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="c1">// 情况二
-</span><span class="c1"></span><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">line</span> <span class="k">of</span> <span class="nx">readLinesSync</span><span class="p">(</span><span class="nx">fileName</span><span class="p">))</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">line</span><span class="p">);</span>
-  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">();</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="c1">// 情况一
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">line</span> <span class="k">of</span> <span class="nx">readLinesSync</span><span class="p">(</span><span class="nx">fileName</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">line</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 情况二
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">line</span> <span class="k">of</span> <span class="nx">readLinesSync</span><span class="p">(</span><span class="nx">fileName</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">line</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，情况一输出文件的第一行以后，就会执行<code>return</code>方法，关闭这个文件；情况二会在执行<code>return</code>方法关闭文件之后，再抛出错误。</p>
 <p>注意，<code>return</code>方法必须返回一个对象，这是 Generator 规格决定的。</p>
@@ -1049,7 +1046,7 @@ input.PC_MARK1:focus{
 <p>数组原生具备<code>iterator</code>接口（即默认部署了<code>Symbol.iterator</code>属性），<code>for...of</code>循环本质上就是调用这个接口产生的遍历器，可以用下面的代码证明。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -1063,25 +1060,25 @@ input.PC_MARK1:focus{
 </span><span class="lnt">12
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kr">const</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">];</span>
-
-<span class="k">for</span><span class="p">(</span><span class="kd">let</span> <span class="nx">v</span> <span class="k">of</span> <span class="nx">arr</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">v</span><span class="p">);</span> <span class="c1">// red green blue
-</span><span class="c1"></span><span class="p">}</span>
-
-<span class="kr">const</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{};</span>
-<span class="nx">obj</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span> <span class="o">=</span> <span class="nx">arr</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">].</span><span class="nx">bind</span><span class="p">(</span><span class="nx">arr</span><span class="p">);</span>
-
-<span class="k">for</span><span class="p">(</span><span class="kd">let</span> <span class="nx">v</span> <span class="k">of</span> <span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">v</span><span class="p">);</span> <span class="c1">// red green blue
-</span><span class="c1"></span><span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span><span class="p">(</span><span class="kd">let</span> <span class="nx">v</span> <span class="k">of</span> <span class="nx">arr</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">v</span><span class="p">);</span> <span class="c1">// red green blue
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{};</span>
+</span></span><span class="line"><span class="cl"><span class="nx">obj</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">]</span> <span class="o">=</span> <span class="nx">arr</span><span class="p">[</span><span class="nx">Symbol</span><span class="p">.</span><span class="nx">iterator</span><span class="p">].</span><span class="nx">bind</span><span class="p">(</span><span class="nx">arr</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span><span class="p">(</span><span class="kd">let</span> <span class="nx">v</span> <span class="k">of</span> <span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">v</span><span class="p">);</span> <span class="c1">// red green blue
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，空对象<code>obj</code>部署了数组<code>arr</code>的<code>Symbol.iterator</code>属性，结果<code>obj</code>的<code>for...of</code>循环，产生了与<code>arr</code>完全一样的结果。</p>
 <p><code>for...of</code>循环可以代替数组实例的<code>forEach</code>方法。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -1089,18 +1086,18 @@ input.PC_MARK1:focus{
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kr">const</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">];</span>
-
-<span class="nx">arr</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">element</span><span class="p">,</span> <span class="nx">index</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">element</span><span class="p">);</span> <span class="c1">// red green blue
-</span><span class="c1"></span>  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">index</span><span class="p">);</span>   <span class="c1">// 0 1 2
-</span><span class="c1"></span><span class="p">});</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">arr</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">element</span><span class="p">,</span> <span class="nx">index</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">element</span><span class="p">);</span> <span class="c1">// red green blue
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">index</span><span class="p">);</span>   <span class="c1">// 0 1 2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">});</span>
+</span></span></code></pre></td></tr></table>
 </div>
-</div><p>JavaScript 原有的<strong><code>for...in</code>循环，只能获得对象的键名</strong>，不能直接获取键值。ES6 提供<code>for...of</code>循环，允许遍历获得键值。</p>
+</div><p>JavaScript 原有的**<code>for...in</code>循环，只能获得对象的键名**，不能直接获取键值。ES6 提供<code>for...of</code>循环，允许遍历获得键值。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -1111,22 +1108,22 @@ input.PC_MARK1:focus{
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">];</span>
-
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">a</span> <span class="k">in</span> <span class="nx">arr</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">a</span><span class="p">);</span> <span class="c1">// 0 1 2 3
-</span><span class="c1"></span><span class="p">}</span>
-
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">a</span> <span class="k">of</span> <span class="nx">arr</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">a</span><span class="p">);</span> <span class="c1">// a b c d
-</span><span class="c1"></span><span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">a</span> <span class="k">in</span> <span class="nx">arr</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">a</span><span class="p">);</span> <span class="c1">// 0 1 2 3
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">a</span> <span class="k">of</span> <span class="nx">arr</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">a</span><span class="p">);</span> <span class="c1">// a b c d
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码表明，<strong><code>for...in</code>循环读取键名，<code>for...of</code>循环读取键值</strong>。如果要通过<code>for...of</code>循环，获取数组的索引，可以借助数组实例的<code>entries</code>方法和<code>keys</code>方法（参见《数组的扩展》一章）。</p>
 <p><code>for...of</code>循环调用遍历器接口，数组的遍历器接口只返回具有数字索引的属性。这一点跟<code>for...in</code>循环也不一样。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -1138,24 +1135,24 @@ input.PC_MARK1:focus{
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">];</span>
-<span class="nx">arr</span><span class="p">.</span><span class="nx">foo</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span><span class="p">;</span>
-
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">arr</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">i</span><span class="p">);</span> <span class="c1">// &#34;0&#34;, &#34;1&#34;, &#34;2&#34;, &#34;foo&#34;
-</span><span class="c1"></span><span class="p">}</span>
-
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="k">of</span> <span class="nx">arr</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">i</span><span class="p">);</span> <span class="c1">//  &#34;3&#34;, &#34;5&#34;, &#34;7&#34;
-</span><span class="c1"></span><span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="nx">arr</span><span class="p">.</span><span class="nx">foo</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">arr</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">i</span><span class="p">);</span> <span class="c1">// &#34;0&#34;, &#34;1&#34;, &#34;2&#34;, &#34;foo&#34;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="k">of</span> <span class="nx">arr</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">i</span><span class="p">);</span> <span class="c1">//  &#34;3&#34;, &#34;5&#34;, &#34;7&#34;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码中，<code>for...of</code>循环不会返回数组<code>arr</code>的<code>foo</code>属性。</p>
 <h3 id="set-和-map-结构">Set 和 Map 结构</h3>
 <p>Set 和 Map 结构也原生具有 Iterator 接口，可以直接使用<code>for...of</code>循环。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -1175,30 +1172,30 @@ input.PC_MARK1:focus{
 </span><span class="lnt">18
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">engines</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Set</span><span class="p">([</span><span class="s2">&#34;Gecko&#34;</span><span class="p">,</span> <span class="s2">&#34;Trident&#34;</span><span class="p">,</span> <span class="s2">&#34;Webkit&#34;</span><span class="p">,</span> <span class="s2">&#34;Webkit&#34;</span><span class="p">]);</span>
-<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">e</span> <span class="k">of</span> <span class="nx">engines</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="c1">// Gecko
-</span><span class="c1">// Trident
-</span><span class="c1">// Webkit
-</span><span class="c1"></span>
-<span class="kd">var</span> <span class="nx">es6</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Map</span><span class="p">();</span>
-<span class="nx">es6</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">&#34;edition&#34;</span><span class="p">,</span> <span class="mi">6</span><span class="p">);</span>
-<span class="nx">es6</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">&#34;committee&#34;</span><span class="p">,</span> <span class="s2">&#34;TC39&#34;</span><span class="p">);</span>
-<span class="nx">es6</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">&#34;standard&#34;</span><span class="p">,</span> <span class="s2">&#34;ECMA-262&#34;</span><span class="p">);</span>
-<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="p">[</span><span class="nx">name</span><span class="p">,</span> <span class="nx">value</span><span class="p">]</span> <span class="k">of</span> <span class="nx">es6</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">name</span> <span class="o">+</span> <span class="s2">&#34;: &#34;</span> <span class="o">+</span> <span class="nx">value</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="c1">// edition: 6
-</span><span class="c1">// committee: TC39
-</span><span class="c1">// standard: ECMA-262
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">engines</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Set</span><span class="p">([</span><span class="s2">&#34;Gecko&#34;</span><span class="p">,</span> <span class="s2">&#34;Trident&#34;</span><span class="p">,</span> <span class="s2">&#34;Webkit&#34;</span><span class="p">,</span> <span class="s2">&#34;Webkit&#34;</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">e</span> <span class="k">of</span> <span class="nx">engines</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// Gecko
+</span></span></span><span class="line"><span class="cl"><span class="c1">// Trident
+</span></span></span><span class="line"><span class="cl"><span class="c1">// Webkit
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">es6</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Map</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="nx">es6</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">&#34;edition&#34;</span><span class="p">,</span> <span class="mi">6</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="nx">es6</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">&#34;committee&#34;</span><span class="p">,</span> <span class="s2">&#34;TC39&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="nx">es6</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s2">&#34;standard&#34;</span><span class="p">,</span> <span class="s2">&#34;ECMA-262&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="p">[</span><span class="nx">name</span><span class="p">,</span> <span class="nx">value</span><span class="p">]</span> <span class="k">of</span> <span class="nx">es6</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">name</span> <span class="o">+</span> <span class="s2">&#34;: &#34;</span> <span class="o">+</span> <span class="nx">value</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// edition: 6
+</span></span></span><span class="line"><span class="cl"><span class="c1">// committee: TC39
+</span></span></span><span class="line"><span class="cl"><span class="c1">// standard: ECMA-262
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码演示了如何遍历 Set 结构和 Map 结构。值得注意的地方有两个，首先，遍历的顺序是按照各个成员被添加进数据结构的顺序。其次，Set 结构遍历时，返回的是一个值，而 Map 结构遍历时，返回的是一个数组，该数组的两个成员分别为当前 Map 成员的键名和键值。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -1212,19 +1209,19 @@ input.PC_MARK1:focus{
 </span><span class="lnt">12
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">map</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Map</span><span class="p">().</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">pair</span> <span class="k">of</span> <span class="nx">map</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">pair</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="c1">// [&#39;a&#39;, 1]
-</span><span class="c1">// [&#39;b&#39;, 2]
-</span><span class="c1"></span>
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="p">[</span><span class="nx">key</span><span class="p">,</span> <span class="nx">value</span><span class="p">]</span> <span class="k">of</span> <span class="nx">map</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">key</span> <span class="o">+</span> <span class="s1">&#39; : &#39;</span> <span class="o">+</span> <span class="nx">value</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="c1">// a : 1
-</span><span class="c1">// b : 2
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">map</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Map</span><span class="p">().</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">pair</span> <span class="k">of</span> <span class="nx">map</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">pair</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// [&#39;a&#39;, 1]
+</span></span></span><span class="line"><span class="cl"><span class="c1">// [&#39;b&#39;, 2]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="p">[</span><span class="nx">key</span><span class="p">,</span> <span class="nx">value</span><span class="p">]</span> <span class="k">of</span> <span class="nx">map</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">key</span> <span class="o">+</span> <span class="s1">&#39; : &#39;</span> <span class="o">+</span> <span class="nx">value</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// a : 1
+</span></span></span><span class="line"><span class="cl"><span class="c1">// b : 2
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="计算生成的数据结构">计算生成的数据结构</h3>
 <p>有些数据结构是在现有数据结构的基础上，计算生成的。比如，ES6 的数组、Set、Map 都部署了以下三个方法，调用后都返回遍历器对象。</p>
@@ -1236,7 +1233,7 @@ input.PC_MARK1:focus{
 <p>这三个方法调用后生成的遍历器对象，所遍历的都是计算生成的数据结构。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -1245,20 +1242,20 @@ input.PC_MARK1:focus{
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">];</span>
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">pair</span> <span class="k">of</span> <span class="nx">arr</span><span class="p">.</span><span class="nx">entries</span><span class="p">())</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">pair</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="c1">// [0, &#39;a&#39;]
-</span><span class="c1">// [1, &#39;b&#39;]
-</span><span class="c1">// [2, &#39;c&#39;]
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">arr</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">pair</span> <span class="k">of</span> <span class="nx">arr</span><span class="p">.</span><span class="nx">entries</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">pair</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// [0, &#39;a&#39;]
+</span></span></span><span class="line"><span class="cl"><span class="c1">// [1, &#39;b&#39;]
+</span></span></span><span class="line"><span class="cl"><span class="c1">// [2, &#39;c&#39;]
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="类似数组的对象">类似数组的对象</h3>
 <p>类似数组的对象包括好几类。下面是<code>for...of</code>循环用于字符串、DOM NodeList 对象、<code>arguments</code>对象的例子。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -1283,52 +1280,52 @@ input.PC_MARK1:focus{
 </span><span class="lnt">23
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="c1">// 字符串
-</span><span class="c1"></span><span class="kd">let</span> <span class="nx">str</span> <span class="o">=</span> <span class="s2">&#34;hello&#34;</span><span class="p">;</span>
-
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">s</span> <span class="k">of</span> <span class="nx">str</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">s</span><span class="p">);</span> <span class="c1">// h e l l o
-</span><span class="c1"></span><span class="p">}</span>
-
-<span class="c1">// DOM NodeList对象
-</span><span class="c1"></span><span class="kd">let</span> <span class="nx">paras</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelectorAll</span><span class="p">(</span><span class="s2">&#34;p&#34;</span><span class="p">);</span>
-
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">p</span> <span class="k">of</span> <span class="nx">paras</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">p</span><span class="p">.</span><span class="nx">classList</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="s2">&#34;test&#34;</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="c1">// arguments对象
-</span><span class="c1"></span><span class="kd">function</span> <span class="nx">printArgs</span><span class="p">()</span> <span class="p">{</span>
-  <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">x</span> <span class="k">of</span> <span class="nx">arguments</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-<span class="nx">printArgs</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">);</span>
-<span class="c1">// &#39;a&#39;
-</span><span class="c1">// &#39;b&#39;
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="c1">// 字符串
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">let</span> <span class="nx">str</span> <span class="o">=</span> <span class="s2">&#34;hello&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">s</span> <span class="k">of</span> <span class="nx">str</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">s</span><span class="p">);</span> <span class="c1">// h e l l o
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// DOM NodeList对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">let</span> <span class="nx">paras</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelectorAll</span><span class="p">(</span><span class="s2">&#34;p&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">p</span> <span class="k">of</span> <span class="nx">paras</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">p</span><span class="p">.</span><span class="nx">classList</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="s2">&#34;test&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// arguments对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">function</span> <span class="nx">printArgs</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">x</span> <span class="k">of</span> <span class="nx">arguments</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nx">printArgs</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// &#39;a&#39;
+</span></span></span><span class="line"><span class="cl"><span class="c1">// &#39;b&#39;
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>对于字符串来说，<code>for...of</code>循环还有一个特点，就是会正确识别 32 位 UTF-16 字符。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">x</span> <span class="k">of</span> <span class="s1">&#39;a\uD83D\uDC0A&#39;</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="c1">// &#39;a&#39;
-</span><span class="c1">// &#39;\uD83D\uDC0A&#39;
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">x</span> <span class="k">of</span> <span class="s1">&#39;a\uD83D\uDC0A&#39;</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// &#39;a&#39;
+</span></span></span><span class="line"><span class="cl"><span class="c1">// &#39;\uD83D\uDC0A&#39;
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>并不是所有类似数组的对象都具有 Iterator 接口，一个简便的解决方法，就是使用<code>Array.from</code>方法将其转为数组。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -1341,24 +1338,24 @@ input.PC_MARK1:focus{
 </span><span class="lnt">11
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">arrayLike</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">length</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="o">:</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="o">:</span> <span class="s1">&#39;b&#39;</span> <span class="p">};</span>
-
-<span class="c1">// 报错
-</span><span class="c1"></span><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">x</span> <span class="k">of</span> <span class="nx">arrayLike</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="c1">// 正确
-</span><span class="c1"></span><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">x</span> <span class="k">of</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">from</span><span class="p">(</span><span class="nx">arrayLike</span><span class="p">))</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">arrayLike</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">length</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="o">:</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="o">:</span> <span class="s1">&#39;b&#39;</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 报错
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">x</span> <span class="k">of</span> <span class="nx">arrayLike</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 正确
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">x</span> <span class="k">of</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">from</span><span class="p">(</span><span class="nx">arrayLike</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="对象">对象</h3>
 <p>对于普通的对象，<code>for...of</code>结构不能直接使用，会报错，必须部署了 Iterator 接口后才能使用。但是，这样情况下，<code>for...in</code>循环依然可以用来遍历键名。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -1377,43 +1374,43 @@ input.PC_MARK1:focus{
 </span><span class="lnt">17
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">let</span> <span class="nx">es6</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="nx">edition</span><span class="o">:</span> <span class="mi">6</span><span class="p">,</span>
-  <span class="nx">committee</span><span class="o">:</span> <span class="s2">&#34;TC39&#34;</span><span class="p">,</span>
-  <span class="nx">standard</span><span class="o">:</span> <span class="s2">&#34;ECMA-262&#34;</span>
-<span class="p">};</span>
-
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">e</span> <span class="k">in</span> <span class="nx">es6</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="c1">// edition
-</span><span class="c1">// committee
-</span><span class="c1">// standard
-</span><span class="c1"></span>
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">e</span> <span class="k">of</span> <span class="nx">es6</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="c1">// TypeError: es6[Symbol.iterator] is not a function
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nx">es6</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">edition</span><span class="o">:</span> <span class="mi">6</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">committee</span><span class="o">:</span> <span class="s2">&#34;TC39&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">standard</span><span class="o">:</span> <span class="s2">&#34;ECMA-262&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">e</span> <span class="k">in</span> <span class="nx">es6</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// edition
+</span></span></span><span class="line"><span class="cl"><span class="c1">// committee
+</span></span></span><span class="line"><span class="cl"><span class="c1">// standard
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">e</span> <span class="k">of</span> <span class="nx">es6</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// TypeError: es6[Symbol.iterator] is not a function
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面代码表示，对于普通的对象，<code>for...in</code>循环可以遍历键名，<code>for...of</code>循环会报错。</p>
 <p>一种解决方法是，使用<code>Object.keys</code>方法将对象的键名生成一个数组，然后遍历这个数组。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">key</span> <span class="k">of</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">someObject</span><span class="p">))</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">key</span> <span class="o">+</span> <span class="s1">&#39;: &#39;</span> <span class="o">+</span> <span class="nx">someObject</span><span class="p">[</span><span class="nx">key</span><span class="p">]);</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">key</span> <span class="k">of</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">someObject</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">key</span> <span class="o">+</span> <span class="s1">&#39;: &#39;</span> <span class="o">+</span> <span class="nx">someObject</span><span class="p">[</span><span class="nx">key</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>另一个方法是使用 Generator 函数将对象重新包装一下。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -1427,60 +1424,60 @@ input.PC_MARK1:focus{
 </span><span class="lnt">12
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="kd">function</span><span class="o">*</span> <span class="nx">entries</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">key</span> <span class="k">of</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">obj</span><span class="p">))</span> <span class="p">{</span>
-    <span class="k">yield</span> <span class="p">[</span><span class="nx">key</span><span class="p">,</span> <span class="nx">obj</span><span class="p">[</span><span class="nx">key</span><span class="p">]];</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-
-<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="p">[</span><span class="nx">key</span><span class="p">,</span> <span class="nx">value</span><span class="p">]</span> <span class="k">of</span> <span class="nx">entries</span><span class="p">(</span><span class="nx">obj</span><span class="p">))</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="s1">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="nx">value</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="c1">// a -&gt; 1
-</span><span class="c1">// b -&gt; 2
-</span><span class="c1">// c -&gt; 3
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="kd">function</span><span class="o">*</span> <span class="nx">entries</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">key</span> <span class="k">of</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">obj</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">yield</span> <span class="p">[</span><span class="nx">key</span><span class="p">,</span> <span class="nx">obj</span><span class="p">[</span><span class="nx">key</span><span class="p">]];</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="p">[</span><span class="nx">key</span><span class="p">,</span> <span class="nx">value</span><span class="p">]</span> <span class="k">of</span> <span class="nx">entries</span><span class="p">(</span><span class="nx">obj</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="s1">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="nx">value</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// a -&gt; 1
+</span></span></span><span class="line"><span class="cl"><span class="c1">// b -&gt; 2
+</span></span></span><span class="line"><span class="cl"><span class="c1">// c -&gt; 3
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="与其他遍历语法的比较">与其他遍历语法的比较</h3>
 <p>以数组为例，JavaScript 提供多种遍历语法。最原始的写法就是<code>for</code>循环。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">index</span> <span class="o">&lt;</span> <span class="nx">myArray</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">index</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">myArray</span><span class="p">[</span><span class="nx">index</span><span class="p">]);</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">index</span> <span class="o">&lt;</span> <span class="nx">myArray</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">index</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">myArray</span><span class="p">[</span><span class="nx">index</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>这种写法比较麻烦，因此数组提供内置的<code>forEach</code>方法。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="nx">myArray</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
-<span class="p">});</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="nx">myArray</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">});</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>这种写法的问题在于，无法中途跳出<code>forEach</code>循环，<code>break</code>命令或<code>return</code>命令都不能奏效。</p>
 <p><code>for...in</code>循环可以遍历数组的键名。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">index</span> <span class="k">in</span> <span class="nx">myArray</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">myArray</span><span class="p">[</span><span class="nx">index</span><span class="p">]);</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">index</span> <span class="k">in</span> <span class="nx">myArray</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">myArray</span><span class="p">[</span><span class="nx">index</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p><code>for...in</code>循环有几个缺点。</p>
 <ul>
@@ -1492,15 +1489,15 @@ input.PC_MARK1:focus{
 <p><code>for...of</code>循环相比上面几种做法，有一些显著的优点。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">value</span> <span class="k">of</span> <span class="nx">myArray</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">value</span> <span class="k">of</span> <span class="nx">myArray</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>有着同<code>for...in</code>一样的简洁语法，但是没有<code>for...in</code>那些缺点。</li>
@@ -1510,19 +1507,19 @@ input.PC_MARK1:focus{
 <p>下面是一个使用 break 语句，跳出<code>for...of</code>循环的例子。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-javascript" data-lang="javascript"><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">n</span> <span class="k">of</span> <span class="nx">fibonacci</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">if</span> <span class="p">(</span><span class="nx">n</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">)</span>
-    <span class="k">break</span><span class="p">;</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">n</span><span class="p">);</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">n</span> <span class="k">of</span> <span class="nx">fibonacci</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="nx">n</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">n</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面的例子，会输出斐波纳契数列小于等于 1000 的项。如果当前项大于 1000，就会使用<code>break</code>语句跳出<code>for...of</code>循环。</p>
 
@@ -1660,7 +1657,7 @@ input.PC_MARK1:focus{
 
 
 
-<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
   <script type="text/javascript">
     window.MathJax = {
       tex: {

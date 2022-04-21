@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.74.2 with theme even" />
+<meta name="generator" content="Hugo 0.97.3 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E4%B8%A4%E9%98%B6%E6%AE%B5%E7%BB%88%E6%AD%A2%E6%A8%A1%E5%BC%8F%E4%BC%98%E9%9B%85%E7%9A%84%E5%81%9C%E6%AD%A2%E7%BA%BF%E7%A8%8B/" />
@@ -43,17 +43,14 @@
 <meta property="og:title" content="两阶段终止模式" />
 <meta property="og:description" content="线程执行完或者出现异常就会进入终止状态。这样看，终止一个线程看上去很简单啊！一个线程执行完自己的任务，自己进入终止状态，这的确很简单。不过我" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E4%B8%A4%E9%98%B6%E6%AE%B5%E7%BB%88%E6%AD%A2%E6%A8%A1%E5%BC%8F%E4%BC%98%E9%9B%85%E7%9A%84%E5%81%9C%E6%AD%A2%E7%BA%BF%E7%A8%8B/" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E4%B8%A4%E9%98%B6%E6%AE%B5%E7%BB%88%E6%AD%A2%E6%A8%A1%E5%BC%8F%E4%BC%98%E9%9B%85%E7%9A%84%E5%81%9C%E6%AD%A2%E7%BA%BF%E7%A8%8B/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
 <meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+
 <meta itemprop="name" content="两阶段终止模式">
-<meta itemprop="description" content="线程执行完或者出现异常就会进入终止状态。这样看，终止一个线程看上去很简单啊！一个线程执行完自己的任务，自己进入终止状态，这的确很简单。不过我">
-<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="description" content="线程执行完或者出现异常就会进入终止状态。这样看，终止一个线程看上去很简单啊！一个线程执行完自己的任务，自己进入终止状态，这的确很简单。不过我"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
 <meta itemprop="wordCount" content="1834">
-
-
-
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="两阶段终止模式"/>
 <meta name="twitter:description" content="线程执行完或者出现异常就会进入终止状态。这样看，终止一个线程看上去很简单啊！一个线程执行完自己的任务，自己进入终止状态，这的确很简单。不过我"/>
@@ -231,7 +228,7 @@ input.PC_MARK1:focus{
 </ul>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -272,46 +269,46 @@ input.PC_MARK1:focus{
 </span><span class="lnt">39
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-java" data-lang="java"><span class="kd">class</span> <span class="nc">Proxy</span> <span class="o">{</span>
-  <span class="c1">// 线程终止标志位
-</span><span class="c1"></span>  <span class="kd">volatile</span> <span class="kt">boolean</span> <span class="n">terminated</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
-  <span class="kt">boolean</span> <span class="n">started</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
-  <span class="c1">// 采集线程
-</span><span class="c1"></span>  <span class="n">Thread</span> <span class="n">rptThread</span><span class="o">;</span>
-  <span class="c1">// 启动采集功能
-</span><span class="c1"></span>  <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">start</span><span class="o">(){</span>
-    <span class="c1">// 不允许同时启动多个采集线程
-</span><span class="c1"></span>    <span class="k">if</span> <span class="o">(</span><span class="n">started</span><span class="o">)</span> <span class="o">{</span>
-      <span class="k">return</span><span class="o">;</span>
-    <span class="o">}</span>
-    <span class="n">started</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
-    <span class="n">terminated</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
-    <span class="n">rptThread</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(()-&gt;{</span>
-      <span class="k">while</span> <span class="o">(!</span><span class="n">terminated</span><span class="o">){</span>
-        <span class="c1">// 省略采集、回传实现
-</span><span class="c1"></span>        <span class="n">report</span><span class="o">();</span>
-        <span class="c1">// 每隔两秒钟采集、回传一次数据
-</span><span class="c1"></span>        <span class="k">try</span> <span class="o">{</span>
-          <span class="n">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="n">2000</span><span class="o">);</span>
-        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">){</span>
-          <span class="c1">// 重新设置线程中断状态
-</span><span class="c1"></span>          <span class="n">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">interrupt</span><span class="o">();</span>
-        <span class="o">}</span>
-      <span class="o">}</span>
-      <span class="c1">// 执行到此处说明线程马上终止
-</span><span class="c1"></span>      <span class="n">started</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
-    <span class="o">});</span>
-    <span class="n">rptThread</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
-  <span class="o">}</span>
-  <span class="c1">// 终止采集功能
-</span><span class="c1"></span>  <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">stop</span><span class="o">(){</span>
-    <span class="c1">// 设置中断标志位
-</span><span class="c1"></span>    <span class="n">terminated</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
-    <span class="c1">// 中断线程 rptThread
-</span><span class="c1"></span>    <span class="n">rptThread</span><span class="o">.</span><span class="na">interrupt</span><span class="o">();</span>
-  <span class="o">}</span>
-<span class="o">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">Proxy</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 线程终止标志位
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kd">volatile</span> <span class="kt">boolean</span> <span class="n">terminated</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">boolean</span> <span class="n">started</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 采集线程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">Thread</span> <span class="n">rptThread</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 启动采集功能
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">start</span><span class="o">(){</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 不允许同时启动多个采集线程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="o">(</span><span class="n">started</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">started</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">terminated</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">rptThread</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(()-&gt;{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">while</span> <span class="o">(!</span><span class="n">terminated</span><span class="o">){</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 省略采集、回传实现
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">report</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 每隔两秒钟采集、回传一次数据
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="n">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="n">2000</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">){</span>
+</span></span><span class="line"><span class="cl">          <span class="c1">// 重新设置线程中断状态
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>          <span class="n">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">interrupt</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="c1">// 执行到此处说明线程马上终止
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">started</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">});</span>
+</span></span><span class="line"><span class="cl">    <span class="n">rptThread</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 终止采集功能
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">stop</span><span class="o">(){</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 设置中断标志位
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">terminated</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 中断线程 rptThread
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">rptThread</span><span class="o">.</span><span class="na">interrupt</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="线程池的关闭">线程池的关闭</h3>
 <p>Java 领域用的最多的还是线程池，而不是手动地创建线程。那我们该如何优雅地终止线程池呢？</p>
@@ -456,7 +453,7 @@ input.PC_MARK1:focus{
 
 
 
-<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
   <script type="text/javascript">
     window.MathJax = {
       tex: {

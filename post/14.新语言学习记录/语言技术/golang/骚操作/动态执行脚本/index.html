@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.74.2 with theme even" />
+<meta name="generator" content="Hugo 0.97.3 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E9%AA%9A%E6%93%8D%E4%BD%9C/%E5%8A%A8%E6%80%81%E6%89%A7%E8%A1%8C%E8%84%9A%E6%9C%AC/" />
@@ -43,17 +43,14 @@
 <meta property="og:title" content="Golang动态执行脚本" />
 <meta property="og:description" content="golang 动态执行脚本 golang 需要编译，但是 有时候我需要动态语言的特性，就需要动态执行脚本 更多 gopher-luar 和 starlark-go-lib 已经把在 gopher-lua 和 starlark-go 中使用 go 语言的第三方包变得极其容易。当然" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E9%AA%9A%E6%93%8D%E4%BD%9C/%E5%8A%A8%E6%80%81%E6%89%A7%E8%A1%8C%E8%84%9A%E6%9C%AC/" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E9%AA%9A%E6%93%8D%E4%BD%9C/%E5%8A%A8%E6%80%81%E6%89%A7%E8%A1%8C%E8%84%9A%E6%9C%AC/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-08-14T22:42:48+08:00" />
 <meta property="article:modified_time" content="2021-08-14T22:42:48+08:00" />
+
 <meta itemprop="name" content="Golang动态执行脚本">
-<meta itemprop="description" content="golang 动态执行脚本 golang 需要编译，但是 有时候我需要动态语言的特性，就需要动态执行脚本 更多 gopher-luar 和 starlark-go-lib 已经把在 gopher-lua 和 starlark-go 中使用 go 语言的第三方包变得极其容易。当然">
-<meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="464">
-
-
-
+<meta itemprop="description" content="golang 动态执行脚本 golang 需要编译，但是 有时候我需要动态语言的特性，就需要动态执行脚本 更多 gopher-luar 和 starlark-go-lib 已经把在 gopher-lua 和 starlark-go 中使用 go 语言的第三方包变得极其容易。当然"><meta itemprop="datePublished" content="2021-08-14T22:42:48+08:00" />
+<meta itemprop="dateModified" content="2021-08-14T22:42:48+08:00" />
+<meta itemprop="wordCount" content="463">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Golang动态执行脚本"/>
 <meta name="twitter:description" content="golang 动态执行脚本 golang 需要编译，但是 有时候我需要动态语言的特性，就需要动态执行脚本 更多 gopher-luar 和 starlark-go-lib 已经把在 gopher-lua 和 starlark-go 中使用 go 语言的第三方包变得极其容易。当然"/>
@@ -188,7 +185,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-14 </span>
         
-          <span class="more-meta"> 约 464 字 </span>
+          <span class="more-meta"> 约 463 字 </span>
           <span class="more-meta"> 预计阅读 1 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -224,7 +221,7 @@ input.PC_MARK1:focus{
 <p>这里我使用 otto 来搞</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -291,78 +288,76 @@ input.PC_MARK1:focus{
 </span><span class="lnt">65
 </span><span class="lnt">66
 </span><span class="lnt">67
-</span><span class="lnt">68
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;fmt&#34;</span>
-	<span class="s">&#34;github.com/robertkrimen/otto&#34;</span>
-	<span class="s">&#34;testing&#34;</span>
-<span class="p">)</span>
-
-<span class="c1">//go get -u go.starlark.net/cmd/starlark
-</span><span class="c1"></span><span class="kd">func</span> <span class="nf">Test1</span> <span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">cmd</span> <span class="kt">string</span> <span class="p">=</span> <span class="s">`
-</span><span class="s">	    console.log(&#34;123456&#34;);
-</span><span class="s">		 
-</span><span class="s">        /* var arr = [1,2,3]; */
-</span><span class="s">        var arr = getList();
-</span><span class="s">        console.log(arr);
-</span><span class="s">        for(var i=0;i&lt;arr.length;i++ ){
-</span><span class="s">           console.log(arr[i]);
-</span><span class="s">        }
-</span><span class="s">        var ok = &#34;it is OK &#34;;
-</span><span class="s">
-</span><span class="s">        function isOK(input ) {
-</span><span class="s">           if (input == null) return false;
-</span><span class="s">           //数组长度大于等于3；
-</span><span class="s">           return input.length &amp;&amp; input.length&gt;3;
-</span><span class="s">        }
-</span><span class="s">	`</span>
-
-	<span class="c1">//fmt.Println(cmd)
-</span><span class="c1"></span>
-	<span class="nx">vm</span> <span class="o">:=</span> <span class="nx">otto</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
-	<span class="nx">vm</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;getList&#34;</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">call</span> <span class="nx">otto</span><span class="p">.</span><span class="nx">FunctionCall</span><span class="p">)</span> <span class="nx">otto</span><span class="p">.</span><span class="nx">Value</span> <span class="p">{</span>
-		<span class="nx">w</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">}</span>
-		<span class="nx">res</span> <span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">vm</span><span class="p">.</span><span class="nf">ToValue</span><span class="p">(</span><span class="nx">w</span><span class="p">)</span>
-		<span class="k">return</span> <span class="nx">res</span>
-	<span class="p">})</span>
-
-	<span class="nx">_</span><span class="p">,</span><span class="nx">err</span> <span class="o">:=</span> <span class="nx">vm</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">cmd</span><span class="p">)</span>
-	<span class="nx">get</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">vm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;ok&#34;</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-	<span class="p">}</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">get</span><span class="p">)</span>
-	 
-	<span class="nx">s</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">}</span>
-	<span class="nx">res</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">vm</span><span class="p">.</span><span class="nf">Call</span><span class="p">(</span><span class="s">&#34;isOK&#34;</span><span class="p">,</span> <span class="nx">s</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span><span class="o">!=</span><span class="kc">nil</span> <span class="p">{</span>
-		<span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-	<span class="p">}</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;res = %#v \n&#34;</span><span class="p">,</span><span class="nx">res</span><span class="p">)</span>
-
-<span class="p">}</span>
-
-
-<span class="cm">/*
-</span><span class="cm">
-</span><span class="cm">=== RUN   Test1
-</span><span class="cm">123456
-</span><span class="cm">1,3,3
-</span><span class="cm">1
-</span><span class="cm">3
-</span><span class="cm">3
-</span><span class="cm">it is OK 
-</span><span class="cm">res = otto.Value{kind:4, value:false} 
-</span><span class="cm">--- PA
-</span><span class="cm">
-</span><span class="cm">*/</span>
-
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/robertkrimen/otto&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;testing&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//go get -u go.starlark.net/cmd/starlark
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">Test1</span> <span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">cmd</span> <span class="kt">string</span> <span class="p">=</span> <span class="s">`
+</span></span></span><span class="line"><span class="cl"><span class="s">	    console.log(&#34;123456&#34;);
+</span></span></span><span class="line"><span class="cl"><span class="s">		 
+</span></span></span><span class="line"><span class="cl"><span class="s">        /* var arr = [1,2,3]; */
+</span></span></span><span class="line"><span class="cl"><span class="s">        var arr = getList();
+</span></span></span><span class="line"><span class="cl"><span class="s">        console.log(arr);
+</span></span></span><span class="line"><span class="cl"><span class="s">        for(var i=0;i&lt;arr.length;i++ ){
+</span></span></span><span class="line"><span class="cl"><span class="s">           console.log(arr[i]);
+</span></span></span><span class="line"><span class="cl"><span class="s">        }
+</span></span></span><span class="line"><span class="cl"><span class="s">        var ok = &#34;it is OK &#34;;
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">        function isOK(input ) {
+</span></span></span><span class="line"><span class="cl"><span class="s">           if (input == null) return false;
+</span></span></span><span class="line"><span class="cl"><span class="s">           //数组长度大于等于3；
+</span></span></span><span class="line"><span class="cl"><span class="s">           return input.length &amp;&amp; input.length&gt;3;
+</span></span></span><span class="line"><span class="cl"><span class="s">        }
+</span></span></span><span class="line"><span class="cl"><span class="s">	`</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">//fmt.Println(cmd)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="nx">vm</span> <span class="o">:=</span> <span class="nx">otto</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">vm</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;getList&#34;</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">call</span> <span class="nx">otto</span><span class="p">.</span><span class="nx">FunctionCall</span><span class="p">)</span> <span class="nx">otto</span><span class="p">.</span><span class="nx">Value</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">w</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">res</span> <span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">vm</span><span class="p">.</span><span class="nf">ToValue</span><span class="p">(</span><span class="nx">w</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">res</span>
+</span></span><span class="line"><span class="cl">	<span class="p">})</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">_</span><span class="p">,</span><span class="nx">err</span> <span class="o">:=</span> <span class="nx">vm</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">cmd</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">get</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">vm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;ok&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">get</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	 
+</span></span><span class="line"><span class="cl">	<span class="nx">s</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">res</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">vm</span><span class="p">.</span><span class="nf">Call</span><span class="p">(</span><span class="s">&#34;isOK&#34;</span><span class="p">,</span> <span class="nx">s</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span><span class="o">!=</span><span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;res = %#v \n&#34;</span><span class="p">,</span><span class="nx">res</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">=== RUN   Test1
+</span></span></span><span class="line"><span class="cl"><span class="cm">123456
+</span></span></span><span class="line"><span class="cl"><span class="cm">1,3,3
+</span></span></span><span class="line"><span class="cl"><span class="cm">1
+</span></span></span><span class="line"><span class="cl"><span class="cm">3
+</span></span></span><span class="line"><span class="cl"><span class="cm">3
+</span></span></span><span class="line"><span class="cl"><span class="cm">it is OK 
+</span></span></span><span class="line"><span class="cl"><span class="cm">res = otto.Value{kind:4, value:false} 
+</span></span></span><span class="line"><span class="cl"><span class="cm">--- PA
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>我们可以在脚本里面定义一些钩子方法，</p>
 <p>比如写爬虫的时候，调用 这些方法判断，也可以将 爬虫的 api 接口连接写到钩子方法里面，这样就很好。</p>
@@ -499,7 +494,7 @@ input.PC_MARK1:focus{
 
 
 
-<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
   <script type="text/javascript">
     window.MathJax = {
       tex: {
