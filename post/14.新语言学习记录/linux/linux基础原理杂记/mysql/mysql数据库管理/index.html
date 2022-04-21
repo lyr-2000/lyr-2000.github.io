@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>linux下MYSQL的管理 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="1. 系统管理 1.1. 连接mysql 格式： mysql -h主机地址 -u用户名 －p用户密码 1 2 3 4 5 6 7 8 #连接本地 mysql -h&amp;lt;localhost/127.0.0.1&amp;gt; -u用户名 －p用户密码 #连接远程 mysql -h&amp;l" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/mysql/mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AE%A1%E7%90%86/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="linux下MYSQL的管理" />
+<meta property="og:description" content="1. 系统管理 1.1. 连接mysql 格式： mysql -h主机地址 -u用户名 －p用户密码 1 2 3 4 5 6 7 8 #连接本地 mysql -h&lt;localhost/127.0.0.1&gt; -u用户名 －p用户密码 #连接远程 mysql -h&l" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/mysql/mysql%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AE%A1%E7%90%86/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="linux下MYSQL的管理">
+<meta itemprop="description" content="1. 系统管理 1.1. 连接mysql 格式： mysql -h主机地址 -u用户名 －p用户密码 1 2 3 4 5 6 7 8 #连接本地 mysql -h&lt;localhost/127.0.0.1&gt; -u用户名 －p用户密码 #连接远程 mysql -h&l">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="1535">
+
+
+
+<meta itemprop="keywords" content="linux," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="linux下MYSQL的管理"/>
+<meta name="twitter:description" content="1. 系统管理 1.1. 连接mysql 格式： mysql -h主机地址 -u用户名 －p用户密码 1 2 3 4 5 6 7 8 #连接本地 mysql -h&lt;localhost/127.0.0.1&gt; -u用户名 －p用户密码 #连接远程 mysql -h&l"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body>
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+<link rel="stylesheet" href="/custom/css/post.css">
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">linux下MYSQL的管理</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        <div class="post-category">
+            <a href="/categories/linux/"> linux </a>
+            </div>
+          <span class="more-meta"> 约 1535 字 </span>
+          <span class="more-meta"> 预计阅读 4 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-系统管理">1. 系统管理</a>
+      <ul>
+        <li><a href="#11-连接mysql">1.1. 连接mysql</a></li>
+        <li><a href="#12-备份数据库">1.2. 备份数据库</a></li>
+        <li><a href="#13-用户管理">1.3. 用户管理</a></li>
+        <li><a href="#14-权限管理">1.4. 权限管理</a>
+          <ul>
+            <li><a href="#141-grant">1.4.1. grant</a></li>
+            <li><a href="#142-普通数据库用户">1.4.2. 普通数据库用户</a></li>
+            <li><a href="#143-dba-用户">1.4.3. DBA 用户</a></li>
+            <li><a href="#144-查看用户权限">1.4.4. 查看用户权限</a></li>
+            <li><a href="#145-权限列表">1.4.5. 权限列表</a></li>
+            <li><a href="#146查看主从关系">1.4.6.查看主从关系</a></li>
+            <li><a href="#查看使用的数据库引擎">查看使用的数据库引擎</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h1 id="1-系统管理">1. 系统管理</h1>
+<h2 id="11-连接mysql">1.1. 连接mysql</h2>
+<p>格式： mysql -h主机地址 -u用户名 －p用户密码</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1">#连接本地</span>
+mysql -h&lt;localhost/127.0.0.1&gt; -u用户名 －p用户密码
+
+<span class="c1">#连接远程</span>
+mysql -h&lt;主机地址&gt; -u用户名 －p用户密码
+
+<span class="c1">#退出连接</span>
+<span class="nb">exit</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="12-备份数据库">1.2. 备份数据库</h2>
+<p><strong>1.导出整个数据库</strong></p>
+<p>导出文件默认是存在mysql\bin目录下</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1">#1）备份单个数据库</span>
+mysqldump -u 用户名 -p 数据库名 &gt; 导出的文件名
+
+mysqldump -u user_name -p123456 database_name &gt; outfile_name.sql
+
+<span class="c1">#2）同时备份多个数据库，例如database1_name，database2_name</span>
+mysqldump -u user_name -p123456 --databases database1_name database2_name &gt; outfile_name.sql
+
+<span class="c1">#3）备份全部数据库</span>
+mysqldump -u user_name -p123456 --all-databases &gt; outfile_name.sql
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>2.导出一个表</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">mysqldump -u 用户名 -p 数据库名 表名&gt; 导出的文件名
+mysqldump -u user_name -p database_name table_name &gt; outfile_name.sql
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>3.导出一个数据库结构</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">mysqldump -u user_name -p -d –add-drop-table database_name &gt; outfile_name.sql
+
+-d 没有数据 –add-drop-table 在每个create语句之前增加一个drop table
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>4.带语言参数导出</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">mysqldump -uroot -p –default-character-set<span class="o">=</span>latin1 –set-charset<span class="o">=</span>gbk –skip-opt database_name &gt; outfile_name.sql
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>5、导入数据库</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1">#1）多个个数据库</span>
+mysql -u root –p &lt; <span class="o">[</span>备份文件的保存路径<span class="o">]</span> 或者source <span class="o">[</span>备份文件的保存路径<span class="o">]</span>
+
+<span class="c1">#2）单个数据库</span>
+mysql -uroot –p database_name &lt; <span class="o">[</span>备份文件的保存路径<span class="o">]</span> 或者source <span class="o">[</span>备份文件的保存路径<span class="o">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="13-用户管理">1.3. 用户管理</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="o">#</span><span class="err">创建用户</span>
+<span class="k">create</span> <span class="k">user</span> <span class="s1">&#39;用户名&#39;</span><span class="o">@</span><span class="s1">&#39;IP地址&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;密码&#39;</span><span class="p">;</span>
+
+<span class="o">#</span><span class="err">删除用户</span>
+<span class="k">drop</span> <span class="k">user</span> <span class="s1">&#39;用户名&#39;</span><span class="o">@</span><span class="s1">&#39;IP地址&#39;</span><span class="p">;</span>
+<span class="k">delete</span> <span class="k">from</span> <span class="k">user</span> <span class="k">where</span> <span class="k">user</span><span class="o">=</span><span class="s1">&#39;用户名&#39;</span> <span class="k">and</span> <span class="k">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">;</span>
+
+<span class="o">#</span><span class="err">修改用户</span>
+<span class="k">rename</span> <span class="k">user</span> <span class="s1">&#39;用户名&#39;</span><span class="o">@</span><span class="s1">&#39;IP地址&#39;</span><span class="p">;</span> <span class="k">to</span> <span class="s1">&#39;新用户名&#39;</span><span class="o">@</span><span class="s1">&#39;IP地址&#39;</span><span class="p">;;</span>
+
+<span class="o">#</span><span class="err">修改密码</span>
+<span class="k">set</span> <span class="n">password</span> <span class="k">for</span> <span class="s1">&#39;用户名&#39;</span><span class="o">@</span><span class="s1">&#39;IP地址&#39;</span> <span class="o">=</span> <span class="n">Password</span><span class="p">(</span><span class="s1">&#39;新密码&#39;</span><span class="p">)</span>
+<span class="n">mysqladmin</span> <span class="o">-</span><span class="n">u用户名</span> <span class="o">-</span><span class="n">p旧密码</span> <span class="n">password</span> <span class="err">新密码</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="14-权限管理">1.4. 权限管理</h2>
+<h3 id="141-grant">1.4.1. grant</h3>
+<p><strong>1、grant 权限 on 数据库对象 to 用户</strong></p>
+<p>数据库对象的格式为<code>&lt;database&gt;.&lt;table&gt;</code>。<code>&lt;database&gt;.*</code>：表示授权数据库对象该数据库的所有表；<code>*.*</code>：表示授权数据库对象为所有数据库的所有表。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">grant</span> <span class="k">all</span> <span class="k">privileges</span> <span class="k">on</span> <span class="p">.</span> <span class="k">to</span> <span class="o">&lt;</span><span class="k">user</span><span class="o">&gt;@</span><span class="s1">&#39;&lt;ip&gt;&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;&lt;passwd&gt;&#39;</span><span class="p">;</span><span class="err">如果</span><span class="o">&lt;</span><span class="n">ip</span><span class="o">&gt;</span><span class="err">为</span><span class="s1">&#39;%&#39;</span><span class="err">表示不限制</span><span class="n">IP</span><span class="err">。</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>2、撤销权限</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">revoke</span> <span class="k">all</span> <span class="k">on</span> <span class="p">.</span> <span class="k">from</span> <span class="o">&lt;</span><span class="k">user</span><span class="o">&gt;@&lt;</span><span class="n">ip</span><span class="o">&gt;</span><span class="p">;</span> 
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="142-普通数据库用户">1.4.2. 普通数据库用户</h3>
+<p>查询、插入、更新、删除 数据库中所有表数据的权利</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">grant</span> <span class="k">select</span><span class="p">,</span> <span class="k">insert</span><span class="p">,</span> <span class="k">update</span><span class="p">,</span> <span class="k">delete</span> <span class="k">on</span> <span class="n">testdb</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="o">&lt;</span><span class="k">user</span><span class="o">&gt;@</span><span class="s1">&#39;&lt;ip&gt;&#39;</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="143-dba-用户">1.4.3. DBA 用户</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="o">#</span><span class="mi">1</span><span class="err">、授权</span>
+<span class="k">grant</span> <span class="k">all</span> <span class="k">privileges</span> <span class="k">on</span> <span class="p">.</span> <span class="k">to</span> <span class="o">&lt;</span><span class="n">dba</span><span class="o">&gt;@</span><span class="s1">&#39;&lt;ip&gt;&#39;</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">&#39;&lt;passwd&gt;&#39;</span><span class="p">;</span>
+
+<span class="o">#</span><span class="mi">2</span><span class="err">、刷新系统权限</span>
+<span class="n">flush</span> <span class="k">privileges</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="144-查看用户权限">1.4.4. 查看用户权限</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="o">#</span><span class="err">查看当前用户（自己）权限</span>
+<span class="k">show</span> <span class="n">grants</span><span class="p">;</span>
+
+<span class="o">#</span><span class="err">查看指定</span><span class="n">MySQL</span> <span class="err">用户权限</span>
+<span class="k">show</span> <span class="n">grants</span> <span class="k">for</span> <span class="o">&lt;</span><span class="k">user</span><span class="o">&gt;@&lt;</span><span class="n">localhost</span><span class="o">&gt;</span><span class="p">;</span>
+
+<span class="o">#</span><span class="err">查看</span><span class="n">user和host</span>
+<span class="k">select</span> <span class="k">user</span><span class="p">,</span><span class="k">host</span> <span class="k">from</span> <span class="n">mysql</span><span class="p">.</span><span class="k">user</span> <span class="k">order</span> <span class="k">by</span> <span class="k">user</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="145-权限列表">1.4.5. 权限列表</h3>
+<table>
+<thead>
+<tr>
+<th>权限</th>
+<th>说明</th>
+<th>网站使用账户是否给予</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Select</td>
+<td>可对其下所有表进行查询</td>
+<td>建议给予</td>
+</tr>
+<tr>
+<td>Insert</td>
+<td>可对其下所有表进行插入</td>
+<td>建议给予</td>
+</tr>
+<tr>
+<td>Update</td>
+<td>可对其下所有表进行更新</td>
+<td>建议给予</td>
+</tr>
+<tr>
+<td>Delete</td>
+<td>可对其下所有表进行删除</td>
+<td>建议给予</td>
+</tr>
+<tr>
+<td>Create</td>
+<td>可在此数据库下创建表或索引</td>
+<td>建议给予</td>
+</tr>
+<tr>
+<td>Drop</td>
+<td>可删除此数据库及数据库下所有表</td>
+<td>不建议给予</td>
+</tr>
+<tr>
+<td>Grant</td>
+<td>赋予权限选项</td>
+<td>不建议给予</td>
+</tr>
+<tr>
+<td>References</td>
+<td>未来MySQL特性的占位符</td>
+<td>不建议给予</td>
+</tr>
+<tr>
+<td>Index</td>
+<td>可对其下所有表进行索引</td>
+<td>建议给予</td>
+</tr>
+<tr>
+<td>Alter</td>
+<td>可对其下所有表进行更改</td>
+<td>建议给予</td>
+</tr>
+<tr>
+<td>Create_tmp_table</td>
+<td>创建临时表</td>
+<td>不建议给予</td>
+</tr>
+<tr>
+<td>Lock_tables</td>
+<td>可对其下所有表进行锁定</td>
+<td>不建议给予</td>
+</tr>
+<tr>
+<td>Create_view</td>
+<td>可在此数据下创建视图</td>
+<td>建议给予</td>
+</tr>
+<tr>
+<td>Show_view</td>
+<td>可在此数据下查看视图</td>
+<td>建议给予</td>
+</tr>
+<tr>
+<td>Create_routine</td>
+<td>可在此数据下创建存储过程</td>
+<td>不建议给予</td>
+</tr>
+<tr>
+<td>Alter_routine</td>
+<td>可在此数据下更改存储过程</td>
+<td>不建议给予</td>
+</tr>
+<tr>
+<td>Execute</td>
+<td>可在此数据下执行存储过程</td>
+<td>不建议给予</td>
+</tr>
+<tr>
+<td>Event</td>
+<td>可在此数据下创建事件调度器</td>
+<td>不建议给予</td>
+</tr>
+<tr>
+<td>Trigger</td>
+<td>可在此数据下创建触发器</td>
+<td>不建议给予</td>
+</tr>
+</tbody>
+</table>
+<h3 id="146查看主从关系">1.4.6.查看主从关系</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="o">#</span><span class="err">登录主机</span>
+<span class="k">show</span> <span class="n">slave</span> <span class="n">hosts</span><span class="p">;</span>
+<span class="o">#</span><span class="err">登录从机</span>
+<span class="k">show</span> <span class="n">slave</span> <span class="n">status</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="查看使用的数据库引擎">查看使用的数据库引擎</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql">
+<span class="n">sho</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/linux/">linux</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/mysql/table-operation/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">linux下MYSQL table-operation</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2021-08-17 13:48:22 \u002b0800 \u002b0800',
+        title: 'linux下MYSQL的管理',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-08-01 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+
+
+
+<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script defer="defer" async src="/js/custom/docsearch.min.js" ></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+  <script  src="/custom/img/lazyload.min.js"></script>
+  <script defer="defer" async src="/custom/post/back_btn.js"></script>
+  
+
+</body>
+</html>

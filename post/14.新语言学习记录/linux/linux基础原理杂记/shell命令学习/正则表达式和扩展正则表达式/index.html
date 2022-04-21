@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>正则表达式和扩展正则表达式 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="正则表达式和扩展正则表达式 ​ 正则表达式的意义 处理大量字符串 处理文本 linux运维工作中，面临大量字符串内容，如 配置文件 程序代码 命令输出结果 日" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%92%8C%E6%89%A9%E5%B1%95%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="正则表达式和扩展正则表达式" />
+<meta property="og:description" content="正则表达式和扩展正则表达式 ​ 正则表达式的意义 处理大量字符串 处理文本 linux运维工作中，面临大量字符串内容，如 配置文件 程序代码 命令输出结果 日" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%92%8C%E6%89%A9%E5%B1%95%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/" />
+<meta property="og:image" content="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxkfughl3j31hc0u0to8.jpg" />
+<meta property="article:published_time" content="2022-04-20T18:18:48+08:00" />
+<meta property="article:modified_time" content="2022-04-20T18:18:48+08:00" />
+<meta itemprop="name" content="正则表达式和扩展正则表达式">
+<meta itemprop="description" content="正则表达式和扩展正则表达式 ​ 正则表达式的意义 处理大量字符串 处理文本 linux运维工作中，面临大量字符串内容，如 配置文件 程序代码 命令输出结果 日">
+<meta itemprop="datePublished" content="2022-04-20T18:18:48&#43;08:00" />
+<meta itemprop="dateModified" content="2022-04-20T18:18:48&#43;08:00" />
+<meta itemprop="wordCount" content="851">
+<meta itemprop="image" content="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxkfughl3j31hc0u0to8.jpg">
+
+
+
+<meta itemprop="keywords" content="shell命令学习," /><meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxkfughl3j31hc0u0to8.jpg"/>
+
+<meta name="twitter:title" content="正则表达式和扩展正则表达式"/>
+<meta name="twitter:description" content="正则表达式和扩展正则表达式 ​ 正则表达式的意义 处理大量字符串 处理文本 linux运维工作中，面临大量字符串内容，如 配置文件 程序代码 命令输出结果 日"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body>
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+<link rel="stylesheet" href="/custom/css/post.css">
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	<div class="customByLyr">
+  
+			<img class="lazyload"  draggable="false"  data-original="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxkfughl3j31hc0u0to8.jpg" />
+		</div>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">正则表达式和扩展正则表达式</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-04-20 </span>
+        <div class="post-category">
+            <a href="/categories/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/"> shell命令学习 </a>
+            </div>
+          <span class="more-meta"> 约 851 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#正则表达式和扩展正则表达式">正则表达式和扩展正则表达式</a>
+          <ul>
+            <li><a href="#linux-三剑客">linux 三剑客</a></li>
+          </ul>
+        </li>
+        <li><a href="#基础正则表达式">基础正则表达式</a>
+          <ul>
+            <li><a href="#linux-自带的通配符">linux 自带的通配符</a></li>
+            <li><a href="#三剑客提供的正则表达式符号">三剑客提供的正则表达式符号</a></li>
+            <li><a href="#扩展正则表达式-ere-集合">扩展正则表达式 ERE 集合</a></li>
+          </ul>
+        </li>
+        <li><a href="#正则表达式的应用">正则表达式的应用</a>
+          <ul>
+            <li><a href="#查找注释行">查找注释行</a></li>
+            <li><a href="#全匹配">全匹配</a></li>
+            <li><a href="#扩展表达式的使用">扩展表达式的使用</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h2 id="正则表达式和扩展正则表达式">正则表达式和扩展正则表达式</h2>
+<p>​</p>
+<p>正则表达式的意义</p>
+<ul>
+<li>处理大量字符串</li>
+<li>处理文本</li>
+</ul>
+<p>linux运维工作中，面临大量字符串内容，如</p>
+<ul>
+<li>配置文件</li>
+<li>程序代码</li>
+<li>命令输出结果</li>
+<li>日志文件</li>
+</ul>
+<p><strong>注意，linux通配符和正则表达式是两个东西不一样的</strong></p>
+<p>linux 的通配符，例如 <code>* ?</code> 这种 是 通配符，正则是另一个符号</p>
+<h3 id="linux-三剑客">linux 三剑客</h3>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>grep</td>
+<td>文本过滤器</td>
+</tr>
+<tr>
+<td>sed</td>
+<td>流编辑器 ,stream editor, ，文本编辑工具</td>
+</tr>
+<tr>
+<td>awk</td>
+<td>文本报告生成器，linux上是gawk</td>
+</tr>
+</tbody>
+</table>
+<h2 id="基础正则表达式">基础正则表达式</h2>
+<h3 id="linux-自带的通配符">linux 自带的通配符</h3>
+<table>
+<thead>
+<tr>
+<th>通配符</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>*</td>
+<td><strong>匹配任意0-n个字符</strong></td>
+</tr>
+<tr>
+<td>?</td>
+<td><strong>匹配任意1 个字符</strong></td>
+</tr>
+<tr>
+<td>符号集合</td>
+<td>匹配一堆字符或者文本</td>
+</tr>
+<tr>
+<td>[abcd]</td>
+<td>匹配[abcd]任意一个字符</td>
+</tr>
+<tr>
+<td>[!abcd] 或者 [!a-d]</td>
+<td>不匹配括号里面的任意一个字符</td>
+</tr>
+<tr>
+<td>[^a-d]</td>
+<td>同上 ^和 ! 等价</td>
+</tr>
+<tr>
+<td>[[:upper:]]</td>
+<td>所有大写字母</td>
+</tr>
+<tr>
+<td>[[:lower:]]</td>
+<td>小写字母</td>
+</tr>
+<tr>
+<td>[[:alpha:]]</td>
+<td>所有字母</td>
+</tr>
+<tr>
+<td>[[:space:]]</td>
+<td>所有空白字符</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">find ./ -name <span class="s2">&#34;[a-z]*&#34;</span>
+<span class="c1"># 通配符的使用方法</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="三剑客提供的正则表达式符号">三剑客提供的正则表达式符号</h3>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>^</td>
+<td>表示开头</td>
+</tr>
+<tr>
+<td>$</td>
+<td>表示结尾</td>
+</tr>
+<tr>
+<td>^$</td>
+<td>组合符号，表示空行</td>
+</tr>
+<tr>
+<td><code>.</code></td>
+<td><strong>匹配任意一个字符</strong>, 对应通配符中的 <code>?</code></td>
+</tr>
+<tr>
+<td>\</td>
+<td>转义字符，让特殊字符还原本意</td>
+</tr>
+<tr>
+<td>*</td>
+<td>匹配前一个字符，连续出现 0和1次以上，重复0次代表空，即匹配任意次</td>
+</tr>
+<tr>
+<td><code>.*</code></td>
+<td>组合符，<strong>表示匹配所有内容</strong></td>
+</tr>
+<tr>
+<td><code>^.*</code></td>
+<td>组合符号，表示<strong>匹配任意多个字符开头的内容</strong></td>
+</tr>
+<tr>
+<td><code>.*$</code></td>
+<td>组合符号，匹配<strong>任意多个字符结尾的内容</strong></td>
+</tr>
+<tr>
+<td>[abc]</td>
+<td>和通配符的用法一样，表示集合内的任意一个字符</td>
+</tr>
+<tr>
+<td>[^abc]</td>
+<td>匹配除了 ^后面的任意字符，a或者bc</td>
+</tr>
+</tbody>
+</table>
+<h3 id="扩展正则表达式-ere-集合">扩展正则表达式 ERE 集合</h3>
+<table>
+<thead>
+<tr>
+<th>字符</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>+</code></td>
+<td>匹配前一个字符1次或多次, <code>*</code> 和 + 的区别是，<code>*</code> 包括了 0次</td>
+</tr>
+<tr>
+<td>[:/]+</td>
+<td>匹配括号内的 “：”或者 “/” 字符一次或多次</td>
+</tr>
+<tr>
+<td>？</td>
+<td>匹配前一个字符 0次胡总1次</td>
+</tr>
+<tr>
+<td>|</td>
+<td>表示或者,同时过滤多个字符，例如 a|b</td>
+</tr>
+<tr>
+<td>()</td>
+<td>分组过滤，括起来的是一个整体</td>
+</tr>
+<tr>
+<td>a{n,m}</td>
+<td>匹配前一个字符最少n次,最多m次</td>
+</tr>
+<tr>
+<td>a{n,}</td>
+<td>匹配前一个字符最少n次</td>
+</tr>
+<tr>
+<td>a{n}</td>
+<td>匹配前一个字符正好n次</td>
+</tr>
+<tr>
+<td>a{,m}</td>
+<td>匹配a最多m次</td>
+</tr>
+</tbody>
+</table>
+<h2 id="正则表达式的应用">正则表达式的应用</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">grep -n -i <span class="s2">&#34;root&#34;</span> /etc/passwd
+<span class="c1"># 忽略大大小写查找 root</span>
+
+cat -n temp   <span class="p">|</span> grep -E <span class="s2">&#34;^.*</span>$<span class="s2">&#34;</span> -n
+ <span class="c1"># 高亮匹配</span>
+<span class="c1"># 查看 grep的别名</span>
+<span class="nb">alias</span>
+<span class="c1"># 我们可以看到他自带 --color=auto</span>
+
+<span class="c1"># 查找空行</span>
+cat temp <span class="p">|</span> grep -E <span class="s2">&#34;^</span>$<span class="s2">&#34;</span> -n
+
+
+grep -E <span class="s2">&#34;^</span>$<span class="s2">&#34;</span> temp  -n
+<span class="c1"># 或者直接用 grep</span>
+
+<span class="c1"># 查找不是空行的参数</span>
+
+grep -E <span class="s2">&#34;^</span>$<span class="s2">&#34;</span> temp -n -v
+
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="查找注释行">查找注释行</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">lyr@DESKTOP-FSVN6C0:~/tmp$ grep <span class="s1">&#39;^$&#39;</span> app.py  -v <span class="p">|</span> grep <span class="s1">&#39;^#.*$&#39;</span>
+<span class="c1"># hello world</span>
+<span class="c1"># abc dddd</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="全匹配">全匹配</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"> grep -n <span class="s2">&#34;.*&#34;</span> /etc/passwd
+ <span class="c1"># . 表示任意字符，所有直接匹配每一行所有内容</span>
+ grep <span class="s2">&#34;[a-z0-9]&#34;</span> /etc/passwd
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="扩展表达式的使用">扩展表达式的使用</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">grep -E <span class="s2">&#34;ch+&#34;</span> /etc/passwd
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-04-20
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/">shell命令学习</a>
+          </div>
+      <nav class="post-nav">
+        
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/commandline-%E5%BF%AB%E6%8D%B7%E9%94%AE/">
+            <span class="next-text nav-default">commandline 快捷键</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-04-20 18:18:48 \u002b0800 \u002b0800',
+        title: '正则表达式和扩展正则表达式',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-08-01 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+
+
+
+<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script defer="defer" async src="/js/custom/docsearch.min.js" ></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+  <script  src="/custom/img/lazyload.min.js"></script>
+  <script defer="defer" async src="/custom/post/back_btn.js"></script>
+  
+
+</body>
+</html>

@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>进程状态 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="进程状态总结 子进程 退出 后 发送 exit 信号 给父进程 比如 shell 中执行 ls shell 是个父进程， ls 是个子进程， 执行 ls的时候 shell 是不能跑的 子进程 执行 完成 之后， 退出时候 子" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/%E9%83%A8%E7%BD%B2%E6%80%BB%E7%BB%93/%E8%BF%9B%E7%A8%8B%E7%8A%B6%E6%80%81/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="进程状态" />
+<meta property="og:description" content="进程状态总结 子进程 退出 后 发送 exit 信号 给父进程 比如 shell 中执行 ls shell 是个父进程， ls 是个子进程， 执行 ls的时候 shell 是不能跑的 子进程 执行 完成 之后， 退出时候 子" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/%E9%83%A8%E7%BD%B2%E6%80%BB%E7%BB%93/%E8%BF%9B%E7%A8%8B%E7%8A%B6%E6%80%81/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="进程状态">
+<meta itemprop="description" content="进程状态总结 子进程 退出 后 发送 exit 信号 给父进程 比如 shell 中执行 ls shell 是个父进程， ls 是个子进程， 执行 ls的时候 shell 是不能跑的 子进程 执行 完成 之后， 退出时候 子">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="3153">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="进程状态"/>
+<meta name="twitter:description" content="进程状态总结 子进程 退出 后 发送 exit 信号 给父进程 比如 shell 中执行 ls shell 是个父进程， ls 是个子进程， 执行 ls的时候 shell 是不能跑的 子进程 执行 完成 之后， 退出时候 子"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body>
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+<link rel="stylesheet" href="/custom/css/post.css">
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">进程状态</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+          <span class="more-meta"> 约 3153 字 </span>
+          <span class="more-meta"> 预计阅读 7 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#进程状态总结">进程状态总结</a></li>
+            <li><a href="#查看系统的信息">查看系统的信息</a></li>
+            <li><a href="#top查看进程">top查看进程</a></li>
+            <li><a href="#使用信号控制进程">使用信号控制进程</a></li>
+            <li><a href="#开启定时任务">开启定时任务</a></li>
+            <li><a href="#进程-nice值">进程 nice值</a></li>
+            <li><a href="#作业控制-jobs">作业控制 jobs</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h3 id="进程状态总结">进程状态总结</h3>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_06_12_46_47image-20211006124644849.png" alt="image-20211006124644849"></p>
+<p>子进程 退出 后 发送 exit 信号 给父进程</p>
+<p>比如 shell 中执行 ls</p>
+<p>shell 是个父进程， ls 是个子进程， 执行 ls的时候  shell 是不能跑的</p>
+<p>子进程 执行 完成 之后， 退出时候 子进程 已经关闭或者 丢弃了他的资源，剩余部分叫做僵尸。</p>
+<p><strong>父进程清醒 之后 自己去清理 这个 子进程的资源，然后 自己去执行其他的业务逻辑</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_06_13_00_06image-20211006130006558.png" alt="image-20211006130006558"></p>
+<p><strong>不需要CPU 就是  sleeping 状态，sleep 可以 编程 runnable状态</strong></p>
+<p>USER：运行进程的用户
+PID：进程ID
+%C：CpU占用率
+%MEM：内存占用率
+WSz：占用虚拟内存
+占用实际内存驻留内存
+<strong>TTY：进程运行的终端</strong>
+STAT：进程状态 man ps （STATE）
+R    运行
+S   **可中断睡眼sleep **
+D   不可中断睡
+T   停止的进程
+Z     僵尸进程
+X     死掉的进程
+Ss   s进程的领导者，父进程
+S&lt;    <strong>&lt;优先级较高的进程</strong>
+SN     <strong>N优先级较低的进程</strong>
+R+    <strong>+表示是前台的进程组</strong>
+Sl      <strong>以线程的方式运行</strong>
+START：进程的启动时间
+TIME：进程占用CpU的总时间
+COMMAND：进程文件，进程名</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">ps -aux
+<span class="c1"># 以下列举部分 程序</span>
+root      <span class="m">3203</span>  0.0 18.4 <span class="m">2574108</span> <span class="m">347224</span> ?      Sl   Sep12  26:11 java -jar blog-api-basic-backend2-controller-0.0.1-SNAProot      <span class="m">4879</span>  0.0  0.1 <span class="m">155684</span>  <span class="m">298</span>
+<span class="c1"># 这个 springboot的 jar 就是 线程方式运行</span>
+root     <span class="m">13357</span>  0.0  0.4 <span class="m">719452</span>  <span class="m">8916</span> ?        Sl   Oct01   0:10 ./main2
+root     <span class="m">18963</span>  0.0  0.9 <span class="m">857836</span> <span class="m">18092</span> ?        Sl   Sep29   0:11 ./main
+root     <span class="m">21686</span>  0.0  0.7 <span class="m">721132</span> <span class="m">14296</span> ?        Sl   Sep26   0:39 ./main
+<span class="c1"># 这几个 golang的项目 也是线程运行</span>
+
+cat /run/sshd.pid
+<span class="c1"># 有些程序 可以在 run 目录下查看 PID</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># pstree</span>
+systemd─┬─BT-Panel───2*<span class="o">[{</span>BT-Panel<span class="o">}]</span>
+        ├─BT-Task───8*<span class="o">[{</span>BT-Task<span class="o">}]</span>
+        ├─YDLive───6*<span class="o">[{</span>YDLive<span class="o">}]</span>
+        ├─YDService───22*<span class="o">[{</span>YDService<span class="o">}]</span>
+        ├─abrt-dbus───3*<span class="o">[{</span>abrt-dbus<span class="o">}]</span>
+        ├─acpid
+        ├─2*<span class="o">[</span>agetty<span class="o">]</span>
+        ├─atd
+        ├─auditd───<span class="o">{</span>auditd<span class="o">}</span>
+        ├─barad_agent─┬─barad_agent
+        │             └─barad_agent───2*<span class="o">[{</span>barad_agent<span class="o">}]</span>
+        ├─containerd───8*<span class="o">[{</span>containerd<span class="o">}]</span>
+        ├─crond
+        ├─dbus-daemon
+        ├─dhclient
+        ├─dockerd───14*<span class="o">[{</span>dockerd<span class="o">}]</span>
+        ├─fail2ban-server───6*<span class="o">[{</span>fail2ban-server<span class="o">}]</span>
+        ├─firewalld───<span class="o">{</span>firewalld<span class="o">}</span>
+        ├─java───23*<span class="o">[{</span>java<span class="o">}]</span>
+        ├─jsvc───jsvc───25*<span class="o">[{</span>jsvc<span class="o">}]</span>
+        ├─lsmd
+        ├─lvmetad
+        ├─main───6*<span class="o">[{</span>main<span class="o">}]</span>
+        ├─main───8*<span class="o">[{</span>main<span class="o">}]</span>
+        ├─main2───5*<span class="o">[{</span>main2<span class="o">}]</span>
+        ├─master─┬─pickup
+        │        └─qmgr
+        ├─mysqld_safe───mysqld───40*<span class="o">[{</span>mysqld<span class="o">}]</span>
+        ├─nginx───2*<span class="o">[</span>nginx<span class="o">]</span>
+        ├─ntpd
+        ├─php-fpm───5*<span class="o">[</span>php-fpm<span class="o">]</span>
+        ├─polkitd───6*<span class="o">[{</span>polkitd<span class="o">}]</span>
+        ├─pure-ftpd
+        ├─rhsmcertd
+        ├─rngd
+        ├─rsyslogd───2*<span class="o">[{</span>rsyslogd<span class="o">}]</span>
+        ├─sgagent───<span class="o">{</span>sgagent<span class="o">}</span>
+        ├─sshd─┬─3*<span class="o">[</span>sshd<span class="o">]</span>
+        │      ├─sshd───bash───pstree
+        │      └─2*<span class="o">[</span>sshd───bash<span class="o">]</span>
+        ├─systemd-journal
+        ├─systemd-logind
+        ├─systemd-udevd
+        ├─tmux─┬─12*<span class="o">[</span>bash<span class="o">]</span>
+        │      └─bash───vi
+        └─tuned───4*<span class="o">[{</span>tuned<span class="o">}]</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="查看系统的信息">查看系统的信息</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># lscpu</span>
+Architecture:          x86_64
+CPU op-mode<span class="o">(</span>s<span class="o">)</span>:        32-bit, 64-bit
+Byte Order:            Little Endian
+CPU<span class="o">(</span>s<span class="o">)</span>:                <span class="m">1</span>
+On-line CPU<span class="o">(</span>s<span class="o">)</span> list:   <span class="m">0</span>
+Thread<span class="o">(</span>s<span class="o">)</span> per core:    <span class="m">1</span>
+Core<span class="o">(</span>s<span class="o">)</span> per socket:    <span class="m">1</span>
+Socket<span class="o">(</span>s<span class="o">)</span>:             <span class="m">1</span>
+NUMA node<span class="o">(</span>s<span class="o">)</span>:          <span class="m">1</span>
+Vendor ID:             GenuineIntel
+CPU family:            <span class="m">6</span>
+Model:                 <span class="m">94</span>
+Model name:            Intel<span class="o">(</span>R<span class="o">)</span> Xeon<span class="o">(</span>R<span class="o">)</span> Gold <span class="m">6148</span> CPU @ 2.40GHz
+Stepping:              <span class="m">3</span>
+CPU MHz:               2394.374
+BogoMIPS:              4788.74
+Hypervisor vendor:     KVM
+Virtualization type:   full
+L1d cache:             32K
+L1i cache:             32K
+L2 cache:              4096K
+L3 cache:              28160K
+NUMA node0 CPU<span class="o">(</span>s<span class="o">)</span>:     <span class="m">0</span>
+<span class="c1"># 这个 CPU 只有 1核</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="top查看进程">top查看进程</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">top -d <span class="m">4</span>
+<span class="c1"># 4秒刷新一次</span>
+KiB Mem :  <span class="m">1881996</span> total,
+小数点移动 左6位，1.8G
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># ps -aux | grep blog</span>
+root      <span class="m">1201</span>  0.0  0.0 <span class="m">112812</span>   <span class="m">976</span> pts/4    R+   13:49   0:00 grep --color<span class="o">=</span>auto blog
+root      <span class="m">3203</span>  0.0 18.2 <span class="m">2574108</span> <span class="m">344180</span> ?      Sl   Sep12  26:12 java -jar blog-api-basic-backend2-controller-0.0.1-SNAPSHOT.jar -Xms380M -Xmx380M -Xss2k --spring.profiles.active<span class="o">=</span>prod
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># top -d 4  -p 3203</span>
+<span class="c1"># 查看 springboot jar 的进程</span>
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># top -d 1 -u root</span>
+<span class="c1"># 查看 root 用户运行的进程</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="使用信号控制进程">使用信号控制进程</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Signal     Value     Comment
+─────────────────────────────
+SIGHUP        1      终端退出时，此终端内的进程都将被终止
+SIGINT        2      中断进程，可被捕捉和忽略，几乎等同于sigterm，所以也会尽可能的释放执行clean-up，释放资源，保存状态等(CTRL+C)
+SIGQUIT       3      从键盘发出杀死(终止)进程的信号
+
+SIGKILL       9      强制杀死进程，该信号不可被捕捉和忽略，进程收到该信号后不会执行任何clean-up行为，所以资源不会释放，状态不会保存
+SIGTERM      15      杀死(终止)进程，可被捕捉和忽略，几乎等同于sigint信号，会尽可能的释放执行clean-up，释放资源，保存状态等
+SIGCHLD      17      当子进程中断或退出时，发送该信号告知父进程自己已完成，父进程收到信号将告知内核清理进程列表。所以该信号可以解除僵尸进
+                     程，也可以让非正常退出的进程工作得以正常的clean-up，释放资源，保存状态等。
+ 
+SIGSTOP      19      该信号是不可被捕捉和忽略的进程停止信息，收到信号后会进入stopped状态
+SIGTSTP      20      该信号是可被忽略的进程停止信号(CTRL+Z) 相当于暂停进程
+SIGCONT      18      发送此信号使得stopped进程进入running，该信号主要用于jobs，例如bg &amp; fg 都会发送该信号。
+                     可以直接发送此信号给stopped进程使其运行起来    
+SIGUSR1      10      用户自定义信号1
+SIGUSR2      12      用户自定义信号2 
+
+
+
+
+
+[root@VM-0-7-centos ~]# kill -l
+ 1) SIGHUP       2) SIGINT       3) SIGQUIT      4) SIGILL       5) SIGTRAP
+ 6) SIGABRT      7) SIGBUS       8) SIGFPE       9) SIGKILL     10) SIGUSR1
+11) SIGSEGV     12) SIGUSR2     13) SIGPIPE     14) SIGALRM     15) SIGTERM
+16) SIGSTKFLT   17) SIGCHLD     18) SIGCONT     19) SIGSTOP     20) SIGTSTP
+21) SIGTTIN     22) SIGTTOU     23) SIGURG      24) SIGXCPU     25) SIGXFSZ
+26) SIGVTALRM   27) SIGPROF     28) SIGWINCH    29) SIGIO       30) SIGPWR
+31) SIGSYS      34) SIGRTMIN    35) SIGRTMIN+1  36) SIGRTMIN+2  37) SIGRTMIN+3
+38) SIGRTMIN+4  39) SIGRTMIN+5  40) SIGRTMIN+6  41) SIGRTMIN+7  42) SIGRTMIN+8
+43) SIGRTMIN+9  44) SIGRTMIN+10 45) SIGRTMIN+11 46) SIGRTMIN+12 47) SIGRTMIN+13
+48) SIGRTMIN+14 49) SIGRTMIN+15 50) SIGRTMAX-14 51) SIGRTMAX-13 52) SIGRTMAX-12
+53) SIGRTMAX-11 54) SIGRTMAX-10 55) SIGRTMAX-9  56) SIGRTMAX-8  57) SIGRTMAX-7
+58) SIGRTMAX-6  59) SIGRTMAX-5  60) SIGRTMAX-4  61) SIGRTMAX-3  62) SIGRTMAX-2
+63) SIGRTMAX-1  64) SIGRTMAX
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="开启定时任务">开启定时任务</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">crond
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="进程-nice值">进程 nice值</h3>
+<p>我们可以通过ps -l看到当前正在运行的进程的详细信息其中</p>
+<ul>
+<li>F：表示进程旗标，标识进程所拥有的权限，当我切换到root的时候为4表示拥有root权限，为1仅有fork()权限</li>
+<li>R：表示进程当前的状态UID：拥有该进程用户的用户ID
+<ul>
+<li>R：当前正在运行(RUNNING)</li>
+<li>S：睡眠(SLEEP)</li>
+<li>D：不可中断</li>
+<li>T：停止(STOP)</li>
+<li>Z：僵尸进程(ZOMBIE)</li>
+</ul>
+</li>
+<li></li>
+<li>PID：进程号</li>
+<li>PPID：该进程父进程的进程好</li>
+<li>C：CPU是用百分比</li>
+<li>PRI：优先级</li>
+<li>NI：nice值</li>
+<li>ADDR/SZ/WCHAN：都与内存有关</li>
+<li>TTY：登陆者的终端，和远程登陆脱不开干系</li>
+<li>TIME：占用CPU时间</li>
+<li>CMD：造成此进程的命令</li>
+</ul>
+<p><strong>Linux系统是抢占式的</strong>，什么概念呢，系统当前运行一个进程，但这个时候一个具有更高优先级的进程突然得到某种资源进入了就绪状态，然后他就来到cpu面前一脚踢开正在运行的进程（你奏凯，我先来）就抢夺了与CPU共度的美好时光。。。</p>
+<p><strong>CFS直接分配的不是时间片，而是CPU使用比，这个比例会收到nice值得影响，然后你懂，nice值低比重就高，nice高比重就低</strong></p>
+<p>**Q：**Linux使用的CFS调度器，决定抢占时机的就是上面说的CPU使用比，注意！<strong>反而CPU使用比低的新进程会立刻投入运行，CPU使用比高的新进程会延迟运行</strong>，为什么呢</p>
+<h3 id="作业控制-jobs">作业控制 jobs</h3>
+<ul>
+<li>jobs</li>
+<li>bg</li>
+<li>fg</li>
+</ul>
+<p>作业控制 运行 shell 可以 同时运行 多个 子进程</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">sleep  <span class="m">7000</span> <span class="p">&amp;</span>
+<span class="c1"># 后台运行</span>
+sleep <span class="m">6000</span>
+<span class="c1"># ctrl+ z  stopped 暂停</span>
+ps -aux <span class="p">|</span> grep sleep
+<span class="c1"># 可以看到进程状态</span>
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># jobs</span>
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># sleep 9000 &amp;</span>
+<span class="o">[</span>1<span class="o">]</span> <span class="m">18840</span>
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># sleep 5600</span>
+^Z
+<span class="o">[</span>2<span class="o">]</span>+  Stopped                 sleep <span class="m">5600</span>
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># jobs</span>
+<span class="o">[</span>1<span class="o">]</span>-  Running                 sleep <span class="m">9000</span> <span class="p">&amp;</span>
+<span class="o">[</span>2<span class="o">]</span>+  Stopped                 sleep <span class="m">5600</span>
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span>#
+
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># jobs</span>
+<span class="o">[</span>1<span class="o">]</span>-  Running                 sleep <span class="m">9000</span> <span class="p">&amp;</span>
+<span class="o">[</span>2<span class="o">]</span>+  Stopped                 sleep <span class="m">5600</span>
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># fg</span>
+sleep <span class="m">5600</span>
+^Z
+<span class="o">[</span>2<span class="o">]</span>+  Stopped                 sleep <span class="m">5600</span>
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># bg</span>
+<span class="o">[</span>2<span class="o">]</span>+ sleep <span class="m">5600</span> <span class="p">&amp;</span>
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># jobs</span>
+<span class="o">[</span>1<span class="o">]</span>-  Running                 sleep <span class="m">9000</span> <span class="p">&amp;</span>
+<span class="o">[</span>2<span class="o">]</span>+  Running                 sleep <span class="m">5600</span> <span class="p">&amp;</span>
+<span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># fg % 2</span>
+sleep <span class="m">5600</span>
+
+<span class="nb">kill</span>  %2
+<span class="c1"># 杀死后台 为 2的 进程</span>
+
+<span class="o">(</span><span class="k">while</span>:<span class="p">;</span> <span class="k">do</span> date<span class="p">;</span> sleep 2<span class="p">;</span> <span class="k">done</span><span class="o">)</span> <span class="p">&amp;</span>&gt; /dev/null <span class="p">&amp;</span>
+
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/%E9%83%A8%E7%BD%B2%E6%80%BB%E7%BB%93/%E6%9F%A5%E6%BC%8F%E8%A1%A5%E7%BC%BA%E5%BF%AB%E6%8D%B7%E9%94%AE%E6%80%BB%E7%BB%93/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">查漏补缺快捷键总结</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2021-08-17 13:48:22 \u002b0800 \u002b0800',
+        title: '进程状态',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-08-01 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+
+
+
+<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script defer="defer" async src="/js/custom/docsearch.min.js" ></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+  <script  src="/custom/img/lazyload.min.js"></script>
+  <script defer="defer" async src="/custom/post/back_btn.js"></script>
+  
+
+</body>
+</html>

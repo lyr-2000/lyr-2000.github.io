@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>文件操作 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="文件操作命令汇总 linux 中的通配符 通配符 解释 文件名 模糊匹配 * 匹配任意0-n个字符 luffy* luffyalex ? 匹配任意1 个字符 abc? abcd 符号集合 匹配一堆字符或者文本 符号集合 [abcd] 匹" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.2 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="文件操作" />
+<meta property="og:description" content="文件操作命令汇总 linux 中的通配符 通配符 解释 文件名 模糊匹配 * 匹配任意0-n个字符 luffy* luffyalex ? 匹配任意1 个字符 abc? abcd 符号集合 匹配一堆字符或者文本 符号集合 [abcd] 匹" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C/" />
+<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
+<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="name" content="文件操作">
+<meta itemprop="description" content="文件操作命令汇总 linux 中的通配符 通配符 解释 文件名 模糊匹配 * 匹配任意0-n个字符 luffy* luffyalex ? 匹配任意1 个字符 abc? abcd 符号集合 匹配一堆字符或者文本 符号集合 [abcd] 匹">
+<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
+<meta itemprop="wordCount" content="1722">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="文件操作"/>
+<meta name="twitter:description" content="文件操作命令汇总 linux 中的通配符 通配符 解释 文件名 模糊匹配 * 匹配任意0-n个字符 luffy* luffyalex ? 匹配任意1 个字符 abc? abcd 符号集合 匹配一堆字符或者文本 符号集合 [abcd] 匹"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body>
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+<link rel="stylesheet" href="/custom/css/post.css">
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">文件操作</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-17 </span>
+        
+          <span class="more-meta"> 约 1722 字 </span>
+          <span class="more-meta"> 预计阅读 4 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#文件操作命令汇总">文件操作命令汇总</a>
+      <ul>
+        <li><a href="#linux-中的通配符">linux 中的通配符</a></li>
+        <li><a href="#linux-中的引号">linux 中的引号</a></li>
+        <li><a href="#ls-通配符使用">ls 通配符使用</a></li>
+        <li><a href="#find命令">find命令</a>
+          <ul>
+            <li><a href="#文件查找">文件查找</a></li>
+            <li><a href="#nfs-服务器理解">NFS 服务器理解</a></li>
+            <li><a href="#常用的文件">常用的文件</a></li>
+            <li><a href="#ldd-命令查看链接库的-引用">ldd 命令查看链接库的 引用</a></li>
+          </ul>
+        </li>
+        <li><a href="#tr命令">tr命令</a></li>
+        <li><a href="#文件描述符">文件描述符</a>
+          <ul>
+            <li><a href="#程序数据流">程序数据流</a></li>
+            <li><a href="#文件描述符-1">文件描述符</a></li>
+            <li><a href="#系统操作">系统操作</a></li>
+            <li><a href="#重定向示例">重定向示例</a></li>
+          </ul>
+        </li>
+        <li><a href="#特殊符号">特殊符号</a></li>
+        <li><a href="#cat命令">cat命令</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h1 id="文件操作命令汇总">文件操作命令汇总</h1>
+<h2 id="linux-中的通配符">linux 中的通配符</h2>
+<table>
+<thead>
+<tr>
+<th>通配符</th>
+<th>解释</th>
+<th>文件名</th>
+<th>模糊匹配</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>*</td>
+<td><strong>匹配任意0-n个字符</strong></td>
+<td>luffy*</td>
+<td>luffyalex</td>
+</tr>
+<tr>
+<td>?</td>
+<td><strong>匹配任意1 个字符</strong></td>
+<td>abc?</td>
+<td>abcd</td>
+</tr>
+<tr>
+<td>符号集合</td>
+<td>匹配一堆字符或者文本</td>
+<td>符号集合</td>
+<td></td>
+</tr>
+<tr>
+<td>[abcd]</td>
+<td>匹配[abcd]任意一个字符</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>[!abcd] 或者 [!a-d]</td>
+<td>不匹配括号里面的任意一个字符</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>[^a-d]</td>
+<td>同上 ^和 ! 等价</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>[[:upper:]]</td>
+<td>所有大写字母</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>[[:lower:]]</td>
+<td>小写字母</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>[[:alpha:]]</td>
+<td>所有字母</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>[[:space:]]</td>
+<td>所有空白字符</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="linux-中的引号">linux 中的引号</h2>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单引号</td>
+<td>原样输出</td>
+</tr>
+<tr>
+<td>双引号 &quot;&rdquo;</td>
+<td>弱引用，能识别各种特殊符号、变量、转义字符等，解析后再输出</td>
+</tr>
+<tr>
+<td>没有引号</td>
+<td>一般连续字符、数字、路径可以省略引号，遇见特殊字符，例如空格变量，需要引号</td>
+</tr>
+<tr>
+<td>反引号 `` | 常用于引用命令结果，同与 <code>$(命令)</code> |                                                              |</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"> <span class="nv">a</span><span class="o">=</span><span class="sb">`</span>ls<span class="sb">`</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="nv">$a</span> <span class="o">&amp;&amp;</span> <span class="nv">b</span><span class="o">=</span><span class="k">$(</span>ls<span class="k">)</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="nv">$b</span>
+<span class="c1"># 从上面我们知道 `` 和 $() 是等价的</span>
+
+<span class="nb">echo</span> <span class="sb">`</span>date<span class="sb">`</span>
+<span class="c1"># 打印日期</span>
+ 
+ 
+ <span class="nv">a</span><span class="o">=</span><span class="sb">`</span>date +%T<span class="sb">`</span><span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="nv">$a</span>
+ <span class="c1"># 打印 时分秒</span>
+ 
+ <span class="nb">echo</span> <span class="sb">`</span>date +%F<span class="sb">`</span>
+ <span class="c1"># 打印日期</span>
+ 
+ <span class="nb">echo</span> <span class="s2">&#34;hello world `date +%F`&#34;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="ls-通配符使用">ls 通配符使用</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">ls <span class="o">[</span>a-z<span class="o">]</span>*
+<span class="c1"># 以字母开头 的文件</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="find命令">find命令</h2>
+<h3 id="文件查找">文件查找</h3>
+<p>例如</p>
+<ol>
+<li>l开头，中间出现任意字符的文本文件</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">find / -name <span class="s2">&#34;l?[a-z]&#34;</span> -type f -maxdepth <span class="m">3</span>
+</code></pre></td></tr></table>
+</div>
+</div><ol start="2">
+<li>/tmp下面任意以为数字开头，且非数字结尾的文件</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell">find ./  -name <span class="s2">&#34;dir0&#34;</span>
+
+
+find ./ -name <span class="s2">&#34;*.txt&#34;</span> <span class="p">|</span> xargs rm    <span class="o">(</span>删除当前目录下所有以txt结尾的文件<span class="o">)</span>    
+find   /home   -size   +512k                查大于512k的文件
+find   /home   -size   -512k               查小于512k的文件
+find   /home   -links   +2                查硬连接数大于2的文件或目录
+find   /home   -perm   <span class="m">0700</span>                查权限为700的文件或目录
+find    /   -amin    -10     <span class="c1"># 查找在系统中最后10分钟访问的文件</span>
+find    /   -atime   -2        <span class="c1"># 查找在系统中最后48小时访问的文件</span>
+find    /   -empty             <span class="c1"># 查找在系统中为空的文件或者文件夹</span>
+find    /   -group   cat        <span class="c1"># 查找在系统中属于 groupcat的文件</span>
+find    /   -mmin   -5         <span class="c1"># 查找在系统中最后5分钟里修改过的文件</span>
+find    /   -mtime   -1       <span class="c1">#查找在系统中最后24小时里修改过的文件</span>
+find    /   -nouser           <span class="c1">#查找在系统中属于作废用户的文件</span>
+find    /   -user    fred     <span class="c1">#查找在系统中属于FRED这个用户的文件</span>
+ 
+</code></pre></td></tr></table>
+</div>
+</div><p><a href="https://www.bilibili.com/video/BV1dt411f7TZ?p=22&amp;spm_id_from=pageDriver">学习教程</a></p>
+<h3 id="nfs-服务器理解">NFS 服务器理解</h3>
+<p><a href="https://baike.baidu.com/item/%E7%BD%91%E7%BB%9C%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/9719420?fromtitle=NFS&amp;fromid=812203&amp;fr=aladdin">通过 IP 的方式去传输 linux文件</a></p>
+<h3 id="常用的文件">常用的文件</h3>
+<ul>
+<li>.a 文件 静态库</li>
+<li>.lib 静态</li>
+<li>.so 动态</li>
+<li>.dll动态</li>
+</ul>
+<p><a href="https://www.bilibili.com/video/BV1dt411f7TZ?p=57">静态库的制作和使用</a></p>
+<p>库是写好的现有的，成熟的，可以复用的代码。<strong>现实中每个程序都要依赖很多基础的底层库，不可能每个人的代码都从零开始，因此库的存在意义非同寻常</strong>。</p>
+<p>本质上来说库是一种可执行代码的二进制形式，可以被操作系统载入内存执行。库有两种：静态库（.a、.lib）和动态库（.so、.dll）。</p>
+<p>所谓静态、动态是指链接。回顾一下，将一个程序编译成可执行程序的步骤：</p>
+<h3 id="ldd-命令查看链接库的-引用">ldd 命令查看链接库的 引用</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">[</span>root@VM-0-7-centos judgeServer_QD<span class="o">]</span><span class="c1"># ldd a.out</span> 
+        linux-vdso.so.1 <span class="o">=</span>&gt;  <span class="o">(</span>0x00007fff757f8000<span class="o">)</span>
+        libstdc++.so.6 <span class="o">=</span>&gt; /lib64/libstdc++.so.6 <span class="o">(</span>0x00007f5f415ef000<span class="o">)</span>
+        libm.so.6 <span class="o">=</span>&gt; /lib64/libm.so.6 <span class="o">(</span>0x00007f5f412ed000<span class="o">)</span>
+        libgcc_s.so.1 <span class="o">=</span>&gt; /lib64/libgcc_s.so.1 <span class="o">(</span>0x00007f5f410d7000<span class="o">)</span>
+        libc.so.6 <span class="o">=</span>&gt; /lib64/libc.so.6 <span class="o">(</span>0x00007f5f40d09000<span class="o">)</span>
+        /lib64/ld-linux-x86-64.so.2 <span class="o">(</span>0x00007f5f418f7000<span class="o">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="tr命令">tr命令</h2>
+<p>将文件testfile中的小写字母全部转换成大写字母，此时，可使用如下命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">cat testfile <span class="p">|</span>tr a-z A-Z 
+cat testfile <span class="p">|</span>tr <span class="o">[</span>:lower:<span class="o">]</span> <span class="o">[</span>:upper:<span class="o">]</span> 
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="文件描述符">文件描述符</h2>
+<h3 id="程序数据流">程序数据流</h3>
+<ul>
+<li>输入流 ，标准输入 stdin,键盘</li>
+<li>输出流， 标准输出 stdout ,显示器，终端</li>
+<li>错误输出流，    错误输出 stderr</li>
+</ul>
+<h3 id="文件描述符-1">文件描述符</h3>
+<p>linux 中一切皆文件</p>
+<ul>
+<li>stdin 文件描述符是0</li>
+<li>stdout  文件描述符是1</li>
+<li>stderr 文件描述符是 2</li>
+</ul>
+<h3 id="系统操作">系统操作</h3>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>特殊符号</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>stdin</td>
+<td>代码为0，配合 &lt; 和 &laquo;</td>
+<td>数据流从右向左</td>
+</tr>
+<tr>
+<td>stdout</td>
+<td>代码1 ，配合 &gt; 和 &raquo;</td>
+<td>数据从左到右</td>
+</tr>
+<tr>
+<td>stderr</td>
+<td>代码 2，配合  &gt; 和 &raquo;</td>
+<td>数据从左到右</td>
+</tr>
+<tr>
+<td>重定向符号</td>
+<td></td>
+<td>箭头方向</td>
+</tr>
+<tr>
+<td>标准输入重定向</td>
+<td>0 &lt; 或者 &lt;</td>
+<td>数据一般从文件流向命令</td>
+</tr>
+<tr>
+<td>追加输入重定向</td>
+<td>0 &laquo; 或者 &laquo;</td>
+<td>数据从文件流向命令</td>
+</tr>
+<tr>
+<td>标准输出重定向</td>
+<td>1 &gt; 或者 &gt;</td>
+<td>正常输入重定向给文件，默认覆盖</td>
+</tr>
+<tr>
+<td>标准输出追加重定向</td>
+<td>1 &raquo;</td>
+<td>追加方式</td>
+</tr>
+<tr>
+<td>标准错误输出</td>
+<td>2 &gt;</td>
+<td>标准错误文件重定向到另一个文件描述符</td>
+</tr>
+</tbody>
+</table>
+<p>使用技巧</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">2 &gt; &amp;1
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="重定向示例">重定向示例</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"> ls aaa 2&gt;&gt;err.txt <span class="p">;</span> cat err.txt
+ <span class="c1">#错误的内容输出到 err.txt内</span>
+ 
+ ls /notfound &gt; /dev/null 2&gt;<span class="p">&amp;</span><span class="m">1</span>
+ <span class="c1"># 为什么这么奇怪 要加个 &amp; 呢？ 这个&amp; 是用来转义的，用来识别 1是文件描述符</span> 
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="特殊符号">特殊符号</h2>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>;</td>
+<td>命令分隔符或者结束符号</td>
+</tr>
+<tr>
+<td>#</td>
+<td>1. 用来注释，2. root身份提示符</td>
+</tr>
+<tr>
+<td><code>$</code></td>
+<td>1.变量，取出变量的值，2. 普通用户身份提示符</td>
+</tr>
+<tr>
+<td>\</td>
+<td>转义符号，特殊字符还原成普通字符</td>
+</tr>
+<tr>
+<td>{}</td>
+<td>1.生成序列，2.引用变量作为变量与字符的分割</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">echo</span> <span class="o">{</span>1..20<span class="o">}</span>
+<span class="c1"># bash 解释器</span>
+<span class="nb">echo</span> <span class="o">{</span>hello,<span class="s2">&#34;fff\n&#34;</span>,world<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>利用花括号快速备份文件</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 将 cfg 备份为 cfg.bak</span>
+<span class="nb">echo</span> <span class="s2">&#34;hello config&#34;</span> &gt; cfg
+<span class="c1"># 这样 就直接拆分为 cp  cfg cfg.bak 这个命令了</span>  
+cp cfg<span class="o">{</span>,.bak<span class="o">}</span> <span class="o">&amp;&amp;</span> cat cfg.bak
+
+lyr@DESKTOP-FSVN6C0:~/tmp$ <span class="nb">echo</span> lyr66<span class="o">{</span>a..z<span class="o">}</span>
+lyr66a lyr66b lyr66c lyr66d lyr66e lyr66f lyr66g lyr66h lyr66i lyr66j lyr66k lyr66l lyr66m lyr66n lyr66o lyr66p lyr66q lyr66r lyr66s lyr66t lyr66u lyr66v lyr66w lyr66x lyr66y lyr66z
+lyr@DESKTOP-FSVN6C0:~/tmp$ <span class="nb">echo</span> lyr66<span class="o">{</span>a..z..2<span class="o">}</span>
+lyr66a lyr66c lyr66e lyr66g lyr66i lyr66k lyr66m lyr66o lyr66q lyr66s lyr66u lyr66w lyr66y
+</code></pre></td></tr></table>
+</div>
+</div><p><a href="https://www.bilibili.com/video/BV1tK4y1Z7F4?p=57">参考学习教程</a></p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&amp;&amp;</td>
+<td>连接命令，上一条命令成功，这条才知晓</td>
+</tr>
+<tr>
+<td>||</td>
+<td>上一条命令不成功，这个执行</td>
+</tr>
+<tr>
+<td>!</td>
+<td>vim 中 q!表示强制退出， !+数字表示history 命令中的第几条，  <code>!!</code> 表示执行上一条命令</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">clear
+<span class="nb">echo</span> <span class="s2">&#34;!!&#34;</span>
+<span class="c1"># 你会发现 就是执行 上一条</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="cat命令">cat命令</h2>
+<p>注意： 在linux平台中，所有文件的结尾都有一个 $符</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">cat -En temp
+# 
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-17
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      
+      <nav class="post-nav">
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/useradd-%E5%92%8C-adduser%E7%9A%84%E5%8C%BA%E5%88%AB%E9%87%8D%E7%82%B9%E7%90%86%E8%A7%A3/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">useradd 和 adduser</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/shell%E5%91%BD%E4%BB%A4%E5%AD%A6%E4%B9%A0/%E6%9F%A5%E7%9C%8B%E6%96%87%E4%BB%B6_more-%E5%92%8C-less/">
+            <span class="next-text nav-default">查看文件 more 和 less</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2021-08-17 13:48:22 \u002b0800 \u002b0800',
+        title: '文件操作',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-08-01 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+
+
+
+<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script defer="defer" async src="/js/custom/docsearch.min.js" ></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+  <script  src="/custom/img/lazyload.min.js"></script>
+  <script defer="defer" async src="/custom/post/back_btn.js"></script>
+  
+
+</body>
+</html>
