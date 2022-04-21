@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.74.2 with theme even" />
+<meta name="generator" content="Hugo 0.97.3 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/golang-epoll-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" />
@@ -43,17 +43,14 @@
 <meta property="og:title" content="golang epoll 性能优化" />
 <meta property="og:description" content="golang epoll 问题引出： 如果需要处理百万TCP 连接，golang中要如何实现 需要了解的概念 水平触发和边缘触发 epoll 有两种模式，一种是水平触发，一种是边缘触" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/golang-epoll-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/golang-epoll-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-08-14T22:42:48+08:00" />
 <meta property="article:modified_time" content="2021-08-14T22:42:48+08:00" />
+
 <meta itemprop="name" content="golang epoll 性能优化">
-<meta itemprop="description" content="golang epoll 问题引出： 如果需要处理百万TCP 连接，golang中要如何实现 需要了解的概念 水平触发和边缘触发 epoll 有两种模式，一种是水平触发，一种是边缘触">
-<meta itemprop="datePublished" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="dateModified" content="2021-08-14T22:42:48&#43;08:00" />
-<meta itemprop="wordCount" content="2336">
-
-
-
+<meta itemprop="description" content="golang epoll 问题引出： 如果需要处理百万TCP 连接，golang中要如何实现 需要了解的概念 水平触发和边缘触发 epoll 有两种模式，一种是水平触发，一种是边缘触"><meta itemprop="datePublished" content="2021-08-14T22:42:48+08:00" />
+<meta itemprop="dateModified" content="2021-08-14T22:42:48+08:00" />
+<meta itemprop="wordCount" content="2334">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="golang epoll 性能优化"/>
 <meta name="twitter:description" content="golang epoll 问题引出： 如果需要处理百万TCP 连接，golang中要如何实现 需要了解的概念 水平触发和边缘触发 epoll 有两种模式，一种是水平触发，一种是边缘触"/>
@@ -188,7 +185,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-14 </span>
         
-          <span class="more-meta"> 约 2336 字 </span>
+          <span class="more-meta"> 约 2334 字 </span>
           <span class="more-meta"> 预计阅读 5 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -234,7 +231,7 @@ input.PC_MARK1:focus{
 <h4 id="代码中如何写">代码中如何写</h4>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -243,14 +240,14 @@ input.PC_MARK1:focus{
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="c1">//水平触发
-</span><span class="c1"></span><span class="nx">evt</span><span class="p">.</span><span class="nx">events</span> <span class="p">=</span> <span class="nx">EPOLLIN</span><span class="p">;</span>    <span class="c1">// LT 水平触发 (默认) EPOLLLT
-</span><span class="c1"></span><span class="nx">evt</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">fd</span> <span class="p">=</span> <span class="nx">pfd</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-
-<span class="c1">//边沿触发
-</span><span class="c1"></span><span class="nx">evt</span><span class="p">.</span><span class="nx">events</span> <span class="p">=</span> <span class="nx">EPOLLIN</span> <span class="p">|</span> <span class="nx">EPOLLET</span><span class="p">;</span>    <span class="c1">// ET 边沿触发
-</span><span class="c1"></span><span class="nx">evt</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">fd</span> <span class="p">=</span> <span class="nx">pfd</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">//水平触发
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">evt</span><span class="p">.</span><span class="nx">events</span> <span class="p">=</span> <span class="nx">EPOLLIN</span><span class="p">;</span>    <span class="c1">// LT 水平触发 (默认) EPOLLLT
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">evt</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">fd</span> <span class="p">=</span> <span class="nx">pfd</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//边沿触发
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">evt</span><span class="p">.</span><span class="nx">events</span> <span class="p">=</span> <span class="nx">EPOLLIN</span> <span class="p">|</span> <span class="nx">EPOLLET</span><span class="p">;</span>    <span class="c1">// ET 边沿触发
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">evt</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">fd</span> <span class="p">=</span> <span class="nx">pfd</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><h4 id="流程图">流程图</h4>
 <p><img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly93d3cubGltZXJlbmNlMjAxNy5jb20vMjAyMC8wNS8xNy9nb2xhbmczMS8xLnBuZw?x-oss-process=image/format,png" alt="https://imgconvert.csdnimg.cn/aHR0cHM6Ly93d3cubGltZXJlbmNlMjAxNy5jb20vMjAyMC8wNS8xNy9nb2xhbmczMS8xLnBuZw?x-oss-process=image/format,png"></p>
@@ -263,7 +260,7 @@ input.PC_MARK1:focus{
 <p>下面的代码是水平触发【会一直阻塞等待事件到来】</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">  1
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
 </span><span class="lnt">  2
 </span><span class="lnt">  3
 </span><span class="lnt">  4
@@ -364,116 +361,114 @@ input.PC_MARK1:focus{
 </span><span class="lnt"> 99
 </span><span class="lnt">100
 </span><span class="lnt">101
-</span><span class="lnt">102
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">epoll</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;log&#34;</span>
-	<span class="s">&#34;net&#34;</span>
-	<span class="s">&#34;reflect&#34;</span>
-	<span class="s">&#34;sync&#34;</span>
-	<span class="s">&#34;syscall&#34;</span>
-
-	<span class="s">&#34;golang.org/x/sys/unix&#34;</span>
-<span class="p">)</span>
-
-<span class="kd">func</span> <span class="nf">SetLimit</span><span class="p">()</span> <span class="p">(</span><span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">rLimit</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">Rlimit</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">Getrlimit</span><span class="p">(</span><span class="nx">syscall</span><span class="p">.</span><span class="nx">RLIMIT_NOFILE</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">rLimit</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="nx">err</span>
-	<span class="p">}</span>
-	<span class="nx">rLimit</span><span class="p">.</span><span class="nx">Cur</span> <span class="p">=</span> <span class="nx">rLimit</span><span class="p">.</span><span class="nx">Max</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">Setrlimit</span><span class="p">(</span><span class="nx">syscall</span><span class="p">.</span><span class="nx">RLIMIT_NOFILE</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">rLimit</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="nx">err</span>
-	<span class="p">}</span>
-	<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;set cur limit: %d&#34;</span><span class="p">,</span> <span class="nx">rLimit</span><span class="p">.</span><span class="nx">Cur</span><span class="p">)</span>
-	<span class="k">return</span> <span class="kc">nil</span>
-<span class="p">}</span>
-
-<span class="kd">type</span> <span class="nx">Epoll</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">fd</span>          <span class="kt">int</span>
-	<span class="nx">connections</span> <span class="kd">map</span><span class="p">[</span><span class="kt">int</span><span class="p">]</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span>
-	<span class="nx">lock</span>        <span class="o">*</span><span class="nx">sync</span><span class="p">.</span><span class="nx">RWMutex</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nf">MkEpoll</span><span class="p">()</span> <span class="p">(</span><span class="o">*</span><span class="nx">Epoll</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">fd</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">unix</span><span class="p">.</span><span class="nf">EpollCreate1</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
-	<span class="p">}</span>
-
-	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">Epoll</span><span class="p">{</span>
-		<span class="nx">fd</span><span class="p">:</span>          <span class="nx">fd</span><span class="p">,</span>
-		<span class="nx">lock</span><span class="p">:</span>        <span class="o">&amp;</span><span class="nx">sync</span><span class="p">.</span><span class="nx">RWMutex</span><span class="p">{},</span>
-		<span class="nx">connections</span><span class="p">:</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">int</span><span class="p">]</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">),</span>
-	<span class="p">},</span> <span class="kc">nil</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="p">(</span><span class="nx">e</span> <span class="o">*</span><span class="nx">Epoll</span><span class="p">)</span> <span class="nf">Add</span><span class="p">(</span><span class="nx">conn</span> <span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">)</span> <span class="p">(</span><span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">fd</span> <span class="o">:=</span> <span class="nf">socketFD</span><span class="p">(</span><span class="nx">conn</span><span class="p">)</span>
-	<span class="c1">// epoll et 使用 edge trigger 边缘触发
-</span><span class="c1"></span>	<span class="nx">err</span> <span class="p">=</span> <span class="nx">unix</span><span class="p">.</span><span class="nf">EpollCtl</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">fd</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">EPOLL_CTL_ADD</span><span class="p">,</span> <span class="nx">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">unix</span><span class="p">.</span><span class="nx">EpollEvent</span><span class="p">{</span><span class="nx">Events</span><span class="p">:</span> <span class="nx">unix</span><span class="p">.</span><span class="nx">POLLIN</span> <span class="p">|</span> <span class="nx">unix</span><span class="p">.</span><span class="nx">POLLHUP</span><span class="p">,</span> <span class="nx">Fd</span><span class="p">:</span> <span class="nb">int32</span><span class="p">(</span><span class="nx">fd</span><span class="p">)})</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="nx">err</span>
-	<span class="p">}</span>
-	<span class="nx">e</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
-	<span class="k">defer</span> <span class="nx">e</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
-	<span class="nx">e</span><span class="p">.</span><span class="nx">connections</span><span class="p">[</span><span class="nx">fd</span><span class="p">]</span> <span class="p">=</span> <span class="nx">conn</span>
-	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">connections</span><span class="p">)</span><span class="o">%</span><span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Total number of connections: %v&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">connections</span><span class="p">))</span>
-	<span class="p">}</span>
-	<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;register connection&#34;</span><span class="p">)</span>
-	<span class="k">return</span> <span class="kc">nil</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="p">(</span><span class="nx">e</span> <span class="o">*</span><span class="nx">Epoll</span><span class="p">)</span> <span class="nf">Remove</span><span class="p">(</span><span class="nx">conn</span> <span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">)</span> <span class="p">(</span><span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">fd</span> <span class="o">:=</span> <span class="nf">socketFD</span><span class="p">(</span><span class="nx">conn</span><span class="p">)</span>
-    <span class="c1">//从epfd中删除一个fd
-</span><span class="c1"></span>	<span class="nx">err</span> <span class="p">=</span> <span class="nx">unix</span><span class="p">.</span><span class="nf">EpollCtl</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">fd</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">EPOLL_CTL_DEL</span><span class="p">,</span> <span class="nx">fd</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="nx">err</span>
-	<span class="p">}</span>
-	<span class="nx">e</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
-	<span class="k">defer</span> <span class="nx">e</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
-	<span class="nb">delete</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">connections</span><span class="p">,</span> <span class="nx">fd</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">connections</span><span class="p">)</span><span class="o">%</span><span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Total number of connections: %v&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">connections</span><span class="p">))</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="kc">nil</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="p">(</span><span class="nx">e</span> <span class="o">*</span><span class="nx">Epoll</span><span class="p">)</span> <span class="nf">Wait</span><span class="p">(</span><span class="nx">msec</span> <span class="kt">int</span><span class="p">)</span> <span class="p">([]</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-	<span class="c1">//一次处理100 个 事件
-</span><span class="c1"></span>	<span class="nx">events</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="nx">unix</span><span class="p">.</span><span class="nx">EpollEvent</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-	<span class="nx">n</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">unix</span><span class="p">.</span><span class="nf">EpollWait</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">fd</span><span class="p">,</span> <span class="nx">events</span><span class="p">,</span> <span class="nx">msec</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
-	<span class="p">}</span>
-	<span class="nx">e</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">RLock</span><span class="p">()</span>
-	<span class="k">defer</span> <span class="nx">e</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">RUnlock</span><span class="p">()</span>
-	<span class="kd">var</span> <span class="nx">connections</span> <span class="p">[]</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span>
-	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">n</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
-		<span class="nx">conn</span> <span class="o">:=</span> <span class="nx">e</span><span class="p">.</span><span class="nx">connections</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nx">events</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">Fd</span><span class="p">)]</span>
-		<span class="nx">connections</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">connections</span><span class="p">,</span> <span class="nx">conn</span><span class="p">)</span>
-	<span class="p">}</span>
-	<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;active clients = %v&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">connections</span><span class="p">))</span>
-	<span class="k">return</span> <span class="nx">connections</span><span class="p">,</span> <span class="kc">nil</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nf">socketFD</span><span class="p">(</span><span class="nx">conn</span> <span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
-	<span class="nx">tcpConn</span> <span class="o">:=</span> <span class="nx">reflect</span><span class="p">.</span><span class="nf">Indirect</span><span class="p">(</span><span class="nx">reflect</span><span class="p">.</span><span class="nf">ValueOf</span><span class="p">(</span><span class="nx">conn</span><span class="p">)).</span><span class="nf">FieldByName</span><span class="p">(</span><span class="s">&#34;conn&#34;</span><span class="p">)</span>
-	<span class="nx">fdVal</span> <span class="o">:=</span> <span class="nx">tcpConn</span><span class="p">.</span><span class="nf">FieldByName</span><span class="p">(</span><span class="s">&#34;fd&#34;</span><span class="p">)</span>
-	<span class="nx">pfdVal</span> <span class="o">:=</span> <span class="nx">reflect</span><span class="p">.</span><span class="nf">Indirect</span><span class="p">(</span><span class="nx">fdVal</span><span class="p">).</span><span class="nf">FieldByName</span><span class="p">(</span><span class="s">&#34;pfd&#34;</span><span class="p">)</span>
-	<span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nx">pfdVal</span><span class="p">.</span><span class="nf">FieldByName</span><span class="p">(</span><span class="s">&#34;Sysfd&#34;</span><span class="p">).</span><span class="nf">Int</span><span class="p">())</span>
-<span class="p">}</span>
-
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">epoll</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;log&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;net&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;reflect&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;sync&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;syscall&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;golang.org/x/sys/unix&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">SetLimit</span><span class="p">()</span> <span class="p">(</span><span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">rLimit</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">Rlimit</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">Getrlimit</span><span class="p">(</span><span class="nx">syscall</span><span class="p">.</span><span class="nx">RLIMIT_NOFILE</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">rLimit</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">rLimit</span><span class="p">.</span><span class="nx">Cur</span> <span class="p">=</span> <span class="nx">rLimit</span><span class="p">.</span><span class="nx">Max</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">syscall</span><span class="p">.</span><span class="nf">Setrlimit</span><span class="p">(</span><span class="nx">syscall</span><span class="p">.</span><span class="nx">RLIMIT_NOFILE</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">rLimit</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;set cur limit: %d&#34;</span><span class="p">,</span> <span class="nx">rLimit</span><span class="p">.</span><span class="nx">Cur</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Epoll</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fd</span>          <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">connections</span> <span class="kd">map</span><span class="p">[</span><span class="kt">int</span><span class="p">]</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">lock</span>        <span class="o">*</span><span class="nx">sync</span><span class="p">.</span><span class="nx">RWMutex</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">MkEpoll</span><span class="p">()</span> <span class="p">(</span><span class="o">*</span><span class="nx">Epoll</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fd</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">unix</span><span class="p">.</span><span class="nf">EpollCreate1</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">Epoll</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fd</span><span class="p">:</span>          <span class="nx">fd</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">lock</span><span class="p">:</span>        <span class="o">&amp;</span><span class="nx">sync</span><span class="p">.</span><span class="nx">RWMutex</span><span class="p">{},</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">connections</span><span class="p">:</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">int</span><span class="p">]</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">	<span class="p">},</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">e</span> <span class="o">*</span><span class="nx">Epoll</span><span class="p">)</span> <span class="nf">Add</span><span class="p">(</span><span class="nx">conn</span> <span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">)</span> <span class="p">(</span><span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fd</span> <span class="o">:=</span> <span class="nf">socketFD</span><span class="p">(</span><span class="nx">conn</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// epoll et 使用 edge trigger 边缘触发
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">err</span> <span class="p">=</span> <span class="nx">unix</span><span class="p">.</span><span class="nf">EpollCtl</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">fd</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">EPOLL_CTL_ADD</span><span class="p">,</span> <span class="nx">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">unix</span><span class="p">.</span><span class="nx">EpollEvent</span><span class="p">{</span><span class="nx">Events</span><span class="p">:</span> <span class="nx">unix</span><span class="p">.</span><span class="nx">POLLIN</span> <span class="p">|</span> <span class="nx">unix</span><span class="p">.</span><span class="nx">POLLHUP</span><span class="p">,</span> <span class="nx">Fd</span><span class="p">:</span> <span class="nb">int32</span><span class="p">(</span><span class="nx">fd</span><span class="p">)})</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">e</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">defer</span> <span class="nx">e</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">e</span><span class="p">.</span><span class="nx">connections</span><span class="p">[</span><span class="nx">fd</span><span class="p">]</span> <span class="p">=</span> <span class="nx">conn</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">connections</span><span class="p">)</span><span class="o">%</span><span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Total number of connections: %v&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">connections</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;register connection&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">e</span> <span class="o">*</span><span class="nx">Epoll</span><span class="p">)</span> <span class="nf">Remove</span><span class="p">(</span><span class="nx">conn</span> <span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">)</span> <span class="p">(</span><span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fd</span> <span class="o">:=</span> <span class="nf">socketFD</span><span class="p">(</span><span class="nx">conn</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//从epfd中删除一个fd
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">err</span> <span class="p">=</span> <span class="nx">unix</span><span class="p">.</span><span class="nf">EpollCtl</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">fd</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">EPOLL_CTL_DEL</span><span class="p">,</span> <span class="nx">fd</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">e</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">defer</span> <span class="nx">e</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nb">delete</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">connections</span><span class="p">,</span> <span class="nx">fd</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">connections</span><span class="p">)</span><span class="o">%</span><span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Total number of connections: %v&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">connections</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">e</span> <span class="o">*</span><span class="nx">Epoll</span><span class="p">)</span> <span class="nf">Wait</span><span class="p">(</span><span class="nx">msec</span> <span class="kt">int</span><span class="p">)</span> <span class="p">([]</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">//一次处理100 个 事件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">events</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="nx">unix</span><span class="p">.</span><span class="nx">EpollEvent</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">n</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">unix</span><span class="p">.</span><span class="nf">EpollWait</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">fd</span><span class="p">,</span> <span class="nx">events</span><span class="p">,</span> <span class="nx">msec</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">e</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">RLock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">defer</span> <span class="nx">e</span><span class="p">.</span><span class="nx">lock</span><span class="p">.</span><span class="nf">RUnlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">connections</span> <span class="p">[]</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">n</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">conn</span> <span class="o">:=</span> <span class="nx">e</span><span class="p">.</span><span class="nx">connections</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nx">events</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">Fd</span><span class="p">)]</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">connections</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">connections</span><span class="p">,</span> <span class="nx">conn</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;active clients = %v&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">connections</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">connections</span><span class="p">,</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">socketFD</span><span class="p">(</span><span class="nx">conn</span> <span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">tcpConn</span> <span class="o">:=</span> <span class="nx">reflect</span><span class="p">.</span><span class="nf">Indirect</span><span class="p">(</span><span class="nx">reflect</span><span class="p">.</span><span class="nf">ValueOf</span><span class="p">(</span><span class="nx">conn</span><span class="p">)).</span><span class="nf">FieldByName</span><span class="p">(</span><span class="s">&#34;conn&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fdVal</span> <span class="o">:=</span> <span class="nx">tcpConn</span><span class="p">.</span><span class="nf">FieldByName</span><span class="p">(</span><span class="s">&#34;fd&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">pfdVal</span> <span class="o">:=</span> <span class="nx">reflect</span><span class="p">.</span><span class="nf">Indirect</span><span class="p">(</span><span class="nx">fdVal</span><span class="p">).</span><span class="nf">FieldByName</span><span class="p">(</span><span class="s">&#34;pfd&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nx">pfdVal</span><span class="p">.</span><span class="nf">FieldByName</span><span class="p">(</span><span class="s">&#34;Sysfd&#34;</span><span class="p">).</span><span class="nf">Int</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -560,98 +555,96 @@ input.PC_MARK1:focus{
 </span><span class="lnt">85
 </span><span class="lnt">86
 </span><span class="lnt">87
-</span><span class="lnt">88
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;epollserver/epoll&#34;</span>
-	<span class="s">&#34;log&#34;</span>
-	<span class="s">&#34;net&#34;</span>
-	<span class="s">&#34;time&#34;</span>
-	<span class="c1">// &#34;net/http&#34;
-</span><span class="c1"></span>	<span class="c1">// _ &#34;net/http/pprof&#34;
-</span><span class="c1"></span>	<span class="c1">// &#34;github.com/gogmod/epoll&#34;
-</span><span class="c1"></span><span class="p">)</span>
-
-<span class="kd">var</span> <span class="nx">epoller</span> <span class="o">*</span><span class="nx">epoll</span><span class="p">.</span><span class="nx">Epoll</span>
-
-<span class="c1">//docker run -v $(pwd)/server:/go/server --name tcp_server -d golang /go/server
-</span><span class="c1"></span><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">epoll</span><span class="p">.</span><span class="nf">SetLimit</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-	<span class="p">}</span>
-	<span class="nx">ln</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">net</span><span class="p">.</span><span class="nf">Listen</span><span class="p">(</span><span class="s">&#34;tcp&#34;</span><span class="p">,</span> <span class="s">&#34;:8080&#34;</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-	<span class="p">}</span>
-	<span class="c1">//创建 epoll 对象
-</span><span class="c1"></span>	<span class="nx">epoller</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">epoll</span><span class="p">.</span><span class="nf">MkEpoll</span><span class="p">()</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-	<span class="p">}</span>
-	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
-		<span class="c1">// 开协程去处理事件
-</span><span class="c1"></span>		<span class="k">go</span> <span class="nf">handleReadWrite</span><span class="p">()</span>
-	<span class="p">}</span>
-
-	<span class="k">for</span> <span class="p">{</span>
-		<span class="c1">//阻塞等待客户端连接
-</span><span class="c1"></span>		<span class="nx">conn</span><span class="p">,</span> <span class="nx">e</span> <span class="o">:=</span> <span class="nx">ln</span><span class="p">.</span><span class="nf">Accept</span><span class="p">()</span>
-		<span class="k">if</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-			<span class="k">if</span> <span class="nx">ne</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">e</span><span class="p">.(</span><span class="nx">net</span><span class="p">.</span><span class="nx">Error</span><span class="p">);</span> <span class="nx">ok</span> <span class="o">&amp;&amp;</span> <span class="nx">ne</span><span class="p">.</span><span class="nf">Temporary</span><span class="p">()</span> <span class="p">{</span>
-				<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;accept temp err: %v&#34;</span><span class="p">,</span> <span class="nx">ne</span><span class="p">)</span>
-				<span class="k">continue</span>
-			<span class="p">}</span>
-			<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;accept err: %v&#34;</span><span class="p">,</span> <span class="nx">e</span><span class="p">)</span>
-			<span class="k">return</span>
-		<span class="p">}</span>
-		<span class="c1">//将连接 加入到红黑树中监听 网络事件
-</span><span class="c1"></span>		<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">epoller</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nx">conn</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-			<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;failed to add connection %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-
-			<span class="nx">conn</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nf">handleReadWrite</span><span class="p">()</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">buf</span> <span class="p">=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="mi">2048</span><span class="p">)</span>
-	<span class="k">for</span> <span class="p">{</span>
-		<span class="c1">// 0 的话立刻返回，不阻塞等待， -1 阻塞等待事件
-</span><span class="c1"></span>		<span class="nx">connections</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">epoller</span><span class="p">.</span><span class="nf">Wait</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-			<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;failed to epoll wait %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-			<span class="k">continue</span>
-		<span class="p">}</span>
-		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">connections</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-			<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;wait timeout,and continue&#34;</span><span class="p">)</span>
-			<span class="c1">//这里 最好别睡太久
-</span><span class="c1"></span>			<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Millisecond</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
-			<span class="k">continue</span>
-		<span class="p">}</span>
-		<span class="c1">//处理连接请求
-</span><span class="c1"></span>		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">conn</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">connections</span> <span class="p">{</span>
-			<span class="k">if</span> <span class="nx">conn</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
-				<span class="k">break</span>
-			<span class="p">}</span>
-			<span class="nx">nbuf</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">conn</span><span class="p">.</span><span class="nf">Read</span><span class="p">(</span><span class="nx">buf</span><span class="p">)</span>
-
-			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-				<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">epoller</span><span class="p">.</span><span class="nf">Remove</span><span class="p">(</span><span class="nx">conn</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-					<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;failed to remove %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-				<span class="p">}</span>
-				<span class="nx">conn</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
-				<span class="k">return</span>
-			<span class="p">}</span>
-			<span class="c1">//直接 将 收到的消息写回去
-</span><span class="c1"></span>			<span class="nx">conn</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="nx">buf</span><span class="p">[:</span><span class="nx">nbuf</span><span class="p">])</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span>
-
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;epollserver/epoll&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;log&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;net&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;time&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// &#34;net/http&#34;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// _ &#34;net/http/pprof&#34;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// &#34;github.com/gogmod/epoll&#34;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">epoller</span> <span class="o">*</span><span class="nx">epoll</span><span class="p">.</span><span class="nx">Epoll</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//docker run -v $(pwd)/server:/go/server --name tcp_server -d golang /go/server
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">epoll</span><span class="p">.</span><span class="nf">SetLimit</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ln</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">net</span><span class="p">.</span><span class="nf">Listen</span><span class="p">(</span><span class="s">&#34;tcp&#34;</span><span class="p">,</span> <span class="s">&#34;:8080&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">//创建 epoll 对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">epoller</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">epoll</span><span class="p">.</span><span class="nf">MkEpoll</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// 开协程去处理事件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">go</span> <span class="nf">handleReadWrite</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">//阻塞等待客户端连接
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">conn</span><span class="p">,</span> <span class="nx">e</span> <span class="o">:=</span> <span class="nx">ln</span><span class="p">.</span><span class="nf">Accept</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">ne</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">e</span><span class="p">.(</span><span class="nx">net</span><span class="p">.</span><span class="nx">Error</span><span class="p">);</span> <span class="nx">ok</span> <span class="o">&amp;&amp;</span> <span class="nx">ne</span><span class="p">.</span><span class="nf">Temporary</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;accept temp err: %v&#34;</span><span class="p">,</span> <span class="nx">ne</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="k">continue</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;accept err: %v&#34;</span><span class="p">,</span> <span class="nx">e</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">//将连接 加入到红黑树中监听 网络事件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">epoller</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nx">conn</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;failed to add connection %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">			<span class="nx">conn</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">handleReadWrite</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">buf</span> <span class="p">=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="mi">2048</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// 0 的话立刻返回，不阻塞等待， -1 阻塞等待事件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">connections</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">epoller</span><span class="p">.</span><span class="nf">Wait</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;failed to epoll wait %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="k">continue</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">connections</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;wait timeout,and continue&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">//这里 最好别睡太久
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Millisecond</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="k">continue</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">//处理连接请求
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">conn</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">connections</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">conn</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">break</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">nbuf</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">conn</span><span class="p">.</span><span class="nf">Read</span><span class="p">(</span><span class="nx">buf</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">epoller</span><span class="p">.</span><span class="nf">Remove</span><span class="p">(</span><span class="nx">conn</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">					<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;failed to remove %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="p">}</span>
+</span></span><span class="line"><span class="cl">				<span class="nx">conn</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">				<span class="k">return</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">//直接 将 收到的消息写回去
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nx">conn</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="nx">buf</span><span class="p">[:</span><span class="nx">nbuf</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="epoll-api参考">epoll api参考</h3>
 <ol>
@@ -661,7 +654,7 @@ input.PC_MARK1:focus{
 </ol>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -669,13 +662,13 @@ input.PC_MARK1:focus{
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-c" data-lang="c"><span class="c1">//用于创建并返回一个epfd句柄，后续关于fd的添加删除等操作都依据这个句柄。
-</span><span class="c1"></span><span class="kt">int</span> <span class="nf">epoll_create</span><span class="p">(</span><span class="kt">int</span> <span class="n">size</span><span class="p">);</span>
-<span class="c1">//用于向epfd添加，删除，修改要监听的fd。
-</span><span class="c1"></span><span class="kt">int</span> <span class="nf">epoll_ctl</span><span class="p">(</span><span class="kt">int</span> <span class="n">epfd</span><span class="p">,</span> <span class="kt">int</span> <span class="n">op</span><span class="p">,</span> <span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">struct</span> <span class="n">epoll_event</span><span class="o">*</span> <span class="n">event</span><span class="p">);</span>
-<span class="c1">//传入创建返回的epfd句柄，以及超时时间，返回就绪的fd句柄。
-</span><span class="c1"></span><span class="kt">int</span> <span class="nf">epoll_wait</span><span class="p">(</span><span class="kt">int</span> <span class="n">epfd</span><span class="p">,</span> <span class="k">struct</span> <span class="n">epoll_event</span><span class="o">*</span> <span class="n">events</span><span class="p">,</span> <span class="kt">int</span> <span class="n">maxevents</span><span class="p">,</span> <span class="kt">int</span> <span class="n">timeout</span><span class="p">);</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">//用于创建并返回一个epfd句柄，后续关于fd的添加删除等操作都依据这个句柄。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">int</span> <span class="nf">epoll_create</span><span class="p">(</span><span class="kt">int</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//用于向epfd添加，删除，修改要监听的fd。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">int</span> <span class="nf">epoll_ctl</span><span class="p">(</span><span class="kt">int</span> <span class="n">epfd</span><span class="p">,</span> <span class="kt">int</span> <span class="n">op</span><span class="p">,</span> <span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">struct</span> <span class="n">epoll_event</span><span class="o">*</span> <span class="n">event</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//传入创建返回的epfd句柄，以及超时时间，返回就绪的fd句柄。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">int</span> <span class="nf">epoll_wait</span><span class="p">(</span><span class="kt">int</span> <span class="n">epfd</span><span class="p">,</span> <span class="k">struct</span> <span class="n">epoll_event</span><span class="o">*</span> <span class="n">events</span><span class="p">,</span> <span class="kt">int</span> <span class="n">maxevents</span><span class="p">,</span> <span class="kt">int</span> <span class="n">timeout</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p><img src="https://image-static.segmentfault.com/243/320/2433208529-60015d96a37dc" alt="https://image-static.segmentfault.com/243/320/2433208529-60015d96a37dc"></p>
 <p>如此，一颗红黑树，一张准备就绪句柄链表，少量的内核cache，就帮我们解决了大并发下的socket处理问题。执行epoll_create时，创建了红黑树和就绪链表，执行epoll_ctl时，如果增加socket句柄，则检查在红黑树中是否存在，存在立即返回，不存在则添加到树干上，然后<strong>向内核注册回调函数</strong>，用于<strong>当中断事件来临时向准备就绪链表(队列)中插入数据</strong>。执行epoll_wait时立刻<strong>返回准备就绪链表里的数据</strong>即可。</p>
@@ -818,7 +811,7 @@ input.PC_MARK1:focus{
 
 
 
-<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
   <script type="text/javascript">
     window.MathJax = {
       tex: {

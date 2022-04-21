@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.74.2 with theme even" />
+<meta name="generator" content="Hugo 0.97.3 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/java%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/4.jvm%E5%8A%A0%E8%BD%BD%E7%B1%BB/" />
@@ -43,17 +43,14 @@
 <meta property="og:title" content="4.JVM 加载类的方式，内存分布" />
 <meta property="og:description" content="jvm加载类的过程 一句话解释清楚整个过程 先加载 class 进内存 对 class信息内容进行语法校验，判断是否有错误 对静态变量初始化 调用构造器 初始化实例 加" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/java%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/4.jvm%E5%8A%A0%E8%BD%BD%E7%B1%BB/" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/java%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/4.jvm%E5%8A%A0%E8%BD%BD%E7%B1%BB/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
 <meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+
 <meta itemprop="name" content="4.JVM 加载类的方式，内存分布">
-<meta itemprop="description" content="jvm加载类的过程 一句话解释清楚整个过程 先加载 class 进内存 对 class信息内容进行语法校验，判断是否有错误 对静态变量初始化 调用构造器 初始化实例 加">
-<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="2971">
-
-
-
+<meta itemprop="description" content="jvm加载类的过程 一句话解释清楚整个过程 先加载 class 进内存 对 class信息内容进行语法校验，判断是否有错误 对静态变量初始化 调用构造器 初始化实例 加"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="wordCount" content="2967">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="4.JVM 加载类的方式，内存分布"/>
 <meta name="twitter:description" content="jvm加载类的过程 一句话解释清楚整个过程 先加载 class 进内存 对 class信息内容进行语法校验，判断是否有错误 对静态变量初始化 调用构造器 初始化实例 加"/>
@@ -188,7 +185,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
-          <span class="more-meta"> 约 2971 字 </span>
+          <span class="more-meta"> 约 2967 字 </span>
           <span class="more-meta"> 预计阅读 6 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -286,19 +283,19 @@ input.PC_MARK1:focus{
 <h4 id="打印-classlayout">打印 classLayout</h4>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-xml" data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
-	<span class="nt">&lt;groupId&gt;</span>org.openjdk.jol<span class="nt">&lt;/groupId&gt;</span>
-	<span class="nt">&lt;artifactId&gt;</span>jol-core<span class="nt">&lt;/artifactId&gt;</span>
-	<span class="nt">&lt;version&gt;</span>0.10<span class="nt">&lt;/version&gt;</span>
-<span class="nt">&lt;/dependency&gt;</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="line"><span class="cl"><span class="nt">&lt;dependency&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="nt">&lt;groupId&gt;</span>org.openjdk.jol<span class="nt">&lt;/groupId&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="nt">&lt;artifactId&gt;</span>jol-core<span class="nt">&lt;/artifactId&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="nt">&lt;version&gt;</span>0.10<span class="nt">&lt;/version&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;/dependency&gt;</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p><a href="https://blog.csdn.net/meism5/article/details/113574488">参考博客</a></p>
 <p><a href="https://blog.csdn.net/kq1983/article/details/115573174">参考博客2</a></p>
@@ -310,7 +307,7 @@ input.PC_MARK1:focus{
 <h4 id="打印测试">打印测试</h4>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -346,41 +343,41 @@ input.PC_MARK1:focus{
 </span><span class="lnt">34
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">org.openjdk.jol.info.ClassLayout</span><span class="o">;</span>
-
-<span class="cm">/**
-</span><span class="cm"> * @Author lyr
-</span><span class="cm"> * @create 2021/9/15 19:20
-</span><span class="cm"> */</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
-    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">User</span> <span class="o">{</span>
-        <span class="kt">int</span> <span class="n">p1</span><span class="o">,</span> <span class="n">p2</span><span class="o">,</span> <span class="n">p3</span><span class="o">;</span>
-        <span class="kt">long</span> <span class="n">l1</span><span class="o">,</span> <span class="n">l2</span><span class="o">,</span> <span class="n">l3</span><span class="o">;</span>
-    <span class="o">}</span>
-
-    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">InterruptedException</span> <span class="o">{</span>
-        <span class="n">User</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="n">User</span><span class="o">();</span>
-        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">ClassLayout</span><span class="o">.</span><span class="na">parseInstance</span><span class="o">(</span><span class="n">user</span><span class="o">));</span>
-    <span class="o">}</span>
-    
-<span class="o">}</span>
-
-
-<span class="cm">/*
-</span><span class="cm">
-</span><span class="cm"> 
-</span><span class="cm">Main.User.p1 @12 (int, 4b)
-</span><span class="cm">Main.User.l1 @16 (long, 8b)
-</span><span class="cm">Main.User.l2 @24 (long, 8b)
-</span><span class="cm">Main.User.l3 @32 (long, 8b)
-</span><span class="cm">Main.User.p2 @40 (int, 4b)
-</span><span class="cm">Main.User.p3 @44 (int, 4b)
-</span><span class="cm">size = 48
-</span><span class="cm">
-</span><span class="cm">
-</span><span class="cm">
-</span><span class="cm">*/</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.openjdk.jol.info.ClassLayout</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @Author lyr
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @create 2021/9/15 19:20
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">User</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">p1</span><span class="o">,</span> <span class="n">p2</span><span class="o">,</span> <span class="n">p3</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">long</span> <span class="n">l1</span><span class="o">,</span> <span class="n">l2</span><span class="o">,</span> <span class="n">l3</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">InterruptedException</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">User</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="n">User</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">ClassLayout</span><span class="o">.</span><span class="na">parseInstance</span><span class="o">(</span><span class="n">user</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm"> 
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main.User.p1 @12 (int, 4b)
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main.User.l1 @16 (long, 8b)
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main.User.l2 @24 (long, 8b)
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main.User.l3 @32 (long, 8b)
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main.User.p2 @40 (int, 4b)
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main.User.p3 @44 (int, 4b)
+</span></span></span><span class="line"><span class="cl"><span class="cm">size = 48
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><h5 id="disruptor-缓存行伪共享原理解释">disruptor 缓存行伪共享原理解释</h5>
 <p><a href="https://blog.csdn.net/yuanlaijike/article/details/105611879">参考博客</a></p>
@@ -394,7 +391,7 @@ input.PC_MARK1:focus{
 <p>这就是缓存伪共享问题，两个毫无关联的线程执行，一个线程却因为另一个线程的操作，导致缓存失效。这两个线程其实就是对同一缓存行产生了竞争，降低了并发性。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -441,62 +438,56 @@ input.PC_MARK1:focus{
 </span><span class="lnt">45
 </span><span class="lnt">46
 </span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">org.openjdk.jol.info.ClassLayout</span><span class="o">;</span>
-
-<span class="cm">/**
-</span><span class="cm"> * @Author lyr
-</span><span class="cm"> * @create 2021/9/15 19:20
-</span><span class="cm"> */</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
-    <span class="c1">// 前：填充 56 字节
-</span><span class="c1"></span>    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">RhsPadding</span> <span class="kd">extends</span> <span class="n">Value</span> <span class="o">{</span>
-        <span class="kd">protected</span> <span class="kt">long</span> <span class="n">p9</span><span class="o">,</span> <span class="n">p10</span><span class="o">,</span> <span class="n">p11</span><span class="o">,</span> <span class="n">p12</span><span class="o">,</span> <span class="n">p13</span><span class="o">,</span> <span class="n">p14</span><span class="o">,</span> <span class="n">p15</span><span class="o">;</span>
-    <span class="o">}</span>
-
-    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Value</span> <span class="kd">extends</span> <span class="n">LhsPadding</span> <span class="o">{</span>
-        <span class="kd">protected</span> <span class="kd">volatile</span> <span class="kt">long</span> <span class="n">value</span><span class="o">;</span>
-    <span class="o">}</span>
-
-   <span class="kd">static</span> <span class="kd">class</span> <span class="nc">LhsPadding</span> <span class="o">{</span>
-        <span class="kd">protected</span> <span class="kt">long</span> <span class="n">p1</span><span class="o">,</span> <span class="n">p2</span><span class="o">,</span> <span class="n">p3</span><span class="o">,</span> <span class="n">p4</span><span class="o">,</span> <span class="n">p5</span><span class="o">,</span> <span class="n">p6</span><span class="o">,</span> <span class="n">p7</span><span class="o">;</span>
-    <span class="o">}</span>
-
-
-    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">InterruptedException</span> <span class="o">{</span>
-        <span class="n">Value</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Value</span><span class="o">();</span>
-        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">ClassLayout</span><span class="o">.</span><span class="na">parseInstance</span><span class="o">(</span><span class="n">user</span><span class="o">));</span>
-    <span class="o">}</span>
-
-<span class="o">}</span>
-
-<span class="cm">/*
-</span><span class="cm">Main.LhsPadding.p1 @16 (long, 8b)
-</span><span class="cm">Main.LhsPadding.p2 @24 (long, 8b)
-</span><span class="cm">Main.LhsPadding.p3 @32 (long, 8b)
-</span><span class="cm">Main.LhsPadding.p4 @40 (long, 8b)
-</span><span class="cm">Main.LhsPadding.p5 @48 (long, 8b)
-</span><span class="cm">Main.LhsPadding.p6 @56 (long, 8b)
-</span><span class="cm">Main.LhsPadding.p7 @64 (long, 8b)
-</span><span class="cm">Main.Value.value @72 (long, 8b)
-</span><span class="cm">size = 80
-</span><span class="cm">
-</span><span class="cm">这里 我解释一下
-</span><span class="cm">LhsPadding 这个对象头部 (object header ) 占用 8字节
-</span><span class="cm">p1到  p7 7个元素 各占用 8字节
-</span><span class="cm">也就是 padding 一共 64字节
-</span><span class="cm">---------------
-</span><span class="cm">继承类的那个 value  就 占用8字节，就存到了下一个缓存行里面
-</span><span class="cm">
-</span><span class="cm">*/</span>
-
-
-
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.openjdk.jol.info.ClassLayout</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @Author lyr
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @create 2021/9/15 19:20
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 前：填充 56 字节
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">RhsPadding</span> <span class="kd">extends</span> <span class="n">Value</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">protected</span> <span class="kt">long</span> <span class="n">p9</span><span class="o">,</span> <span class="n">p10</span><span class="o">,</span> <span class="n">p11</span><span class="o">,</span> <span class="n">p12</span><span class="o">,</span> <span class="n">p13</span><span class="o">,</span> <span class="n">p14</span><span class="o">,</span> <span class="n">p15</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Value</span> <span class="kd">extends</span> <span class="n">LhsPadding</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">protected</span> <span class="kd">volatile</span> <span class="kt">long</span> <span class="n">value</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">   <span class="kd">static</span> <span class="kd">class</span> <span class="nc">LhsPadding</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">protected</span> <span class="kt">long</span> <span class="n">p1</span><span class="o">,</span> <span class="n">p2</span><span class="o">,</span> <span class="n">p3</span><span class="o">,</span> <span class="n">p4</span><span class="o">,</span> <span class="n">p5</span><span class="o">,</span> <span class="n">p6</span><span class="o">,</span> <span class="n">p7</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">InterruptedException</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Value</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Value</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">ClassLayout</span><span class="o">.</span><span class="na">parseInstance</span><span class="o">(</span><span class="n">user</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main.LhsPadding.p1 @16 (long, 8b)
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main.LhsPadding.p2 @24 (long, 8b)
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main.LhsPadding.p3 @32 (long, 8b)
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main.LhsPadding.p4 @40 (long, 8b)
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main.LhsPadding.p5 @48 (long, 8b)
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main.LhsPadding.p6 @56 (long, 8b)
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main.LhsPadding.p7 @64 (long, 8b)
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main.Value.value @72 (long, 8b)
+</span></span></span><span class="line"><span class="cl"><span class="cm">size = 80
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">这里 我解释一下
+</span></span></span><span class="line"><span class="cl"><span class="cm">LhsPadding 这个对象头部 (object header ) 占用 8字节
+</span></span></span><span class="line"><span class="cl"><span class="cm">p1到  p7 7个元素 各占用 8字节
+</span></span></span><span class="line"><span class="cl"><span class="cm">也就是 padding 一共 64字节
+</span></span></span><span class="line"><span class="cl"><span class="cm">---------------
+</span></span></span><span class="line"><span class="cl"><span class="cm">继承类的那个 value  就 占用8字节，就存到了下一个缓存行里面
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p><img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9tbWJpei5xcGljLmNuL21tYml6X3BuZy9BRGFvOEVxOWp2UmljaWNtUkI5U2NsZ2pYR2pkOXViM2FMQ1VIZ1pNdFpET0xmMlhFMzlPS0dKOXJpYkVrY1h3WTJYeGxzekVBMW1qemlhWlNHbDM1UVdQN1EvNjQw?x-oss-process=image/format,png" alt="img"></p>
 <h4 id="一个对象16个字节">一个对象16个字节</h4>
@@ -508,7 +499,7 @@ Padding对齐，<strong>8的倍数</strong> (64位的机器 按块来读，一�
 <p>观察虚拟机配置命令 <code>java -XX:+PrintCommandLineFlags -version</code></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -570,73 +561,71 @@ Padding对齐，<strong>8的倍数</strong> (64位的机器 按块来读，一�
 </span><span class="lnt">60
 </span><span class="lnt">61
 </span><span class="lnt">62
-</span><span class="lnt">63
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">org.openjdk.jol.info.ClassLayout</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.openjdk.jol.info.GraphLayout</span><span class="o">;</span>
-
-<span class="cm">/**
-</span><span class="cm"> * @Author lyr
-</span><span class="cm"> * @create 2021/9/15 19:20
-</span><span class="cm"> */</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
-    <span class="c1">// 前：填充 56 字节
-</span><span class="c1"></span>    <span class="c1">// static class RhsPadding extends Value {
-</span><span class="c1"></span>    <span class="c1">//     protected long p9, p10, p11, p12, p13, p14, p15;
-</span><span class="c1"></span>    <span class="c1">// }
-</span><span class="c1"></span>
-    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Value</span><span class="cm">/* extends LhsPadding */</span><span class="o">{</span>
-        <span class="c1">// protected volatile long value;
-</span><span class="c1"></span>    <span class="o">}</span>
-
-   <span class="c1">// static class LhsPadding {
-</span><span class="c1"></span>   <span class="c1">//      protected long p1, p2, p3, p4, p5, p6, p7;
-</span><span class="c1"></span>   <span class="c1">//  }
-</span><span class="c1"></span>
-
-    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">InterruptedException</span> <span class="o">{</span>
-        <span class="n">Value</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Value</span><span class="o">();</span>
-        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">ClassLayout</span><span class="o">.</span><span class="na">parseInstance</span><span class="o">(</span><span class="n">user</span><span class="o">));</span>
-        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span> <span class="n">GraphLayout</span><span class="o">.</span><span class="na">parseInstance</span><span class="o">(</span><span class="n">user</span><span class="o">).</span><span class="na">toPrintable</span><span class="o">()</span>
-                <span class="o">);</span>
-        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span>  <span class="n">GraphLayout</span><span class="o">.</span><span class="na">parseInstance</span><span class="o">(</span><span class="n">user</span><span class="o">).</span><span class="na">totalSize</span><span class="o">()</span>
-                 <span class="o">);</span>
-    <span class="o">}</span>
-
-<span class="o">}</span>
-
-<span class="cm">/*
-</span><span class="cm">
-</span><span class="cm">size = 16
-</span><span class="cm">
-</span><span class="cm">Main$Value@f2a0b8ed object externals:
-</span><span class="cm">          ADDRESS       SIZE TYPE       PATH                           VALUE
-</span><span class="cm">        7404f0d08         16 Main$Value                                (object)
-</span><span class="cm">
-</span><span class="cm">
-</span><span class="cm">16
-</span><span class="cm">
-</span><span class="cm">*/</span>
-
-<span class="cm">/*
-</span><span class="cm">Main$Value object internals:
-</span><span class="cm"> OFFSET  SIZE   TYPE DESCRIPTION                               VALUE
-</span><span class="cm">      0     4        (object header)                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)
-</span><span class="cm">      4     4        (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
-</span><span class="cm">      8     4        (object header)                           43 c1 00 f8 (01000011 11000001 00000000 11111000) (-134168253)
-</span><span class="cm">     12     4        (loss due to the next object alignment)
-</span><span class="cm">Instance size: 16 bytes
-</span><span class="cm">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
-</span><span class="cm">--------------------------
-</span><span class="cm">前2行是 markword 占用8字节
-</span><span class="cm">打印结果：
-</span><span class="cm">
-</span><span class="cm">16 = 对象头8个字节 + ClassPointer指针 4个字节 +padding对齐 4个字节
-</span><span class="cm">
-</span><span class="cm">*/</span>
-
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.openjdk.jol.info.ClassLayout</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.openjdk.jol.info.GraphLayout</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @Author lyr
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @create 2021/9/15 19:20
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 前：填充 56 字节
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// static class RhsPadding extends Value {
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">//     protected long p9, p10, p11, p12, p13, p14, p15;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Value</span><span class="cm">/* extends LhsPadding */</span><span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// protected volatile long value;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">   <span class="c1">// static class LhsPadding {
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="c1">//      protected long p1, p2, p3, p4, p5, p6, p7;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="c1">//  }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">InterruptedException</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Value</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Value</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">ClassLayout</span><span class="o">.</span><span class="na">parseInstance</span><span class="o">(</span><span class="n">user</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span> <span class="n">GraphLayout</span><span class="o">.</span><span class="na">parseInstance</span><span class="o">(</span><span class="n">user</span><span class="o">).</span><span class="na">toPrintable</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span>  <span class="n">GraphLayout</span><span class="o">.</span><span class="na">parseInstance</span><span class="o">(</span><span class="n">user</span><span class="o">).</span><span class="na">totalSize</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                 <span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">size = 16
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main$Value@f2a0b8ed object externals:
+</span></span></span><span class="line"><span class="cl"><span class="cm">          ADDRESS       SIZE TYPE       PATH                           VALUE
+</span></span></span><span class="line"><span class="cl"><span class="cm">        7404f0d08         16 Main$Value                                (object)
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">16
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">Main$Value object internals:
+</span></span></span><span class="line"><span class="cl"><span class="cm"> OFFSET  SIZE   TYPE DESCRIPTION                               VALUE
+</span></span></span><span class="line"><span class="cl"><span class="cm">      0     4        (object header)                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)
+</span></span></span><span class="line"><span class="cl"><span class="cm">      4     4        (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
+</span></span></span><span class="line"><span class="cl"><span class="cm">      8     4        (object header)                           43 c1 00 f8 (01000011 11000001 00000000 11111000) (-134168253)
+</span></span></span><span class="line"><span class="cl"><span class="cm">     12     4        (loss due to the next object alignment)
+</span></span></span><span class="line"><span class="cl"><span class="cm">Instance size: 16 bytes
+</span></span></span><span class="line"><span class="cl"><span class="cm">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+</span></span></span><span class="line"><span class="cl"><span class="cm">--------------------------
+</span></span></span><span class="line"><span class="cl"><span class="cm">前2行是 markword 占用8字节
+</span></span></span><span class="line"><span class="cl"><span class="cm">打印结果：
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">16 = 对象头8个字节 + ClassPointer指针 4个字节 +padding对齐 4个字节
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><h2 id="对象是怎么定位的">对象是怎么定位的</h2>
 <p><code>T t = new T()</code></p>
@@ -783,7 +772,7 @@ Padding对齐，<strong>8的倍数</strong> (64位的机器 按块来读，一�
 
 
 
-<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
   <script type="text/javascript">
     window.MathJax = {
       tex: {

@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.74.2 with theme even" />
+<meta name="generator" content="Hugo 0.97.3 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/immutability%E6%A8%A1%E5%BC%8F/" />
@@ -43,17 +43,14 @@
 <meta property="og:title" content="Immutability模式" />
 <meta property="og:description" content="Immutability模式：如何利用不变性解决并发问题？ “多个线程同时读写同一共享变量存在并发问题”，这里的必要条件之一是读写，如果只有读" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/immutability%E6%A8%A1%E5%BC%8F/" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/immutability%E6%A8%A1%E5%BC%8F/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
 <meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
+
 <meta itemprop="name" content="Immutability模式">
-<meta itemprop="description" content="Immutability模式：如何利用不变性解决并发问题？ “多个线程同时读写同一共享变量存在并发问题”，这里的必要条件之一是读写，如果只有读">
-<meta itemprop="datePublished" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="dateModified" content="2021-08-17T13:48:22&#43;08:00" />
-<meta itemprop="wordCount" content="1214">
-
-
-
+<meta itemprop="description" content="Immutability模式：如何利用不变性解决并发问题？ “多个线程同时读写同一共享变量存在并发问题”，这里的必要条件之一是读写，如果只有读"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
+<meta itemprop="wordCount" content="1213">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Immutability模式"/>
 <meta name="twitter:description" content="Immutability模式：如何利用不变性解决并发问题？ “多个线程同时读写同一共享变量存在并发问题”，这里的必要条件之一是读写，如果只有读"/>
@@ -188,7 +185,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
-          <span class="more-meta"> 约 1214 字 </span>
+          <span class="more-meta"> 约 1213 字 </span>
           <span class="more-meta"> 预计阅读 3 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -220,7 +217,7 @@ input.PC_MARK1:focus{
 <p>Long 这个类并没有照搬享元模式，Long 内部维护了一个静态的对象池，仅缓存了 [-128,127] 之间的数字，这个对象池在 JVM 启动的时候就创建好了，而且这个对象池一直都不会变化，也就是说它是静态的。之所以采用这样的设计，是因为 Long 这个对象的状态共有 264 种，实在太多，不宜全部缓存，而 [-128,127] 之间的数字利用率最高。下面的示例代码出自 Java 1.8，valueOf() 方法就用到了 LongCache 这个缓存，你可以结合着来加深理解。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -240,31 +237,29 @@ input.PC_MARK1:focus{
 </span><span class="lnt">18
 </span><span class="lnt">19
 </span><span class="lnt">20
-</span><span class="lnt">21
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-java" data-lang="java"><span class="n">Long</span> <span class="nf">valueOf</span><span class="o">(</span><span class="kt">long</span> <span class="n">l</span><span class="o">)</span> <span class="o">{</span>
-  <span class="kd">final</span> <span class="kt">int</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">128</span><span class="o">;</span>
-  <span class="c1">// [-128,127] 直接的数字做了缓存
-</span><span class="c1"></span>  <span class="k">if</span> <span class="o">(</span><span class="n">l</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="n">128</span> <span class="o">&amp;&amp;</span> <span class="n">l</span> <span class="o">&lt;=</span> <span class="n">127</span><span class="o">)</span> <span class="o">{</span> 
-    <span class="k">return</span> <span class="n">LongCache</span>
-      <span class="o">.</span><span class="na">cache</span><span class="o">[(</span><span class="kt">int</span><span class="o">)</span><span class="n">l</span> <span class="o">+</span> <span class="n">offset</span><span class="o">];</span>
-  <span class="o">}</span>
-  <span class="k">return</span> <span class="k">new</span> <span class="n">Long</span><span class="o">(</span><span class="n">l</span><span class="o">);</span>
-<span class="o">}</span>
-<span class="c1">// 缓存，等价于对象池
-</span><span class="c1">// 仅缓存 [-128,127] 直接的数字
-</span><span class="c1"></span><span class="kd">static</span> <span class="kd">class</span> <span class="nc">LongCache</span> <span class="o">{</span>
-  <span class="kd">static</span> <span class="kd">final</span> <span class="n">Long</span> <span class="n">cache</span><span class="o">[]</span> 
-    <span class="o">=</span> <span class="k">new</span> <span class="n">Long</span><span class="o">[-(-</span><span class="n">128</span><span class="o">)</span> <span class="o">+</span> <span class="n">127</span> <span class="o">+</span> <span class="n">1</span><span class="o">];</span>
- 
-  <span class="kd">static</span> <span class="o">{</span>
-    <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="n">0</span><span class="o">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">cache</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
-      <span class="n">cache</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Long</span><span class="o">(</span><span class="n">i</span><span class="o">-</span><span class="n">128</span><span class="o">);</span>
-  <span class="o">}</span>
-<span class="o">}</span>
-
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">Long</span> <span class="nf">valueOf</span><span class="o">(</span><span class="kt">long</span> <span class="n">l</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">final</span> <span class="kt">int</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">128</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// [-128,127] 直接的数字做了缓存
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="o">(</span><span class="n">l</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="n">128</span> <span class="o">&amp;&amp;</span> <span class="n">l</span> <span class="o">&lt;=</span> <span class="n">127</span><span class="o">)</span> <span class="o">{</span> 
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">LongCache</span>
+</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="na">cache</span><span class="o">[(</span><span class="kt">int</span><span class="o">)</span><span class="n">l</span> <span class="o">+</span> <span class="n">offset</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="k">new</span> <span class="n">Long</span><span class="o">(</span><span class="n">l</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 缓存，等价于对象池
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 仅缓存 [-128,127] 直接的数字
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">static</span> <span class="kd">class</span> <span class="nc">LongCache</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">static</span> <span class="kd">final</span> <span class="n">Long</span> <span class="n">cache</span><span class="o">[]</span> 
+</span></span><span class="line"><span class="cl">    <span class="o">=</span> <span class="k">new</span> <span class="n">Long</span><span class="o">[-(-</span><span class="n">128</span><span class="o">)</span> <span class="o">+</span> <span class="n">127</span> <span class="o">+</span> <span class="n">1</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl"> 
+</span></span><span class="line"><span class="cl">  <span class="kd">static</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="n">0</span><span class="o">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">cache</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
+</span></span><span class="line"><span class="cl">      <span class="n">cache</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Long</span><span class="o">(</span><span class="n">i</span><span class="o">-</span><span class="n">128</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>具备不变性的对象，只有一种状态，这个状态由对象内部所有的不变属性共同决定。其实还有一种更简单的不变性对象，那就是<strong>无状态</strong>。无状态对象内部没有属性，只有方法。除了无状态的对象，你可能还听说过无状态的服务、无状态的协议等等。无状态有很多好处，最核心的一点就是性能。在多线程领域，无状态对象没有线程安全问题，无需同步处理，自然性能很好；在分布式领域，无状态意味着可以无限地水平扩展，所以分布式领域里面性能的瓶颈一定不是出在无状态的服务节点上。</p>
 
@@ -400,7 +395,7 @@ input.PC_MARK1:focus{
 
 
 
-<script type="text/javascript" src="/js/main.min.997ae6d980b0d253afd76f324409f121745697345cd7aa95647153ea145416fa.js"></script>
+<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
   <script type="text/javascript">
     window.MathJax = {
       tex: {
