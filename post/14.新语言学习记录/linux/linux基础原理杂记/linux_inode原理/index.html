@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>linux inode原理 - 凌冬的个人博客</title>
+  <title>linux inode 文件系统原理 - 凌冬的个人博客</title>
   <meta name="renderer" content="webkit" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
@@ -40,19 +40,19 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
 
-<meta property="og:title" content="linux inode原理" />
+<meta property="og:title" content="linux inode 文件系统原理" />
 <meta property="og:description" content="文件系统原理 学习教程 需要理解的概念 名字 概念 inode 操作系统用于管理和存储文件的信息软件被称为文件系统，， 文件是文件数据和文件元信息组成的，文件的i" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/linux_inode%E5%8E%9F%E7%90%86/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
 <meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
 
-<meta itemprop="name" content="linux inode原理">
+<meta itemprop="name" content="linux inode 文件系统原理">
 <meta itemprop="description" content="文件系统原理 学习教程 需要理解的概念 名字 概念 inode 操作系统用于管理和存储文件的信息软件被称为文件系统，， 文件是文件数据和文件元信息组成的，文件的i"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
 <meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
-<meta itemprop="wordCount" content="1867">
+<meta itemprop="wordCount" content="2597">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="linux inode原理"/>
+<meta name="twitter:title" content="linux inode 文件系统原理"/>
 <meta name="twitter:description" content="文件系统原理 学习教程 需要理解的概念 名字 概念 inode 操作系统用于管理和存储文件的信息软件被称为文件系统，， 文件是文件数据和文件元信息组成的，文件的i"/>
 
 <!--[if lte IE 9]>
@@ -111,7 +111,7 @@
 
 </nav>
 
-  <div class="container" id="mobile-panel" style="opacity: 0.93;">
+  <div class="container" id="mobile-panel" >
     <header id="header" class="header">
         <div class="logo-wrapper">
   <a href="/" class="logo">凌冬的博客</a>
@@ -183,13 +183,13 @@ input.PC_MARK1:focus{
           <article class="post">
     
     <header class="post-header">
-      <h1 class="post-title">linux inode原理</h1>
+      <h1 class="post-title">linux inode 文件系统原理</h1>
 
       <div class="post-meta">
         <span class="post-time"> 2021-08-17 </span>
         
-          <span class="more-meta"> 约 1867 字 </span>
-          <span class="more-meta"> 预计阅读 4 分钟 </span>
+          <span class="more-meta"> 约 2597 字 </span>
+          <span class="more-meta"> 预计阅读 6 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -204,6 +204,13 @@ input.PC_MARK1:focus{
         <li><a href="#需要理解的概念">需要理解的概念</a></li>
         <li><a href="#需要你记住的命令">需要你记住的命令</a></li>
         <li><a href="#用户打开文件的过程">用户打开文件的过程</a></li>
+        <li><a href="#文件系统">文件系统</a>
+          <ul>
+            <li><a href="#日志文件系统">日志文件系统</a></li>
+          </ul>
+        </li>
+        <li><a href="#vfs文件系统">vfs文件系统</a></li>
+        <li><a href="#ntfs文件系统">ntfs文件系统</a></li>
         <li><a href="#什么是-inode">什么是 inode</a></li>
       </ul>
     </li>
@@ -292,6 +299,81 @@ input.PC_MARK1:focus{
 <li>只有删除所有的原文件和所有的硬链接，这个文件才是真正被删除，<strong>文件的链接数为0</strong></li>
 <li><strong>原文件和硬链接有相同的inode号码</strong>，可以理解为 超时的前门和后门，前门封了，你还可以从后门进，【访问文件】</li>
 </ol>
+<h2 id="文件系统">文件系统</h2>
+<table>
+<thead>
+<tr>
+<th>文件系统</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NTFS</td>
+<td>windows 2000</td>
+</tr>
+<tr>
+<td>ext2</td>
+<td></td>
+</tr>
+<tr>
+<td>ext3</td>
+<td>centos5【日志型文件系统】</td>
+</tr>
+<tr>
+<td>ext4</td>
+<td>centos6【日志型文件系统】</td>
+</tr>
+<tr>
+<td>xfs</td>
+<td>centos7 【日志型文件系统】</td>
+</tr>
+<tr>
+<td>nfs</td>
+<td>network file system 网络共享文件系统</td>
+</tr>
+<tr>
+<td>smb,server message block</td>
+<td>服务消息框</td>
+</tr>
+<tr>
+<td>gfs</td>
+<td>集群文件系统，google file system ，为存储海量数据</td>
+</tr>
+<tr>
+<td>ocfs</td>
+<td>oracle file system ,为oracle数据库研发</td>
+</tr>
+<tr>
+<td>ceph</td>
+<td>分布式文件系统，为存储可靠性和扩展性的分布式文件系统</td>
+</tr>
+<tr>
+<td>swap</td>
+<td>交换文件系统</td>
+</tr>
+</tbody>
+</table>
+<h3 id="日志文件系统">日志文件系统</h3>
+<p><strong>文件系统的主要区别在于，是否是日志型的文件系统</strong></p>
+<p>日志文件系统：更新磁盘数据之前，先写日志，如果出错误，可以通过日志恢复，</p>
+<p>日志文件系统的主要设计思想是跟踪文件系统的变化而不是文件系统的内容。</p>
+<p>日志文件系统中，存储系统上面有一系列节点记录了文件的操作。</p>
+<p>日志节点上面记录的信息包括：</p>
+<p>和日志节点关联的文件的标识符；
+日志节点的序列号（version）;
+当前节点的 uid, gid 等信息；
+其他关于文件内容分布的信息。</p>
+<h2 id="vfs文件系统">vfs文件系统</h2>
+<p><a href="https://www.bilibili.com/video/BV1tK4y1Z7F4?p=86&amp;spm_id_from=pageDriver">学习视频教程</a></p>
+<p><a href="https://baike.baidu.com/item/VFS/7519887?fr=aladdin">百科</a></p>
+<p>VFS是一个可以让open()、read()、write()等系统调用不用关心底层的存储介质和文件系统类型就可以工作的粘合层</p>
+<p>通过 vfs 统一了文件系统的差异，和vfs交换，由vfs处理不同的文件系统  ,<strong>即为各类文件系统提供了一个统一的操作界面和应用编程接口</strong></p>
+<p>所谓VFS就是Virtual File System<a href="https://baike.baidu.com/item/%E8%99%9A%E6%8B%9F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F">虚拟文件系统</a>，也称为虚拟文件系统开关（Virtual Filesystem Switch）</p>
+<p>VFS最早由Sun公司提出以实现NFS（Network FileSystem，<a href="https://baike.baidu.com/item/%E7%BD%91%E7%BB%9C%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F">网络文件系统</a>）。但是现在很多Unix系统都采用了VFS（包括Linux、FreeBSD、Solaris等）。</p>
+<p>VFS是一个可以让open()、read()、write()等系统调用不用关心底层的存储介质和文件系统类型就可以工作的粘合层</p>
+<h2 id="ntfs文件系统">ntfs文件系统</h2>
+<p>现在windows 一般都是用 NTFS文件系统</p>
 <h2 id="什么是-inode">什么是 inode</h2>
 <p><code>inode</code>包含很多的文件元信息，但不包含文件名，例如：字节数、属主<code>UserID</code>、属组<code>GroupID</code>、读写执行权限、时间戳等。</p>
 <p>而文件名存放在目录当中，但<code>Linux</code>系统内部不使用文件名，而是使用<code>inode号码</code>识别文件。对于系统来说文件名只是<code>inode号码</code>便于识别的别称。</p>
@@ -397,7 +479,7 @@ input.PC_MARK1:focus{
     <script type="text/javascript">
       var gitalk = new Gitalk({
         id: '2021-08-17 13:48:22 \u002b0800 \u002b0800',
-        title: 'linux inode原理',
+        title: 'linux inode 文件系统原理',
         clientID: '604ae0a4eff099135503',
         clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
         repo: 'lyr-2000.github.io',
