@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>垃圾回收 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="判断对象是否是垃圾 引用计数算法：判断对象的引用数量 每引用一次就&#43;1，当一个对象实例的某个引用超过了生命周期或者被设置为一个新值时，对象实例的" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.97.3 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/01.%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/02.java/8.%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="垃圾回收" />
+<meta property="og:description" content="判断对象是否是垃圾 引用计数算法：判断对象的引用数量 每引用一次就&#43;1，当一个对象实例的某个引用超过了生命周期或者被设置为一个新值时，对象实例的" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/01.%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/02.java/8.%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-03-20T15:46:19+00:00" />
+<meta property="article:modified_time" content="2021-03-20T15:46:19+00:00" />
+
+<meta itemprop="name" content="垃圾回收">
+<meta itemprop="description" content="判断对象是否是垃圾 引用计数算法：判断对象的引用数量 每引用一次就&#43;1，当一个对象实例的某个引用超过了生命周期或者被设置为一个新值时，对象实例的"><meta itemprop="datePublished" content="2021-03-20T15:46:19+00:00" />
+<meta itemprop="dateModified" content="2021-03-20T15:46:19+00:00" />
+<meta itemprop="wordCount" content="2482">
+<meta itemprop="keywords" content="," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="垃圾回收"/>
+<meta name="twitter:description" content="判断对象是否是垃圾 引用计数算法：判断对象的引用数量 每引用一次就&#43;1，当一个对象实例的某个引用超过了生命周期或者被设置为一个新值时，对象实例的"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body >
+  
+  
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="globalbg"></div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel" >
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+<link rel="stylesheet" href="/custom/css/post.css">
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">垃圾回收</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-03-20 </span>
+        <div class="post-category">
+            <a href="/categories/%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/"> 程序语言 </a>
+            <a href="/categories/java/"> JAVA </a>
+            </div>
+          <span class="more-meta"> 约 2482 字 </span>
+          <span class="more-meta"> 预计阅读 5 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#判断对象是否是垃圾">判断对象是否是垃圾</a>
+          <ul>
+            <li><a href="#引用计数算法判断对象的引用数量">引用计数算法：判断对象的引用数量</a></li>
+            <li><a href="#可达性分析算法判断对象的引用链是否可达">可达性分析算法：判断对象的引用链是否可达</a></li>
+          </ul>
+        </li>
+        <li><a href="#垃圾回收三种算法">垃圾回收三种算法</a></li>
+        <li><a href="#java堆内存逻辑分区分代模型">Java堆内存逻辑分区（分代模型）</a>
+          <ul>
+            <li><a href="#详细流程">详细流程</a></li>
+          </ul>
+        </li>
+        <li><a href="#垃圾回收器">垃圾回收器</a></li>
+        <li><a href="#cms垃圾回收器">CMS垃圾回收器</a></li>
+        <li><a href="#g1垃圾回收器">G1垃圾回收器</a></li>
+        <li><a href="#ygc和fgc">YGC和FGC</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h2 id="判断对象是否是垃圾">判断对象是否是垃圾</h2>
+<h3 id="引用计数算法判断对象的引用数量">引用计数算法：判断对象的引用数量</h3>
+<p>每引用一次就+1，当一个对象实例的某个引用超过了生命周期或者被设置为一个新值时，对象实例的引用计数减 1，当一个对象实例被垃圾收集时，它引用的任何对象实例的引用计数器均减 1，当引用次数为0时就会当成垃圾，</p>
+<p><strong>问题</strong>  当两个对象循环引用时，这个垃圾就无法回收</p>
+<h3 id="可达性分析算法判断对象的引用链是否可达">可达性分析算法：判断对象的引用链是否可达</h3>
+<p>通过一系列的名为 “GC Roots” 的对象作为起始点，从这些节点开始向下搜索，搜索所走过的路径称为引用链（Reference Chain）。当一个对象到 GC Roots 没有任何引用链相连（用图论的话来说就是从 GC Roots 到这个对象不可达）时，则证明此对象是不可用的</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/23/1979a28681ca1.jpg" alt="img"></p>
+<p>有哪些是GC ROOT</p>
+<ol>
+<li>栈中引用的对象</li>
+<li>静态变量、常量引用的对象</li>
+<li>本地方法栈native方法引用的对象</li>
+</ol>
+<h2 id="垃圾回收三种算法">垃圾回收三种算法</h2>
+<p>标记删除（mark-sweep）、拷贝（copying）、标记压缩（mark-compact）</p>
+<ul>
+<li><strong>标记删除</strong>  就是把垃圾区域标记出来，然后清除出去（问题：碎片化）</li>
+<li><strong>拷贝</strong> 先将内存分成俩半，把要清除的一半有用的区域复制到另一半，然后清除这一半（浪费空间）</li>
+<li><strong>标记整理</strong> 对内存进行整理，有用的堆到前面，没用的堆到后面，一边标记一边整理（效率低）</li>
+<li><strong>分代收集</strong> 不同的对象生命周期不一样，我们可以通过分成不同的代，不同代使用不同的算法（新生代使用拷贝 老年代使用标记整理）</li>
+</ul>
+<p>JVM是拷贝和标记整理两个算法结合使用</p>
+<h2 id="java堆内存逻辑分区分代模型">Java堆内存逻辑分区（分代模型）</h2>
+<p><img src="https://img.xiaoyou66.com/2021/03/23/f040c4f6128b4.png" alt="image-20210323111431114"></p>
+<ul>
+<li>内存分为俩大块，一个是新生代区域，一个是老年代区域。</li>
+<li>新生代包括伊甸区、survivor1和survivor2</li>
+<li>老年代只有一块，但是占的空间更大</li>
+</ul>
+<h3 id="详细流程">详细流程</h3>
+<ol>
+<li>当我们初始化一个对象时，首先会判断是否可以分配到栈上，如果可以就直接分配到栈上，不行就下一步</li>
+<li>然后判断是不是大对象，大对象可以直接分配到老年代，小对象需要判断是否启动了本地线程分配缓存(TLAB)，如果有则将按线程优先在TLAB上分配。</li>
+<li>然后就是回收了，一开始垃圾回收器会把S2和伊甸区有用的数据都复制S1中（这里用到了垃圾回收的拷贝），然后清空伊甸区和S2，第二次GC时会把S1和伊甸区的有用的对象都放入S2中，然后清空S1和伊甸区，如此循环往复。</li>
+<li>新生代每次GC年龄都会增长1，当年龄到达15时会进入老年代（老年代采用的是标记整理算法）</li>
+</ol>
+<p><img src="https://img.xiaoyou66.com/2021/03/23/f47791111b4b1.png" alt="image-20210311100052826"></p>
+<p>TLAB：Thread Local Allocation Buffer（线程本地分配缓冲区）eden区有一个线程本地缓冲空间，避免争抢，如果线程需要，就new到线程自己身上去</p>
+<h2 id="垃圾回收器">垃圾回收器</h2>
+<p>垃圾回收器其实就是<strong>进行垃圾回收算法时</strong>  用于垃圾标记的算法</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/23/00ec8ab4bb92a.png" alt="image-20210310222838854"></p>
+<ol>
+<li>Epslion：最没用的，就是个摆设，就调试用的到（Debug）</li>
+<li>Parallel Scavenge：采用多线程切GC</li>
+<li>Parallel Old：采用多线程切GC</li>
+<li>Serial：stw（stop the world）单线程，停止工作线程，进行GC（很少用了）</li>
+<li>Serial Old：单线程，停止工作线程，进行GC（很少用了）</li>
+<li>CMS(重点！！！！)：工作在老年代</li>
+<li>ParNew：和Parallel Scavenge一样，只不过是用来配合CMS</li>
+<li>G1：针对分区模型的回收器</li>
+<li>ZGC：针对分区模型的回收器</li>
+<li>Shenandosh：针对分区模型的回收器</li>
+</ol>
+<h2 id="cms垃圾回收器">CMS垃圾回收器</h2>
+<p>用于回收老年代的垃圾</p>
+<ul>
+<li>初始标记：标记老年代root对象</li>
+<li>并发标记：对root对象往下进行标记</li>
+<li>重新标记：修正错标的内容（三色标记算法）</li>
+<li>并发清理：清理垃圾，也会产生浮动垃圾，下次处理</li>
+</ul>
+<p>注意：这里标记的时候会STW，把当前的进程停止，然后进行标记，然后在恢复线程（蓝色的就是我们的实际线程了，黄色的是标记和垃圾回收线程）</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/23/5dab2b981f8b8.png" alt="image-20210312214042432"></p>
+<p>参考</p>
+<ol>
+<li><a href="https://blog.csdn.net/weixin_44777669/article/details/114745089">JVM基础知识和调优_冷雨清的博客-CSDN博客_jvm调优</a></li>
+<li><a href="https://blog.csdn.net/justloveyou_/article/details/71216049">图解Java 垃圾回收机制_Rico&rsquo;s Blogs-CSDN博客_java垃圾回收机制</a></li>
+</ol>
+<h2 id="g1垃圾回收器">G1垃圾回收器</h2>
+<p>这个是jdk9中默认采用的垃圾回收器。</p>
+<p>jdk1.8之前，我们的内存空间划分是连续的（注意：jdk8去除了永久代，引入了元空间的概念）</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/31/c548b89bcebdc.png" alt="传统GC内存布局"></p>
+<p>而G1的各代存储地址是不连续的，每一代都使用了n个不连续的大小相同的Region，每个Region占有一块连续的虚拟内存地址。如下图所示：（H存储的是一些巨大的对象，即大小大于等于region一半的对象）</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/31/a61074ab59254.png" alt="g1 GC内存布局"></p>
+<p>G1垃圾回收的流程</p>
+<ul>
+<li>
+<p><strong>G1执行的第一阶段：初始标记(Initial Marking )</strong></p>
+<p>这个阶段是STW(Stop the World )的，所有应用线程会被暂停，标记出从GC Root开始直接可达的对象。</p>
+</li>
+<li>
+<p><strong>G1执行的第二阶段：并发标记</strong></p>
+<p>从GC Roots开始对堆中对象进行可达性分析，找出存活对象，耗时较长。当并发标记完成后，开始最终标记(Final Marking )阶段</p>
+</li>
+<li>
+<p><strong>最终标记</strong></p>
+<p>标记那些在并发标记阶段发生变化的对象，将被回收。</p>
+</li>
+<li>
+<p><strong>筛选回收</strong></p>
+<p>首先对各个Regin的回收价值和成本进行排序，根据用户所期待的GC停顿时间指定回收计划，回收一部分Region。</p>
+</li>
+</ul>
+<p>最后，G1中提供了两种模式垃圾回收模式，Young GC和Mixed GC，两种都是Stop The World(STW)的。</p>
+<p>参考；</p>
+<ul>
+<li><a href="https://tech.meituan.com/2016/09/23/g1.html">Java Hotspot G1 GC的一些关键技术 - 美团技术团队 (meituan.com)</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/59861022">深入剖析JVM：G1收集器+回收流程+推荐用例 - 知乎 (zhihu.com)</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/59861022">深入剖析JVM：G1收集器+回收流程+推荐用例 - 知乎 (zhihu.com)</a></li>
+</ul>
+<h2 id="ygc和fgc">YGC和FGC</h2>
+<p>YGC ：对新生代堆进行gc。 频率比较高，因为大部分对象的存活寿命较短，在新生代里被回收。 FGC ：全堆范围的gc。</p>
+<p>当一个新的对象来申请内存空间的时候，如果Eden区无法满足内存分配需求，则触发YGC，使用中的Survivor区和Eden区存活对象送到未使用的Survivor区，如果YGC之后还是没有足够空间，则直接进入老年代分配，如果老年代也无法分配空间，触发FGC，FGC之后还是放不下则报出OOM异常。</p>
+<p>最复杂的是所谓的悲观策略，它触发的机制是在首先会计算之前晋升的平均大小，也就是从新生代，通过ygc变成新生代的平均大小，然后如果旧生代剩余的空间小于晋升大小，那么就会触发一次FullGC。sdk考虑的策略是， 从平均和长远的情况来看，下次晋升空间不够的可能性非常大， 与其等到那时候在fullGC 不如悲观的认为下次肯定会触发FullGC， 直接先执行一次FullGC。而且从实际使用过程中来看， 也达到了比较稳定的效果。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-03-20
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags//"></a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/01.%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/02.java/3.%E9%9B%86%E5%90%88%E6%A1%86%E6%9E%B6/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">集合框架</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/01.%E7%A8%8B%E5%BA%8F%E8%AF%AD%E8%A8%80/02.java/7.%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/">
+            <span class="next-text nav-default">类加载机制</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2021-03-20 15:46:19 \u002b0000 UTC',
+        title: '垃圾回收',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-08-01 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+
+
+
+<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script defer="defer" async src="/js/custom/docsearch.min.js" ></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+  <script  src="/custom/img/lazyload.min.js"></script>
+  <script defer="defer" async src="/custom/post/back_btn.js"></script>
+  
+
+</body>
+</html>
