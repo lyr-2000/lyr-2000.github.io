@@ -57,27 +57,39 @@
 
   window.addEventListener('load', function () {
     var $ = window.$;
+    // lazyload
+    const cover_img = "/default_avatar.jpg"
     $.fn.extend({
       LazyLoad: function () {
         const $this = $(this);
+
         if ($this.lazyload) {
           $this.lazyload({
             effect: 'fadeIn',
-            // placeholder_data_img: "https://cdn.jsdelivr.net/gh/moezx/cdn@3.0.2/img/svg/loader/trans.ajax-spinner-preloader.svg",
+            url_rewriter_fn: function ($el,srcattr) {
+              $el?.addClass('x-img-loading')
+              return srcattr
+            },
+            load: function () {
+              $(this).removeClass('x-img-loading').addClass('x-loadend');
+            },
+            placeholder_data_img: cover_img,
           });
         } else {
           console.warn("没有图片懒加载插件");
         }
+        // $(this).on('load',function() {
+        //   console.log('load end => ',this);
+        // })
       }
     });
-    console.log('use lazyload plugin => img.lazyload')
     $('img.lazyload[data-original]').LazyLoad()
-    
+    console.log('use lazyload plugin => img.lazyload')
 
   });
 })();
 
-
+// clipboard 插件
 $(function () {
 
   /* add copy btn to code */
@@ -148,5 +160,4 @@ $(function () {
 
 
 });
-
-
+ 
