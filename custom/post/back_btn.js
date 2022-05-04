@@ -58,7 +58,12 @@
   window.addEventListener('load', function () {
     var $ = window.$;
     // lazyload
-    const cover_img = "/default_avatar.jpg"
+    var cover_img = null;
+    if(window.location.href.indexOf('/friends/')>-1) {
+      //友人帐
+      cover_img = "/default_avatar.jpg"
+    }
+    
     $.fn.extend({
       LazyLoad: function () {
         const $this = $(this);
@@ -171,15 +176,30 @@ $(function(){
 
   const pdom = $('body .post-content p');
   pdom.each(function(i,e){
-    let t = $(e).html();
+    let $e = $(e);
+    var t = $e.html();
     if(t && t.indexOf('[[')>-1) {
        
-      $(e).html(t.replace(/\[\[(.*)\]\]/g,function(a,b){
-        return '<a class="doubleLink" href="/'+b+'" target="_blank">'+b+'</a>';
+      $e.html(t.replace(/\[\[(.*)\]\]/g,function(a,b){
+        //双链
+        let prefix = '' //默认相对路径
+        if(b.indexOf('post')>-1) {
+          //采用绝对路径
+          prefix = '/'
+        }
+
+        return '<a class="doubleLink" href="'+prefix+b+'" target="_blank">'+b+'</a> <br/>';
       }))
-      
       //s.replace(/\[\[.*\]\]/,'')
       // $(e).append('<a class="x-link-to-next" href="javascript:void(0)">下一篇</a>');
+    }
+    t = $e.html();
+    //markdown 黄色字体高亮显示
+    if(t && t.indexOf('==') > -1) {
+      $e.html(t.replace(/==(.*)==/g,function(a,b){
+        //实现高亮文字
+        return `<span style="background-color:yellow">`+b+`</span>`;
+      }))
     }
   })
 
