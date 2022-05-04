@@ -50,7 +50,7 @@
 <meta itemprop="name" content="中断机制">
 <meta itemprop="description" content="中断机制 学习教程 目的 目的： 1.硬件的中断响应&mdash;-&gt;内核驱动中的中断 2.系统调用的函数响应(sys ca11)&ndash;&"><meta itemprop="datePublished" content="2022-04-27T22:18:48+08:00" />
 <meta itemprop="dateModified" content="2022-04-27T22:18:48+08:00" />
-<meta itemprop="wordCount" content="376"><meta itemprop="image" content="https://tva2.sinaimg.cn/large/0072Vf1pgy1foxk7rv2gpj31hc0u04e6.jpg">
+<meta itemprop="wordCount" content="483"><meta itemprop="image" content="https://tva2.sinaimg.cn/large/0072Vf1pgy1foxk7rv2gpj31hc0u04e6.jpg">
 <meta itemprop="keywords" content="linux内核理解," /><meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://tva2.sinaimg.cn/large/0072Vf1pgy1foxk7rv2gpj31hc0u04e6.jpg"/>
 
@@ -195,7 +195,7 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/linux%E5%86%85%E6%A0%B8%E7%90%86%E8%A7%A3/"> linux内核理解 </a>
             </div>
-          <span class="more-meta"> 约 376 字 </span>
+          <span class="more-meta"> 约 483 字 </span>
           <span class="more-meta"> 预计阅读 1 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -209,6 +209,11 @@ input.PC_MARK1:focus{
     <li><a href="#中断机制">中断机制</a>
       <ul>
         <li><a href="#目的">目的</a></li>
+        <li><a href="#代码结构">代码结构：</a>
+          <ul>
+            <li><a href="#kernel参考文章">kernel参考文章</a></li>
+          </ul>
+        </li>
       </ul>
     </li>
   </ul>
@@ -225,25 +230,47 @@ input.PC_MARK1:focus{
 2.系统调用的函数响应(sys ca11)&ndash;&gt;系统调用
 3.自定义中断&mdash;&ndash;&gt;软件的软中断模式
 4.信号中断(kil1-signalnum)&mdash;-&gt;对了解信号的使用创建等
-5.系统的异常和错误&mdash;&ndash;》系统的异常获取了解系统异常的作用
-1.Linux的中断机制
-1.1分类：硬件中断软件中断
-硬中断：由电脑主机的8259类似的硬件中断控制芯片发出的中断
-ARM中断控制器发出的中断
-软中断：异常第一类：CPU自行保留的中断
-系统调用异常
-1.2代码结构：
-asm.s
+5.系统的异常和错误&mdash;&ndash;》系统的异常获取了解系统异常的作用</p>
+<ol>
+<li>Linux的中断机制
+<ol>
+<li>分类：硬件中断软件中断
+<ul>
+<li>硬中断：由电脑主机的8259类似的硬件中断控制芯片发出的中断、 ARM中断控制器发出的中断</li>
+<li>软中断：异常第一类：CPU自行保留的中断系统调用异常</li>
+</ul>
+</li>
+</ol>
+</li>
+</ol>
+<h2 id="代码结构">代码结构：</h2>
+<p>asm.s
 trap.c
-system call.s
-fork.c signal.c exit.c sys.c
-2.中断的工作流程：
-2.1
-做CPU工作模式的转化
-进行寄存器的拷贝与压栈
-设置中断异常向量表
-保存正常运行的函数返回值
-跳转到对应的中断服务函数上运行</p>
+system_call.s
+fork.c
+signal.c
+exit.c
+sys.c</p>
+<p><strong>中断的工作流程：</strong>
+<strong>1. 1 中断流程</strong></p>
+<ol>
+<li>做CPU工作模式的转化</li>
+<li>进行寄存器的拷贝与压栈</li>
+<li>设置中断异常向量表</li>
+<li>保存正常运行的函数返回值</li>
+<li>跳转到对应的中断服务函数上运行</li>
+</ol>
+<p><strong>1.2 linux 中的工作流程</strong></p>
+<ol>
+<li>将所有的寄存器值入栈， 8086</li>
+<li>将异常码入栈 （中断号）</li>
+<li>将当前行数返回值进行入栈，为了在中断执行后能够找到在哪里中断的，能够复原</li>
+<li>调用对应的中断服务函数</li>
+<li>出栈函数返回值</li>
+<li>返回所有入栈的寄存器值</li>
+</ol>
+<h3 id="kernel参考文章">kernel参考文章</h3>
+<p><a href="https://www.cnblogs.com/wuyudong/p/linux011-kernel-sched.html">博客园的文章</a></p>
 
     </div>
 

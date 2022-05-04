@@ -67,11 +67,11 @@
           $this.lazyload({
             effect: 'fadeIn',
             url_rewriter_fn: function ($el,srcattr) {
-              $el?.addClass('x-img-loading')
+              // $el?.addClass('x-img-loading')
               return srcattr
             },
             load: function () {
-              $(this).removeClass('x-img-loading').addClass('x-loadend');
+              // $(this).removeClass('x-img-loading').addClass('x-loadend');
             },
             placeholder_data_img: cover_img,
           });
@@ -161,3 +161,27 @@ $(function () {
 
 });
  
+
+$(function(){
+  //双链支持
+  let ok = window.location.href.indexOf('/post/')>-1;
+  if(!ok) {
+    return;
+  }
+
+  const pdom = $('body .post-content p');
+  pdom.each(function(i,e){
+    let t = $(e).html();
+    if(t && t.indexOf('[[')>-1) {
+       
+      $(e).html(t.replace(/\[\[(.*)\]\]/g,function(a,b){
+        return '<a class="doubleLink" href="/'+b+'" target="_blank">'+b+'</a>';
+      }))
+      
+      //s.replace(/\[\[.*\]\]/,'')
+      // $(e).append('<a class="x-link-to-next" href="javascript:void(0)">下一篇</a>');
+    }
+  })
+
+
+});
