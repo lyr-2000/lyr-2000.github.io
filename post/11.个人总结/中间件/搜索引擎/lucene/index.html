@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>lucene - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="lucene ​ 使用普通数据库的缺陷 因为没有通过高效的索引方式，所以查询的速度在大量数据的情况下是很慢。 搜索效果比较差，只能对用户输入的完整关键字首尾位" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.98.0 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E4%B8%AD%E9%97%B4%E4%BB%B6/%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E/lucene/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="lucene" />
+<meta property="og:description" content="lucene ​ 使用普通数据库的缺陷 因为没有通过高效的索引方式，所以查询的速度在大量数据的情况下是很慢。 搜索效果比较差，只能对用户输入的完整关键字首尾位" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E4%B8%AD%E9%97%B4%E4%BB%B6/%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E/lucene/" /><meta property="og:image" content="https://tva2.sinaimg.cn/large/0072Vf1pgy1foxkj6err0j31kw0w0hb7.jpg" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-05-05T16:58:48+08:00" />
+<meta property="article:modified_time" content="2022-05-05T16:58:48+08:00" />
+
+<meta itemprop="name" content="lucene">
+<meta itemprop="description" content="lucene ​ 使用普通数据库的缺陷 因为没有通过高效的索引方式，所以查询的速度在大量数据的情况下是很慢。 搜索效果比较差，只能对用户输入的完整关键字首尾位"><meta itemprop="datePublished" content="2022-05-05T16:58:48+08:00" />
+<meta itemprop="dateModified" content="2022-05-05T16:58:48+08:00" />
+<meta itemprop="wordCount" content="1064"><meta itemprop="image" content="https://tva2.sinaimg.cn/large/0072Vf1pgy1foxkj6err0j31kw0w0hb7.jpg">
+<meta itemprop="keywords" content="搜索引擎," /><meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://tva2.sinaimg.cn/large/0072Vf1pgy1foxkj6err0j31kw0w0hb7.jpg"/>
+
+<meta name="twitter:title" content="lucene"/>
+<meta name="twitter:description" content="lucene ​ 使用普通数据库的缺陷 因为没有通过高效的索引方式，所以查询的速度在大量数据的情况下是很慢。 搜索效果比较差，只能对用户输入的完整关键字首尾位"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body >
+  
+  
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="globalbg"></div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel" >
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+<link rel="stylesheet" href="/custom/css/post.css">
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	<div class="customByLyr">
+  
+			<img class="lazyload"  draggable="false"  data-original="https://tva2.sinaimg.cn/large/0072Vf1pgy1foxkj6err0j31kw0w0hb7.jpg" />
+		</div>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">lucene</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-05-05 </span>
+        <div class="post-category">
+            <a href="/categories/%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E/"> 搜索引擎 </a>
+            </div>
+          <span class="more-meta"> 约 1064 字 </span>
+          <span class="more-meta"> 预计阅读 3 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#lucene">lucene</a>
+          <ul>
+            <li><a href="#使用普通数据库的缺陷">使用普通数据库的缺陷</a></li>
+            <li><a href="#lucene-和-es的关系">lucene 和 es的关系</a></li>
+            <li><a href="#数据查询的常用手法">数据查询的常用手法</a></li>
+          </ul>
+        </li>
+        <li><a href="#lucene-接口中的概念">lucene 接口中的概念</a>
+          <ul>
+            <li><a href="#3种类型">3种类型</a></li>
+            <li><a href="#查询的分类">查询的分类</a></li>
+            <li><a href="#查询接口">查询接口</a></li>
+          </ul>
+        </li>
+        <li><a href="#其他补充">其他补充</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h2 id="lucene">lucene</h2>
+<p>​</p>
+<h3 id="使用普通数据库的缺陷">使用普通数据库的缺陷</h3>
+<ol>
+<li>
+<p>因为没有通过高效的索引方式，所以查询的速度在大量数据的情况下是很慢。</p>
+</li>
+<li>
+<p>搜索效果比较差，只能对用户输入的完整关键字首尾位进行模糊匹配。用户搜索的结果误多输入一个字符，可能就导致查询出的结果远离用户的预期。</p>
+</li>
+</ol>
+<h3 id="lucene-和-es的关系">lucene 和 es的关系</h3>
+<p>Lucene：底层的API，工具包</p>
+<p>Solr：基于Lucene开发的企业级的搜索引擎产品</p>
+<p>Elasticsearch：基于Lucene开发的企业级的搜索引擎产品</p>
+<p><img src="https://img-blog.csdn.net/20180927203333130?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MjYzMzEzMQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="https://img-blog.csdn.net/20180927203333130?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MjYzMzEzMQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70"></p>
+<h3 id="数据查询的常用手法">数据查询的常用手法</h3>
+<ol>
+<li>顺序扫描法</li>
+<li>倒排索引法</li>
+</ol>
+<ul>
+<li>
+<p>顺序扫描法，<strong>查询准确率高</strong>，但是随着查询数据量变大，越来越慢，例如 数据库 <code>like</code> 模糊查询， 文本编辑器 ctrl + f  查询功能，缺点： ==数据量越大，查询速度越慢==</p>
+</li>
+<li>
+<p>倒排索引法， <strong>提取关键词，建立索引</strong>（目录）， 通过索引目录辅助查找资源的位置 ，==查询速度快，不会因为数据量增加使速度变慢==， 缺点：索引文件占用额外磁盘空间，磁盘占用会增大 【<strong>空间换时间</strong>】</p>
+</li>
+</ul>
+<p><a href="https://github.com/balzaczyy/golucene">go语言实现的Lucene框架</a></p>
+<h2 id="lucene-接口中的概念">lucene 接口中的概念</h2>
+<p><a href="https://www.cnblogs.com/xiaobai1226/p/7652093.html">参考博客</a></p>
+<h3 id="3种类型">3种类型</h3>
+<ul>
+<li>是否分析</li>
+<li>是否索引</li>
+<li>是否存储</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Field类</th>
+<th style="text-align:left">数据类型</th>
+<th style="text-align:left">Analyzed          是否分析</th>
+<th style="text-align:left">Indexed          是否索引</th>
+<th style="text-align:left">Stored          是否存储</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">StringField(FieldName, FieldValue,Store.YES))</td>
+<td style="text-align:left">字符串</td>
+<td style="text-align:left">N</td>
+<td style="text-align:left">Y</td>
+<td style="text-align:left">Y或N</td>
+<td style="text-align:left">这个Field用来构建一个字符串Field，但是不会进行分析，会将整个串存储在索引中，比如(订单号,姓名等)          是否存储在文档中用Store.YES或Store.NO决定</td>
+</tr>
+<tr>
+<td style="text-align:left">LongField(FieldName, FieldValue,Store.YES)</td>
+<td style="text-align:left">Long型</td>
+<td style="text-align:left">Y</td>
+<td style="text-align:left">Y</td>
+<td style="text-align:left">Y或N</td>
+<td style="text-align:left">这个Field用来构建一个Long数字型Field，进行分析和索引，比如(价格)          是否存储在文档中用Store.YES或Store.NO决定</td>
+</tr>
+<tr>
+<td style="text-align:left">StoredField(FieldName, FieldValue)</td>
+<td style="text-align:left">重载方法，支持多种类型</td>
+<td style="text-align:left">N</td>
+<td style="text-align:left">N</td>
+<td style="text-align:left">Y</td>
+<td style="text-align:left">这个Field用来构建不同类型Field          不分析，不索引，但要Field存储在文档中</td>
+</tr>
+<tr>
+<td style="text-align:left">TextField(FieldName, FieldValue, Store.NO)          或          TextField(FieldName, reader)</td>
+<td style="text-align:left">字符串          或          流</td>
+<td style="text-align:left">Y</td>
+<td style="text-align:left">Y</td>
+<td style="text-align:left">Y或N</td>
+<td style="text-align:left">如果是一个Reader, lucene猜测内容比较多,会采用Unstored的策略.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="查询的分类">查询的分类</h3>
+<table>
+<thead>
+<tr>
+<th>名字</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MathAllDocsQuery</td>
+<td>使用MatchAllDocsQuery查询索引目录中的所有文档</td>
+</tr>
+<tr>
+<td>TermQuery（精准查询）</td>
+<td>通过项查询，TermQuery不使用分析器所以建议匹配不分词的Field域查询，比如订单号、分类ID号等</td>
+</tr>
+<tr>
+<td>NumericRangeQuery</td>
+<td>可以根据数值范围查询。</td>
+</tr>
+<tr>
+<td>BooleanQuery</td>
+<td>可以组合查询条件。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="查询接口">查询接口</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">indexSearcher.search(query, n)</td>
+<td style="text-align:left">根据Query搜索，返回评分最高的n条记录</td>
+</tr>
+<tr>
+<td style="text-align:left">indexSearcher.search(query, filter, n)</td>
+<td style="text-align:left">根据Query搜索，添加过滤策略，返回评分最高的n条记录</td>
+</tr>
+<tr>
+<td style="text-align:left">indexSearcher.search(query, n, sort)</td>
+<td style="text-align:left">根据Query搜索，添加排序策略，返回评分最高的n条记录</td>
+</tr>
+<tr>
+<td style="text-align:left">indexSearcher.search(booleanQuery, filter, n, sort)</td>
+<td style="text-align:left">根据Query搜索，添加过滤策略，添加排序策略，返回评分最高的n条记录</td>
+</tr>
+</tbody>
+</table>
+<h2 id="其他补充">其他补充</h2>
+<p>[[post/14.新语言学习记录/语言技术/Golang/理论学习/实习学习/elasticsearch | es笔记]]</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-05-05
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E/">搜索引擎</a>
+          </div>
+      <nav class="post-nav">
+        
+        
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-05-05 16:58:48 \u002b0800 \u002b0800',
+        title: 'lucene',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://lyr-2000.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-09-23 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+
+
+
+<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script defer="defer" async src="/js/custom/docsearch.min.js" ></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+  <script  src="/custom/img/lazyload.min.js"></script>
+  <script defer="defer" async src="/custom/post/back_btn.js"></script>
+  
+  
+  <div id="BR_cornner">
+    <div id='darkThemeBtn'>T</div> 
+  </div> 
+</body>
+</html>
