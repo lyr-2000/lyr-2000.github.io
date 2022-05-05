@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>持久化 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="LYR" /><meta name="description" content="包括 RDB 和 AOF 两种机制，下面分别进行说明 RDB RDB 持久化机制，是对 Redis 中的数据执行周期性的持久化。更适合做冷备。 优点： 压缩后的二进制文，适用于备份、全量" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.98.0 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/02.%E6%95%B0%E6%8D%AE%E5%BA%93/02.redis/2.%E6%8C%81%E4%B9%85%E5%8C%96/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="持久化" />
+<meta property="og:description" content="包括 RDB 和 AOF 两种机制，下面分别进行说明 RDB RDB 持久化机制，是对 Redis 中的数据执行周期性的持久化。更适合做冷备。 优点： 压缩后的二进制文，适用于备份、全量" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/02.%E6%95%B0%E6%8D%AE%E5%BA%93/02.redis/2.%E6%8C%81%E4%B9%85%E5%8C%96/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-03-20T15:49:48+00:00" />
+<meta property="article:modified_time" content="2021-03-20T15:49:48+00:00" />
+
+<meta itemprop="name" content="持久化">
+<meta itemprop="description" content="包括 RDB 和 AOF 两种机制，下面分别进行说明 RDB RDB 持久化机制，是对 Redis 中的数据执行周期性的持久化。更适合做冷备。 优点： 压缩后的二进制文，适用于备份、全量"><meta itemprop="datePublished" content="2021-03-20T15:49:48+00:00" />
+<meta itemprop="dateModified" content="2021-03-20T15:49:48+00:00" />
+<meta itemprop="wordCount" content="1501">
+<meta itemprop="keywords" content="," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="持久化"/>
+<meta name="twitter:description" content="包括 RDB 和 AOF 两种机制，下面分别进行说明 RDB RDB 持久化机制，是对 Redis 中的数据执行周期性的持久化。更适合做冷备。 优点： 压缩后的二进制文，适用于备份、全量"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body >
+  
+  
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="globalbg"></div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel" >
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+<link rel="stylesheet" href="/custom/css/post.css">
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">持久化</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-03-20 </span>
+        <div class="post-category">
+            <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"> 数据库 </a>
+            <a href="/categories/nosql/"> NoSQL </a>
+            <a href="/categories/redis/"> Redis </a>
+            </div>
+          <span class="more-meta"> 约 1501 字 </span>
+          <span class="more-meta"> 预计阅读 3 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#rdb">RDB</a>
+          <ul>
+            <li><a href="#两种触发方式">两种触发方式</a></li>
+            <li><a href="#cow机制">COW机制</a></li>
+          </ul>
+        </li>
+        <li><a href="#aof">AOF</a>
+          <ul>
+            <li><a href="#执行流程">执行流程</a></li>
+          </ul>
+        </li>
+        <li><a href="#恢复">恢复</a></li>
+        <li><a href="#建议">建议</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <p>包括 RDB 和 AOF 两种机制，下面分别进行说明</p>
+<h2 id="rdb">RDB</h2>
+<p>RDB 持久化机制，是对 Redis 中的数据执行周期性的持久化。更适合做冷备。</p>
+<p><strong>优点：</strong></p>
+<ol>
+<li>压缩后的二进制文，适用于备份、全量复制，用于灾难恢复加载RDB恢复数据远快于AOF方式，适合大规模的数据恢复。</li>
+<li>如果业务对数据完整性和一致性要求不高，RDB是很好的选择。数据恢复比AOF快。</li>
+</ol>
+<p><strong>缺点：</strong></p>
+<ol>
+<li>RDB是<strong>周期间隔性的快照文件</strong>，数据的完整性和一致性不高，因为RDB可能在最后一次备份时宕机了。</li>
+<li>备份时占用内存，因为Redis 在备份时会独立fork一个<strong>子进程</strong>，将数据写入到一个临时文件（此时内存中的数据是原来的两倍哦），最后再将临时文件替换之前的备份文件。所以要考虑到大概两倍的数据膨胀性。</li>
+</ol>
+<h3 id="两种触发方式">两种触发方式</h3>
+<ol>
+<li><code>SAVE</code> 直接调用 rdbSave ，<code>阻塞</code> Redis 主进程，导致无法提供服务。</li>
+<li><code>BGSAVE</code> 则 fork 出一个子进程，子进程负责调用 rdbSave ，在保存完成后向主进程发送信号告知完成。在BGSAVE 执行期间<strong>仍可以继续处理客户端的请求</strong>。</li>
+</ol>
+<h3 id="cow机制">COW机制</h3>
+<p>目的是为了解决RDB后台备份时，保证快照是精准的</p>
+<p>全称Copy On Write，备份的是开始那个时刻内存中的数据，只复制被修改内存页数据，不是全部内存数据。</p>
+<p><strong>缺点：</strong> Copy On Write时如果父子进程大量写操作会导致分页错误。</p>
+<p><strong>参考：</strong></p>
+<ol>
+<li><a href="https://www.cnblogs.com/ysocean/p/9114268.html">Redis详解（六）&mdash;&mdash; RDB 持久化 - YSOcean - 博客园 (cnblogs.com)</a></li>
+<li><a href="https://blog.csdn.net/Muscleape/article/details/105670481">Redis-关于RDB的几点顿悟-COW（Copy On Write）_Muscleape的博客-CSDN博客</a></li>
+</ol>
+<h2 id="aof">AOF</h2>
+<p>AOF 机制对每条写入命令作为日志，以 append-only 的模式写入一个日志文件中，因为这个模式是<strong>只追加</strong>的方式，所以没有任何磁盘寻址的开销，所以很快，有点像 Mysql 中的binlog。AOF更适合做热备。</p>
+<p><strong>优点：</strong> AOF是一秒一次去通过一个后台的线程fsync操作，数据丢失不用怕。</p>
+<p><strong>缺点：</strong></p>
+<ol>
+<li>对于相同数量的数据集而言，AOF文件通常要大于RDB文件。RDB 在<strong>恢复</strong>大数据集时的速度比 AOF 的恢复速度要快。</li>
+<li>根据同步策略的不同，AOF在运行效率上往往会慢于RDB。总之，每秒同步策略的效率是比较高的。</li>
+</ol>
+<h3 id="执行流程">执行流程</h3>
+<ol>
+<li>命令的实时写入，不同级别可能有1秒数据损失。命令先追加到<code>aof_buf</code>然后再同步到AO磁盘，<strong>如果实时写入磁盘会带来非常高的磁盘IO，影响整体性能</strong>。</li>
+<li>对aof文件的<strong>重写</strong>，目的是为了减少AOF文件的大小，可以自动触发或者手动触发(<strong>BGREWRITEAOF</strong>)，Fork出子进程操作，期间Redis服务仍可用。</li>
+</ol>
+<p>流程图如下：</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/21/61cdc99df3f70.png" alt="图片"></p>
+<p><strong>注意事项：</strong></p>
+<ol>
+<li>在重写期间，由于主进程依然在响应命令，为了保证最终备份的完整性；它<code>依然会写入旧</code>的AOF中，如果重写失败，能够保证数据不丢失</li>
+<li>为了把重写期间响应的写入信息也写入到新的文件中，因此也会<code>为子进程保留一个buf</code>，防止新写的file丢失数据</li>
+<li>重写是直接把<code>当前内存的数据生成对应命令</code>，并不需要读取老的AOF文件进行分析、命令合并</li>
+<li><strong>无论是 RDB 还是 AOF 都是先写入一个临时文件，然后通过<code>rename</code>完成文件的替换工作</strong></li>
+</ol>
+<p><strong>fork的建议：</strong></p>
+<ol>
+<li>降低fork的频率，比如可以手动来触发RDB生成快照、与AOF重写</li>
+<li>控制Redis最大使用内存，防止fork耗时过长</li>
+<li>合理配置Linux的内存分配策略，避免因为物理内存不足导致fork失败</li>
+<li>Redis在执行<code>BGSAVE</code>和<code>BGREWRITEAOF</code>命令时，哈希表的负载因子&gt;=5，而未执行这两个命令时&gt;=1。目的是<strong>尽量减少写操作</strong>，避免不必要的内存写入操作</li>
+<li><strong>哈希表的扩展因子</strong>：哈希表已保存节点数量 / 哈希表大小。因子决定了是否扩展哈希表</li>
+</ol>
+<h2 id="恢复">恢复</h2>
+<p>启动时会先检查AOF(数据更完整)文件是否存在，如果不存在就尝试加载RDB。</p>
+<p><img src="https://img.xiaoyou66.com/2021/03/21/f5e3fbb0d1606.png" alt="图片"></p>
+<h2 id="建议">建议</h2>
+<p>既然单独用RDB会丢失很多数据。单独用AOF，数据恢复没RDB来的快，所以出现问题了第一时间用RDB恢复，然后AOF做数据补全。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">LYR</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-03-20
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags//"></a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/02.%E6%95%B0%E6%8D%AE%E5%BA%93/02.redis/4.%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">常见问题</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/02.%E6%95%B0%E6%8D%AE%E5%BA%93/02.redis/5.-%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E6%B7%98%E6%B1%B0%E8%A7%84%E5%88%99/">
+            <span class="next-text nav-default">分布式锁，过期策略，淘汰规则</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2021-03-20 15:49:48 \u002b0000 UTC',
+        title: '持久化',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://lyr-2000.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-09-23 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+
+
+
+<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script defer="defer" async src="/js/custom/docsearch.min.js" ></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+  <script  src="/custom/img/lazyload.min.js"></script>
+  <script defer="defer" async src="/custom/post/back_btn.js"></script>
+  
+  
+  <div id="BR_cornner">
+    <div id='darkThemeBtn'>T</div> 
+  </div> 
+</body>
+</html>

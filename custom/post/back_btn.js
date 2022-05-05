@@ -174,44 +174,62 @@ $(function () {
   function doubleLinkAddAndHightlightArticlefunction(i, e) {
     let $e = $(e);
     //raw text
-    var t = $e.html();
-    let hasDoubleLink = t && t.indexOf('[[') > -1;
-    let hasHightLight = t && t.indexOf('==') > -1
+    let _t = $e.text();
+    let hasDoubleLink = _t && _t.indexOf('[[') > -1;
+    let hasHightLight = _t && _t.indexOf('==') > -1
     if (hasDoubleLink) {
       //双链渲染
-      t = t.replace(/\[\[(.*)\]\]/g, function (a, b) {
-        //双链
-        let prefix = '' //默认相对路径
-        if (b.indexOf('post') == 0) {
-          //采用绝对路径
-          prefix = '/'
+      $e.contents()
+      .filter(function(){
+        return this.nodeType === 3; //text nodes
+      }).each(function (i, e) { 
+        const $this = $(this); //$(this).text()
+        let $text = $this.text();
+        let t = $this.text().replace(/\[\[(.*)\]\]/g, function (a, b) {
+          //双链
+          let prefix = '' //默认相对路径
+          if (b.indexOf('post') == 0) {
+            //采用绝对路径
+            prefix = '/'
+          }
+          let link;
+          let linkName;
+          // 别名判断
+          let _arr = b.split('|');
+  
+          if (_arr[1]) {
+            linkName = _arr[1];// 别名
+            link = prefix + _arr[0];
+          } else {
+            linkName = b;//默认
+            link = prefix + b; 
+            
+          }
+          return '<a class="doubleLink" href="' + link + '" target="_blank">' + linkName + '</a><br/>';
+        });
+        if($text != t) {
+          $this.replaceWith(t);
         }
-        let link;
-        let linkName;
-        // 别名判断
-        let _arr = b.split('|');
-
-        if (_arr[1]) {
-          linkName = _arr[1];// 别名
-          link = prefix + _arr[0];
-        } else {
-          link = prefix + b;
-          linkName = b;
-        }
-
-        return '<a class="doubleLink" href="' + link + '" target="_blank">' + linkName + '</a><br/>';
-      })
-      $e.html(t);
-
+      });
+ 
     }
-    // t = $e.html();
-    //markdown 黄色字体高亮显示
     if (hasHightLight) {
-      $e.html(t.replace(/==(.*)==/g, function (a, b) {
-        //实现高亮文字
-        return `<span class='hightlight'>` + b + `</span>`;
-      }))
+      $e.contents().filter(function () {
+        return this.nodeType === 3; //text nodes
+      }).each(function () {
+        let $this = $(this); 
+        let prev = $this.text();
+        let t = prev.replace(/==(.*)==/g, function (a, b) {
+          //实现高亮文字
+          return `<span class='hightlight_text'>` + b + `</span>`;
+        });
+        if(prev != t) {//被替换了元素，就更新文本
+          $this.replaceWith(t);
+        }
+      });
+
     }
+    
   }
 
   const pdom = $('body .post-content p');
@@ -219,13 +237,7 @@ $(function () {
   pdom.each(doubleLinkAddAndHightlightArticlefunction);
 
 });
-
-
-// function darkThemeToggle_() {
-//   $('body').toggleClass('dark-theme');
-// }
-// darkThemeToggle();
-//modal plugin
+ 
 $(function () {
   //dark-theme button 插件
   const $body = $('body');
@@ -244,12 +256,9 @@ $(function () {
   let btn1 = $('#darkThemeBtn');
   setTimeout(() => {
     btn1.addClass('hide');
-  }, 5000);
+  }, 1200);
 
-  // document.addEventListener('mouseover',function(e) {
-  //   console.log(e.pageX,e.pageY);
-  // })
-
+   
   function debounce(fn, wait) {
     var timeout = null;      //定义一个定时器
     return function () {
@@ -260,7 +269,7 @@ $(function () {
   }
   let hide = debounce(()=> {
     btn1.addClass('hide');
-  },3000);
+  },1500);
   $('#BR_cornner').on('mouseover', function (e) {
     btn1.removeClass('hide');
    
