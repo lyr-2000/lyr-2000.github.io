@@ -50,7 +50,7 @@
 <meta itemprop="name" content="内存管理">
 <meta itemprop="description" content="基本概念 内存分页和内存分段 内存分页分为一个页号还有一个偏移量，我们通过页号查找页表，找出对应地址，然后加上偏移量就可以得到最终地址 内存分段的"><meta itemprop="datePublished" content="2021-03-20T15:50:06+00:00" />
 <meta itemprop="dateModified" content="2021-03-20T15:50:06+00:00" />
-<meta itemprop="wordCount" content="1763">
+<meta itemprop="wordCount" content="4066">
 <meta itemprop="keywords" content="操作系统," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="内存管理"/>
 <meta name="twitter:description" content="基本概念 内存分页和内存分段 内存分页分为一个页号还有一个偏移量，我们通过页号查找页表，找出对应地址，然后加上偏移量就可以得到最终地址 内存分段的"/>
@@ -191,8 +191,8 @@ input.PC_MARK1:focus{
             <a href="/categories/%E5%9F%BA%E7%A1%80%E5%AD%A6%E7%A7%91/"> 基础学科 </a>
             <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"> 操作系统 </a>
             </div>
-          <span class="more-meta"> 约 1763 字 </span>
-          <span class="more-meta"> 预计阅读 4 分钟 </span>
+          <span class="more-meta"> 约 4066 字 </span>
+          <span class="more-meta"> 预计阅读 9 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -223,6 +223,25 @@ input.PC_MARK1:focus{
             <li><a href="#寻址模式-addressing-model">寻址模式 (addressing model)</a></li>
             <li><a href="#指令周期">指令周期</a></li>
             <li><a href="#指令入门opcode寻址模式和浮点数">指令入门，opcode、寻址模式和浮点数</a></li>
+          </ul>
+        </li>
+        <li><a href="#汇编指令的种类">汇编指令的种类</a>
+          <ul>
+            <li><a href="#mips-寄存器-表">mips 寄存器 表</a></li>
+          </ul>
+        </li>
+        <li><a href="#汇编章节-mips">汇编章节 MIPS</a>
+          <ul>
+            <li><a href="#基础">基础</a></li>
+            <li><a href="#条件判断">条件判断</a></li>
+            <li><a href="#循环">循环</a></li>
+            <li><a href="#实现函数传参">实现函数传参</a></li>
+            <li><a href="#利用汇编写一个递归函数">利用汇编写一个递归函数</a></li>
+          </ul>
+        </li>
+        <li><a href="#中断的响应过程">中断的响应过程</a>
+          <ul>
+            <li><a href="#中断请求interrupt-request">中断请求（interrupt request)</a></li>
           </ul>
         </li>
       </ul>
@@ -306,9 +325,7 @@ input.PC_MARK1:focus{
 <p>RAM：随机存取存储器是与CPU直接交换数据的内部存储器。它可以随时读写，而且速度很快，通常作为操作系统或其他正在运行中的程序的临时数据存储媒介。当电源关闭时RAM不能保留数据。如果需要保存数据，就必须把它们写入一个长期的存储设备中（例如硬盘）。RAM和ROM相比，两者的最大区别是RAM在断电以后保存在上面的数据会自动消失，而ROM不会自动消失，可以长时间断电保存。</p>
 <center>
 <div class="mermaid">
-     
-
-
+    
 graph LR
 
 寄存器 --&gt; ALU 
@@ -316,8 +333,6 @@ graph LR
 ALU --&gt; 寄存器
 
 
-
- 
 </div>
 </center>
 <h2 id="安装-mars-mips-simulator">安装 mars mips simulator</h2>
@@ -360,6 +375,18 @@ ALU --&gt; 寄存器
 <tr>
 <td style="text-align:left"><code>beq $r3,$r9,label</code></td>
 <td>branch equal ,jump to label</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>slt $d ,$rs,$rt</code></td>
+<td>set if less than , 如果 rs &lt; rt ,则 d = 1, 否则为0， 汇编中布尔值也是存在寄存器里面的</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>j label</code></td>
+<td>jump to label</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>jr $a0</code></td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -445,27 +472,40 @@ ALU --&gt; 寄存器
 <li>
 <p>pc相对寻址</p>
 <ul>
-<li>
-<p>下一个pc指针位置依赖当前位置到 label的距离（当前代码行和label所在的代码行之差)</p>
+<li>下一个pc指针位置依赖当前位置到 label的距离（当前代码行和label所在的代码行之差)</li>
+<li>例如: <code>beq $r3,$r9,label</code> ,不相同就跳到label</li>
+</ul>
 </li>
 <li>
-<p>例如: <code>beq $r3,$r9,label</code> ,不相同就跳到label</p>
+<p>相对寻址</p>
+<ul>
+<li><code>j label</code> jump to label</li>
+</ul>
 </li>
+<li>
+<p>寄存器间接寻址</p>
+<ul>
+<li><code>jr $a0</code> , a0 取出值，然后跳到这个行</li>
+</ul>
+</li>
+<li>
+<p>多合一</p>
+<ul>
+<li><code>jal label</code> , pc+4 ，存入 <code>$ra</code> 寄存器 【把下一条指令存到 <code>ra</code> 寄存器里】</li>
+<li><code>j label</code></li>
 </ul>
 </li>
 </ol>
 <h3 id="指令周期">指令周期</h3>
 <center>
 <div class="mermaid">
-     
-
+    
 graph LR
 
 fetch --&gt; decode --&gt; execute
 execute --&gt; store --&gt; fetch
 
 
- 
 </div>
 </center>
 <h3 id="指令入门opcode寻址模式和浮点数">指令入门，opcode、寻址模式和浮点数</h3>
@@ -473,6 +513,626 @@ execute --&gt; store --&gt; fetch
 <li>计算机通过指令让计算机工作</li>
 <li>cpu被时钟驱动，不断读取pc指针指向的指令，从内存读取指令执行</li>
 <li>不同的cpu架构指令不同。目前最广泛使用的是 risc (reduced instruction set computer,精简指令集)</li>
+</ul>
+<h4 id="浮点小数">浮点小数</h4>
+<ul>
+<li>十进制里面 0.1 是 $1/10$,二进制里面 0.1 代表 $1/2$, 0.01 代表 $1/4$</li>
+<li>因此，0.375 在二级制中表示为 0.011 = $1/4 + 1/8$</li>
+</ul>
+<h2 id="汇编指令的种类">汇编指令的种类</h2>
+<p><a href="https://blog.csdn.net/kwame211/article/details/105112956">参考博客</a></p>
+<p><strong>==这篇文章 记录的是 MIPS 指令集==</strong></p>
+<p>常见的 还有 8086 (x86) 和 arm</p>
+<p>mips是一个老牌的精简指令集，可以嵌入到arm芯片上 ， 我们看到的 什么 <code>eax</code> 的 寄存器 其实是 8086 上的，这里 我学的是 mips ，8086那个有时间再了解了。</p>
+<h3 id="mips-寄存器-表">mips 寄存器 表</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">REGISTER</th>
+<th style="text-align:left">NAME</th>
+<th style="text-align:left">USAGE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">`$0</td>
+<td style="text-align:left">$zero`</td>
+<td style="text-align:left">常量0(constant value 0)</td>
+</tr>
+<tr>
+<td style="text-align:left">`$1</td>
+<td style="text-align:left">$at`</td>
+<td style="text-align:left">保留给汇编器(Reserved for assembler)</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>$2-$3</code></td>
+<td style="text-align:left"><code>$v0-$v1</code></td>
+<td style="text-align:left">函数调用返回值(values for results and expression evaluation)</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>$4-$7</code></td>
+<td style="text-align:left"><code>$a0-$a3 </code></td>
+<td style="text-align:left">函数调用参数(arguments)</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>$8-$15</code></td>
+<td style="text-align:left"><code>$t0-$t7</code></td>
+<td style="text-align:left">暂时的(或随便用的)</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>$16-$23</code></td>
+<td style="text-align:left"><code> $s0-$s7</code></td>
+<td style="text-align:left">保存的(或如果用，需要SAVE/RESTORE的)(saved)</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>$24-$25</code></td>
+<td style="text-align:left"><code>$t8-$t9</code></td>
+<td style="text-align:left">暂时的(或随便用的)</td>
+</tr>
+<tr>
+<td style="text-align:left">`$28</td>
+<td style="text-align:left">$gp`</td>
+<td style="text-align:left">全局指针(Global Pointer)</td>
+</tr>
+<tr>
+<td style="text-align:left">`$29</td>
+<td style="text-align:left">$sp`</td>
+<td style="text-align:left">堆栈指针(Stack Pointer)</td>
+</tr>
+<tr>
+<td style="text-align:left">`$30</td>
+<td style="text-align:left">$fp`</td>
+<td style="text-align:left">帧指针(Frame Pointer)</td>
+</tr>
+<tr>
+<td style="text-align:left">`$31</td>
+<td style="text-align:left">$ra`</td>
+<td style="text-align:left">返回地址(return address)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="汇编章节-mips">汇编章节 MIPS</h2>
+<h3 id="基础">基础</h3>
+<p><a href="https://juejin.cn/post/7033198915868426253">参考掘金的一个博客文章</a></p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>li (load  )</td>
+<td>(load immediate) :用于将立即数传送给寄存器</td>
+</tr>
+<tr>
+<td>la</td>
+<td><strong>加载地址指令</strong> load address</td>
+</tr>
+<tr>
+<td>move</td>
+<td>用于将一个寄存器中的数据传送至另一个寄存器当中 <code>move $t0,$t1  # 将寄存器$t1中的数据传送至$t0</code></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">.data #数据段
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">.text #代码段
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="实现printf">实现printf</h4>
+<p>在C语言中输出文本可以使用<code>printf</code>函数,但是汇编中没有printf这么一说,如果想要输出文本,需要借助<code>syscall</code>指令</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># $v0=1, syscall---&gt;print_int
+</span></span><span class="line"><span class="cl"># $v0=4, syscall---&gt;print_string
+</span></span><span class="line"><span class="cl"># #v0 == 10  ,  syscall ---&gt;   exit  退出
+</span></span><span class="line"><span class="cl">li $a0,1
+</span></span><span class="line"><span class="cl">syscall
+</span></span></code></pre></td></tr></table>
+</div>
+</div><table>
+<thead>
+<tr>
+<th style="text-align:left">Service</th>
+<th style="text-align:left">Code in $v0</th>
+<th style="text-align:left">Arguments</th>
+<th style="text-align:left">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">print integer</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left"><code>$a0 = integer to print</code></td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">print float</td>
+<td style="text-align:left">2</td>
+<td style="text-align:left"><code>$f12 = float to print</code></td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">print double</td>
+<td style="text-align:left">3</td>
+<td style="text-align:left"><code>$f12 = double to print</code></td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">print string</td>
+<td style="text-align:left">4</td>
+<td style="text-align:left"><code>$a0 = address of null-terminated string to print</code></td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">read integer</td>
+<td style="text-align:left">5</td>
+<td style="text-align:left"><code>$v0 contains integer read</code></td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">read float</td>
+<td style="text-align:left">6</td>
+<td style="text-align:left">$f0 contains float read</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">read double</td>
+<td style="text-align:left">7</td>
+<td style="text-align:left">$f0 contains double read</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">read string</td>
+<td style="text-align:left">8</td>
+<td style="text-align:left"><code>a0=addressofinputbuffera0 = address of input buffer a0=addressofinputbuffera1 = maximum number of characters to read</code></td>
+<td style="text-align:left">See note below table</td>
+</tr>
+<tr>
+<td style="text-align:left">sbrk (allocate heap memory)</td>
+<td style="text-align:left">9</td>
+<td style="text-align:left">`$a0 = number of bytes to allocate</td>
+<td style="text-align:left">$v0 contains address of allocated memory`</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">exit (terminate execution)</td>
+<td style="text-align:left"><code>10</code></td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">print character</td>
+<td style="text-align:left">11</td>
+<td style="text-align:left"><code>$a0 = character to print</code></td>
+<td style="text-align:left">See note below table</td>
+</tr>
+<tr>
+<td style="text-align:left">read character</td>
+<td style="text-align:left">12</td>
+<td style="text-align:left">$v0 contains character read</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">open file</td>
+<td style="text-align:left">13</td>
+<td style="text-align:left">`a0=addressofnull−terminatedstringcontainingfilenamea0 = address of null-terminated string containing filename a0=addressofnull−terminatedstringcontainingfilenamea1 = flags $a2 = mode</td>
+<td style="text-align:left">$v0 contains file descriptor (negative if error). See note below           table`</td>
+</tr>
+<tr>
+<td style="text-align:left">read from file</td>
+<td style="text-align:left">14</td>
+<td style="text-align:left">`a0=filedescriptora0 = file descriptor a0=filedescriptora1 = address of input buffer $a2 = maximum number of characters to read</td>
+<td style="text-align:left">$v0 contains number of characters read (0 if end-of-file, negative if error). See note below table`</td>
+</tr>
+<tr>
+<td style="text-align:left">write to file</td>
+<td style="text-align:left">15</td>
+<td style="text-align:left">`a0=filedescriptora0 = file descriptor a0=filedescriptora1 = address of output buffer $a2 = number of characters to write</td>
+<td style="text-align:left">$v0 contains number of characters written (negative if error). See           note below table`</td>
+</tr>
+<tr>
+<td style="text-align:left">close file</td>
+<td style="text-align:left">16</td>
+<td style="text-align:left"><code>$a0 = file descriptor</code></td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">exit2 (terminate with value)</td>
+<td style="text-align:left">17</td>
+<td style="text-align:left"><code>$a0 = termination result</code></td>
+<td style="text-align:left">See note below table</td>
+</tr>
+<tr>
+<td style="text-align:left">Services 1 through 17 are compatible with the SPIM simulator,           other than Open File (13) as described in the Notes below the table.           Services 30 and higher are exclusive to MARS.</td>
+<td style="text-align:left"></td>
+<td style="text-align:left"></td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">time (system time)</td>
+<td style="text-align:left">30</td>
+<td style="text-align:left"><code>a0=loworder32bitsofsystemtimea0 = low order 32 bits of system time a0=loworder32bitsofsystemtimea1 = high order 32 bits of system time. See note below table</code></td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">MIDI out</td>
+<td style="text-align:left">31</td>
+<td style="text-align:left"><code>a0=pitch(0−127)a0 = pitch (0-127) a0=pitch(0−127)a1 = duration in milliseconds a2=instrument(0−127)a2 = instrument (0-127) a2=instrument(0−127)a3 = volume (0-127)</code></td>
+<td style="text-align:left">Generate tone and return immediately. See note below table</td>
+</tr>
+<tr>
+<td style="text-align:left">sleep</td>
+<td style="text-align:left">32</td>
+<td style="text-align:left"><code>$a0 = the length of time to sleep in milliseconds.</code></td>
+<td style="text-align:left">Causes the MARS Java thread to sleep for (at least) the specified number of milliseconds. This timing will not be precise, as the Java implementation will add some overhead.</td>
+</tr>
+<tr>
+<td style="text-align:left">MIDI out synchronous</td>
+<td style="text-align:left">33</td>
+<td style="text-align:left"><code>a0=pitch(0−127)a0 = pitch (0-127) a0=pitch(0−127)a1 = duration in milliseconds a2=instrument(0−127)a2 = instrument (0-127) a2=instrument(0−127)a3 = volume (0-127)</code></td>
+<td style="text-align:left">Generate tone and return upon tone completion. See note below           table</td>
+</tr>
+<tr>
+<td style="text-align:left">print integer in hexadecimal</td>
+<td style="text-align:left">34</td>
+<td style="text-align:left"><code>$a0 = integer to print</code></td>
+<td style="text-align:left">Displayed value is 8 hexadecimal digits, left-padding with zeroes if necessary.</td>
+</tr>
+<tr>
+<td style="text-align:left">print integer in binary</td>
+<td style="text-align:left">35</td>
+<td style="text-align:left"><code>$a0 = integer to print</code></td>
+<td style="text-align:left">Displayed value is 32 bits, left-padding with zeroes if necessary.</td>
+</tr>
+<tr>
+<td style="text-align:left">print integer as unsigned</td>
+<td style="text-align:left">36</td>
+<td style="text-align:left"><code>$a0 = integer to print</code></td>
+<td style="text-align:left">Displayed as unsigned decimal value.</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">(not used)</td>
+<td style="text-align:left">37-39</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">set seed</td>
+<td style="text-align:left">40</td>
+<td style="text-align:left">a0=i.d.ofpseudorandomnumbergenerator(anyint).a0 = i.d. of pseudorandom number generator (any int). a0=i.d.ofpseudorandomnumbergenerator(anyint).a1 = seed for corresponding pseudorandom number generator.</td>
+<td style="text-align:left">No values are returned. Sets the seed of the corresponding underlying Java pseudorandom number generator (java.util.Random). See note below table</td>
+</tr>
+<tr>
+<td style="text-align:left">random int</td>
+<td style="text-align:left">41</td>
+<td style="text-align:left">$a0 = i.d. of pseudorandom number generator (any int).</td>
+<td style="text-align:left">$a0 contains the next pseudorandom, uniformly distributed int value from this random number generator&rsquo;s sequence. See note below table</td>
+</tr>
+</tbody>
+</table>
+<h4 id="实现hello-world打印">实现hello world打印</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">.data 
+</span></span><span class="line"><span class="cl">msg: .asciiz&#34;hello world&#34; # 定义了 msg字符串
+</span></span><span class="line"><span class="cl">.text
+</span></span><span class="line"><span class="cl">main:
+</span></span><span class="line"><span class="cl">li $v0,4 # 为syscall 读取整数值
+</span></span><span class="line"><span class="cl">la $a0,msg # a0 存储要打印字符的地址
+</span></span><span class="line"><span class="cl">syscall # system call service 4 ,打印字符串
+</span></span><span class="line"><span class="cl">li $v0 10
+</span></span><span class="line"><span class="cl">syscall # system call service 10 ,退出
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="程序分解理解">程序分解理解</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">.data 
+</span></span><span class="line"><span class="cl">msg: .asciiz&#34;hello world&#34; # 定义了 msg字符串
+</span></span><span class="line"><span class="cl">.text
+</span></span><span class="line"><span class="cl"># 打印字符串
+</span></span><span class="line"><span class="cl">print_string:
+</span></span><span class="line"><span class="cl">li $v0 ,4 
+</span></span><span class="line"><span class="cl">la $a0, msg 
+</span></span><span class="line"><span class="cl">syscall 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 退出程序
+</span></span><span class="line"><span class="cl">program_exit:
+</span></span><span class="line"><span class="cl">li $v0 , 10 
+</span></span><span class="line"><span class="cl">syscall 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">main:
+</span></span><span class="line"><span class="cl">j print_string 
+</span></span><span class="line"><span class="cl">nop 
+</span></span><span class="line"><span class="cl"> 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="条件判断">条件判断</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-js" data-lang="js"><span class="line"><span class="cl"><span class="k">if</span><span class="p">(</span><span class="nx">i</span><span class="o">==</span><span class="nx">j</span><span class="p">)</span> <span class="nx">f</span> <span class="o">=</span> <span class="nx">i</span><span class="o">+</span><span class="nx">j</span>
+</span></span><span class="line"><span class="cl"><span class="k">else</span> <span class="nx">f</span> <span class="o">=</span> <span class="nx">i</span><span class="o">-</span><span class="nx">j</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">bne $r3,$r4,ELSE # i != j =&gt; else 
+</span></span><span class="line"><span class="cl">add $r5,$r3,$r4 # r5 = i+j
+</span></span><span class="line"><span class="cl">j EXIT
+</span></span><span class="line"><span class="cl">ELSE:
+</span></span><span class="line"><span class="cl">sub $r5,$r3,$r4 # r5 = i- j
+</span></span><span class="line"><span class="cl">EXIT:
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="循环">循环</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-js" data-lang="js"><span class="line"><span class="cl"><span class="nx">sum</span><span class="o">=</span><span class="mi">0</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span><span class="p">(</span><span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="nx">i</span><span class="o">&lt;</span><span class="mi">100</span><span class="p">;</span><span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="nx">sum</span><span class="o">+=</span><span class="nx">i</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 以下是 伪代码
+</span></span><span class="line"><span class="cl">addi $s3,$zero ,0 # sum = 0
+</span></span><span class="line"><span class="cl">addi $s4,$zero,0 #i=0
+</span></span><span class="line"><span class="cl">addi $s5,$zero,100 # 常数100
+</span></span><span class="line"><span class="cl">LOOP:
+</span></span><span class="line"><span class="cl">beq $s4,$s5,EXIT
+</span></span><span class="line"><span class="cl">add $s3,$s4,$s3 # sum = sum + i
+</span></span><span class="line"><span class="cl">addi $s4,$s4,1
+</span></span><span class="line"><span class="cl">j LOOP
+</span></span><span class="line"><span class="cl">EXIT:
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="实现函数传参">实现函数传参</h3>
+<ul>
+<li>fact(5)</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 以下是 伪代码
+</span></span><span class="line"><span class="cl">addiu $s0,$0,5 # 存入参数5 到 s0 【parameter】
+</span></span><span class="line"><span class="cl">sw $s0,$sp # 将s0 写入 sp 【sp是栈指针，存的就是参数 【parameter =&gt; stack】
+</span></span><span class="line"><span class="cl">addi $sp,$sp,-4 # 栈指向下一个 ，push stack,压栈就-4，否则 就 +4 【个字节】
+</span></span><span class="line"><span class="cl">jal FACT # 跳转 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 以下是 伪代码
+</span></span><span class="line"><span class="cl">lw $s0,4($sp) # 读取参数5 【sp 是栈指针】
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="利用汇编写一个递归函数">利用汇编写一个递归函数</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-js" data-lang="js"><span class="line"><span class="cl"><span class="nx">func</span> <span class="nx">fact</span><span class="p">(</span><span class="kr">int</span> <span class="nx">n</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nx">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">fact</span><span class="p">(</span><span class="nx">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="nx">n</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">##Factorial Psudocode#######
+</span></span><span class="line"><span class="cl">##Fac(){
+</span></span><span class="line"><span class="cl">#  if ($t1==1) return 1;
+</span></span><span class="line"><span class="cl">#  else 
+</span></span><span class="line"><span class="cl">#      return $v0*Factorial($t1-1);
+</span></span><span class="line"><span class="cl">#     }
+</span></span><span class="line"><span class="cl">#cross variable#############
+</span></span><span class="line"><span class="cl"># $t0 -- n
+</span></span><span class="line"><span class="cl"># $t1 -- with initial value n  
+</span></span><span class="line"><span class="cl"># $v0 -- store result
+</span></span><span class="line"><span class="cl">############################
+</span></span><span class="line"><span class="cl">.data
+</span></span><span class="line"><span class="cl">hello: .asciiz &#34;input a number : &#34;
+</span></span><span class="line"><span class="cl">bye : .asciiz &#34;\nbyebye &#34;
+</span></span><span class="line"><span class="cl">.text
+</span></span><span class="line"><span class="cl">	li $v0,4 #  print string 
+</span></span><span class="line"><span class="cl">	la $a0,hello # 读入  hello地址
+</span></span><span class="line"><span class="cl">	syscall  # call print string 
+</span></span><span class="line"><span class="cl">	li $v0,5 # store result 
+</span></span><span class="line"><span class="cl">	syscall # 存数据
+</span></span><span class="line"><span class="cl">	move $t0,$v0
+</span></span><span class="line"><span class="cl">	move $t1,$t0
+</span></span><span class="line"><span class="cl">	li $v0,1
+</span></span><span class="line"><span class="cl">Fac:	addi $sp,$sp,-8
+</span></span><span class="line"><span class="cl">	sw $ra,0($sp)
+</span></span><span class="line"><span class="cl">	sw $t1,4($sp)
+</span></span><span class="line"><span class="cl">	beq $t1,1,re0
+</span></span><span class="line"><span class="cl">	addi $t1,$t1,-1
+</span></span><span class="line"><span class="cl">	jal Fac
+</span></span><span class="line"><span class="cl">	lw $a0, 4($sp) 
+</span></span><span class="line"><span class="cl">	mult $v0,$a0
+</span></span><span class="line"><span class="cl">	mflo $v0
+</span></span><span class="line"><span class="cl">	beq $t1,$t0,end
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">re0:	addi $t1,$t1,1
+</span></span><span class="line"><span class="cl">	lw $ra,0($sp)
+</span></span><span class="line"><span class="cl">	addi $sp,$sp,8
+</span></span><span class="line"><span class="cl">	jr $ra
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">end:	move $a0,$v0
+</span></span><span class="line"><span class="cl">	li $v0,1
+</span></span><span class="line"><span class="cl">	syscall
+</span></span><span class="line"><span class="cl">	la $a0,bye
+</span></span><span class="line"><span class="cl">	li $v0,4
+</span></span><span class="line"><span class="cl">	syscall
+</span></span><span class="line"><span class="cl">	li $v0,10
+</span></span><span class="line"><span class="cl">	syscall
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="中断的响应过程">中断的响应过程</h2>
+<p>操作系统中断的响应过程如下：</p>
+<center>
+<div class="mermaid">
+    
+graph LR
+硬件 --中断请求IRQ--&gt; cpu
+软件 --&gt; cpu 
+
+cpu--&gt; 中断响应路径ISR --接管--&gt; OS--写入--&gt; ivt((中断向量表ivt))
+
+cpu --查询--&gt; ivt
+
+
+</div>
+</center>
+<ul>
+<li>os加载时候，写入中断向量表</li>
+<li>产生中断请求，发送给 CPU</li>
+<li>查询中断向量表 (interrupt vector table) 确定中断向量</li>
+<li>根据中断向量定位中断响应程序</li>
+<li>os接管中断</li>
+</ul>
+<h3 id="中断请求interrupt-request">中断请求（interrupt request)</h3>
+<ul>
+<li>硬件设备发送给主板（打印机、键盘、鼠标等）</li>
+<li>硬件中断： CPU异常（除以0），时钟信号等</li>
+<li>软件中断： 发出（异常、切换到内核态等）</li>
 </ul>
 
     </div>
