@@ -50,8 +50,8 @@
 <meta itemprop="name" content="内存管理">
 <meta itemprop="description" content="基本概念 内存分页和内存分段 内存分页分为一个页号还有一个偏移量，我们通过页号查找页表，找出对应地址，然后加上偏移量就可以得到最终地址 内存分段的"><meta itemprop="datePublished" content="2021-03-20T15:50:06+00:00" />
 <meta itemprop="dateModified" content="2021-03-20T15:50:06+00:00" />
-<meta itemprop="wordCount" content="915">
-<meta itemprop="keywords" content="," /><meta name="twitter:card" content="summary"/>
+<meta itemprop="wordCount" content="1763">
+<meta itemprop="keywords" content="操作系统," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="内存管理"/>
 <meta name="twitter:description" content="基本概念 内存分页和内存分段 内存分页分为一个页号还有一个偏移量，我们通过页号查找页表，找出对应地址，然后加上偏移量就可以得到最终地址 内存分段的"/>
 
@@ -191,8 +191,8 @@ input.PC_MARK1:focus{
             <a href="/categories/%E5%9F%BA%E7%A1%80%E5%AD%A6%E7%A7%91/"> 基础学科 </a>
             <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"> 操作系统 </a>
             </div>
-          <span class="more-meta"> 约 915 字 </span>
-          <span class="more-meta"> 预计阅读 2 分钟 </span>
+          <span class="more-meta"> 约 1763 字 </span>
+          <span class="more-meta"> 预计阅读 4 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -214,6 +214,17 @@ input.PC_MARK1:focus{
           </ul>
         </li>
         <li><a href="#linux内存管理">Linux内存管理</a></li>
+        <li><a href="#内存原理">内存原理</a></li>
+        <li><a href="#安装-mars-mips-simulator">安装 mars mips simulator</a></li>
+        <li><a href="#汇编指令记录">汇编指令记录</a>
+          <ul>
+            <li><a href="#指令">指令</a></li>
+            <li><a href="#cpu指令集">CPU指令集</a></li>
+            <li><a href="#寻址模式-addressing-model">寻址模式 (addressing model)</a></li>
+            <li><a href="#指令周期">指令周期</a></li>
+            <li><a href="#指令入门opcode寻址模式和浮点数">指令入门，opcode、寻址模式和浮点数</a></li>
+          </ul>
+        </li>
       </ul>
     </li>
   </ul>
@@ -225,8 +236,8 @@ input.PC_MARK1:focus{
       <h2 id="基本概念">基本概念</h2>
 <h3 id="内存分页和内存分段">内存分页和内存分段</h3>
 <p>内存分页分为一个页号还有一个偏移量，我们通过页号查找页表，找出对应地址，然后加上偏移量就可以得到最终地址</p>
-<p><img src="https://img.xiaoyou66.com/2021/03/23/29f1ff4a1ccca.png" alt="image-20210304165813475"></p>
-<p><img src="https://img.xiaoyou66.com/2021/03/23/b954d7500b353.png" alt="image-20210304165933575"></p>
+<img src="https://img.xiaoyou66.com/2021/03/23/29f1ff4a1ccca.png" alt="image-20210304165813475" style="zoom:67%;" />
+<img src="https://img.xiaoyou66.com/2021/03/23/b954d7500b353.png" alt="image-20210304165933575" style="zoom: 67%;" />
 <p>内存分段的步骤如下</p>
 <ol>
 <li>先提取段号</li>
@@ -258,6 +269,211 @@ input.PC_MARK1:focus{
 <p><img src="https://img.xiaoyou66.com/2021/04/11/963ced689e508.jpg" alt="img"></p>
 <p>这东西比较复杂，先暂时不深入，后续再研究研究</p>
 <p><a href="https://zhuanlan.zhihu.com/p/149581303">linux内存管理（详解） - 知乎 (zhihu.com)</a></p>
+<h2 id="内存原理">内存原理</h2>
+<table>
+<thead>
+<tr>
+<th>类比</th>
+<th>计算机组件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>短期记忆（很少的事情）</td>
+<td>寄存器 register</td>
+</tr>
+<tr>
+<td>推理计算</td>
+<td>算术逻辑单元 ALU</td>
+</tr>
+<tr>
+<td>长期记忆（很多事情）</td>
+<td>随机存储器 RAM</td>
+</tr>
+<tr>
+<td>其他：缓存等&ndash;L1,L2,L3..</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>寄存器的数量： 8086 有8个，i7有24个</p>
+<p>随机存储器的作用：</p>
+<ul>
+<li>数据空间，用来存储数据</li>
+<li>指令空间，用来存储机器指令</li>
+</ul>
+<p><img src="https://pic3.zhimg.com/80/v2-cf0d0d28ddaa4c87d16e2663a7c6ca26_720w.jpg" alt="https://pic3.zhimg.com/80/v2-cf0d0d28ddaa4c87d16e2663a7c6ca26_720w.jpg"></p>
+<p>RAM：随机存取存储器是与CPU直接交换数据的内部存储器。它可以随时读写，而且速度很快，通常作为操作系统或其他正在运行中的程序的临时数据存储媒介。当电源关闭时RAM不能保留数据。如果需要保存数据，就必须把它们写入一个长期的存储设备中（例如硬盘）。RAM和ROM相比，两者的最大区别是RAM在断电以后保存在上面的数据会自动消失，而ROM不会自动消失，可以长时间断电保存。</p>
+<center>
+<div class="mermaid">
+     
+
+
+graph LR
+
+寄存器 --&gt; ALU 
+内存 --&gt; 寄存器 
+ALU --&gt; 寄存器
+
+
+
+ 
+</div>
+</center>
+<h2 id="安装-mars-mips-simulator">安装 mars mips simulator</h2>
+<p>百度搜索 mars mips simulator，需要 java环境</p>
+<p><a href="https://www.bilibili.com/video/BV1au411y7qq?spm_id_from=333.337.search-card.all.click">参考教程 mars mips</a></p>
+<h2 id="汇编指令记录">汇编指令记录</h2>
+<h3 id="指令">指令</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">指令</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Load a,1000</td>
+<td>把内存地址1000的数据读到 寄存器a</td>
+</tr>
+<tr>
+<td style="text-align:left">multiply c,a,b</td>
+<td>寄存器a和 b值相乘，存入 c</td>
+</tr>
+<tr>
+<td style="text-align:left">store c,1016</td>
+<td>寄存器c值存入 ram地址 1016</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>add $r10,$r1,$r2</code></td>
+<td>r1和r2 加起来存入r10</td>
+</tr>
+<tr>
+<td style="text-align:left">addi</td>
+<td>寄存器值和数字相加</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>lw $r0,8($sp)</code></td>
+<td>偏移量寻址，</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>beq $r3,$r9,label</code></td>
+<td>branch equal ,jump to label</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cpu指令集">CPU指令集</h3>
+<table>
+<thead>
+<tr>
+<th>alu-寄存器</th>
+<th>ram寄存器</th>
+<th>程序控制流程</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>add</td>
+<td>load</td>
+<td>branch</td>
+</tr>
+<tr>
+<td>sub</td>
+<td>store</td>
+<td>breq</td>
+</tr>
+<tr>
+<td>mul</td>
+<td>mov</td>
+<td>brne</td>
+</tr>
+<tr>
+<td>and</td>
+<td></td>
+<td>brio</td>
+</tr>
+<tr>
+<td>or</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>sin</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>&hellip;</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="寻址模式-addressing-model">寻址模式 (addressing model)</h3>
+<ol>
+<li>
+<p>寄存器寻址</p>
+<ul>
+<li>
+<p>操作符是寄存器，利用 n位寻址 $2^n$个寄存器</p>
+</li>
+<li>
+<p>例子： <code>add $r10,$r1,$r2</code>，其他如：sub,div,mult</p>
+</li>
+</ul>
+</li>
+<li>
+<p>立即寻址</p>
+<ul>
+<li>操作符中有值</li>
+<li>例如 <code>addi $1,$zero,1000</code>
+<ul>
+<li>其他如，subi,divi,multi 等</li>
+</ul>
+</li>
+<li>数字大小有限制，如 32位就是 $[-2^{15}-1,2^{15}]$</li>
+</ul>
+</li>
+<li>
+<p>偏移量寻址</p>
+<ul>
+<li>根据基地址和偏移量进行寻址，最终在基地址和偏移量上计算</li>
+<li>例如： <code>lw $r0,8($sp)</code></li>
+</ul>
+</li>
+<li>
+<p>pc相对寻址</p>
+<ul>
+<li>
+<p>下一个pc指针位置依赖当前位置到 label的距离（当前代码行和label所在的代码行之差)</p>
+</li>
+<li>
+<p>例如: <code>beq $r3,$r9,label</code> ,不相同就跳到label</p>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="指令周期">指令周期</h3>
+<center>
+<div class="mermaid">
+     
+
+graph LR
+
+fetch --&gt; decode --&gt; execute
+execute --&gt; store --&gt; fetch
+
+
+ 
+</div>
+</center>
+<h3 id="指令入门opcode寻址模式和浮点数">指令入门，opcode、寻址模式和浮点数</h3>
+<ul>
+<li>计算机通过指令让计算机工作</li>
+<li>cpu被时钟驱动，不断读取pc指针指向的指令，从内存读取指令执行</li>
+<li>不同的cpu架构指令不同。目前最广泛使用的是 risc (reduced instruction set computer,精简指令集)</li>
+</ul>
 
     </div>
 
@@ -292,7 +508,7 @@ input.PC_MARK1:focus{
   </div>
 </div><footer class="post-footer">
       <div class="post-tags">
-          <a href="/tags//"></a>
+          <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a>
           </div>
       <nav class="post-nav">
         <a class="prev" href="/post/03.%E5%9F%BA%E7%A1%80%E5%AD%A6%E7%A7%91/01.%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/1.%E8%BF%9B%E7%A8%8B%E5%92%8C%E7%BA%BF%E7%A8%8B/">
@@ -442,5 +658,14 @@ input.PC_MARK1:focus{
   <div id="BR_cornner">
     <div id='darkThemeBtn'>T</div> 
   </div> 
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<script defer async>
+
+  mermaid.initialize({startOnLoad:true});
+</script>
 </body>
 </html>

@@ -1,7 +1,4 @@
 ; (function () {
-
-  // 添加 button 
-  // console.log('add')
   window.addEventListener('load', function (event) {
     var $ = window.jQuery;
     // console.log("DOM fully loaded and parsed");  // 先打印
@@ -171,7 +168,7 @@ $(function () {
     return;
   }
   //双链支持 和 高亮文本
-  function doubleLinkAddAndHightlightArticlefunction(i, e) {
+  function _renderText(i, e) {
     let $e = $(e);
     //raw text
     let _t = $e.text();
@@ -234,7 +231,7 @@ $(function () {
 
   const pdom = $('body .post-content p');
   //渲染文本
-  pdom.each(doubleLinkAddAndHightlightArticlefunction);
+  pdom.each(_renderText);
 
 });
  
