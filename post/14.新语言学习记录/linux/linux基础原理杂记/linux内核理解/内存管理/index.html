@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>内存管理 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="内存管理知识 RAM (random access memory) 随机存储器中数据的读写可以在几乎相同的时间内完成，与树物理位置无关 分层存储体系 （memory hierarchy) 硬盘 内存 L3 (&amp;lt;=100mb) L2 (&amp;lt;=20Mb) L1 &amp;lt;1m CPU 通常" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/linux%E5%86%85%E6%A0%B8%E7%90%86%E8%A7%A3/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/post.css">
+
+
+<meta property="og:title" content="内存管理" />
+<meta property="og:description" content="内存管理知识 RAM (random access memory) 随机存储器中数据的读写可以在几乎相同的时间内完成，与树物理位置无关 分层存储体系 （memory hierarchy) 硬盘 内存 L3 (&lt;=100mb) L2 (&lt;=20Mb) L1 &lt;1m CPU 通常" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/linux%E5%86%85%E6%A0%B8%E7%90%86%E8%A7%A3/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" /><meta property="og:image" content="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxkgc5msdj31hc0u01cv.jpg" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-05-24T19:13:24+08:00" />
+<meta property="article:modified_time" content="2022-05-11T20:02:48+08:00" />
+
+<meta itemprop="name" content="内存管理">
+<meta itemprop="description" content="内存管理知识 RAM (random access memory) 随机存储器中数据的读写可以在几乎相同的时间内完成，与树物理位置无关 分层存储体系 （memory hierarchy) 硬盘 内存 L3 (&lt;=100mb) L2 (&lt;=20Mb) L1 &lt;1m CPU 通常"><meta itemprop="datePublished" content="2022-05-24T19:13:24+08:00" />
+<meta itemprop="dateModified" content="2022-05-11T20:02:48+08:00" />
+<meta itemprop="wordCount" content="2199"><meta itemprop="image" content="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxkgc5msdj31hc0u01cv.jpg">
+<meta itemprop="keywords" content="linux内核理解," /><meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxkgc5msdj31hc0u01cv.jpg"/>
+
+<meta name="twitter:title" content="内存管理"/>
+<meta name="twitter:description" content="内存管理知识 RAM (random access memory) 随机存储器中数据的读写可以在几乎相同的时间内完成，与树物理位置无关 分层存储体系 （memory hierarchy) 硬盘 内存 L3 (&lt;=100mb) L2 (&lt;=20Mb) L1 &lt;1m CPU 通常"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body >
+  
+  
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="globalbg"></div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel" >
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	<div class="customByLyr">
+  
+			<img class="lazyload"  draggable="false"  data-original="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxkgc5msdj31hc0u01cv.jpg" />
+		</div>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">内存管理</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-05-24 </span>
+        <div class="post-category">
+            <a href="/categories/linux%E5%86%85%E6%A0%B8%E7%90%86%E8%A7%A3/"> linux内核理解 </a>
+            </div>
+          <span class="more-meta"> 约 2199 字 </span>
+          <span class="more-meta"> 预计阅读 5 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#内存管理知识">内存管理知识</a>
+          <ul>
+            <li><a href="#分层存储体系-memory--hierarchy">分层存储体系 （memory  hierarchy)</a></li>
+            <li><a href="#进程间内存如何隔离">进程间内存如何隔离</a></li>
+            <li><a href="#多进程如何复用2个寄存器">多进程如何复用2个寄存器</a></li>
+            <li><a href="#虚拟内存页表和-mmu">虚拟内存、页表和 MMU</a></li>
+            <li><a href="#内存回收">内存回收</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h2 id="内存管理知识">内存管理知识</h2>
+<p>RAM (random access memory)</p>
+<ul>
+<li>随机存储器中数据的读写可以在几乎相同的时间内完成，与树物理位置无关</li>
+</ul>
+<h3 id="分层存储体系-memory--hierarchy">分层存储体系 （memory  hierarchy)</h3>
+<ul>
+<li>硬盘</li>
+<li>内存</li>
+<li>L3 (&lt;=100mb)</li>
+<li>L2 (&lt;=20Mb)</li>
+<li>L1 &lt;1m</li>
+<li>CPU</li>
+</ul>
+<p>通常我们说的内存 包括CPU 和缓存 也被称为内存</p>
+<ul>
+<li>L1 2-4 cycle</li>
+<li>L2 10-20 cycle</li>
+<li>L3 20-60 cycle</li>
+<li>RAM 200-300 cycle</li>
+<li>HD (RW ：10-50m cycle), 硬盘 hard disk</li>
+<li>SSD  ~  内存的10-1000倍</li>
+</ul>
+<p>这些数值代表 读取数据的周期，周期越短，速度越快</p>
+<h3 id="进程间内存如何隔离">进程间内存如何隔离</h3>
+<h3 id="多进程如何复用2个寄存器">多进程如何复用2个寄存器</h3>
+<ul>
+<li>进程表中存储了所有用到的寄存器</li>
+</ul>
+<center>
+<div class="mermaid">
+    
+graph TB
+
+a(保存寄存器1) --中断--&gt; 进程1 
+a --&gt; 调度 --&gt;恢复寄存器2 --&gt; 进程2 
+
+
+</div>
+</center>
+<h3 id="虚拟内存页表和-mmu">虚拟内存、页表和 MMU</h3>
+<ul>
+<li>只有 32KB内存，如何抽象出64kb内存让进程使用？
+<ol>
+<li>将内存切成很多小块，进程使用离散小块</li>
+<li>解决进程轮流使用内存 （swapping 小块)</li>
+</ol>
+</li>
+</ul>
+<h4 id="虚拟地址空间">虚拟地址空间</h4>
+<p>程序运行在虚拟地址空间，遇到内存地址就映射物理空间</p>
+<p>:(page,offset) = (frame,offset)</p>
+<center>
+<div class="mermaid">
+    
+graph TB
+
+页表 --&gt; 页框
+
+
+</div>
+</center>
+<p>页表项结构</p>
+<p>(高速缓存禁止位，访问位,修改位，保护位，【在不在】 位,Frame)</p>
+<ul>
+<li>高速缓存禁止位： 允不允许L1、L2、L3等高速缓存缓存页框</li>
+<li>访问位，有没有被读过</li>
+<li>修改为： 有没有写过 （dirty)</li>
+<li>保护位： 可不可以写入</li>
+<li>[在不在]位置： 对应的Frame目前在不在内存中</li>
+<li>Frame 是代表指向的内存中的区域</li>
+</ul>
+<h5 id="内存管理单元memory-management-unit">内存管理单元（Memory Management unit)</h5>
+<ul>
+<li>MMU 位于CPU内部，<strong>可以通过硬件电路完成内存映射</strong></li>
+</ul>
+<center>
+<div class="mermaid">
+    
+graph TB
+
+cpu --虚拟地址--&gt; MMU --BUS--&gt; 物理内存
+物理内存 --Bus--&gt; MMU
+
+
+addr --&gt; mmu[&#34;mmu&#34;] --&#34;转换地址&#34;--&gt; newAddr[&#34;newaddr (page,_)&#34;]
+newAddr--&#34;mmu(page,_)&#34;--&gt; mmu
+
+mmu --&gt; frame[&#34;(frame,_)&#34;]
+
+
+</div>
+</center>
+<p>比如 MOV R0 10000</p>
+<p>把内存地址10000的值 存到 R0寄存器，这个10000是个虚拟地址，不是真实的物理地址，计算机通过MMU 将计算出真实的物理地址再进行操作</p>
+<h5 id="mmu-如何工作的">MMU 如何工作的</h5>
+<ul>
+<li>
+<p>虚拟地址通过MMU映射为 物理地址</p>
+</li>
+<li>
+<p>0-1 代表的是存在火灾不存在，如虚拟地址页号指向一个不存在的 frame，<strong>那么会触发操作系统的缺页中断。</strong></p>
+</li>
+<li>
+<p>操作系统告诉MMU页表在内存中的位置-&gt;MMU加载页表-&gt; MMU 利用页表进行地址转换</p>
+</li>
+<li>
+<p>CPU对MMU 对页表中条目数量大小有限制，有的会有几个M,也可能更大</p>
+</li>
+<li>
+<p>操作系统内核中有负责MMU管理模块</p>
+</li>
+</ul>
+<h5 id="缺页中断是什么">缺页中断是什么？</h5>
+<center>
+<div class="mermaid">
+    
+graph TB
+
+进程((进程)) --缺页中断--&gt; h(缺页中断处理程序) --映射--&gt; a(MMU处理程序 )
+
+h --缺失页面信息--&gt; w(页面调度) --页面--&gt; h
+
+w -- 读 --&gt; ss[(硬盘)] --到达--&gt; w
+
+
+</div>
+</center>
+<h5 id="多级页表">多级页表</h5>
+<ul>
+<li>MMU 先用 PT1 在顶级页表查询2级页表在内存中的位置</li>
+<li>MMU利用 PT2 在二级页表中查 frame位置</li>
+<li>MMU 根据 Frame的值将虚拟内存地址映射为物理内存地址</li>
+</ul>
+<p>其他问题：</p>
+<ul>
+<li>使用多级页表，比如3级，4级，会增加MMU的计算次数</li>
+</ul>
+<h5 id="快表结构">快表结构</h5>
+<ul>
+<li>快表，小型硬件设备- 也叫转换检测缓冲区(translation lookaside buffer),用来加速MMU读写</li>
+</ul>
+<center>
+<div class="mermaid">
+    
+graph TB
+cpu --虚拟地址--&gt; mmu --&gt; 快表 --&gt;mmu
+mmu --BUS--&gt; 物理内存 
+
+
+
+</div>
+</center>
+<p>第一次通过计算地址，访问某块内存，直接缓存这个地址，下次直接跳到这个地址。</p>
+<h3 id="内存回收">内存回收</h3>
+<p>java,golang 和 node是怎么做的？</p>
+<p>最开始堆内存管理的方式是 维持一条双向链表，给程序分配内存计算在这个链表上面分配内存</p>
+<center>
+<div class="mermaid">
+    
+graph LR
+
+free((free)) --&gt; a[&#34;4kb&#34;] --&gt;b[&#34;4kb&#34;] --&gt; c[&#34;4kb&#34;]
+
+a --&gt; free
+b--&gt;a
+c--&gt;b
+
+style free fill:white
+style c fill:red,color:white
+
+</div>
+</center>
+<p>其他的方法，也有用数组+ 链表的，</p>
+<p><a href="https://zhuanlan.zhihu.com/p/378352199">参考文章</a></p>
+<p>后面的做法 其实是 通过缓存 来记录页表</p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_05_25_19_48_44.jpg" alt=""></p>
+<h5 id="程序语言是否也用-slot法管理内存">程序语言是否也用 slot法管理内存？</h5>
+<ul>
+<li>部分没有虚拟机的语言，创建对象是创建在cache-slot上，比如c 的malloc就是直接分配一个合适大小的cache</li>
+<li>还有一些有虚拟机的语言，有自己的内存管理</li>
+<li>另一方面，程序 语言不需要像操作系统一样预留大量类型 的是 slot 等待分配（因为程序大小不一，功能不一样）</li>
+</ul>
+<h5 id="垃圾回收算法">垃圾回收算法</h5>
+<ul>
+<li>
+<p>引用计数法</p>
+<ol>
+<li>扫描引用</li>
+<li>维护引用</li>
+</ol>
+</li>
+<li>
+<p>可达性分析算法</p>
+<ul>
+<li>gc的场景
+<ul>
+<li>内存反复被利用的场景</li>
+<li>大量对象在被分配和回收</li>
+<li>高并发场景</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h5 id="gc的种类">gc的种类</h5>
+<p><strong>STW (stop the world) 模型</strong>
+<center>
+<div class="mermaid">
+    
+graph LR
+
+Mutator --&gt; mark --&gt; sweep --&gt; mutator
+
+
+</div>
+</center></p>
+<p><strong>Increment Update 模型</strong></p>
+<center>
+<div class="mermaid">
+    
+graph LR
+
+Mutator --&gt; mark(mark) --&gt;a(mark)--&gt;b(mark) --&gt; s(sweep)--&gt;x(sweep)
+
+
+</div>
+</center>
+<p>这2个模型都需要 mark 标记，第一个 mark 是要进行 全局标记，这样就可能会比较长的时间停顿， 第二个模型是分时间 一点点的 mark ，这样停顿时间就可以缩短了。</p>
+<p><img src="https://pic1.zhimg.com/80/v2-0a23ee0632c0fa1d8fe896a4d3b465a0_720w.jpg" alt="https://pic1.zhimg.com/80/v2-0a23ee0632c0fa1d8fe896a4d3b465a0_720w.jpg"></p>
+<h5 id="stop-the-world-问题">stop the world 问题</h5>
+<ul>
+<li>
+<p>思考： mark阶段需不需要终止正在运行的程序：</p>
+<ol>
+<li>新增一个对象，需不需要 mark</li>
+<li>删除一个对象需不需要重新 mark</li>
+</ol>
+</li>
+<li>
+<p>思考： 如何可以不 stw ?</p>
+<ul>
+<li>做不到，可以考虑缩短 stw的时间，让用户感知是一个连续的模型</li>
+</ul>
+</li>
+</ul>
+<h5 id="三色标记tri-color-mark">三色标记（tri-color mark)</h5>
+<ul>
+<li>go和 node 在用</li>
+<li>属于 increment upate 模型 &ndash; 解决stw问题</li>
+</ul>
+<p><strong>过程：</strong></p>
+<ul>
+<li>白色： 需要回收</li>
+<li>黑色：不回收</li>
+<li>灰色： 中间地带</li>
+</ul>
+<center>
+<div class="mermaid">
+    
+graph LR
+
+root(&#34;root set&#34;) --&gt; b(object1)
+root --&gt; a(object2)
+b --&gt;  c(object3)
+s(object11)--&gt; z(object12)
+
+style a fill:black,color:white
+style b fill:black,color:white
+style c fill:gray,color:white
+style s fill:white,color:black
+style z fill:white,color:black
+
+</div>
+</center>
+<p><strong>灰-&gt;黑</strong></p>
+<ul>
+<li>以灰色节点为开始点，做一次bfs，之前灰色节点标黑色，剩下的白色节点就需要回收</li>
+</ul>
+<p><strong>思考： 会不会有mutation违反性质</strong></p>
+<ul>
+<li>
+<p>比如读白色节点的mutation</p>
+</li>
+<li>
+<p>改变黑色节点的 mutation</p>
+</li>
+<li>
+<p>方法：</p>
+<ul>
+<li>读取白色节点的时候增加读屏障（read barrier),禁止读取</li>
+<li>改变黑色节点的时候增加写屏障（write barrier),写入结束后，将这个节点标记为灰色。 （变灰后又要重新标记）</li>
+</ul>
+</li>
+<li>
+<p>严格保证了所有黑色节点指向白色节点。</p>
+<ul>
+<li>如果黑色节点使用了白色节点的内存，那么白色节点要被回收，这样就有问题了。</li>
+</ul>
+</li>
+</ul>
+<p><strong>要保证正确性，就要保证黑色不指向白色</strong>，因此可以让每次灰色节点的遍历标记都打入更小的时间片段</p>
+<p>如果 mutation过多？ ,gc 每次回收不完全会发生什么？</p>
+<h5 id="分代收集">分代收集</h5>
+<p>编程的时候，很多对象都是刚创建，用一下就可以被回收了，这种对象会频繁的被回收，只有少部分会活的比较就，因此有必要对对象做分代收集， go语言 目前好像是没有分代收集的实现，这里参考java的实现。</p>
+<ul>
+<li>
+<p>新生代 =&gt; 复制算法</p>
+<ul>
+<li>eden</li>
+<li>s0</li>
+<li>s2</li>
+</ul>
+</li>
+<li>
+<p>老年代 (Tenured)  =&gt; cms</p>
+</li>
+<li>
+<p>永久代 permanent（元空间）</p>
+</li>
+</ul>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-05-11
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/linux%E5%86%85%E6%A0%B8%E7%90%86%E8%A7%A3/">linux内核理解</a>
+          </div>
+      <nav class="post-nav">
+        
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/linux%E5%86%85%E6%A0%B8%E7%90%86%E8%A7%A3/%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6/">
+            <span class="next-text nav-default">中断机制</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-05-24 19:13:24 \u002b0800 \u002b0800',
+        title: '内存管理',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://lyr-2000.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-09-23 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.d80bb5612bb6d76342a910a0d91eb7282583c9d044064c081b753b5f8562d36c.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js/back_btn.js"></script>
+<script src="/js/docsearch.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+ 
+  <div id="BR_cornner">
+    <div id='darkThemeBtn'>T</div> 
+  </div> 
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<script defer async>
+
+  mermaid.initialize({startOnLoad:true});
+</script>
+</body>
+</html>

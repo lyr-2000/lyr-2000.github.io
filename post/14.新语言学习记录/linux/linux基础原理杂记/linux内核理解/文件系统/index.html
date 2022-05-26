@@ -51,7 +51,7 @@
 <meta itemprop="name" content="文件系统,inode">
 <meta itemprop="description" content="文件系统 定义 文件系统是指操作系统用于明确存储设备或分区上的文件的方法和数据结构，即在存储设备上组织文件的方法；操作系统中负责管理和存储文件信"><meta itemprop="datePublished" content="2022-04-05T20:32:48+08:00" />
 <meta itemprop="dateModified" content="2022-04-05T20:32:48+08:00" />
-<meta itemprop="wordCount" content="736"><meta itemprop="image" content="https://tva4.sinaimg.cn/large/006ZFECEgy1fr1x6ingqdj31hc0u04qp.jpg">
+<meta itemprop="wordCount" content="3166"><meta itemprop="image" content="https://tva4.sinaimg.cn/large/006ZFECEgy1fr1x6ingqdj31hc0u04qp.jpg">
 <meta itemprop="keywords" content="linux内核理解," /><meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://tva4.sinaimg.cn/large/006ZFECEgy1fr1x6ingqdj31hc0u04qp.jpg"/>
 
@@ -195,8 +195,8 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/linux%E5%86%85%E6%A0%B8%E7%90%86%E8%A7%A3/"> linux内核理解 </a>
             </div>
-          <span class="more-meta"> 约 736 字 </span>
-          <span class="more-meta"> 预计阅读 2 分钟 </span>
+          <span class="more-meta"> 约 3166 字 </span>
+          <span class="more-meta"> 预计阅读 7 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -217,6 +217,17 @@ input.PC_MARK1:focus{
           </ul>
         </li>
         <li><a href="#inode源码">inode源码</a></li>
+        <li><a href="#linux-文件系统生态">linux 文件系统生态</a>
+          <ul>
+            <li><a href="#一些常见的文件系统">一些常见的文件系统</a></li>
+          </ul>
+        </li>
+        <li><a href="#epollselectpoll">epoll,select,poll</a>
+          <ul>
+            <li><a href="#阻塞io">阻塞IO</a></li>
+            <li><a href="#多路复用">多路复用</a></li>
+          </ul>
+        </li>
       </ul>
     </li>
   </ul>
@@ -362,6 +373,283 @@ input.PC_MARK1:focus{
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>[[post/14.新语言学习记录/linux/linux基础原理杂记/linux_inode原理 | vfs文件系统原理等]]</p>
+<h2 id="linux-文件系统生态">linux 文件系统生态</h2>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_05_25_21_55_11.jpg" alt=""></p>
+<p>文件系统是一种抽象机制，通过给存储在磁盘的数据每个起一个名字，每个叫做一个文件，提供了根据文件名来操作这些信息的方法（读、写、修改等）。</p>
+<ul>
+<li>如 Linux的文件 /opt/data/a.dat</li>
+<li>/opt/data 是文件的目录</li>
+<li>a.dat 是文件名字，.dat 是扩展名</li>
+</ul>
+<h3 id="一些常见的文件系统">一些常见的文件系统</h3>
+<ul>
+<li>FAT (file allocate table ,文件分配表)
+<ul>
+<li>FAT16、FAT32</li>
+</ul>
+</li>
+<li>Ext2 (second extended file system)</li>
+<li>Ext3 (third extended file system)</li>
+<li>NTFS (NT File System)</li>
+</ul>
+<h4 id="硬盘">硬盘</h4>
+<p>需要了解的概念：</p>
+<p>磁盘： 用于存储大量数据的永久性存储器（不会断电消失，操作系统首先是装在磁盘里的）</p>
+<p>硬盘的组成：</p>
+<ul>
+<li>磁道 （Track)</li>
+<li>柱面 （Sylinder) ,一个圆柱体的结构</li>
+<li>扇区 (Sector) ， 硬盘存储数据的最小单位，一些硬盘是 512 byte,</li>
+<li>簇  （cluster),</li>
+</ul>
+<h4 id="固态硬盘ssd">固态硬盘（SSD)</h4>
+<ul>
+<li>固态硬盘使用集成电路读数据进行永久存储
+<ul>
+<li>控制器（controller） 用来寻址</li>
+<li>存储芯片（一般是闪存）</li>
+</ul>
+</li>
+</ul>
+<p>由于硬盘的物理结构不一样，操作系统需要对磁盘做底层的抽象，可以理解为 <strong>物理块</strong></p>
+<ul>
+<li>物理块是操作系统对磁盘最底层的抽象，目前最多使用的是 4kb的块</li>
+<li>支持读写</li>
+</ul>
+<p>日志文件系统： mysql 备份的时候记录的是数据变化的过程，而不是数据变化最后的结果，
+这就是日志文件系统</p>
+<h5 id="空闲物理块">空闲物理块</h5>
+<p>基于链表的空闲管理（类比基于链表的内存管理）</p>
+<p>注意： 这个链表是反复出现的，之前 我在内存管理那篇文章 就有写过一个基于链表的内存管理的方法 ,[[post/14.新语言学习记录/linux/linux基础原理杂记/linux内核理解/内存管理.md | 内存管理]]</p>
+<p><strong>两种方式：</strong></p>
+<ol>
+<li>基于链表的空闲管理（类比基于链表的内存管理）</li>
+<li>基于位图的空闲块管理</li>
+<li>fat方法</li>
+<li>index-node 方法</li>
+</ol>
+<p><a href="https://zhuanlan.zhihu.com/p/425116342">参考文章</a></p>
+<p>使用链表分配会浪费很多空间，后面又有了Fat的方式进行分配。</p>
+<p><a href="https://blog.csdn.net/u010711495/article/details/119052584?spm=1001.2101.3001.6650.5&amp;utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-5-119052584-blog-712590.pc_relevant_paycolumn_v3&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-5-119052584-blog-712590.pc_relevant_paycolumn_v3&amp;utm_relevant_index=10">fat文章</a></p>
+<p>文件分配表会耗费大量的内存</p>
+<p>$ 1T = 20^{30}k$</p>
+<p>$ 1T/4k * 4bytes=2^{30}/4*4bytes=1G$</p>
+<p>1T的存储 需要 用 1G的空间，这种会浪费大量的空间。</p>
+<p><strong>内存中的inode表</strong></p>
+<p>inode 是存储在磁盘上的，只有打开文件，才会把inode 加载到内存中。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_05_26_15_06_01.jpg" alt=""></p>
+<p>inode 是如何存储大文件的？</p>
+<p>inode 使用 树状结构， 如果 一个索引块存不下，就使用二级间接索引块，二级存不下，就使用三级间接块</p>
+<p><img src="https://pic2.zhimg.com/80/v2-4156a25db9bc792ead4ba8ce3426fb8d_720w.jpg" alt="https://pic2.zhimg.com/80/v2-4156a25db9bc792ead4ba8ce3426fb8d_720w.jpg"></p>
+<p>如图所示，分为直接块和间接块，间接块使用树状存储，保证了搜索的高效性【树的查找速度和其高度有关】</p>
+<p>比如 $2^{100}$ 的个数，被树二分后，我们只需要查找 100 次，这样是非常快的</p>
+<p>寻找 /user/local/a.txt 的过程</p>
+<center>
+<div class="mermaid">
+    
+graph LR 
+
+/inode --&gt; usr文件 --&gt; user文件inode
+
+
+
+</div>
+</center>
+<p>这里的效率 肯定不搞， 假设某个文件夹下面有100万个文件或者 文件夹，这样遍历这个inode效率太低了，所以 可以使用 hash table 加速文件查询</p>
+<center>
+<div class="mermaid">
+    
+graph LR 
+
+/inode--&gt; h(&#34;hash table&#34;) --&gt;usr文件--&gt;user文件inode
+
+
+</div>
+</center>
+<p><strong>硬链接和软连接的区别</strong></p>
+<center>
+<div class="mermaid">
+    
+graph LR
+
+fileD --&gt; inode
+fileH --&gt; inode
+
+
+fileA --&gt; inode2(&#34;inode&#34;) --&gt; 文件b的路径 -.-&gt; inode3
+
+fileB--&gt; inode3(&#34;inode&#34;)
+
+</div>
+</center>
+<p>硬链接是直接引用的 inode， 软连接则是存储文件路径的文件名</p>
+<p>硬连接是多个文件指向同一个inode，删除的时候要看inode的引用计数。而且inode 得真实存在</p>
+<p>软连接两个文件有不同的inode，但是文件A 的 inode 很小，只存储文件B的文件名字</p>
+<p><strong>虚拟文件系统标准（virtual File System)</strong></p>
+<center>
+<div class="mermaid">
+    
+graph TB
+进程 --统一的API POSIX--&gt; vfs
+
+vfs--&gt; fs1
+vfs--&gt;fs2
+vfs--&gt;fs3
+vfs--&gt;...
+buf(&#34;高速缓冲区&#34;)
+buf--&gt;fs1
+buf--&gt;fs2
+buf--&gt;fs3
+
+</div>
+</center>
+<p>比如说我设计一个数据库，我就需要自己实现一个文件系统，操作系统自带的文件系统可能无法满足我的要求。
+只要满足虚拟文件系统的要求，就能被虚拟文件系统使用。</p>
+<p><strong>高速缓冲区</strong></p>
+<ul>
+<li>类似CPU的缓存、内存管理的快表&ndash; <strong>频繁使用的文件内容被缓存</strong></li>
+<li>思考： 高速缓冲区为什么要统一由虚拟文件系统(vfs)提供</li>
+</ul>
+<p><strong>如果你删除文件的时候突然断点了，会发生什么？</strong></p>
+<ul>
+<li>删除文件A 的过程描述
+<ul>
+<li>更新A所在的目录</li>
+<li>释放A的inode</li>
+<li>释放A占用的物理块（将物理块加入空闲列表、位图）</li>
+</ul>
+</li>
+</ul>
+<p>如果没有释放 A的物理块，这样就很危险了。</p>
+<p>于是人们提出 基于 <strong>日志的文件管理的做法</strong></p>
+<center>
+<div class="mermaid">
+    
+graph TB
+
+用户删除A文件--&gt;系统记录日志--&gt; 110:更新A所在的目录--&gt;111:释放A的inode--&gt;112:释放A所在的物理块--&gt;...
+
+
+</div>
+</center>
+<p><strong>故障恢复</strong></p>
+<p>如果删除文件的时候，突然断点了，系统记录到了关机异常状态，于是就会重新执行记录的日志内容，恢复操作</p>
+<center>
+<div class="mermaid">
+    
+graph TB
+b[开机] --&gt; a{检查异常关机状态}
+
+a--&gt;发现执行到109号日志--&gt;执行110号日志--&gt;执行111日志
+
+
+</div>
+</center>
+<p><strong>日志文件系统故障恢复的要求：</strong></p>
+<p>提出问题：</p>
+<ol>
+<li>如果执行完了110号日志，但是突然关机，系统没有来得及记录下来的109号日志已经被执行了该怎么办？
+<ul>
+<li>保险起见：开机后从108号日志开始执行</li>
+<li>要求：所有日志操作可以被重入（<strong>重复执行，幂等性</strong>）</li>
+<li>例如：删除一个指定的 inode就是幂等操作</li>
+<li>清理几个磁盘块也是幂等操作</li>
+</ul>
+</li>
+</ol>
+<p>mysql，redis 这些数据库都是基于日志的文件系统，很多分布式系统的文件系统都是基于日志的文件系统。</p>
+<h2 id="epollselectpoll">epoll,select,poll</h2>
+<ul>
+<li>场景： 有100w个socket连接需要处理</li>
+<li>思考：
+<ul>
+<li>linux下 socket连接抽象成了文件（100w个文件句柄）</li>
+<li>系统其实就是在不断检查100w个文件 中有没有数据到来</li>
+<li>100w个 socket并发很高，稍有不慎，就会造成系统雪崩</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_05_26_17_09_10.jpg" alt=""></p>
+<h3 id="阻塞io">阻塞IO</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">//阻塞io解决方案
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">while</span> <span class="p">(</span><span class="n">read</span> <span class="p">(</span><span class="n">sockets</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">   <span class="c1">//do something
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>不断的等待和循环
+我们可以开启多线程 每个线程负责处理各种的sockets 数组所在的位置。</p>
+<p>这种就是多线程 阻塞IO 的处理方式</p>
+<h3 id="多路复用">多路复用</h3>
+<p>100w个线程处理100w个连接，切换成本大，100w个进程更不可能，我们可以让一个线程复用，处理多个 fd</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">for</span><span class="p">(</span><span class="nl">fd</span><span class="p">:</span> <span class="n">fds</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">   <span class="k">if</span> <span class="p">(</span> <span class="n">has_data</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span> <span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">read</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">   <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><center>
+<div class="mermaid">
+    
+sequenceDiagram
+  
+   一个线程 -&gt;&gt; 内核: 1000个文件fd
+   内核 -&gt;&gt; 一个线程: 有内容的Fd(通知)
+   一个线程 -&gt;&gt;内核: read
+   内核 -&gt;&gt; 一个线程: Data
+
+
+</div>
+</center>
+<ul>
+<li>select/poll 模型是同步还是异步？</li>
+<li>select、poll 模型是阻塞还是非阻塞？</li>
+</ul>
+<p><a href="https://github.com/CyC2018/CS-Notes/issues/194">参考网友的讨论</a></p>
+<p>可以阻塞，也可以不阻塞， select 和 poll，epoll 全部都是同步 IO，异步IO的话 windows 下 iocp 才是</p>
+<p>上面的 模型有问题，比如 我每次拷贝1000个fd到内核，这样就消耗太大了，所以可以用共享内存来优化。</p>
+<p>优化fd 的 增加删除，查询</p>
+<ul>
+<li>数组， insert ,o(N), find o(N),delete O(N)</li>
+<li>链表， insert ，o(1), find (oN)</li>
+<li>hashtable, 效果不好</li>
+<li>平衡树：
+<ul>
+<li>insert o(logN)</li>
+<li>delete o(logN)</li>
+<li>find o(logN)</li>
+</ul>
+</li>
+</ul>
+<p><strong>epoll 的解决方法</strong></p>
+<ul>
+<li>增量向内核传输 fd</li>
+<li>内核返回 事件，而不是 fd
+<ul>
+<li>事件中带有可以被读取的 fd（避免线程遍历）</li>
+</ul>
+</li>
+</ul>
 
     </div>
 
