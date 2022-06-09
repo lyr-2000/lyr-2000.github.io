@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.100.1 with theme even" />
+<meta name="generator" content="Hugo 0.100.2 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/cpp/c%E5%9F%BA%E7%A1%80/c%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/" />
@@ -51,7 +51,7 @@
 <meta itemprop="name" content="c语言基础">
 <meta itemprop="description" content="c语言基础 c语言环境搭建 安装visual studio 2019 安装 MinGW (模拟 posix环境，可以安装 msys2) 安装 wsl 安装 msys2 1 2 3 4 pacman -Sy base-devel pacman -S mingw-w64-x86_64-toolchain 环境配置 参考博客 我选择默认"><meta itemprop="datePublished" content="2022-06-04T15:39:06+08:00" />
 <meta itemprop="dateModified" content="2022-05-11T20:02:48+08:00" />
-<meta itemprop="wordCount" content="5384"><meta itemprop="image" content="https://tva1.sinaimg.cn/large/0076Ry2fgy1fqldaqo8d6j31hc0u04qp.jpg">
+<meta itemprop="wordCount" content="5795"><meta itemprop="image" content="https://tva1.sinaimg.cn/large/0076Ry2fgy1fqldaqo8d6j31hc0u04qp.jpg">
 <meta itemprop="keywords" content="c基础," /><meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://tva1.sinaimg.cn/large/0076Ry2fgy1fqldaqo8d6j31hc0u04qp.jpg"/>
 
@@ -195,8 +195,8 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/c%E5%9F%BA%E7%A1%80/"> c基础 </a>
             </div>
-          <span class="more-meta"> 约 5384 字 </span>
-          <span class="more-meta"> 预计阅读 11 分钟 </span>
+          <span class="more-meta"> 约 5795 字 </span>
+          <span class="more-meta"> 预计阅读 12 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -225,7 +225,11 @@ input.PC_MARK1:focus{
             <li><a href="#变长参数">变长参数</a></li>
           </ul>
         </li>
-        <li><a href="#c语言编译过程">c语言编译过程</a></li>
+        <li><a href="#c语言编译过程">c语言编译过程</a>
+          <ul>
+            <li><a href="#静态链接和动态链接库">静态链接和动态链接库</a></li>
+          </ul>
+        </li>
         <li><a href="#自定义头文件">自定义头文件</a>
           <ul>
             <li><a href="#常用的宏">常用的宏</a></li>
@@ -265,6 +269,9 @@ input.PC_MARK1:focus{
           </ul>
         </li>
         <li><a href="#创建-cmake项目">创建 Cmake项目</a></li>
+        <li><a href="#conan-管理依赖">Conan 管理依赖</a></li>
+        <li><a href="#cpp调用-c语言的代码">cpp调用 c语言的代码</a></li>
+        <li><a href="#java-调用-c">java 调用 c</a></li>
       </ul>
     </li>
   </ul>
@@ -681,6 +688,62 @@ graph LR
 </span></span><span class="line"><span class="cl">    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;aaaa %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span> 
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="静态链接和动态链接库">静态链接和动态链接库</h3>
+<p>动态链接不需要打包到可执行文件，放在特定的路径上，运行的时候加载进来。（可以共享）
+静态链接则是编译的时候就确定了，把需要用到的东西全部加载进可执行文件里面。（没法共享）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 编译静态链接的方法</span>
+</span></span><span class="line"><span class="cl">gcc -c -o main.o main.c
+</span></span><span class="line"><span class="cl">ar rcs libmain.a main.o
+</span></span><span class="line"><span class="cl"><span class="c1"># libmain 就是一个静态链接库</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>程序本身运行的时候也会占用内存空间，多个程序共享动态链接库可以减少内存占用</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># ldd 查看依赖哪些动态链接库</span>
+</span></span><span class="line"><span class="cl">which ldd
+</span></span><span class="line"><span class="cl">ldd /usr/bin/ls
+</span></span><span class="line"><span class="cl">ldd a.out
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看可执行程序依赖哪些文件</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">gcc -shared -fPIC -wl,--out-implib main.c  -o libmain.dll 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># mingw 上使用 ldd命令</span>
+</span></span><span class="line"><span class="cl">$ ldd a.exe
+</span></span><span class="line"><span class="cl">        ntdll.dll <span class="o">=</span>&gt; /c/WINDOWS/SYSTEM32/ntdll.dll <span class="o">(</span>0x7ffb2fbd0000<span class="o">)</span>
+</span></span><span class="line"><span class="cl">        KERNEL32.DLL <span class="o">=</span>&gt; /c/WINDOWS/System32/KERNEL32.DLL <span class="o">(</span>0x7ffb2e3c0000<span class="o">)</span>
+</span></span><span class="line"><span class="cl">        KERNELBASE.dll <span class="o">=</span>&gt; /c/WINDOWS/System32/KERNELBASE.dll <span class="o">(</span>0x7ffb2d450000<span class="o">)</span>
+</span></span><span class="line"><span class="cl">        msvcrt.dll <span class="o">=</span>&gt; /c/WINDOWS/System32/msvcrt.dll <span class="o">(</span>0x7ffb2e320000<span class="o">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
 </div><h2 id="自定义头文件">自定义头文件</h2>
@@ -2298,6 +2361,74 @@ dma --读取到io缓冲区--&gt; 缓冲区 --cpu读取数据--&gt; 复制到调�
 | sscanf(char *buf,fmt,&hellip;) |从字符串中读取 |</p>
 <h2 id="创建-cmake项目">创建 Cmake项目</h2>
 <p><a href="https://docs.microsoft.com/zh-cn/cpp/linux/cmake-linux-project?view=msvc-170">参考文章</a></p>
+<h2 id="conan-管理依赖">Conan 管理依赖</h2>
+<p><a href="https://conan.io/">网址</a></p>
+<p>通过 python的pip 安装 conan</p>
+<p><a href="https://conan.io/center">依赖搜索</a></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">pip install conan
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">conan search libcurl
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在根目录下 创建 conanfile.txt</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[requires]
+</span></span><span class="line"><span class="cl">libcurl/1.0.0
+</span></span><span class="line"><span class="cl">[generators]
+</span></span><span class="line"><span class="cl">cmake
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">connan install .. 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="cpp调用-c语言的代码">cpp调用 c语言的代码</h2>
+<p>因为 cpp 和 c中 符号命名规则是不一样的，不能直接 调用 c函数的代码
+需要在 .h 头文件的 函数声明上面 加 extern &ldquo;C&rdquo; 这个语句</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#ifdef __cplusplus
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">extern</span> <span class="s">&#34;C&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#endif
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fib</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#ifdef __cplusplus
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#endif
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="java-调用-c">java 调用 c</h2>
+<p>java 有 jni （java native interface ）的机制去加载 c的方法</p>
 
     </div>
 
@@ -2335,7 +2466,11 @@ dma --读取到io缓冲区--&gt; 缓冲区 --cpu读取数据--&gt; 复制到调�
           <a href="/tags/c%E5%9F%BA%E7%A1%80/">c基础</a>
           </div>
       <nav class="post-nav">
-        
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/cpp/c%E5%9F%BA%E7%A1%80/gtk%E7%BC%96%E7%A8%8B/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">gtk编程</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/cpp/cpp%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/c%E8%AF%AD%E8%A8%80gui%E7%9F%A5%E8%AF%86/">
             <span class="next-text nav-default">c语言gui知识</span>
             <span class="next-text nav-mobile">下一篇</span>
