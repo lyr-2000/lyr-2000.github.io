@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>linux 开机启动流程 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="操作系统启动原理 操作系统启动流程 我们要先了解操作系统开机启动流程，才能继续学习下去，看到网上很多写系统的教程，一开始都是写汇编，写各种 loader.s 之类" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.101.0 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/linux%E5%86%85%E6%A0%B8%E7%90%86%E8%A7%A3/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AE%9E%E7%8E%B0/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/post.css">
+
+
+<meta property="og:title" content="linux 开机启动流程" />
+<meta property="og:description" content="操作系统启动原理 操作系统启动流程 我们要先了解操作系统开机启动流程，才能继续学习下去，看到网上很多写系统的教程，一开始都是写汇编，写各种 loader.s 之类" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/linux%E5%86%85%E6%A0%B8%E7%90%86%E8%A7%A3/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AE%9E%E7%8E%B0/" /><meta property="og:image" content="https://tva2.sinaimg.cn/large/87c01ec7gy1frmagh7ym7j21hc0u0npd.jpg" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-04-24T14:52:48+08:00" />
+<meta property="article:modified_time" content="2022-04-24T14:52:48+08:00" />
+
+<meta itemprop="name" content="linux 开机启动流程">
+<meta itemprop="description" content="操作系统启动原理 操作系统启动流程 我们要先了解操作系统开机启动流程，才能继续学习下去，看到网上很多写系统的教程，一开始都是写汇编，写各种 loader.s 之类"><meta itemprop="datePublished" content="2022-04-24T14:52:48+08:00" />
+<meta itemprop="dateModified" content="2022-04-24T14:52:48+08:00" />
+<meta itemprop="wordCount" content="2871"><meta itemprop="image" content="https://tva2.sinaimg.cn/large/87c01ec7gy1frmagh7ym7j21hc0u0npd.jpg">
+<meta itemprop="keywords" content="操作系统实现原理," /><meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://tva2.sinaimg.cn/large/87c01ec7gy1frmagh7ym7j21hc0u0npd.jpg"/>
+
+<meta name="twitter:title" content="linux 开机启动流程"/>
+<meta name="twitter:description" content="操作系统启动原理 操作系统启动流程 我们要先了解操作系统开机启动流程，才能继续学习下去，看到网上很多写系统的教程，一开始都是写汇编，写各种 loader.s 之类"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body >
+  
+  
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="globalbg"></div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel" >
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	<div class="customByLyr">
+  
+			<img class="lazyload"  draggable="false"  data-original="https://tva2.sinaimg.cn/large/87c01ec7gy1frmagh7ym7j21hc0u0npd.jpg" />
+		</div>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">linux 开机启动流程</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-04-24 </span>
+        <div class="post-category">
+            <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"> 操作系统实现原理 </a>
+            </div>
+          <span class="more-meta"> 约 2871 字 </span>
+          <span class="more-meta"> 预计阅读 6 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#操作系统启动原理">操作系统启动原理</a>
+      <ul>
+        <li><a href="#操作系统启动流程">操作系统启动流程</a></li>
+        <li><a href="#操作系统启动流程-1">操作系统启动流程</a></li>
+        <li><a href="#bootstrapping">bootstrapping</a></li>
+        <li><a href="#linux下汇编学习">linux下汇编学习</a>
+          <ul>
+            <li><a href="#地址线等知识">地址线等知识</a></li>
+            <li><a href="#寄存器知识">寄存器知识</a></li>
+            <li><a href="#寻址">寻址</a></li>
+            <li><a href="#将c语言转化为汇编代码">将c语言转化为汇编代码</a></li>
+          </ul>
+        </li>
+        <li><a href="#linux-安装汇编环境">linux 安装汇编环境</a>
+          <ul>
+            <li><a href="#打印一个-hello-world">打印一个 hello world</a></li>
+            <li><a href="#进程状态">进程状态</a></li>
+            <li><a href="#开机后-需要接管的cpu-的控制器">开机后 需要接管的cpu 的控制器</a></li>
+          </ul>
+        </li>
+        <li><a href="#操作系统是什么">操作系统是什么？</a></li>
+        <li><a href="#内核设计">内核设计</a></li>
+        <li><a href="#操作系统权限问题">操作系统权限问题</a>
+          <ul>
+            <li><a href="#权限怎么处理">权限怎么处理</a></li>
+            <li><a href="#总结">总结</a></li>
+          </ul>
+        </li>
+        <li><a href="#其他笔记">其他笔记</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h1 id="操作系统启动原理">操作系统启动原理</h1>
+<p><img src="https://pic1.zhimg.com/80/v2-a2ce6a4d3c9ebd504910da29f1bb17f0_720w.jpg" alt="https://pic1.zhimg.com/80/v2-a2ce6a4d3c9ebd504910da29f1bb17f0_720w.jpg"></p>
+<h2 id="操作系统启动流程">操作系统启动流程</h2>
+<p>我们要先了解操作系统开机启动流程，才能继续学习下去，看到网上很多写系统的教程，一开始都是写汇编，写各种 loader.s 之类的，我们得先明白这个是在做什么，然后才能继续跟着学下去。</p>
+<p><a href="https://zhuanlan.zhihu.com/p/47407590">参考博客文章</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/386943759">参考文章2</a></p>
+<p><a href="https://www.bilibili.com/video/BV1RX4y157CM?p=2">目前在看的学习教程</a></p>
+<p><a href="https://www.bilibili.com/video/BV1tt411s7vQ?spm_id_from=333.337.search-card.all.click">外国人的视频教程</a></p>
+<p><a href="https://www.youtube.com/channel/UCQdZltW7bh1ta-_nCH7LWYw">这个人的youtube</a></p>
+<h2 id="操作系统启动流程-1">操作系统启动流程</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/272525425">参考的文章</a></p>
+<table>
+<thead>
+<tr>
+<th>执行程序</th>
+<th>解释</th>
+<th>详细流程</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BIOS</td>
+<td>主板上有一个特殊的程序，叫BIOS</td>
+<td>最开始的时候，计算机会把BIOS程序加载到内存里。然后指令指针（Instruction Pointer）会指向这段简短的BIOS程序；<strong>BIOS程序读取硬盘，从里面加载boot loader到内存</strong>，并设置指令指针到内存。接着，bootloader执行并且读取硬盘，从里面读取操作系统内核到内存。</td>
+</tr>
+<tr>
+<td>bootloader</td>
+<td>引导加载程序; 引导模式; 启动加载; 引导代码; 程序;</td>
+<td>在<a href="https://baike.baidu.com/item/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/192">操作系统</a>内核运行之前运行,首先bootloader是一段程序，grub是bootloader的一种 ,<strong>bootloader要实现的功能就是提供一个菜单给用户，让用户去选择要启动的系统或不同的内核版本</strong></td>
+</tr>
+<tr>
+<td>加载内核</td>
+<td>加载磁盘驱动程序 ，用于读取磁盘</td>
+<td>通过一个 虚拟文件系统，让 bootloader 将文件加载到内存中，该程序来加载启动过程中所最需要的核心模块</td>
+</tr>
+<tr>
+<td>运行 <code>/sbin/init</code>等程序</td>
+<td>内核加载完毕后，运行用户空间的第一个程序是<code>/sbin/init</code></td>
+<td></td>
+</tr>
+<tr>
+<td>启动内核模块</td>
+<td>依据/etc/sysconfig/modules文件目录下的文件来装载内核模块。</td>
+<td></td>
+</tr>
+<tr>
+<td>执行 <code>/etc/rc.d/rc.local</code></td>
+<td>Linux留给用户进行个性化的地方。你<strong>可以把你想设置和启动的东西放到这里</strong>。相当于用户脚本</td>
+<td></td>
+</tr>
+<tr>
+<td>执行 <code>/bin/login</code></td>
+<td>让用户输入密码登录</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a href="https://www.bilibili.com/video/BV1tQ4y1d7mo?p=4">内核初始化视频教程</a></p>
+<p><a href="https://www.cnblogs.com/tolimit/p/4271981.html">有fork源码的博客</a></p>
+<h2 id="bootstrapping">bootstrapping</h2>
+<p>开机过程我们叫做 bootstrap</p>
+<p>学这个 又要先学习 <a href="https://www.bilibili.com/video/BV1hf4y1P7qW?p=1">csapp</a> 的课程</p>
+<ul>
+<li>Bios
+<ul>
+<li>Memory mapping</li>
+<li>power on self test</li>
+<li>find mbr selector</li>
+</ul>
+</li>
+<li>cpu registers &ndash; init state</li>
+<li>MBR selector
+<ul>
+<li>Load system into RAM</li>
+<li>Do some initialization</li>
+<li>Jump to the system code</li>
+</ul>
+</li>
+</ul>
+<h2 id="linux下汇编学习">linux下汇编学习</h2>
+<p><a href="https://www.bilibili.com/video/BV1gC4y1b7y8?p=2&amp;spm_id_from=pageDriver">学习视频教程</a></p>
+<p><a href="https://www.bilibili.com/video/BV1B4411Y7if/?spm_id_from=333.788.recommend_more_video.6">https://www.bilibili.com/video/BV1B4411Y7if/?spm_id_from=333.788.recommend_more_video.6</a></p>
+<p><a href="https://github.com/60rzvvbj/assemblyLanguage">同学给的一个练习代码</a></p>
+<p>学习汇编需要理解的概念：</p>
+<ol>
+<li>总线</li>
+<li>CPU，内存</li>
+<li>指令和数据</li>
+</ol>
+<h3 id="地址线等知识">地址线等知识</h3>
+<table>
+<thead>
+<tr>
+<th>名字</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>地址线</td>
+<td>CPU是通过地址总线来指定存储单元的。</td>
+<td></td>
+</tr>
+<tr>
+<td>数据线</td>
+<td>是CPU与内存或其他器件之间的数据传送的通道。</td>
+<td></td>
+</tr>
+<tr>
+<td>控制线</td>
+<td>CPU通过控制总线对外部器件进行控制。</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="寄存器知识">寄存器知识</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><strong>Name</strong></th>
+<th style="text-align:center">Notes</th>
+<th style="text-align:center">Type</th>
+<th style="text-align:center">64-bit        long</th>
+<th style="text-align:center">32-bit        int</th>
+<th style="text-align:center">16-bit        short</th>
+<th style="text-align:center">8-bit        char</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">rax</td>
+<td style="text-align:center">Values are returned from        functions in this register.</td>
+<td style="text-align:center">scratch</td>
+<td style="text-align:center">rax</td>
+<td style="text-align:center">eax</td>
+<td style="text-align:center">ax</td>
+<td style="text-align:center">ah and al</td>
+</tr>
+<tr>
+<td style="text-align:center">rcx</td>
+<td style="text-align:center">Typical scratch        register. Some instructions also use it as a counter.</td>
+<td style="text-align:center">scratch</td>
+<td style="text-align:center">rcx</td>
+<td style="text-align:center">ecx</td>
+<td style="text-align:center">cx</td>
+<td style="text-align:center">ch and cl</td>
+</tr>
+<tr>
+<td style="text-align:center">rdx</td>
+<td style="text-align:center">Scratch register.</td>
+<td style="text-align:center">scratch</td>
+<td style="text-align:center">rdx</td>
+<td style="text-align:center">edx</td>
+<td style="text-align:center">dx</td>
+<td style="text-align:center">dh and dl</td>
+</tr>
+<tr>
+<td style="text-align:center"><em>rbx</em>        __</td>
+<td style="text-align:center"><em>Preserved              register: don&rsquo;t use it without saving it!</em></td>
+<td style="text-align:center"><em>preserved</em></td>
+<td style="text-align:center"><em>rbx</em></td>
+<td style="text-align:center"><em>ebx</em></td>
+<td style="text-align:center"><em>bx</em></td>
+<td style="text-align:center"><em>bh and              bl</em></td>
+</tr>
+<tr>
+<td style="text-align:center"><em>rsp</em>        __</td>
+<td style="text-align:center"><em>The              stack pointer. Points to the top of the stack (details coming soon!)</em></td>
+<td style="text-align:center"><em>preserved</em></td>
+<td style="text-align:center"><em>rsp</em></td>
+<td style="text-align:center"><em>esp</em></td>
+<td style="text-align:center"><em>sp</em></td>
+<td style="text-align:center"><em>spl</em></td>
+</tr>
+<tr>
+<td style="text-align:center"><em>rbp</em>        __</td>
+<td style="text-align:center"><em>Preserved              register. Sometimes used to store the old value of              the stack pointer, or the &ldquo;base&rdquo;.</em></td>
+<td style="text-align:center"><em>preserved</em></td>
+<td style="text-align:center"><em>rbp</em></td>
+<td style="text-align:center"><em>ebp</em></td>
+<td style="text-align:center"><em>bp</em></td>
+<td style="text-align:center"><em>bpl</em></td>
+</tr>
+<tr>
+<td style="text-align:center">rsi</td>
+<td style="text-align:center">Scratch register. Also        used to pass function argument #2 in 64-bit Linux</td>
+<td style="text-align:center">scratch</td>
+<td style="text-align:center">rsi</td>
+<td style="text-align:center">esi</td>
+<td style="text-align:center">si</td>
+<td style="text-align:center">sil</td>
+</tr>
+<tr>
+<td style="text-align:center">rdi</td>
+<td style="text-align:center">Scratch register.        Function argument #1 in 64-bit Linux</td>
+<td style="text-align:center">scratch</td>
+<td style="text-align:center">rdi</td>
+<td style="text-align:center">edi</td>
+<td style="text-align:center">di</td>
+<td style="text-align:center">dil</td>
+</tr>
+<tr>
+<td style="text-align:center">r8</td>
+<td style="text-align:center">Scratch register. These        were added in 64-bit mode, so they have numbers, not names.</td>
+<td style="text-align:center">scratch</td>
+<td style="text-align:center">r8</td>
+<td style="text-align:center">r8d</td>
+<td style="text-align:center">r8w</td>
+<td style="text-align:center">r8b</td>
+</tr>
+<tr>
+<td style="text-align:center">r9</td>
+<td style="text-align:center">Scratch register.</td>
+<td style="text-align:center">scratch</td>
+<td style="text-align:center">r9</td>
+<td style="text-align:center">r9d</td>
+<td style="text-align:center">r9w</td>
+<td style="text-align:center">r9b</td>
+</tr>
+<tr>
+<td style="text-align:center">r10</td>
+<td style="text-align:center">Scratch register.</td>
+<td style="text-align:center">scratch</td>
+<td style="text-align:center">r10</td>
+<td style="text-align:center">r10d</td>
+<td style="text-align:center">r10w</td>
+<td style="text-align:center">r10b</td>
+</tr>
+<tr>
+<td style="text-align:center">r11</td>
+<td style="text-align:center">Scratch register.</td>
+<td style="text-align:center">scratch</td>
+<td style="text-align:center">r11</td>
+<td style="text-align:center">r11d</td>
+<td style="text-align:center">r11w</td>
+<td style="text-align:center">r11b</td>
+</tr>
+<tr>
+<td style="text-align:center"><em>r12</em></td>
+<td style="text-align:center"><em>Preserved              register. You can use it, but you need to save and              restore it.</em></td>
+<td style="text-align:center"><em>preserved</em></td>
+<td style="text-align:center"><em>r12</em></td>
+<td style="text-align:center"><em>r12d</em></td>
+<td style="text-align:center"><em>r12w</em></td>
+<td style="text-align:center"><em>r12b</em></td>
+</tr>
+<tr>
+<td style="text-align:center"><em>r13</em></td>
+<td style="text-align:center"><em>Preserved              register.</em></td>
+<td style="text-align:center"><em>preserved</em></td>
+<td style="text-align:center"><em>r13</em></td>
+<td style="text-align:center"><em>r13d</em></td>
+<td style="text-align:center"><em>r13w</em></td>
+<td style="text-align:center"><em>r13b</em></td>
+</tr>
+<tr>
+<td style="text-align:center"><em>r14</em></td>
+<td style="text-align:center"><em>Preserved              register.</em></td>
+<td style="text-align:center"><em>preserved</em></td>
+<td style="text-align:center"><em>r14</em></td>
+<td style="text-align:center"><em>r14d</em></td>
+<td style="text-align:center"><em>r14w</em></td>
+<td style="text-align:center"><em>r14b</em></td>
+</tr>
+<tr>
+<td style="text-align:center"><em>r15</em></td>
+<td style="text-align:center"><em>Preserved              register.</em></td>
+<td style="text-align:center"><em>preserved</em></td>
+<td style="text-align:center"><em>r15</em></td>
+<td style="text-align:center"><em>r15d</em></td>
+<td style="text-align:center"><em>r15w</em></td>
+<td style="text-align:center"><em>r15b</em></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>寄存器</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EAX</td>
+<td>累加器</td>
+<td>Accumulator</td>
+</tr>
+<tr>
+<td>EBX</td>
+<td>基地址寄存器</td>
+<td>base register</td>
+</tr>
+<tr>
+<td>ECX</td>
+<td>技术寄存器</td>
+<td></td>
+</tr>
+<tr>
+<td>EDX</td>
+<td>数据寄存器</td>
+<td>Data register</td>
+</tr>
+<tr>
+<td><strong>EBP</strong></td>
+<td><strong>堆栈基指针</strong></td>
+<td>Base pointer</td>
+</tr>
+<tr>
+<td>ESI</td>
+<td>变址寄存器</td>
+<td>index register</td>
+</tr>
+<tr>
+<td>EDI</td>
+<td>变址寄存器</td>
+<td>index register</td>
+</tr>
+<tr>
+<td><strong>ESP</strong></td>
+<td><strong>堆栈顶指针</strong></td>
+<td>stack pointer</td>
+</tr>
+<tr>
+<td>CS</td>
+<td>代码段寄存器</td>
+<td>code segment register</td>
+</tr>
+<tr>
+<td>DS</td>
+<td>数据段寄存器</td>
+<td>data segment register</td>
+</tr>
+<tr>
+<td>ES</td>
+<td>附加段寄存器</td>
+<td>extra</td>
+</tr>
+<tr>
+<td>SS</td>
+<td>堆栈段寄存器</td>
+<td>stack</td>
+</tr>
+<tr>
+<td>FS</td>
+<td>附加段寄存器</td>
+<td>extra segment register</td>
+</tr>
+</tbody>
+</table>
+<h3 id="寻址">寻址</h3>
+<table>
+<thead>
+<tr>
+<th>代码</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>movel %eax,%edx</td>
+<td><code>edx=eax</code></td>
+<td>寄存器寻址</td>
+</tr>
+<tr>
+<td>movl $0x123 ,%edx</td>
+<td><code>edx=0x123</code></td>
+<td>立即寻址</td>
+</tr>
+<tr>
+<td>movl 0x123,%edx</td>
+<td><code>edx=*(int32_t*)0x123</code></td>
+<td>直接寻址</td>
+</tr>
+<tr>
+<td>movl (%ebx),%edx</td>
+<td><code>edx=*(int32_t)ebx;</code></td>
+<td>间接寻址</td>
+</tr>
+<tr>
+<td>movl 4(%ebx), %edx</td>
+<td><code>edx=*(int32_t*)(ebx+4)</code></td>
+<td></td>
+</tr>
+<tr>
+<td>pushl %eax</td>
+<td>eax寄存器放到堆栈栈顶</td>
+<td></td>
+</tr>
+<tr>
+<td>popl %eax</td>
+<td>弹出栈顶</td>
+<td></td>
+</tr>
+<tr>
+<td>call 0x12345</td>
+<td>函数调用 <code>pushl %eip(*); movl $012345,%eip(*)</code></td>
+<td></td>
+</tr>
+<tr>
+<td>ret</td>
+<td><code>pop %eip(*)</code>, 星号是伪指令，程序员不能直接修改 eip 这个寄存器</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="将c语言转化为汇编代码">将c语言转化为汇编代码</h3>
+<p><a href="https://www.bilibili.com/video/BV1GJ411g7Gn?p=7&amp;spm_id_from=pageDriver">我学习的课程</a></p>
+<p>这个代码 默认是以 32位的 X86 为例子</p>
+<p>编译的代码，和 c的代码如下</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">gcc -S -o a.s a.c -m32
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">g</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">x</span><span class="o">+</span><span class="mi">3</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>那个 a.s 的文件 就是 汇编的代码</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">	.file	&#34;a.c&#34;
+</span></span><span class="line"><span class="cl">	.text
+</span></span><span class="line"><span class="cl">	.globl	g
+</span></span><span class="line"><span class="cl">	.type	g, @function
+</span></span><span class="line"><span class="cl">g:
+</span></span><span class="line"><span class="cl">.LFB0:
+</span></span><span class="line"><span class="cl">	.cfi_startproc
+</span></span><span class="line"><span class="cl">	pushl	%ebp
+</span></span><span class="line"><span class="cl">	.cfi_def_cfa_offset 8
+</span></span><span class="line"><span class="cl">	.cfi_offset 5, -8
+</span></span><span class="line"><span class="cl">	movl	%esp, %ebp
+</span></span><span class="line"><span class="cl">	.cfi_def_cfa_register 5
+</span></span><span class="line"><span class="cl">	call	__x86.get_pc_thunk.ax
+</span></span><span class="line"><span class="cl">	addl	$_GLOBAL_OFFSET_TABLE_, %eax
+</span></span><span class="line"><span class="cl">	movl	8(%ebp), %eax
+</span></span><span class="line"><span class="cl">	addl	$3, %eax
+</span></span><span class="line"><span class="cl">	popl	%ebp
+</span></span><span class="line"><span class="cl">	.cfi_restore 5
+</span></span><span class="line"><span class="cl">	.cfi_def_cfa 4, 4
+</span></span><span class="line"><span class="cl">	ret
+</span></span><span class="line"><span class="cl">	.cfi_endproc
+</span></span><span class="line"><span class="cl">.LFE0:
+</span></span><span class="line"><span class="cl">	.size	g, .-g
+</span></span><span class="line"><span class="cl">	.globl	main
+</span></span><span class="line"><span class="cl">	.type	main, @function
+</span></span><span class="line"><span class="cl">main:
+</span></span><span class="line"><span class="cl">.LFB1:
+</span></span><span class="line"><span class="cl">	.cfi_startproc
+</span></span><span class="line"><span class="cl">	pushl	%ebp
+</span></span><span class="line"><span class="cl">	.cfi_def_cfa_offset 8
+</span></span><span class="line"><span class="cl">	.cfi_offset 5, -8
+</span></span><span class="line"><span class="cl">	movl	%esp, %ebp
+</span></span><span class="line"><span class="cl">	.cfi_def_cfa_register 5
+</span></span><span class="line"><span class="cl">	call	__x86.get_pc_thunk.ax
+</span></span><span class="line"><span class="cl">	addl	$_GLOBAL_OFFSET_TABLE_, %eax
+</span></span><span class="line"><span class="cl">	movl	$0, %eax
+</span></span><span class="line"><span class="cl">	popl	%ebp
+</span></span><span class="line"><span class="cl">	.cfi_restore 5
+</span></span><span class="line"><span class="cl">	.cfi_def_cfa 4, 4
+</span></span><span class="line"><span class="cl">	ret
+</span></span><span class="line"><span class="cl">	.cfi_endproc
+</span></span><span class="line"><span class="cl">.LFE1:
+</span></span><span class="line"><span class="cl">	.size	main, .-main
+</span></span><span class="line"><span class="cl">	.section	.text.__x86.get_pc_thunk.ax,&#34;axG&#34;,@progbits,__x86.get_pc_thunk.ax,comdat
+</span></span><span class="line"><span class="cl">	.globl	__x86.get_pc_thunk.ax
+</span></span><span class="line"><span class="cl">	.hidden	__x86.get_pc_thunk.ax
+</span></span><span class="line"><span class="cl">	.type	__x86.get_pc_thunk.ax, @function
+</span></span><span class="line"><span class="cl">__x86.get_pc_thunk.ax:
+</span></span><span class="line"><span class="cl">.LFB2:
+</span></span><span class="line"><span class="cl">	.cfi_startproc
+</span></span><span class="line"><span class="cl">	movl	(%esp), %eax
+</span></span><span class="line"><span class="cl">	ret
+</span></span><span class="line"><span class="cl">	.cfi_endproc
+</span></span><span class="line"><span class="cl">.LFE2:
+</span></span><span class="line"><span class="cl">	.ident	&#34;GCC: (Debian 10.3.0-11) 10.3.0&#34;
+</span></span><span class="line"><span class="cl">	
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>所有以为 <code>.</code> 开头的都是辅助信息，没有用的，可以直接删除</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">g:
+</span></span><span class="line"><span class="cl">	pushl	%ebp ; base pointer ,压栈
+</span></span><span class="line"><span class="cl">	movl	%esp, %ebp ; stack pointer 
+</span></span><span class="line"><span class="cl">	call	__x86.get_pc_thunk.ax
+</span></span><span class="line"><span class="cl">	addl	$_GLOBAL_OFFSET_TABLE_, %eax  ;累加寄存器
+</span></span><span class="line"><span class="cl">	movl	8(%ebp), %eax ; ebp 赋值给 eax 
+</span></span><span class="line"><span class="cl">	addl	$3, %eax  ; 加3 
+</span></span><span class="line"><span class="cl">	popl	%ebp ; base pointer 弹栈
+</span></span><span class="line"><span class="cl">	ret ; 返回
+</span></span><span class="line"><span class="cl">main:
+</span></span><span class="line"><span class="cl">	pushl	%ebp
+</span></span><span class="line"><span class="cl">	movl	%esp, %ebp  ; stack pointer -&gt; base pointer
+</span></span><span class="line"><span class="cl">	call	__x86.get_pc_thunk.ax
+</span></span><span class="line"><span class="cl">	addl	$_GLOBAL_OFFSET_TABLE_, %eax
+</span></span><span class="line"><span class="cl">	movl	$0, %eax
+</span></span><span class="line"><span class="cl">	popl	%ebp
+</span></span><span class="line"><span class="cl">	ret
+</span></span><span class="line"><span class="cl">__x86.get_pc_thunk.ax:
+</span></span><span class="line"><span class="cl">	movl	(%esp), %eax
+</span></span><span class="line"><span class="cl">	ret
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="linux-安装汇编环境">linux 安装汇编环境</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt-get install nasm
+</span></span><span class="line"><span class="cl"><span class="c1"># 请确定自己的机器是 x86_64的</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="打印一个-hello-world">打印一个 hello world</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"> section .data
+</span></span><span class="line"><span class="cl">    ; 定义标签   define bytes     10 表示 \n 换行
+</span></span><span class="line"><span class="cl">    var_text db &#34;hello,world&#34;,10
+</span></span><span class="line"><span class="cl">section .text
+</span></span><span class="line"><span class="cl">    ; 设置启动函数
+</span></span><span class="line"><span class="cl">    global _start
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">; 设置运行的函数
+</span></span><span class="line"><span class="cl">_start:
+</span></span><span class="line"><span class="cl">    mov rax,1
+</span></span><span class="line"><span class="cl">    mov rdi,1
+</span></span><span class="line"><span class="cl">    mov rsi,var_text
+</span></span><span class="line"><span class="cl">    mov rdx,14
+</span></span><span class="line"><span class="cl">    syscall
+</span></span><span class="line"><span class="cl">    mov rax,60
+</span></span><span class="line"><span class="cl">    mov rdi,0
+</span></span><span class="line"><span class="cl">    syscall
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">lyr@DESKTOP-FSVN6C0:~/tmp/assmbly$ nasm -f elf64 -o hello.o hello.asm
+</span></span><span class="line"><span class="cl">lyr@DESKTOP-FSVN6C0:~/tmp/assmbly$ ls
+</span></span><span class="line"><span class="cl">hello.asm  hello.o
+</span></span><span class="line"><span class="cl">lyr@DESKTOP-FSVN6C0:~/tmp/assmbly$ man ld
+</span></span><span class="line"><span class="cl">lyr@DESKTOP-FSVN6C0:~/tmp/assmbly$ ld hello.o -o hello
+</span></span><span class="line"><span class="cl">lyr@DESKTOP-FSVN6C0:~/tmp/assmbly$ ls
+</span></span><span class="line"><span class="cl">hello  hello.asm  hello.o
+</span></span><span class="line"><span class="cl">lyr@DESKTOP-FSVN6C0:~/tmp/assmbly$ ./hello
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="进程状态">进程状态</h3>
+<p>[[post/14.新语言学习记录/linux/linux基础原理杂记/部署总结/进程状态|机场状态]]
+[[post/14.新语言学习记录/linux/linux基础原理杂记/cpp语言使用/进程运行的状态 |cpp语言进程运行状态]]</p>
+<h3 id="开机后-需要接管的cpu-的控制器">开机后 需要接管的cpu 的控制器</h3>
+<center>
+<div class="mermaid">
+    
+graph LR
+
+开机 --&gt; BIOS
+BIOS --&gt; 引导程序 --&gt;操作系统
+
+
+
+</div>
+</center>
+<h4 id="bios">bios</h4>
+<ul>
+<li>post （power on self test）</li>
+<li>转交 MBR</li>
+<li>MBR master boot record</li>
+</ul>
+<h4 id="引导程序">引导程序</h4>
+<ul>
+<li>MBR</li>
+<li>分区引导程序</li>
+<li>加载内核</li>
+<li>转交内核</li>
+</ul>
+<h4 id="ram-和-rom">RAM 和 ROM</h4>
+<p>ram 是随机存储，rom read only memory ,不可修改， ram容易丢失数据</p>
+<h4 id="硬件消息处理流程">硬件消息处理流程</h4>
+<center>
+<div class="mermaid">
+    
+graph LR 
+键盘 --&gt; 硬件缓存区 --&gt; IRQ  
+IRQ --&gt; OS --消息处理event,判断给哪个程序--&gt;  APP
+
+</div>
+</center>
+<p>按键盘后，现在缓冲区修改，然后在触发中断 ，让操作系统运行程序处理</p>
+<p>os会检测 这个按键信息是给哪个运行的程序处理的</p>
+<h4 id="ring-buffer">ring buffer</h4>
+<p>键盘的缓冲区其实是一个循环队列 ，</p>
+<p><img src="https://www.weixueyuan.net/uploads/allimg/121229/1-121229205341331.png" alt=""></p>
+<p><img src="https://images.cnblogs.com/cnblogs_com/leavingQ/201201/201201101351143940.png" alt="https://images.cnblogs.com/cnblogs_com/leavingQ/201201/201201101351143940.png"></p>
+<h2 id="操作系统是什么">操作系统是什么？</h2>
+<ul>
+<li>一种程序
+<ul>
+<li>管理硬件设备、资源应用程序（管理能力）</li>
+<li>将硬件能力、资源抽象成为服务让应用程序使用（抽象能力）</li>
+</ul>
+</li>
+</ul>
+<h2 id="内核设计">内核设计</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">内核</th>
+<th style="text-align:center">驱动</th>
+<th style="text-align:center">服务</th>
+<th style="text-align:center">应用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">时钟</td>
+<td style="text-align:center">磁盘</td>
+<td style="text-align:center">文件</td>
+<td style="text-align:center">shell</td>
+</tr>
+<tr>
+<td style="text-align:center">进程管理</td>
+<td style="text-align:center">tty</td>
+<td style="text-align:center">进程</td>
+<td style="text-align:center">gui</td>
+</tr>
+<tr>
+<td style="text-align:center">进程调度</td>
+<td style="text-align:center">打印机</td>
+<td style="text-align:center">打印</td>
+<td style="text-align:center">..</td>
+</tr>
+<tr>
+<td style="text-align:center">进程通信</td>
+<td style="text-align:center">显示器</td>
+<td style="text-align:center">自检</td>
+<td style="text-align:center">&hellip;</td>
+</tr>
+<tr>
+<td style="text-align:center">中断处理</td>
+<td style="text-align:center">&hellip;</td>
+<td style="text-align:center">&hellip;</td>
+<td style="text-align:center">..</td>
+</tr>
+</tbody>
+</table>
+<h2 id="操作系统权限问题">操作系统权限问题</h2>
+<h3 id="权限怎么处理">权限怎么处理</h3>
+<ul>
+<li>用户执行 rm -rf /*</li>
+<li>打印机驱动程序改写中断向量表</li>
+<li>游戏程序按攻击按钮</li>
+<li>显示驱动访问打印机端口</li>
+</ul>
+<p>解决方法：</p>
+<ol>
+<li>拆分权限（端口权限，文件权限、操作权限等）</li>
+<li>拆分 内核态（执行操作系统特权指令） 和用户态</li>
+</ol>
+<center>
+<div class="mermaid">
+    
+sequenceDiagram
+    应用-&gt;&gt;服务: 分配内存
+	服务-&gt;&gt; 服务: 参数/权限检查
+	服务-&gt;&gt; 服务: 调用准备（寄存器、内存等)
+	服务-&gt;&gt; 内核: 中断
+	内核 --) 服务: 重置中断状态 
+	服务 -&gt;&gt; 服务: 一些处理
+	服务 -&gt;&gt; 应用:返回
+
+</div>
+</center>
+<ul>
+<li>应用程序进行系统调用</li>
+<li>服务层解析参数、校验</li>
+<li>权限检查</li>
+<li>调用准备（寄存器、内存等）</li>
+<li>trap(软中断)、陷入内核</li>
+<li>内核进行处理</li>
+<li>内核恢复trap前状态</li>
+<li>服务层进行一些处理准备返回数据</li>
+<li>返回数据给应用层</li>
+</ul>
+<h3 id="总结">总结</h3>
+<ul>
+<li>为什么用微内核
+<ul>
+<li>内核管的少，扩展性钱。 比如调度算法、文件系统扩展</li>
+</ul>
+</li>
+</ul>
+<h2 id="其他笔记">其他笔记</h2>
+<p>[[post/05.软件和系统/02.系统相关/02.Linux面试|linux面试]]</p>
+<p>[[post/08.其他/网友总结/操作系统/内存 |内存]]
+[[post/03.基础学科/01.操作系统/4.内存管理|内存管理]]</p>
+<p>[[post/14.新语言学习记录/语言技术/Golang/理论学习/课外课程学习/linux进程内存原理|go内存]]</p>
+<p>[[post/14.新语言学习记录/linux/linux基础原理杂记/cpp语言使用/linux下 进程控制【fork】|linux fork原理]]</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-04-24
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/">操作系统实现原理</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/linux%E5%86%85%E6%A0%B8%E7%90%86%E8%A7%A3/%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">中断机制</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/linux/linux%E5%9F%BA%E7%A1%80%E5%8E%9F%E7%90%86%E6%9D%82%E8%AE%B0/linux%E5%86%85%E6%A0%B8%E7%90%86%E8%A7%A3/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+            <span class="next-text nav-default">文件系统,inode</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-04-24 14:52:48 \u002b0800 \u002b0800',
+        title: 'linux 开机启动流程',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://lyr-2000.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-09-23 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.6d2c4f127d59e1dce56e2845adf7d359011b86d8fc907e98877eb35bd445b2b3.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js/back_btn.js"></script>
+<script src="/js/docsearch.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+ 
+  <div id="BR_cornner">
+    <div id='darkThemeBtn'>T</div> 
+  </div> 
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<script defer async>
+
+  mermaid.initialize({startOnLoad:true});
+</script>
+</body>
+</html>
