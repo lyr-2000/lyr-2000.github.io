@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>go技术概述 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="go语言需要学习的技术记录 协程原理，理解协程开发思路 从通信与共享内存角度，了解channel原理 精通go网络通信原理，提升架构思维 研究go堆" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.101.0 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E6%8A%80%E6%9C%AF%E6%A6%82%E8%BF%B0_%E6%BA%90%E7%A0%81%E8%B5%8F%E6%9E%900/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/post.css">
+
+
+<meta property="og:title" content="go技术概述" />
+<meta property="og:description" content="go语言需要学习的技术记录 协程原理，理解协程开发思路 从通信与共享内存角度，了解channel原理 精通go网络通信原理，提升架构思维 研究go堆" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E6%8A%80%E6%9C%AF%E6%A6%82%E8%BF%B0_%E6%BA%90%E7%A0%81%E8%B5%8F%E6%9E%900/" /><meta property="og:image" content="https://tva1.sinaimg.cn/large/0072Vf1pgy1foxkfi9tt0j31hc0u07m8.jpg" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-07-04T00:08:28+08:00" />
+<meta property="article:modified_time" content="2022-05-11T20:02:48+08:00" />
+
+<meta itemprop="name" content="go技术概述">
+<meta itemprop="description" content="go语言需要学习的技术记录 协程原理，理解协程开发思路 从通信与共享内存角度，了解channel原理 精通go网络通信原理，提升架构思维 研究go堆"><meta itemprop="datePublished" content="2022-07-04T00:08:28+08:00" />
+<meta itemprop="dateModified" content="2022-05-11T20:02:48+08:00" />
+<meta itemprop="wordCount" content="2258"><meta itemprop="image" content="https://tva1.sinaimg.cn/large/0072Vf1pgy1foxkfi9tt0j31hc0u07m8.jpg">
+<meta itemprop="keywords" content="课外课程学习," /><meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://tva1.sinaimg.cn/large/0072Vf1pgy1foxkfi9tt0j31hc0u07m8.jpg"/>
+
+<meta name="twitter:title" content="go技术概述"/>
+<meta name="twitter:description" content="go语言需要学习的技术记录 协程原理，理解协程开发思路 从通信与共享内存角度，了解channel原理 精通go网络通信原理，提升架构思维 研究go堆"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body >
+  
+  
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="globalbg"></div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel" >
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	<div class="customByLyr">
+  
+			<img class="lazyload"  draggable="false"  data-original="https://tva1.sinaimg.cn/large/0072Vf1pgy1foxkfi9tt0j31hc0u07m8.jpg" />
+		</div>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">go技术概述</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-07-04 </span>
+        <div class="post-category">
+            <a href="/categories/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/"> 课外课程学习 </a>
+            </div>
+          <span class="more-meta"> 约 2258 字 </span>
+          <span class="more-meta"> 预计阅读 5 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#go语言需要学习的技术记录">go语言需要学习的技术记录</a></li>
+        <li><a href="#认识-go语言">认识 go语言</a></li>
+        <li><a href="#go-语言特性">go 语言特性</a></li>
+        <li><a href="#go包管理问题">go包管理问题</a></li>
+        <li><a href="#golang-runtime的特点">golang runtime的特点</a></li>
+        <li><a href="#go程序编译">go程序编译</a>
+          <ul>
+            <li><a href="#go语言编译过程">go语言编译过程</a></li>
+          </ul>
+        </li>
+        <li><a href="#go程序是如何启动起来的">go程序是如何启动起来的？</a></li>
+        <li><a href="#查看-汇编的入口程序">查看 汇编的入口程序</a>
+          <ul>
+            <li><a href="#初始化栈-将-参数数量argc-参数值argv-拷贝到栈上">初始化栈 ，将 （参数数量）argc， （参数值）argv 拷贝到栈上</a></li>
+            <li><a href="#初始化-g0执行栈">初始化 g0执行栈</a></li>
+            <li><a href="#调度器初始化-runtimeschedinit">调度器初始化 runtime.schedinit</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h2 id="go语言需要学习的技术记录">go语言需要学习的技术记录</h2>
+<ol>
+<li>协程原理，理解协程开发思路</li>
+<li>从通信与共享内存角度，了解channel原理</li>
+<li>精通go网络通信原理，提升架构思维</li>
+<li>研究go堆内存结构，优化GC性能</li>
+</ol>
+<p>下载 go语言环境</p>
+<p><a href="https://gomirrors.org/">gomirrors.org</a></p>
+<h2 id="认识-go语言">认识 go语言</h2>
+<ul>
+<li>go语言的特点</li>
+<li>go语言的优势</li>
+<li>go语言的途径</li>
+</ul>
+<p>相对于c语言来说，c语言不是面向对象，直接编译为机器码，不需要执行环境 ，c语言的一次编码只能适用于一种平台，自己处理GC问题，go语言 可以直接编译为二进制，没有虚拟化损失，自带运行环境，无需处理Gc问题。</p>
+<p>优秀的go语言项目:</p>
+<ol>
+<li>docker</li>
+<li>etcd</li>
+<li>kubernetes</li>
+<li>codis （类似redis的)</li>
+<li>falcon (系统监测)</li>
+<li>tidb (关系型数据库)</li>
+<li>beego</li>
+</ol>
+<h2 id="go-语言特性">go 语言特性</h2>
+<ul>
+<li>go没有对象、没有类、没有继承</li>
+<li>通过组合匿名字段达到类似继承的效果</li>
+<li>去掉了面向对象中复杂冗余的部分</li>
+<li>保留基本的 面向对象的特性</li>
+</ul>
+<h2 id="go包管理问题">go包管理问题</h2>
+<ul>
+<li>没有统一的包管理方式</li>
+<li>包之间的依赖关系很难维护</li>
+<li>如果同时需要一个包的不同版本，非常麻烦</li>
+<li>解决方式：
+<ul>
+<li>godep</li>
+<li>govendor</li>
+<li>glide</li>
+<li>以上方法的问题是，未彻底解决GOPATH存在的问题，使用起来麻烦</li>
+</ul>
+</li>
+</ul>
+<p>go11 有一个 go modules 用来管理go的包</p>
+<ul>
+<li>本质上，go包是一个项目的 源码，</li>
+<li>gomod 作用是，将 go包和git项目关联起来</li>
+<li>go包的版本就是 git 项目的 tag</li>
+<li>gomod 解决了 需要哪个git项目的 什么版本</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">go get xxx@v1
+</span></span><span class="line"><span class="cl"><span class="c1"># 我们可以直接 go get 下载就可以了</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="golang-runtime的特点">golang runtime的特点</h2>
+<ul>
+<li>没有虚拟机的概念</li>
+<li>runtime作为程序的一部分打包二进制产物 (runtime负责内存管理、垃圾回收、协程调度，并且把runtime直接一起打包到二进制里面)</li>
+<li>内存管理能力</li>
+<li>垃圾回收能力 (GC)</li>
+<li>并发能力 （协程调度)</li>
+<li>runtime屏蔽系统调用的能力</li>
+<li>一些go的关键字其实是 runtime下的函数</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">关键字</th>
+<th style="text-align:center">函数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">go</td>
+<td style="text-align:center">newproc</td>
+</tr>
+<tr>
+<td style="text-align:center">new</td>
+<td style="text-align:center">newobject</td>
+</tr>
+<tr>
+<td style="text-align:center">make</td>
+<td style="text-align:center">makeslice,makechain,makemap</td>
+</tr>
+<tr>
+<td style="text-align:center">&lt;-</td>
+<td style="text-align:center">chansend1,chanrecv1</td>
+</tr>
+</tbody>
+</table>
+<h2 id="go程序编译">go程序编译</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">go build -n 
+</span></span><span class="line"><span class="cl"><span class="c1"># build -n 表示不实际编译，只是输出编译过程</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="go语言编译过程">go语言编译过程</h3>
+<center>
+<div class="mermaid">
+    
+graph LR
+词法分析 --&gt; 句法分析 --&gt;语义分析--&gt;中间代码(SSA)生成--&gt;代码优化--&gt;机器码生成--&gt;链接
+
+
+
+</div>
+</center>
+<p>查看总结代码生成的过程</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nv">$env:GOSSAFUNC</span><span class="p">=</span><span class="s2">&#34;main&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">go</span> <span class="n">build</span>
+</span></span><span class="line"><span class="cl"><span class="c"># dumped ssa to html</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="go程序是如何启动起来的">go程序是如何启动起来的？</h2>
+<p>go程序的入口</p>
+<h2 id="查看-汇编的入口程序">查看 汇编的入口程序</h2>
+<p><code>src/runtime/asm_amd64.s</code></p>
+<h3 id="初始化栈-将-参数数量argc-参数值argv-拷贝到栈上">初始化栈 ，将 （参数数量）argc， （参数值）argv 拷贝到栈上</h3>
+<h3 id="初始化-g0执行栈">初始化 g0执行栈</h3>
+<ul>
+<li>g0 是为了调度协程而产生的协程</li>
+<li>g0是每个go程序的第一个协程（母协程）</li>
+<li>runtime.check (汇编里调用的)
+<ul>
+<li>检查各种类型 长度</li>
+<li>检查结构体字段偏移量</li>
+<li>检查cas操作</li>
+<li>检查指针操作</li>
+<li>检查 atomic 原子操作</li>
+<li>检查栈大小是否是2的幂</li>
+</ul>
+</li>
+<li>CALL	runtime·args(SB)</li>
+<li>CALL	runtime·osinit(SB)</li>
+<li>CALL	runtime·schedinit(SB)
+<ul>
+<li>初始化调度器</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-s" data-lang="s"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">CALL</span>	<span class="n">runtime</span>·<span class="nf">check</span><span class="p">(</span><span class="n">SB</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">MOVL</span>	<span class="m">24</span><span class="p">(</span><span class="n">SP</span><span class="p">),</span> <span class="n">AX</span>		<span class="o">/</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-s" data-lang="s"><span class="line"><span class="cl">	<span class="o">//</span> <span class="n">copy</span> <span class="n">arguments</span> <span class="n">forward</span> <span class="n">on</span> <span class="n">an</span> <span class="n">even</span> <span class="n">stack</span>
+</span></span><span class="line"><span class="cl">	<span class="n">MOVQ</span>	<span class="n">DI</span><span class="p">,</span> <span class="n">AX</span>		<span class="o">//</span> <span class="n">argc</span>
+</span></span><span class="line"><span class="cl">	<span class="n">MOVQ</span>	<span class="n">SI</span><span class="p">,</span> <span class="n">BX</span>		<span class="o">//</span> <span class="n">argv</span>
+</span></span><span class="line"><span class="cl">	<span class="n">SUBQ</span>	<span class="o">$</span><span class="p">(</span><span class="m">5</span><span class="o">*</span><span class="m">8</span><span class="p">),</span> <span class="n">SP</span>		<span class="o">//</span> <span class="m">3</span><span class="n">args</span> <span class="m">2</span><span class="n">auto</span>
+</span></span><span class="line"><span class="cl">	<span class="n">ANDQ</span>	<span class="o">$~</span><span class="m">15</span><span class="p">,</span> <span class="n">SP</span>
+</span></span><span class="line"><span class="cl">	<span class="n">MOVQ</span>	<span class="n">AX</span><span class="p">,</span> <span class="m">24</span><span class="p">(</span><span class="n">SP</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">MOVQ</span>	<span class="n">BX</span><span class="p">,</span> <span class="m">32</span><span class="p">(</span><span class="n">SP</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="o">//</span> <span class="n">create</span> <span class="n">istack</span> <span class="n">out</span> <span class="n">of</span> <span class="n">the</span> <span class="nf">given </span><span class="p">(</span><span class="n">operating</span> <span class="n">system</span><span class="p">)</span> <span class="n">stack.</span>
+</span></span><span class="line"><span class="cl">	<span class="o">//</span> <span class="n">_cgo_init</span> <span class="n">may</span> <span class="n">update</span> <span class="n">stackguard.</span>
+</span></span><span class="line"><span class="cl">	<span class="n">MOVQ</span>	<span class="o">$</span><span class="n">runtime</span>·<span class="nf">g0</span><span class="p">(</span><span class="n">SB</span><span class="p">),</span> <span class="n">DI</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">LEAQ	</span><span class="p">(</span><span class="m">-64</span><span class="o">*</span><span class="m">1024+104</span><span class="p">)(</span><span class="n">SP</span><span class="p">),</span> <span class="n">BX</span>
+</span></span><span class="line"><span class="cl">	<span class="n">MOVQ</span>	<span class="n">BX</span><span class="p">,</span> <span class="nf">g_stackguard0</span><span class="p">(</span><span class="n">DI</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">MOVQ</span>	<span class="n">BX</span><span class="p">,</span> <span class="nf">g_stackguard1</span><span class="p">(</span><span class="n">DI</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">MOVQ</span>	<span class="n">BX</span><span class="p">,</span> <span class="p">(</span><span class="n">g_stack</span><span class="o">+</span><span class="n">stack_lo</span><span class="p">)(</span><span class="n">DI</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">MOVQ</span>	<span class="n">SP</span><span class="p">,</span> <span class="p">(</span><span class="n">g_stack</span><span class="o">+</span><span class="n">stack_hi</span><span class="p">)(</span><span class="n">DI</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"> 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="调度器初始化-runtimeschedinit">调度器初始化 runtime.schedinit</h3>
+<ul>
+<li>全局栈空间内存分配</li>
+<li>堆内存空间初始化</li>
+<li>初始化当前系统线程</li>
+<li>算法初始化 (map、hash)</li>
+<li>加载命令行参数 os.Args</li>
+<li>加载操作系统环境变量</li>
+<li>垃圾回收器参数初始化</li>
+<li>设置 process 数量</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-s" data-lang="s"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">MOVL</span>	<span class="m">24</span><span class="p">(</span><span class="n">SP</span><span class="p">),</span> <span class="n">AX</span>		<span class="o">//</span> <span class="n">copy</span> <span class="n">argc</span>
+</span></span><span class="line"><span class="cl"><span class="n">MOVL</span>	<span class="n">AX</span><span class="p">,</span> <span class="m">0</span><span class="p">(</span><span class="n">SP</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">MOVQ</span>	<span class="m">32</span><span class="p">(</span><span class="n">SP</span><span class="p">),</span> <span class="n">AX</span>		<span class="o">//</span> <span class="n">copy</span> <span class="n">argv</span>
+</span></span><span class="line"><span class="cl"><span class="n">MOVQ</span>	<span class="n">AX</span><span class="p">,</span> <span class="m">8</span><span class="p">(</span><span class="n">SP</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">CALL</span>	<span class="n">runtime</span>·<span class="nf">args</span><span class="p">(</span><span class="n">SB</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">CALL</span>	<span class="n">runtime</span>·<span class="nf">osinit</span><span class="p">(</span><span class="n">SB</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">CALL</span>	<span class="n">runtime</span>·<span class="nf">schedinit</span><span class="p">(</span><span class="n">SB</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">//</span> <span class="n">create</span> <span class="n">a</span> <span class="n">new</span> <span class="n">goroutine</span> <span class="n">to</span> <span class="n">start</span> <span class="n">program</span>
+</span></span><span class="line"><span class="cl"><span class="n">MOVQ</span>	<span class="o">$</span><span class="n">runtime</span>·<span class="nf">mainPC</span><span class="p">(</span><span class="n">SB</span><span class="p">),</span> <span class="n">AX</span>		<span class="o">//</span> <span class="n">entry</span>
+</span></span><span class="line"><span class="cl"><span class="n">PUSHQ</span>	<span class="n">AX</span>
+</span></span><span class="line"><span class="cl"><span class="n">CALL</span>	<span class="n">runtime</span>·<span class="nf">newproc</span><span class="p">(</span><span class="n">SB</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">POPQ</span>	<span class="n">AX</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">//</span> <span class="n">start</span> <span class="n">this</span> <span class="n">M</span> ， <span class="n">M是线程</span>，调度器的<span class="n">M</span>
+</span></span><span class="line"><span class="cl"><span class="n">CALL</span>	<span class="n">runtime</span>·<span class="nf">mstart</span><span class="p">(</span><span class="n">SB</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">CALL</span>	<span class="n">runtime</span>·<span class="nf">abort</span><span class="p">(</span><span class="n">SB</span><span class="p">)</span>	<span class="o">//</span> <span class="n">mstart</span> <span class="n">should</span> <span class="n">never</span> <span class="n">return</span>
+</span></span><span class="line"><span class="cl"><span class="n">RET</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>执行顺序：</p>
+<ul>
+<li>创建新的协程，执行 runtime.main</li>
+<li>放入调度器等待调度</li>
+<li>初始化一个 M,用来调度主协程  <code>runtime.mstart</code></li>
+</ul>
+<p>看go源码 <code>runtime/proc.go</code> 的main函数下面，这个才是 golang 真实执行的 main函数。</p>
+<ul>
+<li>GO启动经历了检查、各种初始化、初始化协程调度的过程</li>
+<li>用户 <code>main.go</code>下面的的 <code>main</code> 函数 也是在协程中运行的</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// The main goroutine.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">g</span> <span class="o">:=</span> <span class="nf">getg</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Racectx of m0-&gt;g0 is used only as the parent of the main goroutine.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// It must not be used for anything else.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">g</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">g0</span><span class="p">.</span><span class="nx">racectx</span> <span class="p">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Max stack size is 1 GB on 64-bit, 250 MB on 32-bit.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Using decimal instead of binary GB and MB because
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// they look nicer in the stack overflow failure message.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">goarch</span><span class="p">.</span><span class="nx">PtrSize</span> <span class="o">==</span> <span class="mi">8</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">maxstacksize</span> <span class="p">=</span> <span class="mi">1000000000</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">maxstacksize</span> <span class="p">=</span> <span class="mi">250000000</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// An upper limit for max stack size. Used to avoid random crashes
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// after calling SetMaxStack and trying to allocate a stack that is too big,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// since stackalloc works with 32-bit sizes.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">maxstackceiling</span> <span class="p">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="nx">maxstacksize</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Allow newproc to start new Ms.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">mainStarted</span> <span class="p">=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">GOARCH</span> <span class="o">!=</span> <span class="s">&#34;wasm&#34;</span> <span class="p">{</span> <span class="c1">// no threads on wasm yet, so no sysmon
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nf">systemstack</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">newm</span><span class="p">(</span><span class="nx">sysmon</span><span class="p">,</span> <span class="kc">nil</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">})</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Lock the main goroutine onto this, the main OS thread,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// during initialization. Most programs won&#39;t care, but a few
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// do require certain calls to be made by the main thread.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Those can arrange for main.main to run in the main thread
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// by calling runtime.LockOSThread during initialization
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// to preserve the lock.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nf">lockOSThread</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">g</span><span class="p">.</span><span class="nx">m</span> <span class="o">!=</span> <span class="o">&amp;</span><span class="nx">m0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">throw</span><span class="p">(</span><span class="s">&#34;runtime.main not on m0&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Record when the world started.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Must be before doInit for tracing init.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">runtimeInitTime</span> <span class="p">=</span> <span class="nf">nanotime</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">runtimeInitTime</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">throw</span><span class="p">(</span><span class="s">&#34;nanotime returning zero&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">debug</span><span class="p">.</span><span class="nx">inittrace</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">inittrace</span><span class="p">.</span><span class="nx">id</span> <span class="p">=</span> <span class="nf">getg</span><span class="p">().</span><span class="nx">goid</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">inittrace</span><span class="p">.</span><span class="nx">active</span> <span class="p">=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nf">doInit</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">runtime_inittask</span><span class="p">)</span> <span class="c1">// Must be before defer.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Defer unlock so that runtime.Goexit during init does the unlock too.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">needUnlock</span> <span class="o">:=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">needUnlock</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">unlockOSThread</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}()</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//开启垃圾回收功能
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nf">gcenable</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">main_init_done</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">bool</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">iscgo</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">_cgo_thread_start</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">throw</span><span class="p">(</span><span class="s">&#34;_cgo_thread_start missing&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">GOOS</span> <span class="o">!=</span> <span class="s">&#34;windows&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">_cgo_setenv</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="nf">throw</span><span class="p">(</span><span class="s">&#34;_cgo_setenv missing&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">_cgo_unsetenv</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="nf">throw</span><span class="p">(</span><span class="s">&#34;_cgo_unsetenv missing&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">_cgo_notify_runtime_init_done</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">throw</span><span class="p">(</span><span class="s">&#34;_cgo_notify_runtime_init_done missing&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// Start the template thread in case we enter Go from
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// a C-created thread and need to create a new thread.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nf">startTemplateThread</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">cgocall</span><span class="p">(</span><span class="nx">_cgo_notify_runtime_init_done</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nf">doInit</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">main_inittask</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Disable init tracing after main init done to avoid overhead
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// of collecting statistics in malloc and newproc
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">inittrace</span><span class="p">.</span><span class="nx">active</span> <span class="p">=</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nb">close</span><span class="p">(</span><span class="nx">main_init_done</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">needUnlock</span> <span class="p">=</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">unlockOSThread</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">isarchive</span> <span class="o">||</span> <span class="nx">islibrary</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// A program compiled with -buildmode=c-archive or c-shared
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// has a main, but it is not executed.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">return</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fn</span> <span class="o">:=</span> <span class="nx">main_main</span> <span class="c1">// make an indirect call, as the linker doesn&#39;t know the address of the main package when laying down the runtime
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nf">fn</span><span class="p">()</span> <span class="c1">//用户 main.go main 方法
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">raceenabled</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">racefini</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Make racy client program work: if panicking on
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// another goroutine at the same time as main returns,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// let the other goroutine finish printing the panic trace.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Once it does, it will exit. See issues 3934 and 20018.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">Load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">runningPanicDefers</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// Running deferred functions should not take long.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">for</span> <span class="nx">c</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">c</span> <span class="p">&lt;</span> <span class="mi">1000</span><span class="p">;</span> <span class="nx">c</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">Load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">runningPanicDefers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">break</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">Gosched</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">Load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">panicking</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">gopark</span><span class="p">(</span><span class="kc">nil</span><span class="p">,</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">waitReasonPanicWait</span><span class="p">,</span> <span class="nx">traceEvGoStop</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nf">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="kd">var</span> <span class="nx">x</span> <span class="o">*</span><span class="kt">int32</span>
+</span></span><span class="line"><span class="cl">		<span class="o">*</span><span class="nx">x</span> <span class="p">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-05-11
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/">课外课程学习</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E6%BA%90%E7%A0%81%E8%B5%8F%E6%9E%901%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">go语言源码赏析1</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/golang%E5%A4%9A%E7%BA%BF%E7%A8%8B/">
+            <span class="next-text nav-default">Golang_多线程</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-07-04 00:08:28 \u002b0800 \u002b0800',
+        title: 'go技术概述',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://lyr-2000.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-09-23 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.6d2c4f127d59e1dce56e2845adf7d359011b86d8fc907e98877eb35bd445b2b3.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js/back_btn.js"></script>
+<script src="/js/docsearch.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+ 
+  <div id="BR_cornner">
+    <div id='darkThemeBtn'>T</div> 
+  </div> 
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<script defer async>
+
+  mermaid.initialize({startOnLoad:true});
+</script>
+</body>
+</html>

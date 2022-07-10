@@ -1,0 +1,2060 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>go语言源码赏析1 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="go语言源码赏析 [[go技术概述_源码赏析0]] go数据结构要点 一个结构体占用空间大小与下面那种有关？ 成员本身大小 成员对齐系数 系统字长 go字" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.101.0 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E6%BA%90%E7%A0%81%E8%B5%8F%E6%9E%901%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/post.css">
+
+
+<meta property="og:title" content="go语言源码赏析1" />
+<meta property="og:description" content="go语言源码赏析 [[go技术概述_源码赏析0]] go数据结构要点 一个结构体占用空间大小与下面那种有关？ 成员本身大小 成员对齐系数 系统字长 go字" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E6%BA%90%E7%A0%81%E8%B5%8F%E6%9E%901%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8/" /><meta property="og:image" content="https://tva4.sinaimg.cn/large/0075auPSly1fqb0ohnc1tj316x0m81fb.jpg" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-07-05T17:03:20+08:00" />
+<meta property="article:modified_time" content="2022-05-11T20:02:48+08:00" />
+
+<meta itemprop="name" content="go语言源码赏析1">
+<meta itemprop="description" content="go语言源码赏析 [[go技术概述_源码赏析0]] go数据结构要点 一个结构体占用空间大小与下面那种有关？ 成员本身大小 成员对齐系数 系统字长 go字"><meta itemprop="datePublished" content="2022-07-05T17:03:20+08:00" />
+<meta itemprop="dateModified" content="2022-05-11T20:02:48+08:00" />
+<meta itemprop="wordCount" content="5564"><meta itemprop="image" content="https://tva4.sinaimg.cn/large/0075auPSly1fqb0ohnc1tj316x0m81fb.jpg">
+<meta itemprop="keywords" content="课外课程学习," /><meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://tva4.sinaimg.cn/large/0075auPSly1fqb0ohnc1tj316x0m81fb.jpg"/>
+
+<meta name="twitter:title" content="go语言源码赏析1"/>
+<meta name="twitter:description" content="go语言源码赏析 [[go技术概述_源码赏析0]] go数据结构要点 一个结构体占用空间大小与下面那种有关？ 成员本身大小 成员对齐系数 系统字长 go字"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body >
+  
+  
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="globalbg"></div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel" >
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	<div class="customByLyr">
+  
+			<img class="lazyload"  draggable="false"  data-original="https://tva4.sinaimg.cn/large/0075auPSly1fqb0ohnc1tj316x0m81fb.jpg" />
+		</div>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">go语言源码赏析1</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-07-05 </span>
+        <div class="post-category">
+            <a href="/categories/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/"> 课外课程学习 </a>
+            </div>
+          <span class="more-meta"> 约 5564 字 </span>
+          <span class="more-meta"> 预计阅读 12 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#go语言源码赏析">go语言源码赏析</a>
+      <ul>
+        <li><a href="#go数据结构要点">go数据结构要点</a></li>
+        <li><a href="#sizeof-判断类型大小">sizeof 判断类型大小</a></li>
+        <li><a href="#go-实现hashset同时节省内存">go 实现hashSet同时节省内存</a>
+          <ul>
+            <li><a href="#空结构体节省内存">空结构体节省内存</a></li>
+          </ul>
+        </li>
+        <li><a href="#字符串的内存占用">字符串的内存占用</a>
+          <ul>
+            <li><a href="#unicode介绍">Unicode介绍</a></li>
+            <li><a href="#遍历字符串的方法">遍历字符串的方法</a></li>
+            <li><a href="#字符串解码算法源码">字符串解码算法源码</a></li>
+          </ul>
+        </li>
+        <li><a href="#切片结构分析">切片结构分析</a>
+          <ul>
+            <li><a href="#切片的几种创建方法">切片的几种创建方法</a></li>
+            <li><a href="#切片的行为">切片的行为</a></li>
+          </ul>
+        </li>
+        <li><a href="#hashmap实现原理">hashMap实现原理</a>
+          <ul>
+            <li><a href="#makemap-源码">makemap 源码</a></li>
+            <li><a href="#字面量初始化">字面量初始化</a></li>
+            <li><a href="#hashmap总结">hashMap总结</a></li>
+          </ul>
+        </li>
+        <li><a href="#map扩容原理">map扩容原理</a></li>
+        <li><a href="#hashmap线程安全问题">hashMap线程安全问题</a></li>
+        <li><a href="#线程安全的map">线程安全的Map</a></li>
+        <li><a href="#golang-接口">golang 接口</a>
+          <ul>
+            <li><a href="#结构体和指针实现接口">结构体和指针实现接口</a></li>
+          </ul>
+        </li>
+        <li><a href="#空接口类型">空接口类型</a>
+          <ul>
+            <li><a href="#总结">总结</a></li>
+            <li><a href="#nil空接口空结构体区别">nil,空接口,空结构体区别</a></li>
+          </ul>
+        </li>
+        <li><a href="#内存对齐优化">内存对齐优化</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h1 id="go语言源码赏析">go语言源码赏析</h1>
+<p>[[go技术概述_源码赏析0]]</p>
+<h2 id="go数据结构要点">go数据结构要点</h2>
+<ol>
+<li>
+<p>一个结构体占用空间大小与下面那种有关？</p>
+<ol>
+<li>成员本身大小</li>
+<li>成员对齐系数</li>
+<li>系统字长</li>
+</ol>
+</li>
+<li>
+<p>go字符串中，每个字符占用多少字节</p>
+<ol>
+<li>1字节</li>
+<li>3字节</li>
+<li>4字节
+解析： go字符串采用utf-8编码，一个字符1-4字节</li>
+</ol>
+</li>
+<li>
+<p>go的 map是什么数据结构？</p>
+<ol>
+<li>b+树</li>
+<li>开放寻址hash表</li>
+<li>拉链法hash表
+go map采用拉链hash,特征是 哈希桶(bucket)</li>
+</ol>
+</li>
+<li>
+<p>空结构体的地址任何时候都是 zerobase(x)
+错，空结构体是其他结构体成员时，地址跟随其他兄弟成员</p>
+</li>
+<li>
+<p>空接口就是 nil接口
+空接口有2个成员，分别是 数据和类型，当数据和类型都不存在时候，才是 nil接口</p>
+</li>
+</ol>
+<h2 id="sizeof-判断类型大小">sizeof 判断类型大小</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;unsafe&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">A</span> <span class="kd">interface</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">echo</span><span class="p">(</span><span class="nx">a</span> <span class="o">...</span><span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">v</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">a</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%T -&gt; %+v\n&#34;</span><span class="p">,</span> <span class="nx">v</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">v</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">a</span> <span class="nx">A</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v&#34;</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">a</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">a</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nb">uint</span><span class="p">(</span><span class="mi">0</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="mi">0</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nb">int32</span><span class="p">(</span><span class="mi">0</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nb">int64</span><span class="p">(</span><span class="mi">0</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 如果用interface的话，最后全部都是 大小为16字节
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nf">echo</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">a</span><span class="p">,</span> <span class="nb">uint</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="nb">int32</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="nb">int64</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="go-实现hashset同时节省内存">go 实现hashSet同时节省内存</h2>
+<p>使用 channel,如果我们只想 发送一个信号的话，我们用 int 占用8个字节，用int32占用4个字节，int64占用8字节，用 bool 占用一个字节，byte 占用一个字节
+用 struct{} 空结构体更加节省内存。</p>
+<h3 id="空结构体节省内存">空结构体节省内存</h3>
+<ul>
+<li>空结构体地址相同（不被包含在其他结构体中时)</li>
+<li>空结构体主要是为了节约内存
+<ul>
+<li>结合 map (可以实现hashset )</li>
+<li>结合 channel (当作纯信号)</li>
+</ul>
+</li>
+<li>go中部分数据长度与系统字长有关</li>
+<li>空结构体不占用空间</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;unsafe&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">a</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// chan struct {} 空结构体不占用任何内存，比 chan bool 更轻量，建议用 struct{}
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">m</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kd">struct</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">m</span><span class="p">[</span><span class="s">&#34;a&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="kd">struct</span><span class="p">{}{}</span> <span class="c1">// 空结构体不占用内存
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">m</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">a</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v %v\n&#34;</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nb">byte</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="kc">false</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">b</span> <span class="p">=</span> <span class="kd">struct</span><span class="p">{}{}</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">c</span> <span class="p">=</span> <span class="kd">struct</span><span class="p">{}{}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%p %p&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">b</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">c</span><span class="p">)</span> <span class="c1">//得出结论：空结构体地址都相同，类似NULL，但是不是0，而是某块地址
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="字符串的内存占用">字符串的内存占用</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;unsafe&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">a</span> <span class="o">:=</span> <span class="s">&#34;hello&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">b</span> <span class="o">:=</span> <span class="s">&#34;world......&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%v %v\n&#34;</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">a</span><span class="p">),</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">b</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">//结果是两个都是 16
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>原因：看 <code>src\runtime\string.go</code> 的237行</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">stringStruct</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">str</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">len</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>stringStruct</code> 就是 string真实的样子</p>
+<ul>
+<li>字符串本质是一个结构体</li>
+<li>Data指针指向底层 Byte 数组</li>
+<li>Len表示 Byte数组的长度？ 字符个数？</li>
+</ul>
+<p><code>src/reflect/value.go</code> 反射包里面也有一个一模一样的</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// StringHeader is the runtime representation of a string.
+</span></span></span><span class="line"><span class="cl"><span class="c1">// It cannot be used safely or portably and its representation may
+</span></span></span><span class="line"><span class="cl"><span class="c1">// change in a later release.
+</span></span></span><span class="line"><span class="cl"><span class="c1">// Moreover, the Data field is not sufficient to guarantee the data
+</span></span></span><span class="line"><span class="cl"><span class="c1">// it references will not be garbage collected, so programs must keep
+</span></span></span><span class="line"><span class="cl"><span class="c1">// a separate, correctly typed pointer to the underlying data.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">StringHeader</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">Data</span> <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">Len</span>  <span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>uintptr 类型是最底层的指针表示，我们可以把字符串转成 <code>StringHeader</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;reflect&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;unsafe&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">a</span> <span class="o">:=</span> <span class="s">&#34;hello你&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">b</span> <span class="o">:=</span> <span class="s">&#34;world......&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%v %v\n&#34;</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">a</span><span class="p">),</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">b</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">//结果是两个都是 16
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">sh</span> <span class="o">:=</span> <span class="p">(</span><span class="o">*</span><span class="nx">reflect</span><span class="p">.</span><span class="nx">StringHeader</span><span class="p">)(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">a</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">sh</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%v %v\n&#34;</span><span class="p">,</span> <span class="nx">sh</span><span class="p">.</span><span class="nx">Data</span><span class="p">,</span> <span class="nx">sh</span><span class="p">.</span><span class="nx">Len</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>sh.Len == 8</code> 我们可以知道， 其中 汉字 占用了3个字节，字母只占用一个字节</p>
+<p>go使用的是 Utf8编码，** Len存储的是byte数组的长度** ，而不是字符串的长度</p>
+<p>utf-8是变长编码，有可能要3个字节才能表示一个中文。</p>
+<h3 id="unicode介绍">Unicode介绍</h3>
+<ul>
+<li>一种统一的字符集</li>
+<li>囊括159种文字的 144679个字符</li>
+<li>14万个字符 <strong>至少需要3个字节表示</strong></li>
+<li>utf8是Unicode的一种变长格式</li>
+<li>128个US-ASCII字符只需要一个字节编码</li>
+</ul>
+<h3 id="遍历字符串的方法">遍历字符串的方法</h3>
+<ul>
+<li>对字符串使用len方法得到的是字节数，不是字符数</li>
+<li>对字符串直接使用下标访问，得到的是字节</li>
+<li>字符串被range遍历的时候，会解析为 rune也就是 int32的类型的字符，占用4字节</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">a</span> <span class="o">:=</span> <span class="s">&#34;hello你&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// b := &#34;world......&#34;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="nx">a</span><span class="p">);</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%v: %v\n&#34;</span><span class="p">,</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">a</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;-----\n&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">a</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%v-&gt;%+v\n&#34;</span><span class="p">,</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">c</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;-----\n&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="字符串解码算法源码">字符串解码算法源码</h3>
+<p><code>runtime\utf8.go</code> 有个 <code>decoderune</code> 和 <code>encoderune</code>的方法</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">decoderune</span><span class="p">(</span><span class="nx">s</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">k</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="nx">r</span> <span class="kt">rune</span><span class="p">,</span> <span class="nx">pos</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">pos</span> <span class="p">=</span> <span class="nx">k</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">k</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="nx">s</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">runeError</span><span class="p">,</span> <span class="nx">k</span> <span class="o">+</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">s</span> <span class="p">=</span> <span class="nx">s</span><span class="p">[</span><span class="nx">k</span><span class="p">:]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">switch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="nx">t2</span> <span class="o">&lt;=</span> <span class="nx">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nx">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">&lt;</span> <span class="nx">t3</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// 0080-07FF two byte sequence
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">s</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">locb</span> <span class="o">&lt;=</span> <span class="nx">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nx">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="nx">hicb</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">r</span> <span class="p">=</span> <span class="nb">rune</span><span class="p">(</span><span class="nx">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&amp;</span><span class="nx">mask2</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="mi">6</span> <span class="p">|</span> <span class="nb">rune</span><span class="p">(</span><span class="nx">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&amp;</span><span class="nx">maskx</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">pos</span> <span class="o">+=</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">rune1Max</span> <span class="p">&lt;</span> <span class="nx">r</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">return</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="nx">t3</span> <span class="o">&lt;=</span> <span class="nx">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nx">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">&lt;</span> <span class="nx">t4</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// 0800-FFFF three byte sequence
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">s</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">locb</span> <span class="o">&lt;=</span> <span class="nx">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nx">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="nx">hicb</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">locb</span> <span class="o">&lt;=</span> <span class="nx">s</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nx">s</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="nx">hicb</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">r</span> <span class="p">=</span> <span class="nb">rune</span><span class="p">(</span><span class="nx">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&amp;</span><span class="nx">mask3</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="mi">12</span> <span class="p">|</span> <span class="nb">rune</span><span class="p">(</span><span class="nx">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&amp;</span><span class="nx">maskx</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="mi">6</span> <span class="p">|</span> <span class="nb">rune</span><span class="p">(</span><span class="nx">s</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">&amp;</span><span class="nx">maskx</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">pos</span> <span class="o">+=</span> <span class="mi">3</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">rune2Max</span> <span class="p">&lt;</span> <span class="nx">r</span> <span class="o">&amp;&amp;</span> <span class="p">!(</span><span class="nx">surrogateMin</span> <span class="o">&lt;=</span> <span class="nx">r</span> <span class="o">&amp;&amp;</span> <span class="nx">r</span> <span class="o">&lt;=</span> <span class="nx">surrogateMax</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">return</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="nx">t4</span> <span class="o">&lt;=</span> <span class="nx">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nx">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">&lt;</span> <span class="nx">t5</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// 10000-1FFFFF four byte sequence
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">s</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">3</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">locb</span> <span class="o">&lt;=</span> <span class="nx">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nx">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="nx">hicb</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">locb</span> <span class="o">&lt;=</span> <span class="nx">s</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nx">s</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="nx">hicb</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">locb</span> <span class="o">&lt;=</span> <span class="nx">s</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nx">s</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="nx">hicb</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">r</span> <span class="p">=</span> <span class="nb">rune</span><span class="p">(</span><span class="nx">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&amp;</span><span class="nx">mask4</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="mi">18</span> <span class="p">|</span> <span class="nb">rune</span><span class="p">(</span><span class="nx">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&amp;</span><span class="nx">maskx</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="mi">12</span> <span class="p">|</span> <span class="nb">rune</span><span class="p">(</span><span class="nx">s</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">&amp;</span><span class="nx">maskx</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="mi">6</span> <span class="p">|</span> <span class="nb">rune</span><span class="p">(</span><span class="nx">s</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">&amp;</span><span class="nx">maskx</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">pos</span> <span class="o">+=</span> <span class="mi">4</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">rune3Max</span> <span class="p">&lt;</span> <span class="nx">r</span> <span class="o">&amp;&amp;</span> <span class="nx">r</span> <span class="o">&lt;=</span> <span class="nx">maxRune</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">return</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">runeError</span><span class="p">,</span> <span class="nx">k</span> <span class="o">+</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// encoderune writes into p (which must be large enough) the UTF-8 encoding of the rune.
+</span></span></span><span class="line"><span class="cl"><span class="c1">// It returns the number of bytes written.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">encoderune</span><span class="p">(</span><span class="nx">p</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">r</span> <span class="kt">rune</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Negative values are erroneous. Making it unsigned addresses the problem.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">switch</span> <span class="nx">i</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="nx">r</span><span class="p">);</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="nx">i</span> <span class="o">&lt;=</span> <span class="nx">rune1Max</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">=</span> <span class="nb">byte</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="nx">i</span> <span class="o">&lt;=</span> <span class="nx">rune2Max</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">_</span> <span class="p">=</span> <span class="nx">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1">// eliminate bounds checks
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">=</span> <span class="nx">t2</span> <span class="p">|</span> <span class="nb">byte</span><span class="p">(</span><span class="nx">r</span><span class="o">&gt;&gt;</span><span class="mi">6</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">=</span> <span class="nx">tx</span> <span class="p">|</span> <span class="nb">byte</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span><span class="o">&amp;</span><span class="nx">maskx</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="nx">i</span> <span class="p">&gt;</span> <span class="nx">maxRune</span><span class="p">,</span> <span class="nx">surrogateMin</span> <span class="o">&lt;=</span> <span class="nx">i</span> <span class="o">&amp;&amp;</span> <span class="nx">i</span> <span class="o">&lt;=</span> <span class="nx">surrogateMax</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">r</span> <span class="p">=</span> <span class="nx">runeError</span>
+</span></span><span class="line"><span class="cl">		<span class="k">fallthrough</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="nx">i</span> <span class="o">&lt;=</span> <span class="nx">rune3Max</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">_</span> <span class="p">=</span> <span class="nx">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="c1">// eliminate bounds checks
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">=</span> <span class="nx">t3</span> <span class="p">|</span> <span class="nb">byte</span><span class="p">(</span><span class="nx">r</span><span class="o">&gt;&gt;</span><span class="mi">12</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">=</span> <span class="nx">tx</span> <span class="p">|</span> <span class="nb">byte</span><span class="p">(</span><span class="nx">r</span><span class="o">&gt;&gt;</span><span class="mi">6</span><span class="p">)</span><span class="o">&amp;</span><span class="nx">maskx</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">=</span> <span class="nx">tx</span> <span class="p">|</span> <span class="nb">byte</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span><span class="o">&amp;</span><span class="nx">maskx</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="mi">3</span>
+</span></span><span class="line"><span class="cl">	<span class="k">default</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">_</span> <span class="p">=</span> <span class="nx">p</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="c1">// eliminate bounds checks
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">=</span> <span class="nx">t4</span> <span class="p">|</span> <span class="nb">byte</span><span class="p">(</span><span class="nx">r</span><span class="o">&gt;&gt;</span><span class="mi">18</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">=</span> <span class="nx">tx</span> <span class="p">|</span> <span class="nb">byte</span><span class="p">(</span><span class="nx">r</span><span class="o">&gt;&gt;</span><span class="mi">12</span><span class="p">)</span><span class="o">&amp;</span><span class="nx">maskx</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">=</span> <span class="nx">tx</span> <span class="p">|</span> <span class="nb">byte</span><span class="p">(</span><span class="nx">r</span><span class="o">&gt;&gt;</span><span class="mi">6</span><span class="p">)</span><span class="o">&amp;</span><span class="nx">maskx</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">p</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="p">=</span> <span class="nx">tx</span> <span class="p">|</span> <span class="nb">byte</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span><span class="o">&amp;</span><span class="nx">maskx</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="mi">4</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>字符串切分：</p>
+<ul>
+<li>转 rune数组</li>
+<li>切片</li>
+<li>转为 string</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">s</span> <span class="o">:=</span> <span class="nb">string</span><span class="p">([]</span><span class="nb">rune</span><span class="p">(</span><span class="nx">b</span><span class="p">)[:</span><span class="mi">3</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 取前3个数
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="切片结构分析">切片结构分析</h2>
+<p>在 <code>runtime/slice.go</code> 下面</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">slice</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">array</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">len</span>   <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">cap</span>   <span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// A notInHeapSlice is a slice backed by go:notinheap memory.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">notInHeapSlice</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">array</span> <span class="o">*</span><span class="nx">notInHeap</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">len</span>   <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">cap</span>   <span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>reflect/value.go</code> 下面有一个 sliceHeader</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// a separate, correctly typed pointer to the underlying data.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">SliceHeader</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">Data</span> <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">Len</span>  <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">Cap</span>  <span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="切片的几种创建方法">切片的几种创建方法</h3>
+<ul>
+<li>根据数组创建 <code>arr[0:3] or slice[0:3]</code></li>
+<li>字面量，编译时插入创建数组的代码 <code>slice := []int{1,2,3}</code></li>
+<li>make: 运行时创建数组 <code>slice := make([]int,10)</code></li>
+</ul>
+<h3 id="切片的行为">切片的行为</h3>
+<h4 id="切片的追加">切片的追加</h4>
+<ul>
+<li>扩容时，编译时转为调用 <code>runtime.growslice()</code> 方法</li>
+<li>如果期望容量大于当前容量的两倍就使用期望容量</li>
+<li>如果当前切片的长度小于 1024 ，将容量翻倍</li>
+<li>如果当前切片长度大于 1024 ，每次增加 25%</li>
+<li>切片扩容时，并发不安全，注意切片并发加锁 （<strong>多线程不安全</strong>）
+<ul>
+<li>新追加进来的元素，由于cpu具有多级缓存，可能老的协程看到的长度是原来的长度，实际长度已经增加了</li>
+</ul>
+</li>
+</ul>
+<p>切片扩容源码</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">growslice</span><span class="p">(</span><span class="nx">et</span> <span class="o">*</span><span class="nx">_type</span><span class="p">,</span> <span class="nx">old</span> <span class="nx">slice</span><span class="p">,</span> <span class="nx">cap</span> <span class="kt">int</span><span class="p">)</span> <span class="nx">slice</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">raceenabled</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">callerpc</span> <span class="o">:=</span> <span class="nf">getcallerpc</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">racereadrangepc</span><span class="p">(</span><span class="nx">old</span><span class="p">.</span><span class="nx">array</span><span class="p">,</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">old</span><span class="p">.</span><span class="nx">len</span><span class="o">*</span><span class="nb">int</span><span class="p">(</span><span class="nx">et</span><span class="p">.</span><span class="nx">size</span><span class="p">)),</span> <span class="nx">callerpc</span><span class="p">,</span> <span class="nx">abi</span><span class="p">.</span><span class="nf">FuncPCABIInternal</span><span class="p">(</span><span class="nx">growslice</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">msanenabled</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">msanread</span><span class="p">(</span><span class="nx">old</span><span class="p">.</span><span class="nx">array</span><span class="p">,</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">old</span><span class="p">.</span><span class="nx">len</span><span class="o">*</span><span class="nb">int</span><span class="p">(</span><span class="nx">et</span><span class="p">.</span><span class="nx">size</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">asanenabled</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">asanread</span><span class="p">(</span><span class="nx">old</span><span class="p">.</span><span class="nx">array</span><span class="p">,</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">old</span><span class="p">.</span><span class="nx">len</span><span class="o">*</span><span class="nb">int</span><span class="p">(</span><span class="nx">et</span><span class="p">.</span><span class="nx">size</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">cap</span> <span class="p">&lt;</span> <span class="nx">old</span><span class="p">.</span><span class="nx">cap</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="nf">errorString</span><span class="p">(</span><span class="s">&#34;growslice: cap out of range&#34;</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">et</span><span class="p">.</span><span class="nx">size</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// append should not create a slice with nil pointer but non-zero len.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// We assume that append doesn&#39;t need to preserve old.array in this case.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">return</span> <span class="nx">slice</span><span class="p">{</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">zerobase</span><span class="p">),</span> <span class="nx">old</span><span class="p">.</span><span class="nx">len</span><span class="p">,</span> <span class="nx">cap</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">newcap</span> <span class="o">:=</span> <span class="nx">old</span><span class="p">.</span><span class="nx">cap</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">//默认是  oldcap*2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">doublecap</span> <span class="o">:=</span> <span class="nx">newcap</span> <span class="o">+</span> <span class="nx">newcap</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">cap</span> <span class="p">&gt;</span> <span class="nx">doublecap</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">newcap</span> <span class="p">=</span> <span class="nx">cap</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="kd">const</span> <span class="nx">threshold</span> <span class="p">=</span> <span class="mi">256</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">old</span><span class="p">.</span><span class="nx">cap</span> <span class="p">&lt;</span> <span class="nx">threshold</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">//如果 cap &lt; 256 ,newcap = 2*oldcap
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nx">newcap</span> <span class="p">=</span> <span class="nx">doublecap</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">//如果 cap &gt;= 256 ,newcap = (oldcap + 3*256) /4
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// Check 0 &lt; newcap to detect overflow
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// and prevent an infinite loop.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="k">for</span> <span class="mi">0</span> <span class="p">&lt;</span> <span class="nx">newcap</span> <span class="o">&amp;&amp;</span> <span class="nx">newcap</span> <span class="p">&lt;</span> <span class="nx">cap</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="c1">// Transition from growing 2x for small slices
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>				<span class="c1">// to growing 1.25x for large slices. This formula
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>				<span class="c1">// gives a smooth-ish transition between the two.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>				<span class="c1">// 该公式让切片 的长度是原切片的 [1.25,2]倍左右，旧数组越大，就越接近1.25
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>				<span class="nx">newcap</span> <span class="o">+=</span> <span class="p">(</span><span class="nx">newcap</span> <span class="o">+</span> <span class="mi">3</span><span class="o">*</span><span class="nx">threshold</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// Set newcap to the requested cap when
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// the newcap calculation overflowed.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="k">if</span> <span class="nx">newcap</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="c1">//如果整数溢出了，newcap 不变
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>				<span class="nx">newcap</span> <span class="p">=</span> <span class="nx">cap</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">overflow</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">lenmem</span><span class="p">,</span> <span class="nx">newlenmem</span><span class="p">,</span> <span class="nx">capmem</span> <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Specialize for common values of et.size.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// For 1 we don&#39;t need any division/multiplication.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// For goarch.PtrSize, compiler will optimize division/multiplication into a shift by a constant.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// For powers of 2, use a variable shift.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">switch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="nx">et</span><span class="p">.</span><span class="nx">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">lenmem</span> <span class="p">=</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">old</span><span class="p">.</span><span class="nx">len</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">newlenmem</span> <span class="p">=</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">cap</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">capmem</span> <span class="p">=</span> <span class="nf">roundupsize</span><span class="p">(</span><span class="nb">uintptr</span><span class="p">(</span><span class="nx">newcap</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">overflow</span> <span class="p">=</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">newcap</span><span class="p">)</span> <span class="p">&gt;</span> <span class="nx">maxAlloc</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">newcap</span> <span class="p">=</span> <span class="nb">int</span><span class="p">(</span><span class="nx">capmem</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="nx">et</span><span class="p">.</span><span class="nx">size</span> <span class="o">==</span> <span class="nx">goarch</span><span class="p">.</span><span class="nx">PtrSize</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">lenmem</span> <span class="p">=</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">old</span><span class="p">.</span><span class="nx">len</span><span class="p">)</span> <span class="o">*</span> <span class="nx">goarch</span><span class="p">.</span><span class="nx">PtrSize</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">newlenmem</span> <span class="p">=</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">cap</span><span class="p">)</span> <span class="o">*</span> <span class="nx">goarch</span><span class="p">.</span><span class="nx">PtrSize</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">capmem</span> <span class="p">=</span> <span class="nf">roundupsize</span><span class="p">(</span><span class="nb">uintptr</span><span class="p">(</span><span class="nx">newcap</span><span class="p">)</span> <span class="o">*</span> <span class="nx">goarch</span><span class="p">.</span><span class="nx">PtrSize</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">overflow</span> <span class="p">=</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">newcap</span><span class="p">)</span> <span class="p">&gt;</span> <span class="nx">maxAlloc</span><span class="o">/</span><span class="nx">goarch</span><span class="p">.</span><span class="nx">PtrSize</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">newcap</span> <span class="p">=</span> <span class="nb">int</span><span class="p">(</span><span class="nx">capmem</span> <span class="o">/</span> <span class="nx">goarch</span><span class="p">.</span><span class="nx">PtrSize</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="nf">isPowerOfTwo</span><span class="p">(</span><span class="nx">et</span><span class="p">.</span><span class="nx">size</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">		<span class="kd">var</span> <span class="nx">shift</span> <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">goarch</span><span class="p">.</span><span class="nx">PtrSize</span> <span class="o">==</span> <span class="mi">8</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// Mask shift for better code generation.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nx">shift</span> <span class="p">=</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">sys</span><span class="p">.</span><span class="nf">Ctz64</span><span class="p">(</span><span class="nb">uint64</span><span class="p">(</span><span class="nx">et</span><span class="p">.</span><span class="nx">size</span><span class="p">)))</span> <span class="o">&amp;</span> <span class="mi">63</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">shift</span> <span class="p">=</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">sys</span><span class="p">.</span><span class="nf">Ctz32</span><span class="p">(</span><span class="nb">uint32</span><span class="p">(</span><span class="nx">et</span><span class="p">.</span><span class="nx">size</span><span class="p">)))</span> <span class="o">&amp;</span> <span class="mi">31</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">lenmem</span> <span class="p">=</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">old</span><span class="p">.</span><span class="nx">len</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="nx">shift</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">newlenmem</span> <span class="p">=</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">cap</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="nx">shift</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">capmem</span> <span class="p">=</span> <span class="nf">roundupsize</span><span class="p">(</span><span class="nb">uintptr</span><span class="p">(</span><span class="nx">newcap</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="nx">shift</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">overflow</span> <span class="p">=</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">newcap</span><span class="p">)</span> <span class="p">&gt;</span> <span class="p">(</span><span class="nx">maxAlloc</span> <span class="o">&gt;&gt;</span> <span class="nx">shift</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">newcap</span> <span class="p">=</span> <span class="nb">int</span><span class="p">(</span><span class="nx">capmem</span> <span class="o">&gt;&gt;</span> <span class="nx">shift</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">default</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">lenmem</span> <span class="p">=</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">old</span><span class="p">.</span><span class="nx">len</span><span class="p">)</span> <span class="o">*</span> <span class="nx">et</span><span class="p">.</span><span class="nx">size</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">newlenmem</span> <span class="p">=</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">cap</span><span class="p">)</span> <span class="o">*</span> <span class="nx">et</span><span class="p">.</span><span class="nx">size</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">capmem</span><span class="p">,</span> <span class="nx">overflow</span> <span class="p">=</span> <span class="nx">math</span><span class="p">.</span><span class="nf">MulUintptr</span><span class="p">(</span><span class="nx">et</span><span class="p">.</span><span class="nx">size</span><span class="p">,</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">newcap</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">capmem</span> <span class="p">=</span> <span class="nf">roundupsize</span><span class="p">(</span><span class="nx">capmem</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">newcap</span> <span class="p">=</span> <span class="nb">int</span><span class="p">(</span><span class="nx">capmem</span> <span class="o">/</span> <span class="nx">et</span><span class="p">.</span><span class="nx">size</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// The check of overflow in addition to capmem &gt; maxAlloc is needed
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// to prevent an overflow which can be used to trigger a segfault
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// on 32bit architectures with this example program:
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// type T [1&lt;&lt;27 + 1]int64
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// var d T
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// var s []T
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// func main() {
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//   s = append(s, d, d, d, d)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//   print(len(s), &#34;\n&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">overflow</span> <span class="o">||</span> <span class="nx">capmem</span> <span class="p">&gt;</span> <span class="nx">maxAlloc</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="nf">errorString</span><span class="p">(</span><span class="s">&#34;growslice: cap out of range&#34;</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">p</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">et</span><span class="p">.</span><span class="nx">ptrdata</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">p</span> <span class="p">=</span> <span class="nf">mallocgc</span><span class="p">(</span><span class="nx">capmem</span><span class="p">,</span> <span class="kc">nil</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// The append() that calls growslice is going to overwrite from old.len to cap (which will be the new length).
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// Only clear the part that will not be overwritten.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nf">memclrNoHeapPointers</span><span class="p">(</span><span class="nf">add</span><span class="p">(</span><span class="nx">p</span><span class="p">,</span> <span class="nx">newlenmem</span><span class="p">),</span> <span class="nx">capmem</span><span class="o">-</span><span class="nx">newlenmem</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// Note: can&#39;t use rawmem (which avoids zeroing of memory), because then GC can scan uninitialized memory.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">p</span> <span class="p">=</span> <span class="nf">mallocgc</span><span class="p">(</span><span class="nx">capmem</span><span class="p">,</span> <span class="nx">et</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">lenmem</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nx">writeBarrier</span><span class="p">.</span><span class="nx">enabled</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// Only shade the pointers in old.array since we know the destination slice p
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// only contains nil pointers because it has been cleared during alloc.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nf">bulkBarrierPreWriteSrcOnly</span><span class="p">(</span><span class="nb">uintptr</span><span class="p">(</span><span class="nx">p</span><span class="p">),</span> <span class="nb">uintptr</span><span class="p">(</span><span class="nx">old</span><span class="p">.</span><span class="nx">array</span><span class="p">),</span> <span class="nx">lenmem</span><span class="o">-</span><span class="nx">et</span><span class="p">.</span><span class="nx">size</span><span class="o">+</span><span class="nx">et</span><span class="p">.</span><span class="nx">ptrdata</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">memmove</span><span class="p">(</span><span class="nx">p</span><span class="p">,</span> <span class="nx">old</span><span class="p">.</span><span class="nx">array</span><span class="p">,</span> <span class="nx">lenmem</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">slice</span><span class="p">{</span><span class="nx">p</span><span class="p">,</span> <span class="nx">old</span><span class="p">.</span><span class="nx">len</span><span class="p">,</span> <span class="nx">newcap</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="hashmap实现原理">hashMap实现原理</h2>
+<p>golang 采用类似java的拉链法实现的 hashMap</p>
+<p><code>runtime/map.go</code> 下面有个 <code>hmap</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// A header for a Go map.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">hmap</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">   <span class="c1">// Note: the format of the hmap is also encoded in cmd/compile/internal/reflectdata/reflect.go.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="c1">// Make sure this stays in sync with the compiler&#39;s definition.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="nx">count</span>     <span class="kt">int</span> <span class="c1">// # live cells == size of map.  Must be first (used by len() builtin)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="nx">flags</span>     <span class="kt">uint8</span>
+</span></span><span class="line"><span class="cl">   <span class="nx">B</span>         <span class="kt">uint8</span>  <span class="c1">// log_2 of # of buckets (can hold up to loadFactor * 2^B items)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="nx">noverflow</span> <span class="kt">uint16</span> <span class="c1">// approximate number of overflow buckets; see incrnoverflow for details
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="nx">hash0</span>     <span class="kt">uint32</span> <span class="c1">// hash seed
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">   <span class="nx">buckets</span>    <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span> <span class="c1">// array of 2^B Buckets. may be nil if count==0.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="nx">oldbuckets</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span> <span class="c1">// previous bucket array of half the size, non-nil only when growing
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="nx">nevacuate</span>  <span class="kt">uintptr</span>        <span class="c1">// progress counter for evacuation (buckets less than this have been evacuated)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">   <span class="nx">extra</span> <span class="o">*</span><span class="nx">mapextra</span> <span class="c1">// optional fields
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>buckets 的数据结构是 <code>bmap</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"> 
+</span></span><span class="line"><span class="cl"><span class="c1">// A bucket for a Go map.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">bmap</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// tophash generally contains the top byte of the hash value
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// for each key in this bucket. If tophash[0] &lt; minTopHash,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// tophash[0] is a bucket evacuation state instead.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">tophash</span> <span class="p">[</span><span class="nx">bucketCnt</span><span class="p">]</span><span class="kt">uint8</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Followed by bucketCnt keys and then bucketCnt elems.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// NOTE: packing all the keys together and then all the elems together makes the
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// code a bit more complicated than alternating key/elem/key/elem/... but it allows
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// us to eliminate padding which would be needed for, e.g., map[int64]int8.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Followed by an overflow pointer.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">m</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nx">m</span><span class="p">[</span><span class="s">&#34;1&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl"><span class="nx">m</span><span class="p">[</span><span class="s">&#34;2&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl"><span class="nx">m</span><span class="p">[</span><span class="s">&#34;3&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl"><span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">m</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// go build -gcflags -S main.go
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 我们可以看到 call runtime.makemap(SB) 的汇编
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="makemap-源码">makemap 源码</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// m:= make(map[string]int,10) ,通过 make创建，会调用这个方法
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">makemap</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">maptype</span><span class="p">,</span> <span class="nx">hint</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">h</span> <span class="o">*</span><span class="nx">hmap</span><span class="p">)</span> <span class="o">*</span><span class="nx">hmap</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mem</span><span class="p">,</span> <span class="nx">overflow</span> <span class="o">:=</span> <span class="nx">math</span><span class="p">.</span><span class="nf">MulUintptr</span><span class="p">(</span><span class="nb">uintptr</span><span class="p">(</span><span class="nx">hint</span><span class="p">),</span> <span class="nx">t</span><span class="p">.</span><span class="nx">bucket</span><span class="p">.</span><span class="nx">size</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">overflow</span> <span class="o">||</span> <span class="nx">mem</span> <span class="p">&gt;</span> <span class="nx">maxAlloc</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">hint</span> <span class="p">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"> 
+</span></span><span class="line"><span class="cl">	<span class="c1">// initialize Hmap
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">h</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">h</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">hmap</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">h</span><span class="p">.</span><span class="nx">hash0</span> <span class="p">=</span> <span class="nf">fastrand</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Find the size parameter B which will hold the requested # of elements.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// For hint &lt; 0 overLoadFactor returns false since hint &lt; bucketCnt.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">B</span> <span class="o">:=</span> <span class="nb">uint8</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nf">overLoadFactor</span><span class="p">(</span><span class="nx">hint</span><span class="p">,</span> <span class="nx">B</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">B</span><span class="o">++</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">//根据我们传入的 size来计算 B,也就是桶的大小
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">h</span><span class="p">.</span><span class="nx">B</span> <span class="p">=</span> <span class="nx">B</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// allocate initial hash table
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// if B == 0, the buckets field is allocated lazily later (in mapassign)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// If hint is large zeroing this memory could take a while.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">h</span><span class="p">.</span><span class="nx">B</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="kd">var</span> <span class="nx">nextOverflow</span> <span class="o">*</span><span class="nx">bmap</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">h</span><span class="p">.</span><span class="nx">buckets</span><span class="p">,</span> <span class="nx">nextOverflow</span> <span class="p">=</span> <span class="nf">makeBucketArray</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">h</span><span class="p">.</span><span class="nx">B</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">nextOverflow</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">h</span><span class="p">.</span><span class="nx">extra</span> <span class="p">=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">mapextra</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">h</span><span class="p">.</span><span class="nx">extra</span><span class="p">.</span><span class="nx">nextOverflow</span> <span class="p">=</span> <span class="nx">nextOverflow</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">h</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="字面量初始化">字面量初始化</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">hash</span> <span class="o">:=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;1&#34;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;2&#34;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;3&#34;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span><span class="nx">hash</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这种做法最终也是调用的 makemap 方法
+相当于：</p>
+<p>当元素少于25个的时候，会直接静态调用</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">m</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nx">m</span><span class="p">[</span><span class="s">&#34;1&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl"><span class="nx">m</span><span class="p">[</span><span class="s">&#34;2&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl"><span class="nx">m</span><span class="p">[</span><span class="s">&#34;3&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl"><span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">m</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>当元素多余25个的时候，会转循环复制</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">hash</span> <span class="o">:=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;1&#34;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="s">&#34;100&#34;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">hash</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nx">k</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;1&#34;</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="s">&#34;100&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nx">v</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="mi">100</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="nx">i</span><span class="p">,</span><span class="nx">s</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">k</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">hash</span><span class="p">[</span><span class="nx">s</span><span class="p">]</span> <span class="p">=</span> <span class="nx">v</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="hashmap总结">hashMap总结</h3>
+<ul>
+<li>go使用拉链法实现 hashMap</li>
+<li>每个桶中存储键哈希的前8位</li>
+<li>桶超出8个数据，就会存储到溢出桶中</li>
+</ul>
+<p><a href="https://segmentfault.com/a/1190000018380327">参考文章</a></p>
+<p><a href="https://github.com/cch123/golang-notes/blob/master/map.md">参考笔记</a></p>
+<h2 id="map扩容原理">map扩容原理</h2>
+<ul>
+<li>map溢出桶太多的时候导致性能严重下降</li>
+<li>为了保证map访问的高效性，需要扩容，减少hash冲突</li>
+<li><code>runtime.mapassign</code> 可能会触发扩容的情况
+<ul>
+<li>装载因子超过6.5 (平均每个槽6.5个key)</li>
+<li>使用太多溢出桶(溢出桶超过了普通桶)</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_07_07_00_57_31.png" alt=""></p>
+<h2 id="hashmap线程安全问题">hashMap线程安全问题</h2>
+<p>一旦并发读写，就会fatal 异常</p>
+<ul>
+<li>map的读写有并发问题</li>
+<li>A协程在桶中读数据时，B协程驱逐了这个桶</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">m</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">int</span><span class="p">]</span><span class="kt">int</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">_</span> <span class="p">=</span> <span class="nx">m</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">m</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">=</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">select</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">fatal error: concurrent map <span class="nb">read</span> and map write
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">goroutine <span class="m">5</span> <span class="o">[</span>running<span class="o">]</span>:
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="线程安全的map">线程安全的Map</h2>
+<p><code>sync.Map</code>是一个结构体 在 sync包 <code>map.go</code>下面
+<a href="https://blog.csdn.net/QcloudCommunity/article/details/125270346?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-4-125270346-blog-105046438.pc_relevant_multi_platform_whitelistv1_exp2&amp;spm=1001.2101.3001.4242.3&amp;utm_relevant_index=7">参考博客1</a></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Map</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mu</span> <span class="nx">Mutex</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// read contains the portion of the map&#39;s contents that are safe for
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// concurrent access (with or without mu held).
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// The read field itself is always safe to load, but must only be stored with
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// mu held.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Entries stored in read may be updated concurrently without mu, but updating
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// a previously-expunged entry requires that the entry be copied to the dirty
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// map and unexpunged with mu held.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">read</span> <span class="nx">atomic</span><span class="p">.</span><span class="nx">Value</span> <span class="c1">// readOnly
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// dirty contains the portion of the map&#39;s contents that require mu to be
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// held. To ensure that the dirty map can be promoted to the read map quickly,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// it also includes all of the non-expunged entries in the read map.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Expunged entries are not stored in the dirty map. An expunged entry in the
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// clean map must be unexpunged and added to the dirty map before a new value
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// can be stored to it.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// If the dirty map is nil, the next write to the map will initialize it by
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// making a shallow copy of the clean map, omitting stale entries.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">dirty</span> <span class="kd">map</span><span class="p">[</span><span class="nx">any</span><span class="p">]</span><span class="o">*</span><span class="nx">entry</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// misses counts the number of loads since the read map was last updated that
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// needed to lock mu to determine whether the key was present.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Once enough misses have occurred to cover the cost of copying the dirty
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// map, the dirty map will be promoted to the read map (in the unamended
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// state) and the next store to the map will make a new dirty copy.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">misses</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// readOnly is an immutable struct stored atomically in the Map.read field.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">readOnly</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">m</span>       <span class="kd">map</span><span class="p">[</span><span class="nx">any</span><span class="p">]</span><span class="o">*</span><span class="nx">entry</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">amended</span> <span class="kt">bool</span> <span class="c1">// true if the dirty map contains some key not in m.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>sync.Map 使用了2个map,分离了扩容问题</li>
+<li>不会引发扩容的操作(查、改) 使用 read map</li>
+<li>可能引发扩容的操作 使用 dirty map</li>
+</ul>
+<h2 id="golang-接口">golang 接口</h2>
+<p>iface原理,在 <code>src\runtime\runtime2.go</code> 里面定义的结构体</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// ../cmd/compile/internal/reflectdata/reflect.go:/^func.WriteTabs.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">itab</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">inter</span> <span class="o">*</span><span class="nx">interfacetype</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">_type</span> <span class="o">*</span><span class="nx">_type</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">hash</span>  <span class="kt">uint32</span> <span class="c1">// copy of _type.hash. Used for type switches.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">_</span>     <span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="kt">byte</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fun</span>   <span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="kt">uintptr</span> <span class="c1">// variable sized. fun[0]==0 means _type does not implement inter.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">iface</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">tab</span>  <span class="o">*</span><span class="nx">itab</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">data</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>接口 是 itab 里面的， data 是指向实现接口的结构体的指针</p>
+<p>接口值的底层表示：</p>
+<ul>
+<li>接口数据使用 <code>runtime.iface</code> 表示</li>
+<li><code>iface</code> 记录了数据的地址</li>
+<li><code>iface</code> 也记录了接口类型信息和实现的方法</li>
+</ul>
+<h3 id="结构体和指针实现接口">结构体和指针实现接口</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:center">结构体实现接口</th>
+<th style="text-align:center">结构体指针实现接口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">结构体初始化变量</td>
+<td style="text-align:center">通过</td>
+<td style="text-align:center">不通过</td>
+</tr>
+<tr>
+<td style="text-align:center">结构体指针初始化变量</td>
+<td style="text-align:center">通过</td>
+<td style="text-align:center">通过</td>
+</tr>
+</tbody>
+</table>
+<h2 id="空接口类型">空接口类型</h2>
+<p>iface里面存有类型和数据，你可以用printf <code>%T</code> ,<code>%v</code>等打印出来</p>
+<p>eface 是 empty <code>interface{}</code>, eface有个单独的结构</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">eface</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">_type</span> <span class="o">*</span><span class="nx">_type</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">data</span>  <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">K</span><span class="p">(</span><span class="nx">a</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">//a可以放入任何的值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>空接口的值</strong></p>
+<ul>
+<li>runtime.eface 结构体</li>
+<li>空接口底层不是普通接口</li>
+<li>空接口可以承载任何数据</li>
+</ul>
+<p><strong>空接口的用途</strong></p>
+<ul>
+<li>作为任意类型函数的入参</li>
+</ul>
+<p>其实 空接口就是编译的时候直接编译器将数据转为 eface来进行传参</p>
+<h3 id="总结">总结</h3>
+<ul>
+<li>go隐式接口更加方便系统扩展和重构</li>
+<li>结构体和指针都可以实现接口</li>
+<li>空接口可以承载任何类型的数据</li>
+</ul>
+<h3 id="nil空接口空结构体区别">nil,空接口,空结构体区别</h3>
+<ul>
+<li>nil是空，但是不是空指针</li>
+<li></li>
+</ul>
+<p>builtin包里面定义了</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// nil is a predeclared identifier representing the zero value for a
+</span></span></span><span class="line"><span class="cl"><span class="c1">// pointer, channel, func, interface, map, or slice type.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">var</span> <span class="kc">nil</span> <span class="nx">Type</span> <span class="c1">// Type must be a pointer, channel, func, interface, map, or slice type
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>go里面定义了 nil其实是个变量来的，Type可以是个指针，channel,方法 ，map，func,切片等，可以是任意一种类型的空</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">mp</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">a</span> <span class="o">*</span><span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%v\n&#34;</span><span class="p">,</span> <span class="nx">mp</span> <span class="o">==</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">a</span> <span class="o">==</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>nil是空，当不是空指针</li>
+<li>nil是6种类型的 &ldquo;零值&rdquo;</li>
+<li>nil永远不能和结构体比较，每种类型的nil也不相同</li>
+<li>空结构体是go中比较特殊的类型</li>
+<li>空结构体的值不是nil,但是和nil都是 zerobase</li>
+<li>空接口也不一定是 nil接口</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">a</span> <span class="kd">interface</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">b</span> <span class="kd">interface</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">c</span> <span class="o">*</span><span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">a</span> <span class="o">==</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">b</span> <span class="o">==</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">a</span> <span class="o">==</span> <span class="nx">b</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">a</span> <span class="o">==</span> <span class="nx">c</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// fmt.Printf(&#34;%v\n&#34;, b == nil)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">a</span> <span class="kd">interface</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// var b interface{}
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="kd">var</span> <span class="nx">c</span> <span class="o">*</span><span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">a</span> <span class="o">==</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">a</span> <span class="p">=</span> <span class="nx">c</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// a底层是 eface结构体
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// c底层是 iface结构体，因此 现在 a!=nil
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">a</span> <span class="o">==</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">c</span> <span class="o">==</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>nil是多个类型的零值，或空值</li>
+<li>空结构体的指针和值都不是nil</li>
+<li>空接口零值是nil，一旦有了类型信息就不是nil</li>
+</ul>
+<h2 id="内存对齐优化">内存对齐优化</h2>
+<p>下面代码最后结果都是8</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;unsafe&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">a</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">a</span><span class="p">,</span> <span class="nx">b</span> <span class="kt">int32</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">b</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">a</span> <span class="kt">int16</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">b</span> <span class="kt">int32</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">c</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">b</span> <span class="kd">struct</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">z</span> <span class="kd">struct</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">a</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">b</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;aligna %v,alignb %v\n&#34;</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Alignof</span><span class="p">(</span><span class="nx">a</span><span class="p">),</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Alignof</span><span class="p">(</span><span class="nx">b</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 空结构体长度是0
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="kd">struct</span><span class="p">{}{}))</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">c</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// fmt.Printf(&#34;%+v\n&#34;, unsafe.Sizeof(nil))
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们知道64位cpu，就是按8字节去读取的，cpu访问内存按照字长读取，所以一般会给结构体加 padding凑整，优化cpu读取效率</p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_07_08_07_52_48.png" alt=""></p>
+<ul>
+<li>空结构体的size是0，不占用空间
+<ul>
+<li>结合map实现 hashset</li>
+<li>结合channel用于发送信号</li>
+</ul>
+</li>
+<li>基本类型对齐考虑系数</li>
+<li>结构体既需要内部对齐，有需要外部填充对齐</li>
+<li>空结构体作为最后一个成员，需要填充对齐</li>
+</ul>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-05-11
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/">课外课程学习</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E6%BA%90%E7%A0%81%E8%B5%8F%E6%9E%902%E5%8D%8F%E7%A8%8B/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">go语言源码赏析2(协程)</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E6%8A%80%E6%9C%AF%E6%A6%82%E8%BF%B0_%E6%BA%90%E7%A0%81%E8%B5%8F%E6%9E%900/">
+            <span class="next-text nav-default">go技术概述</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-07-05 17:03:20 \u002b0800 \u002b0800',
+        title: 'go语言源码赏析1',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://lyr-2000.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-09-23 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.6d2c4f127d59e1dce56e2845adf7d359011b86d8fc907e98877eb35bd445b2b3.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js/back_btn.js"></script>
+<script src="/js/docsearch.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+ 
+  <div id="BR_cornner">
+    <div id='darkThemeBtn'>T</div> 
+  </div> 
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<script defer async>
+
+  mermaid.initialize({startOnLoad:true});
+</script>
+</body>
+</html>

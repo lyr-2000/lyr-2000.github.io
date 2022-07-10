@@ -1,0 +1,2503 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>go语言源码赏析2(协程) - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="go语言源码-协程 src/runtime/runtime2.go 下面 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.101.0 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E6%BA%90%E7%A0%81%E8%B5%8F%E6%9E%902%E5%8D%8F%E7%A8%8B/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/post.css">
+
+
+<meta property="og:title" content="go语言源码赏析2(协程)" />
+<meta property="og:description" content="go语言源码-协程 src/runtime/runtime2.go 下面 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E6%BA%90%E7%A0%81%E8%B5%8F%E6%9E%902%E5%8D%8F%E7%A8%8B/" /><meta property="og:image" content="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxkieg2ntj31kw0w07su.jpg" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-07-10T18:20:21+08:00" />
+<meta property="article:modified_time" content="2022-05-11T20:02:48+08:00" />
+
+<meta itemprop="name" content="go语言源码赏析2(协程)">
+<meta itemprop="description" content="go语言源码-协程 src/runtime/runtime2.go 下面 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58"><meta itemprop="datePublished" content="2022-07-10T18:20:21+08:00" />
+<meta itemprop="dateModified" content="2022-05-11T20:02:48+08:00" />
+<meta itemprop="wordCount" content="6926"><meta itemprop="image" content="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxkieg2ntj31kw0w07su.jpg">
+<meta itemprop="keywords" content="课外课程学习," /><meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxkieg2ntj31kw0w07su.jpg"/>
+
+<meta name="twitter:title" content="go语言源码赏析2(协程)"/>
+<meta name="twitter:description" content="go语言源码-协程 src/runtime/runtime2.go 下面 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body >
+  
+  
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="globalbg"></div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel" >
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	<div class="customByLyr">
+  
+			<img class="lazyload"  draggable="false"  data-original="https://tva4.sinaimg.cn/large/0072Vf1pgy1foxkieg2ntj31kw0w07su.jpg" />
+		</div>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">go语言源码赏析2(协程)</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-07-10 </span>
+        <div class="post-category">
+            <a href="/categories/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/"> 课外课程学习 </a>
+            </div>
+          <span class="more-meta"> 约 6926 字 </span>
+          <span class="more-meta"> 预计阅读 14 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#go语言源码-协程">go语言源码-协程</a>
+          <ul>
+            <li><a href="#协程的底层结构">协程的底层结构</a></li>
+          </ul>
+        </li>
+        <li><a href="#gmp-模型介绍">GMP 模型介绍</a>
+          <ul>
+            <li><a href="#单线程循环">单线程循环</a></li>
+            <li><a href="#go10-采用多线程循环">go1.0 采用多线程循环</a></li>
+          </ul>
+        </li>
+        <li><a href="#gmp模型">GMP模型</a>
+          <ul>
+            <li><a href="#p的作用">p的作用</a></li>
+          </ul>
+        </li>
+        <li><a href="#线程调度的顺序工作窃取机制">线程调度的顺序（工作窃取机制）</a></li>
+        <li><a href="#新建协程的过程">新建协程的过程</a></li>
+        <li><a href="#协程饥饿问题">协程饥饿问题</a>
+          <ul>
+            <li><a href="#切换协程的时机">切换协程的时机</a></li>
+            <li><a href="#基于协作的抢占式调度">基于协作的抢占式调度</a></li>
+          </ul>
+        </li>
+        <li><a href="#协程太多的问题">协程太多的问题</a>
+          <ul>
+            <li><a href="#解决方案">解决方案</a></li>
+          </ul>
+        </li>
+        <li><a href="#协程源码总结">协程源码总结</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h2 id="go语言源码-协程">go语言源码-协程</h2>
+<p><code>src/runtime/runtime2.go</code> 下面</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
+</span><span class="lnt">91
+</span><span class="lnt">92
+</span><span class="lnt">93
+</span><span class="lnt">94
+</span><span class="lnt">95
+</span><span class="lnt">96
+</span><span class="lnt">97
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">g</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Stack parameters.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// stack describes the actual stack memory: [stack.lo, stack.hi).
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// stackguard0 is the stack pointer compared in the Go stack growth prologue.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// It is stack.lo+StackGuard normally, but can be StackPreempt to trigger a preemption.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// stackguard1 is the stack pointer compared in the C stack growth prologue.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// It is stack.lo+StackGuard on g0 and gsignal stacks.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// It is ~0 on other goroutine stacks, to trigger a call to morestackc (and crash).
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">stack</span>       <span class="nx">stack</span>   <span class="c1">// offset known to runtime/cgo
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">stackguard0</span> <span class="kt">uintptr</span> <span class="c1">// offset known to liblink
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">stackguard1</span> <span class="kt">uintptr</span> <span class="c1">// offset known to liblink
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="nx">_panic</span>    <span class="o">*</span><span class="nx">_panic</span> <span class="c1">// innermost panic - offset known to liblink
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">_defer</span>    <span class="o">*</span><span class="nx">_defer</span> <span class="c1">// innermost defer
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">m</span>         <span class="o">*</span><span class="nx">m</span>      <span class="c1">// current m; offset known to arm liblink
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">sched</span>     <span class="nx">gobuf</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">syscallsp</span> <span class="kt">uintptr</span> <span class="c1">// if status==Gsyscall, syscallsp = sched.sp to use during gc
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">syscallpc</span> <span class="kt">uintptr</span> <span class="c1">// if status==Gsyscall, syscallpc = sched.pc to use during gc
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">stktopsp</span>  <span class="kt">uintptr</span> <span class="c1">// expected sp at top of stack, to check in traceback
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// param is a generic pointer parameter field used to pass
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// values in particular contexts where other storage for the
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// parameter would be difficult to find. It is currently used
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// in three ways:
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// 1. When a channel operation wakes up a blocked goroutine, it sets param to
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//    point to the sudog of the completed blocking operation.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// 2. By gcAssistAlloc1 to signal back to its caller that the goroutine completed
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//    the GC cycle. It is unsafe to do so in any other way, because the goroutine&#39;s
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//    stack may have moved in the meantime.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// 3. By debugCallWrap to pass parameters to a new goroutine because allocating a
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//    closure in the runtime is forbidden.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">param</span>        <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">atomicstatus</span> <span class="kt">uint32</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">stackLock</span>    <span class="kt">uint32</span> <span class="c1">// sigprof/scang lock; TODO: fold in to atomicstatus
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">goid</span>         <span class="kt">int64</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">schedlink</span>    <span class="nx">guintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">waitsince</span>    <span class="kt">int64</span>      <span class="c1">// approx time when the g become blocked
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">waitreason</span>   <span class="nx">waitReason</span> <span class="c1">// if status==Gwaiting
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="nx">preempt</span>       <span class="kt">bool</span> <span class="c1">// preemption signal, duplicates stackguard0 = stackpreempt
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">preemptStop</span>   <span class="kt">bool</span> <span class="c1">// transition to _Gpreempted on preemption; otherwise, just deschedule
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">preemptShrink</span> <span class="kt">bool</span> <span class="c1">// shrink stack at synchronous safe point
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// asyncSafePoint is set if g is stopped at an asynchronous
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// safe point. This means there are frames on the stack
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// without precise pointer information.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">asyncSafePoint</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">paniconfault</span> <span class="kt">bool</span> <span class="c1">// panic (instead of crash) on unexpected fault address
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">gcscandone</span>   <span class="kt">bool</span> <span class="c1">// g has scanned stack; protected by _Gscan bit in status
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">throwsplit</span>   <span class="kt">bool</span> <span class="c1">// must not split stack
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// activeStackChans indicates that there are unlocked channels
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// pointing into this goroutine&#39;s stack. If true, stack
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// copying needs to acquire channel locks to protect these
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// areas of the stack.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">activeStackChans</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// parkingOnChan indicates that the goroutine is about to
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// park on a chansend or chanrecv. Used to signal an unsafe point
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// for stack shrinking. It&#39;s a boolean value, but is updated atomically.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">parkingOnChan</span> <span class="kt">uint8</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">raceignore</span>     <span class="kt">int8</span>     <span class="c1">// ignore race detection events
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">sysblocktraced</span> <span class="kt">bool</span>     <span class="c1">// StartTrace has emitted EvGoInSyscall about this goroutine
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">tracking</span>       <span class="kt">bool</span>     <span class="c1">// whether we&#39;re tracking this G for sched latency statistics
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">trackingSeq</span>    <span class="kt">uint8</span>    <span class="c1">// used to decide whether to track this G
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">runnableStamp</span>  <span class="kt">int64</span>    <span class="c1">// timestamp of when the G last became runnable, only used when tracking
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">runnableTime</span>   <span class="kt">int64</span>    <span class="c1">// the amount of time spent runnable, cleared when running, only used when tracking
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">sysexitticks</span>   <span class="kt">int64</span>    <span class="c1">// cputicks when syscall has returned (for tracing)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">traceseq</span>       <span class="kt">uint64</span>   <span class="c1">// trace event sequencer
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">tracelastp</span>     <span class="nx">puintptr</span> <span class="c1">// last P emitted an event for this goroutine
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">lockedm</span>        <span class="nx">muintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">sig</span>            <span class="kt">uint32</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">writebuf</span>       <span class="p">[]</span><span class="kt">byte</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">sigcode0</span>       <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">sigcode1</span>       <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">sigpc</span>          <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">gopc</span>           <span class="kt">uintptr</span>         <span class="c1">// pc of go statement that created this goroutine
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">ancestors</span>      <span class="o">*</span><span class="p">[]</span><span class="nx">ancestorInfo</span> <span class="c1">// ancestor information goroutine(s) that created this goroutine (only used if debug.tracebackancestors)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">startpc</span>        <span class="kt">uintptr</span>         <span class="c1">// pc of goroutine function
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">racectx</span>        <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">waiting</span>        <span class="o">*</span><span class="nx">sudog</span>         <span class="c1">// sudog structures this g is waiting on (that have a valid elem ptr); in lock order
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">cgoCtxt</span>        <span class="p">[]</span><span class="kt">uintptr</span>      <span class="c1">// cgo traceback context
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">labels</span>         <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span> <span class="c1">// profiler labels
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">timer</span>          <span class="o">*</span><span class="nx">timer</span>         <span class="c1">// cached timer for time.Sleep
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">selectDone</span>     <span class="kt">uint32</span>         <span class="c1">// are we participating in a select and did someone win the race?
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Per-G GC state
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// gcAssistBytes is this G&#39;s GC assist credit in terms of
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// bytes allocated. If this is positive, then the G has credit
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// to allocate gcAssistBytes bytes without assisting. If this
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// is negative, then the G must correct this by performing
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// scan work. We track this in bytes to make it fast to update
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// and check for debt in the malloc hot path. The assist ratio
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// determines how this corresponds to scan work debt.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">gcAssistBytes</span> <span class="kt">int64</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">stack</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">lo</span> <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">hi</span> <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">gobuf</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// The offsets of sp, pc, and g are known to (hard-coded in) libmach.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// ctxt is unusual with respect to GC: it may be a
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// heap-allocated funcval, so GC needs to track it, but it
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// needs to be set and cleared from assembly, where it&#39;s
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// difficult to have write barriers. However, ctxt is really a
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// saved, live register, and we only ever exchange it between
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// the real register and the gobuf. Hence, we treat it as a
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// root during stack scanning, which means assembly that saves
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// and restores it doesn&#39;t need write barriers. It&#39;s still
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// typed as a pointer so that any other writes from Go get
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// write barriers.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">sp</span>   <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">pc</span>   <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">g</span>    <span class="nx">guintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ctxt</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ret</span>  <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">lr</span>   <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">bp</span>   <span class="kt">uintptr</span> <span class="c1">// for framepointer-enabled architectures
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><table>
+<thead>
+<tr>
+<th style="text-align:center">g</th>
+<th style="text-align:center"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">stack</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">sched</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">atomicstatus</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">goid</td>
+<td style="text-align:center"></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">stack</th>
+<th style="text-align:center"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">lo</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">li</td>
+<td style="text-align:center">高位指针</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">gobuf</th>
+<th style="text-align:center"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">sp</td>
+<td style="text-align:center">stack pointer</td>
+</tr>
+<tr>
+<td style="text-align:center">pc</td>
+<td style="text-align:center">program counter</td>
+</tr>
+</tbody>
+</table>
+<h3 id="协程的底层结构">协程的底层结构</h3>
+<ul>
+<li>runtime中，协程本质是一个 g的结构体</li>
+<li>stack: 堆栈地址</li>
+<li>gobuf: 目前程序运行现场</li>
+<li>atomicstatus: 协程状态</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">gogo</span><span class="p">(</span><span class="nx">buf</span> <span class="o">*</span><span class="nx">gobuf</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><center>
+<div class="mermaid">
+    
+graph TB
+
+schedule--&gt; execute--&gt;gogo--&gt;业务方法--&gt;goexit--&gt;schedule
+
+
+runable_queue --g--&gt; execute
+
+
+
+
+</div>
+</center>
+<p>每个协程要记录自己的执行现场，自己执行到了哪里，这些信息都记录到了 <code>g</code>结构体里面</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">goexit1</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">raceenabled</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">racegoend</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">trace</span><span class="p">.</span><span class="nx">enabled</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">traceGoEnd</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//切换g栈到 g0栈，g0是go的第一个协程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nf">mcall</span><span class="p">(</span><span class="nx">goexit0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="gmp-模型介绍">GMP 模型介绍</h2>
+<p>线程会有个循环，不停的去协程队列中拿出任务执行</p>
+<ul>
+<li>解决协程顺序执行，无法并发问题</li>
+<li>解决多线程争抢锁问题</li>
+</ul>
+<h3 id="单线程循环">单线程循环</h3>
+<p>go最开始使用的是单线程循环的方式实现的协程调度</p>
+<h3 id="go10-采用多线程循环">go1.0 采用多线程循环</h3>
+<center>
+<div class="mermaid">
+    
+graph TB
+
+m1--&gt;execute1
+runableQueue--&gt;execute1
+
+m2--&gt;execute2
+
+runableQueue--&gt;execute2
+
+
+
+
+</div>
+</center>
+<p>如果多个线程竞争同一个队列，这个队列就是要上锁，性能太差劲了</p>
+<ul>
+<li>如果队列只有一个，协程是顺序执行的，无法并发执行</li>
+<li>多线程并发时候，会抢夺协程队列的全局锁</li>
+</ul>
+<h4 id="线程循环">线程循环</h4>
+<ul>
+<li>操作系统不知道 goroutine存在</li>
+<li>操作系统线程执行调度循环，循环执行goroutine任务</li>
+<li>调度循环非常像线程池</li>
+<li>协程的本质是一个 g结构体</li>
+<li>g结构体记录了协程站、pc信息</li>
+</ul>
+<h2 id="gmp模型">GMP模型</h2>
+<p>GMP模型引入了一个本地队列，和 M线程绑定，每个线程有自己的任务队列，和一个全局队列</p>
+<p><code>p</code>结构体维护了一个 本地队列，可以无锁访问( <em>Queue of runnable goroutines. Accessed without lock.</em> )，因为只有一个线程去访问</p>
+<p>p的队列是一个  256长度的 数组，利用 <code>runqhead</code>和<code>runqtail</code> 实现了一个循环队列（本地可执行队列其实就只是个长度为256的数组，利用两个指针实现的循环队列）</p>
+<p><code>p.runnext</code> 是指向下一个可执行协程的指针</p>
+<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_07_10_20_23_06.png" alt=""></p>
+<p>通过查看源码，我们知道 p和 m是绑定在一起的</p>
+<h3 id="p的作用">p的作用</h3>
+<ul>
+<li>M和 G之间的中介 (送料器)</li>
+<li>P持有一些G，使得每次获取G的时候不需要从全局队列去找，降低锁竞争的次数【每次从全局队列中获取一堆的G，优先调度本地队列的G】</li>
+<li>减少并发冲突的情况</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span><span class="lnt">166
+</span><span class="lnt">167
+</span><span class="lnt">168
+</span><span class="lnt">169
+</span><span class="lnt">170
+</span><span class="lnt">171
+</span><span class="lnt">172
+</span><span class="lnt">173
+</span><span class="lnt">174
+</span><span class="lnt">175
+</span><span class="lnt">176
+</span><span class="lnt">177
+</span><span class="lnt">178
+</span><span class="lnt">179
+</span><span class="lnt">180
+</span><span class="lnt">181
+</span><span class="lnt">182
+</span><span class="lnt">183
+</span><span class="lnt">184
+</span><span class="lnt">185
+</span><span class="lnt">186
+</span><span class="lnt">187
+</span><span class="lnt">188
+</span><span class="lnt">189
+</span><span class="lnt">190
+</span><span class="lnt">191
+</span><span class="lnt">192
+</span><span class="lnt">193
+</span><span class="lnt">194
+</span><span class="lnt">195
+</span><span class="lnt">196
+</span><span class="lnt">197
+</span><span class="lnt">198
+</span><span class="lnt">199
+</span><span class="lnt">200
+</span><span class="lnt">201
+</span><span class="lnt">202
+</span><span class="lnt">203
+</span><span class="lnt">204
+</span><span class="lnt">205
+</span><span class="lnt">206
+</span><span class="lnt">207
+</span><span class="lnt">208
+</span><span class="lnt">209
+</span><span class="lnt">210
+</span><span class="lnt">211
+</span><span class="lnt">212
+</span><span class="lnt">213
+</span><span class="lnt">214
+</span><span class="lnt">215
+</span><span class="lnt">216
+</span><span class="lnt">217
+</span><span class="lnt">218
+</span><span class="lnt">219
+</span><span class="lnt">220
+</span><span class="lnt">221
+</span><span class="lnt">222
+</span><span class="lnt">223
+</span><span class="lnt">224
+</span><span class="lnt">225
+</span><span class="lnt">226
+</span><span class="lnt">227
+</span><span class="lnt">228
+</span><span class="lnt">229
+</span><span class="lnt">230
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">m</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">g0</span>      <span class="o">*</span><span class="nx">g</span>     <span class="c1">// goroutine with scheduling stack
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">morebuf</span> <span class="nx">gobuf</span>  <span class="c1">// gobuf arg to morestack
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">divmod</span>  <span class="kt">uint32</span> <span class="c1">// div/mod denominator for arm - known to liblink
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">_</span>       <span class="kt">uint32</span> <span class="c1">// align next field to 8 bytes
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Fields not known to debuggers.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">procid</span>        <span class="kt">uint64</span>            <span class="c1">// for debuggers, but offset not hard-coded
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">gsignal</span>       <span class="o">*</span><span class="nx">g</span>                <span class="c1">// signal-handling g
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">goSigStack</span>    <span class="nx">gsignalStack</span>      <span class="c1">// Go-allocated signal handling stack
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">sigmask</span>       <span class="nx">sigset</span>            <span class="c1">// storage for saved signal mask
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">tls</span>           <span class="p">[</span><span class="nx">tlsSlots</span><span class="p">]</span><span class="kt">uintptr</span> <span class="c1">// thread-local storage (for x86 extern register)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">mstartfn</span>      <span class="kd">func</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">curg</span>          <span class="o">*</span><span class="nx">g</span>       <span class="c1">// current running goroutine
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">caughtsig</span>     <span class="nx">guintptr</span> <span class="c1">// goroutine running during fatal signal
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">p</span>             <span class="nx">puintptr</span> <span class="c1">// attached p for executing go code (nil if not executing go code)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">nextp</span>         <span class="nx">puintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">oldp</span>          <span class="nx">puintptr</span> <span class="c1">// the p that was attached before executing a syscall
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">id</span>            <span class="kt">int64</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mallocing</span>     <span class="kt">int32</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">throwing</span>      <span class="kt">int32</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">preemptoff</span>    <span class="kt">string</span> <span class="c1">// if != &#34;&#34;, keep curg running on this m
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">locks</span>         <span class="kt">int32</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">dying</span>         <span class="kt">int32</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">profilehz</span>     <span class="kt">int32</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">spinning</span>      <span class="kt">bool</span> <span class="c1">// m is out of work and is actively looking for work
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">blocked</span>       <span class="kt">bool</span> <span class="c1">// m is blocked on a note
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">newSigstack</span>   <span class="kt">bool</span> <span class="c1">// minit on C thread called sigaltstack
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">printlock</span>     <span class="kt">int8</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">incgo</span>         <span class="kt">bool</span>   <span class="c1">// m is executing a cgo call
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">freeWait</span>      <span class="kt">uint32</span> <span class="c1">// if == 0, safe to free g0 and delete m (atomic)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">fastrand</span>      <span class="kt">uint64</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">needextram</span>    <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">traceback</span>     <span class="kt">uint8</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ncgocall</span>      <span class="kt">uint64</span>      <span class="c1">// number of cgo calls in total
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">ncgo</span>          <span class="kt">int32</span>       <span class="c1">// number of cgo calls currently in progress
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">cgoCallersUse</span> <span class="kt">uint32</span>      <span class="c1">// if non-zero, cgoCallers in use temporarily
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">cgoCallers</span>    <span class="o">*</span><span class="nx">cgoCallers</span> <span class="c1">// cgo traceback if crashing in cgo call
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">park</span>          <span class="nx">note</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">alllink</span>       <span class="o">*</span><span class="nx">m</span> <span class="c1">// on allm
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">schedlink</span>     <span class="nx">muintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">lockedg</span>       <span class="nx">guintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">createstack</span>   <span class="p">[</span><span class="mi">32</span><span class="p">]</span><span class="kt">uintptr</span> <span class="c1">// stack that created this thread.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">lockedExt</span>     <span class="kt">uint32</span>      <span class="c1">// tracking for external LockOSThread
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">lockedInt</span>     <span class="kt">uint32</span>      <span class="c1">// tracking for internal lockOSThread
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">nextwaitm</span>     <span class="nx">muintptr</span>    <span class="c1">// next m waiting for lock
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">waitunlockf</span>   <span class="kd">func</span><span class="p">(</span><span class="o">*</span><span class="nx">g</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span><span class="p">)</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">waitlock</span>      <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">waittraceev</span>   <span class="kt">byte</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">waittraceskip</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">startingtrace</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">syscalltick</span>   <span class="kt">uint32</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">freelink</span>      <span class="o">*</span><span class="nx">m</span> <span class="c1">// on sched.freem
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// these are here because they are too large to be on the stack
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// of low-level NOSPLIT functions.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">libcall</span>   <span class="nx">libcall</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">libcallpc</span> <span class="kt">uintptr</span> <span class="c1">// for cpu profiler
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">libcallsp</span> <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">libcallg</span>  <span class="nx">guintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">syscall</span>   <span class="nx">libcall</span> <span class="c1">// stores syscall parameters on windows
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="nx">vdsoSP</span> <span class="kt">uintptr</span> <span class="c1">// SP for traceback while in VDSO call (0 if not in call)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">vdsoPC</span> <span class="kt">uintptr</span> <span class="c1">// PC for traceback while in VDSO call
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// preemptGen counts the number of completed preemption
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// signals. This is used to detect when a preemption is
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// requested, but fails. Accessed atomically.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">preemptGen</span> <span class="kt">uint32</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Whether this is a pending preemption signal on this M.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Accessed atomically.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">signalPending</span> <span class="kt">uint32</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">dlogPerM</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">mOS</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Up to 10 locks held by this m, maintained by the lock ranking code.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">locksHeldLen</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">locksHeld</span>    <span class="p">[</span><span class="mi">10</span><span class="p">]</span><span class="nx">heldLockInfo</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">p</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">id</span>          <span class="kt">int32</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">status</span>      <span class="kt">uint32</span> <span class="c1">// one of pidle/prunning/...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">link</span>        <span class="nx">puintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">schedtick</span>   <span class="kt">uint32</span>     <span class="c1">// incremented on every scheduler call
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">syscalltick</span> <span class="kt">uint32</span>     <span class="c1">// incremented on every system call
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">sysmontick</span>  <span class="nx">sysmontick</span> <span class="c1">// last tick observed by sysmon
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">m</span>           <span class="nx">muintptr</span>   <span class="c1">// back-link to associated m (nil if idle)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">mcache</span>      <span class="o">*</span><span class="nx">mcache</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">pcache</span>      <span class="nx">pageCache</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">raceprocctx</span> <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">deferpool</span>    <span class="p">[]</span><span class="o">*</span><span class="nx">_defer</span> <span class="c1">// pool of available defer structs (see panic.go)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">deferpoolbuf</span> <span class="p">[</span><span class="mi">32</span><span class="p">]</span><span class="o">*</span><span class="nx">_defer</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Cache of goroutine ids, amortizes accesses to runtime·sched.goidgen.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">goidcache</span>    <span class="kt">uint64</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">goidcacheend</span> <span class="kt">uint64</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Queue of runnable goroutines. Accessed without lock.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">runqhead</span> <span class="kt">uint32</span> <span class="c1">//队列头部
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">runqtail</span> <span class="kt">uint32</span> <span class="c1">//队列尾部
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">runq</span>     <span class="p">[</span><span class="mi">256</span><span class="p">]</span><span class="nx">guintptr</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// runnext, if non-nil, is a runnable G that was ready&#39;d by
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// the current G and should be run next instead of what&#39;s in
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// runq if there&#39;s time remaining in the running G&#39;s time
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// slice. It will inherit the time left in the current time
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// slice. If a set of goroutines is locked in a
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// communicate-and-wait pattern, this schedules that set as a
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// unit and eliminates the (potentially large) scheduling
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// latency that otherwise arises from adding the ready&#39;d
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// goroutines to the end of the run queue.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Note that while other P&#39;s may atomically CAS this to zero,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// only the owner P can CAS it to a valid G.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">runnext</span> <span class="nx">guintptr</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Available G&#39;s (status == Gdead)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">gFree</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">gList</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">n</span> <span class="kt">int32</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">sudogcache</span> <span class="p">[]</span><span class="o">*</span><span class="nx">sudog</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">sudogbuf</span>   <span class="p">[</span><span class="mi">128</span><span class="p">]</span><span class="o">*</span><span class="nx">sudog</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Cache of mspan objects from the heap.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">mspancache</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// We need an explicit length here because this field is used
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// in allocation codepaths where write barriers are not allowed,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// and eliminating the write barrier/keeping it eliminated from
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// slice updates is tricky, moreso than just managing the length
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// ourselves.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">len</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">buf</span> <span class="p">[</span><span class="mi">128</span><span class="p">]</span><span class="o">*</span><span class="nx">mspan</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">tracebuf</span> <span class="nx">traceBufPtr</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// traceSweep indicates the sweep events should be traced.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// This is used to defer the sweep start event until a span
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// has actually been swept.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">traceSweep</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// traceSwept and traceReclaimed track the number of bytes
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// swept and reclaimed by sweeping in the current sweep loop.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">traceSwept</span><span class="p">,</span> <span class="nx">traceReclaimed</span> <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">palloc</span> <span class="nx">persistentAlloc</span> <span class="c1">// per-P to avoid mutex
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="nx">_</span> <span class="kt">uint32</span> <span class="c1">// Alignment for atomic fields below
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// The when field of the first entry on the timer heap.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// This is updated using atomic functions.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// This is 0 if the timer heap is empty.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">timer0When</span> <span class="kt">uint64</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// The earliest known nextwhen field of a timer with
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// timerModifiedEarlier status. Because the timer may have been
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// modified again, there need not be any timer with this value.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// This is updated using atomic functions.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// This is 0 if there are no timerModifiedEarlier timers.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">timerModifiedEarliest</span> <span class="kt">uint64</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Per-P GC state
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">gcAssistTime</span>         <span class="kt">int64</span> <span class="c1">// Nanoseconds in assistAlloc
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">gcFractionalMarkTime</span> <span class="kt">int64</span> <span class="c1">// Nanoseconds in fractional mark worker (atomic)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// gcMarkWorkerMode is the mode for the next mark worker to run in.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// That is, this is used to communicate with the worker goroutine
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// selected for immediate execution by
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// gcController.findRunnableGCWorker. When scheduling other goroutines,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// this field must be set to gcMarkWorkerNotWorker.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">gcMarkWorkerMode</span> <span class="nx">gcMarkWorkerMode</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// gcMarkWorkerStartTime is the nanotime() at which the most recent
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// mark worker started.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">gcMarkWorkerStartTime</span> <span class="kt">int64</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// gcw is this P&#39;s GC work buffer cache. The work buffer is
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// filled by write barriers, drained by mutator assists, and
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// disposed on certain GC state transitions.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">gcw</span> <span class="nx">gcWork</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// wbBuf is this P&#39;s GC write barrier buffer.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// TODO: Consider caching this in the running G.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">wbBuf</span> <span class="nx">wbBuf</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">runSafePointFn</span> <span class="kt">uint32</span> <span class="c1">// if 1, run sched.safePointFn at next safe point
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// statsSeq is a counter indicating whether this P is currently
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// writing any stats. Its value is even when not, odd when it is.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">statsSeq</span> <span class="kt">uint32</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Lock for timers. We normally access the timers while running
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// on this P, but the scheduler can also do it from a different P.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">timersLock</span> <span class="nx">mutex</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Actions to take at some time. This is used to implement the
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// standard library&#39;s time package.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Must hold timersLock to access.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">timers</span> <span class="p">[]</span><span class="o">*</span><span class="nx">timer</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Number of timers in P&#39;s heap.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Modified using atomic instructions.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">numTimers</span> <span class="kt">uint32</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Number of timerDeleted timers in P&#39;s heap.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Modified using atomic instructions.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">deletedTimers</span> <span class="kt">uint32</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Race context used while executing timer functions.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">timerRaceCtx</span> <span class="kt">uintptr</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// scannableStackSizeDelta accumulates the amount of stack space held by
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// live goroutines (i.e. those eligible for stack scanning).
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Flushed to gcController.scannableStackSize once scannableStackSizeSlack
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// or -scannableStackSizeSlack is reached.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">scannableStackSizeDelta</span> <span class="kt">int64</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// preempt is set to indicate that this P should be enter the
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// scheduler ASAP (regardless of what G is running on it).
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">preempt</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Padding is no longer needed. False sharing is now not a worry because p is large enough
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// that its size class is an integer multiple of the cache line size (for any of our architectures).
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>调度源码：</strong></p>
+<p><code>runtime\proc.go\schedule</code> 方法</p>
+<center>
+<div class="mermaid">
+    
+sequenceDiagram
+ 
+	schedule-&gt;&gt; runget: 获取可执行的g
+	schedule -&gt;&gt; findrunable: 获取可执行的g	
+
+
+</div>
+</center>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">schedule</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">gp</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">gp</span><span class="p">,</span> <span class="nx">inheritTime</span> <span class="p">=</span> <span class="nf">runqget</span><span class="p">(</span><span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">p</span><span class="p">.</span><span class="nf">ptr</span><span class="p">())</span> <span class="c1">//尝试本地队列获取
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// We can see gp != nil here even if the M is spinning,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// if checkTimers added a local goroutine via goready.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">gp</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">gp</span><span class="p">,</span> <span class="nx">inheritTime</span> <span class="p">=</span> <span class="nf">findrunnable</span><span class="p">()</span> <span class="c1">// blocks until work is available
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">//阻塞获取循环队列
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// Executed only by the owner P.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">runqget</span><span class="p">(</span><span class="nx">_p_</span> <span class="o">*</span><span class="nx">p</span><span class="p">)</span> <span class="p">(</span><span class="nx">gp</span> <span class="o">*</span><span class="nx">g</span><span class="p">,</span> <span class="nx">inheritTime</span> <span class="kt">bool</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// If there&#39;s a runnext, it&#39;s the next G to run.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">next</span> <span class="o">:=</span> <span class="nx">_p_</span><span class="p">.</span><span class="nx">runnext</span> <span class="c1">//下一个可以执行的协程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// If the runnext is non-0 and the CAS fails, it could only have been stolen by another P,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// because other Ps can race to set runnext to 0, but only the current P can set it to non-0.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Hence, there&#39;s no need to retry this CAS if it falls.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">next</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nx">_p_</span><span class="p">.</span><span class="nx">runnext</span><span class="p">.</span><span class="nf">cas</span><span class="p">(</span><span class="nx">next</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">next</span><span class="p">.</span><span class="nf">ptr</span><span class="p">(),</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">h</span> <span class="o">:=</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">LoadAcq</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">_p_</span><span class="p">.</span><span class="nx">runqhead</span><span class="p">)</span> <span class="c1">// load-acquire, synchronize with other consumers
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">t</span> <span class="o">:=</span> <span class="nx">_p_</span><span class="p">.</span><span class="nx">runqtail</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">t</span> <span class="o">==</span> <span class="nx">h</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">gp</span> <span class="o">:=</span> <span class="nx">_p_</span><span class="p">.</span><span class="nx">runq</span><span class="p">[</span><span class="nx">h</span><span class="o">%</span><span class="nb">uint32</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nx">_p_</span><span class="p">.</span><span class="nx">runq</span><span class="p">))].</span><span class="nf">ptr</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">CasRel</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">_p_</span><span class="p">.</span><span class="nx">runqhead</span><span class="p">,</span> <span class="nx">h</span><span class="p">,</span> <span class="nx">h</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// cas-release, commits consume
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="k">return</span> <span class="nx">gp</span><span class="p">,</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span><span class="lnt">166
+</span><span class="lnt">167
+</span><span class="lnt">168
+</span><span class="lnt">169
+</span><span class="lnt">170
+</span><span class="lnt">171
+</span><span class="lnt">172
+</span><span class="lnt">173
+</span><span class="lnt">174
+</span><span class="lnt">175
+</span><span class="lnt">176
+</span><span class="lnt">177
+</span><span class="lnt">178
+</span><span class="lnt">179
+</span><span class="lnt">180
+</span><span class="lnt">181
+</span><span class="lnt">182
+</span><span class="lnt">183
+</span><span class="lnt">184
+</span><span class="lnt">185
+</span><span class="lnt">186
+</span><span class="lnt">187
+</span><span class="lnt">188
+</span><span class="lnt">189
+</span><span class="lnt">190
+</span><span class="lnt">191
+</span><span class="lnt">192
+</span><span class="lnt">193
+</span><span class="lnt">194
+</span><span class="lnt">195
+</span><span class="lnt">196
+</span><span class="lnt">197
+</span><span class="lnt">198
+</span><span class="lnt">199
+</span><span class="lnt">200
+</span><span class="lnt">201
+</span><span class="lnt">202
+</span><span class="lnt">203
+</span><span class="lnt">204
+</span><span class="lnt">205
+</span><span class="lnt">206
+</span><span class="lnt">207
+</span><span class="lnt">208
+</span><span class="lnt">209
+</span><span class="lnt">210
+</span><span class="lnt">211
+</span><span class="lnt">212
+</span><span class="lnt">213
+</span><span class="lnt">214
+</span><span class="lnt">215
+</span><span class="lnt">216
+</span><span class="lnt">217
+</span><span class="lnt">218
+</span><span class="lnt">219
+</span><span class="lnt">220
+</span><span class="lnt">221
+</span><span class="lnt">222
+</span><span class="lnt">223
+</span><span class="lnt">224
+</span><span class="lnt">225
+</span><span class="lnt">226
+</span><span class="lnt">227
+</span><span class="lnt">228
+</span><span class="lnt">229
+</span><span class="lnt">230
+</span><span class="lnt">231
+</span><span class="lnt">232
+</span><span class="lnt">233
+</span><span class="lnt">234
+</span><span class="lnt">235
+</span><span class="lnt">236
+</span><span class="lnt">237
+</span><span class="lnt">238
+</span><span class="lnt">239
+</span><span class="lnt">240
+</span><span class="lnt">241
+</span><span class="lnt">242
+</span><span class="lnt">243
+</span><span class="lnt">244
+</span><span class="lnt">245
+</span><span class="lnt">246
+</span><span class="lnt">247
+</span><span class="lnt">248
+</span><span class="lnt">249
+</span><span class="lnt">250
+</span><span class="lnt">251
+</span><span class="lnt">252
+</span><span class="lnt">253
+</span><span class="lnt">254
+</span><span class="lnt">255
+</span><span class="lnt">256
+</span><span class="lnt">257
+</span><span class="lnt">258
+</span><span class="lnt">259
+</span><span class="lnt">260
+</span><span class="lnt">261
+</span><span class="lnt">262
+</span><span class="lnt">263
+</span><span class="lnt">264
+</span><span class="lnt">265
+</span><span class="lnt">266
+</span><span class="lnt">267
+</span><span class="lnt">268
+</span><span class="lnt">269
+</span><span class="lnt">270
+</span><span class="lnt">271
+</span><span class="lnt">272
+</span><span class="lnt">273
+</span><span class="lnt">274
+</span><span class="lnt">275
+</span><span class="lnt">276
+</span><span class="lnt">277
+</span><span class="lnt">278
+</span><span class="lnt">279
+</span><span class="lnt">280
+</span><span class="lnt">281
+</span><span class="lnt">282
+</span><span class="lnt">283
+</span><span class="lnt">284
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// Tries to steal from other P&#39;s, get g from local or global queue, poll network.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">findrunnable</span><span class="p">()</span> <span class="p">(</span><span class="nx">gp</span> <span class="o">*</span><span class="nx">g</span><span class="p">,</span> <span class="nx">inheritTime</span> <span class="kt">bool</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">_g_</span> <span class="o">:=</span> <span class="nf">getg</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// The conditions here and in handoffp must agree: if
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// findrunnable would return a G to run, handoffp must start
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// an M.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="nx">top</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">_p_</span> <span class="o">:=</span> <span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">p</span><span class="p">.</span><span class="nf">ptr</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">sched</span><span class="p">.</span><span class="nx">gcwaiting</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">gcstopm</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="k">goto</span> <span class="nx">top</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">_p_</span><span class="p">.</span><span class="nx">runSafePointFn</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">runSafePointFn</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">now</span><span class="p">,</span> <span class="nx">pollUntil</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nf">checkTimers</span><span class="p">(</span><span class="nx">_p_</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">fingwait</span> <span class="o">&amp;&amp;</span> <span class="nx">fingwake</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">gp</span> <span class="o">:=</span> <span class="nf">wakefing</span><span class="p">();</span> <span class="nx">gp</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">ready</span><span class="p">(</span><span class="nx">gp</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="o">*</span><span class="nx">cgo_yield</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">asmcgocall</span><span class="p">(</span><span class="o">*</span><span class="nx">cgo_yield</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// local runq
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">gp</span><span class="p">,</span> <span class="nx">inheritTime</span> <span class="o">:=</span> <span class="nf">runqget</span><span class="p">(</span><span class="nx">_p_</span><span class="p">);</span> <span class="nx">gp</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">gp</span><span class="p">,</span> <span class="nx">inheritTime</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// global runq
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">sched</span><span class="p">.</span><span class="nx">runqsize</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">lock</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">lock</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// 从全局队列获取 g
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">gp</span> <span class="o">:=</span> <span class="nf">globrunqget</span><span class="p">(</span><span class="nx">_p_</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">lock</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">gp</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nx">gp</span><span class="p">,</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Poll network.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// This netpoll is only an optimization before we resort to stealing.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// We can safely skip it if there are no waiters or a thread is blocked
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// in netpoll already. If there is any kind of logical race with that
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// blocked thread (e.g. it has already returned from netpoll, but does
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// not set lastpoll yet), this thread will do blocking netpoll below
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// anyway.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nf">netpollinited</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">Load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">netpollWaiters</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">Load64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">lastpoll</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">list</span> <span class="o">:=</span> <span class="nf">netpoll</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="p">!</span><span class="nx">list</span><span class="p">.</span><span class="nf">empty</span><span class="p">()</span> <span class="p">{</span> <span class="c1">// non-blocking
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nx">gp</span> <span class="o">:=</span> <span class="nx">list</span><span class="p">.</span><span class="nf">pop</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">injectglist</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">list</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">casgstatus</span><span class="p">(</span><span class="nx">gp</span><span class="p">,</span> <span class="nx">_Gwaiting</span><span class="p">,</span> <span class="nx">_Grunnable</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">trace</span><span class="p">.</span><span class="nx">enabled</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="nf">traceGoUnpark</span><span class="p">(</span><span class="nx">gp</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nx">gp</span><span class="p">,</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Spinning Ms: steal work from other Ps.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Limit the number of spinning Ms to half the number of busy Ps.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// This is necessary to prevent excessive CPU consumption when
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// GOMAXPROCS&gt;&gt;1 but the program parallelism is low.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">procs</span> <span class="o">:=</span> <span class="nb">uint32</span><span class="p">(</span><span class="nx">gomaxprocs</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">spinning</span> <span class="o">||</span> <span class="mi">2</span><span class="o">*</span><span class="nx">atomic</span><span class="p">.</span><span class="nf">Load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">nmspinning</span><span class="p">)</span> <span class="p">&lt;</span> <span class="nx">procs</span><span class="o">-</span><span class="nx">atomic</span><span class="p">.</span><span class="nf">Load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">npidle</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">!</span><span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">spinning</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">spinning</span> <span class="p">=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">atomic</span><span class="p">.</span><span class="nf">Xadd</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">nmspinning</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// stealWork: 工作窃取算法： 如果全局队列没有任务，就尝试从其他线程本地队列中获取任务执行	
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">gp</span><span class="p">,</span> <span class="nx">inheritTime</span><span class="p">,</span> <span class="nx">tnow</span><span class="p">,</span> <span class="nx">w</span><span class="p">,</span> <span class="nx">newWork</span> <span class="o">:=</span> <span class="nf">stealWork</span><span class="p">(</span><span class="nx">now</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">now</span> <span class="p">=</span> <span class="nx">tnow</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">gp</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// Successfully stole.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="k">return</span> <span class="nx">gp</span><span class="p">,</span> <span class="nx">inheritTime</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">newWork</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// There may be new timer or GC work; restart to
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// discover.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="k">goto</span> <span class="nx">top</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">w</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">pollUntil</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="nx">w</span> <span class="p">&lt;</span> <span class="nx">pollUntil</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// Earlier timer to wait for.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nx">pollUntil</span> <span class="p">=</span> <span class="nx">w</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// We have nothing to do.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// If we&#39;re in the GC mark phase, can safely scan and blacken objects,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// and have work to do, run idle-time marking rather than give up the
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// P.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">gcBlackenEnabled</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nf">gcMarkWorkAvailable</span><span class="p">(</span><span class="nx">_p_</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">node</span> <span class="o">:=</span> <span class="p">(</span><span class="o">*</span><span class="nx">gcBgMarkWorkerNode</span><span class="p">)(</span><span class="nx">gcBgMarkWorkerPool</span><span class="p">.</span><span class="nf">pop</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">node</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">_p_</span><span class="p">.</span><span class="nx">gcMarkWorkerMode</span> <span class="p">=</span> <span class="nx">gcMarkWorkerIdleMode</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">gp</span> <span class="o">:=</span> <span class="nx">node</span><span class="p">.</span><span class="nx">gp</span><span class="p">.</span><span class="nf">ptr</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">casgstatus</span><span class="p">(</span><span class="nx">gp</span><span class="p">,</span> <span class="nx">_Gwaiting</span><span class="p">,</span> <span class="nx">_Grunnable</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">trace</span><span class="p">.</span><span class="nx">enabled</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="nf">traceGoUnpark</span><span class="p">(</span><span class="nx">gp</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nx">gp</span><span class="p">,</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// wasm only:
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// If a callback returned and no other goroutine is awake,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// then wake event handler goroutine which pauses execution
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// until a callback was triggered.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">gp</span><span class="p">,</span> <span class="nx">otherReady</span> <span class="o">:=</span> <span class="nf">beforeIdle</span><span class="p">(</span><span class="nx">now</span><span class="p">,</span> <span class="nx">pollUntil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">gp</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">casgstatus</span><span class="p">(</span><span class="nx">gp</span><span class="p">,</span> <span class="nx">_Gwaiting</span><span class="p">,</span> <span class="nx">_Grunnable</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">trace</span><span class="p">.</span><span class="nx">enabled</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">traceGoUnpark</span><span class="p">(</span><span class="nx">gp</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">gp</span><span class="p">,</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">otherReady</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">goto</span> <span class="nx">top</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Before we drop our P, make a snapshot of the allp slice,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// which can change underfoot once we no longer block
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// safe-points. We don&#39;t need to snapshot the contents because
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// everything up to cap(allp) is immutable.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">allpSnapshot</span> <span class="o">:=</span> <span class="nx">allp</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Also snapshot masks. Value changes are OK, but we can&#39;t allow
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// len to change out from under us.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">idlepMaskSnapshot</span> <span class="o">:=</span> <span class="nx">idlepMask</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">timerpMaskSnapshot</span> <span class="o">:=</span> <span class="nx">timerpMask</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// return P and block
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nf">lock</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">lock</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">sched</span><span class="p">.</span><span class="nx">gcwaiting</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">||</span> <span class="nx">_p_</span><span class="p">.</span><span class="nx">runSafePointFn</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">lock</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">goto</span> <span class="nx">top</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">sched</span><span class="p">.</span><span class="nx">runqsize</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">gp</span> <span class="o">:=</span> <span class="nf">globrunqget</span><span class="p">(</span><span class="nx">_p_</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">lock</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">gp</span><span class="p">,</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nf">releasep</span><span class="p">()</span> <span class="o">!=</span> <span class="nx">_p_</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">throw</span><span class="p">(</span><span class="s">&#34;findrunnable: wrong p&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">pidleput</span><span class="p">(</span><span class="nx">_p_</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">lock</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Delicate dance: thread transitions from spinning to non-spinning
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// state, potentially concurrently with submission of new work. We must
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// drop nmspinning first and then check all sources again (with
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// #StoreLoad memory barrier in between). If we do it the other way
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// around, another thread can submit work after we&#39;ve checked all
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// sources but before we drop nmspinning; as a result nobody will
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// unpark a thread to run the work.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// This applies to the following sources of work:
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// * Goroutines added to a per-P run queue.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// * New/modified-earlier timers on a per-P timer heap.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// * Idle-priority GC work (barring golang.org/issue/19112).
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// If we discover new work below, we need to restore m.spinning as a signal
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// for resetspinning to unpark a new worker thread (because there can be more
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// than one starving goroutine). However, if after discovering new work
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// we also observe no idle Ps it is OK to skip unparking a new worker
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// thread: the system is fully loaded so no spinning threads are required.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Also see &#34;Worker thread parking/unparking&#34; comment at the top of the file.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">wasSpinning</span> <span class="o">:=</span> <span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">spinning</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">spinning</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">spinning</span> <span class="p">=</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nb">int32</span><span class="p">(</span><span class="nx">atomic</span><span class="p">.</span><span class="nf">Xadd</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">nmspinning</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="p">&lt;</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">throw</span><span class="p">(</span><span class="s">&#34;findrunnable: negative nmspinning&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// Note the for correctness, only the last M transitioning from
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// spinning to non-spinning must perform these rechecks to
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// ensure no missed work. We are performing it on every M that
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// transitions as a conservative change to monitor effects on
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// latency. See golang.org/issue/43997.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// Check all runqueues once again.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">_p_</span> <span class="p">=</span> <span class="nf">checkRunqsNoP</span><span class="p">(</span><span class="nx">allpSnapshot</span><span class="p">,</span> <span class="nx">idlepMaskSnapshot</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">_p_</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">acquirep</span><span class="p">(</span><span class="nx">_p_</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">spinning</span> <span class="p">=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">atomic</span><span class="p">.</span><span class="nf">Xadd</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">nmspinning</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="k">goto</span> <span class="nx">top</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// Check for idle-priority GC work again.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">_p_</span><span class="p">,</span> <span class="nx">gp</span> <span class="p">=</span> <span class="nf">checkIdleGCNoP</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">_p_</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">acquirep</span><span class="p">(</span><span class="nx">_p_</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">spinning</span> <span class="p">=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">atomic</span><span class="p">.</span><span class="nf">Xadd</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">nmspinning</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">			<span class="c1">// Run the idle worker.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nx">_p_</span><span class="p">.</span><span class="nx">gcMarkWorkerMode</span> <span class="p">=</span> <span class="nx">gcMarkWorkerIdleMode</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">casgstatus</span><span class="p">(</span><span class="nx">gp</span><span class="p">,</span> <span class="nx">_Gwaiting</span><span class="p">,</span> <span class="nx">_Grunnable</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">trace</span><span class="p">.</span><span class="nx">enabled</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="nf">traceGoUnpark</span><span class="p">(</span><span class="nx">gp</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nx">gp</span><span class="p">,</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// Finally, check for timer creation or expiry concurrently with
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// transitioning from spinning to non-spinning.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// Note that we cannot use checkTimers here because it calls
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// adjusttimers which may need to allocate memory, and that isn&#39;t
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// allowed when we don&#39;t have an active P.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">pollUntil</span> <span class="p">=</span> <span class="nf">checkTimersNoP</span><span class="p">(</span><span class="nx">allpSnapshot</span><span class="p">,</span> <span class="nx">timerpMaskSnapshot</span><span class="p">,</span> <span class="nx">pollUntil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Poll network until next timer.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nf">netpollinited</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">atomic</span><span class="p">.</span><span class="nf">Load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">netpollWaiters</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="nx">pollUntil</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">Xchg64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">lastpoll</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">atomic</span><span class="p">.</span><span class="nf">Store64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">pollUntil</span><span class="p">,</span> <span class="nb">uint64</span><span class="p">(</span><span class="nx">pollUntil</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">p</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">throw</span><span class="p">(</span><span class="s">&#34;findrunnable: netpoll with p&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">spinning</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">throw</span><span class="p">(</span><span class="s">&#34;findrunnable: netpoll with spinning&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">delay</span> <span class="o">:=</span> <span class="nb">int64</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">pollUntil</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">now</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="nx">now</span> <span class="p">=</span> <span class="nf">nanotime</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">delay</span> <span class="p">=</span> <span class="nx">pollUntil</span> <span class="o">-</span> <span class="nx">now</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">delay</span> <span class="p">&lt;</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="nx">delay</span> <span class="p">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">faketime</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// When using fake time, just poll.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nx">delay</span> <span class="p">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">list</span> <span class="o">:=</span> <span class="nf">netpoll</span><span class="p">(</span><span class="nx">delay</span><span class="p">)</span> <span class="c1">// block until new work is available
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">atomic</span><span class="p">.</span><span class="nf">Store64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">pollUntil</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">atomic</span><span class="p">.</span><span class="nf">Store64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">lastpoll</span><span class="p">,</span> <span class="nb">uint64</span><span class="p">(</span><span class="nf">nanotime</span><span class="p">()))</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">faketime</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nx">list</span><span class="p">.</span><span class="nf">empty</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// Using fake time and nothing is ready; stop M.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// When all M&#39;s stop, checkdead will call timejump.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nf">stopm</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">			<span class="k">goto</span> <span class="nx">top</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">lock</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">lock</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">_p_</span> <span class="p">=</span> <span class="nf">pidleget</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">lock</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">_p_</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">injectglist</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">list</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">acquirep</span><span class="p">(</span><span class="nx">_p_</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="p">!</span><span class="nx">list</span><span class="p">.</span><span class="nf">empty</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="nx">gp</span> <span class="o">:=</span> <span class="nx">list</span><span class="p">.</span><span class="nf">pop</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">				<span class="nf">injectglist</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">list</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="nf">casgstatus</span><span class="p">(</span><span class="nx">gp</span><span class="p">,</span> <span class="nx">_Gwaiting</span><span class="p">,</span> <span class="nx">_Grunnable</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="k">if</span> <span class="nx">trace</span><span class="p">.</span><span class="nx">enabled</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">					<span class="nf">traceGoUnpark</span><span class="p">(</span><span class="nx">gp</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="p">}</span>
+</span></span><span class="line"><span class="cl">				<span class="k">return</span> <span class="nx">gp</span><span class="p">,</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">wasSpinning</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">spinning</span> <span class="p">=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">				<span class="nx">atomic</span><span class="p">.</span><span class="nf">Xadd</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">nmspinning</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="k">goto</span> <span class="nx">top</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nx">pollUntil</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nf">netpollinited</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">pollerPollUntil</span> <span class="o">:=</span> <span class="nb">int64</span><span class="p">(</span><span class="nx">atomic</span><span class="p">.</span><span class="nf">Load64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">pollUntil</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">pollerPollUntil</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="nx">pollerPollUntil</span> <span class="p">&gt;</span> <span class="nx">pollUntil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">netpollBreak</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">stopm</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">goto</span> <span class="nx">top</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="线程调度的顺序工作窃取机制">线程调度的顺序（工作窃取机制）</h2>
+<ol start="0">
+<li>初始化: 假设每一个p自己本地都有任务</li>
+<li>先调度本地队列中的任务</li>
+<li>如果本地任务调度完成之后，就去全局队列中获取多个协程任务去执行</li>
+<li>如果全局队列中获取任务，就返回步骤1</li>
+<li>如果全局队列没有任务，无法获取，采用 4-1
+<ol>
+<li>采用工作窃取算法，去偷取其他线程的p的队列任务</li>
+<li>偷取到任务之后返回 1 重复执行</li>
+</ol>
+</li>
+</ol>
+<p>采用这种做法，增加了线程的利用率（永远不会因为任务被其他线程拿走了，自己就无事可干，时刻去帮助其他线程调度，时刻忙起来）</p>
+<h2 id="新建协程的过程">新建协程的过程</h2>
+<ul>
+<li>随机寻址一个 p</li>
+<li>将新协程放入 p 的 runnext(插队)</li>
+<li>若p本地队列满了（队列已经有了256个元素），放入全局队列</li>
+</ul>
+<p>源码在 <code>/runtime/proc.go/newproc</code> 方法下面</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">newproc</span><span class="p">(</span><span class="nx">fn</span> <span class="o">*</span><span class="nx">funcval</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">gp</span> <span class="o">:=</span> <span class="nf">getg</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">pc</span> <span class="o">:=</span> <span class="nf">getcallerpc</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">systemstack</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">newg</span> <span class="o">:=</span> <span class="nf">newproc1</span><span class="p">(</span><span class="nx">fn</span><span class="p">,</span> <span class="nx">gp</span><span class="p">,</span> <span class="nx">pc</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="nx">_p_</span> <span class="o">:=</span> <span class="nf">getg</span><span class="p">().</span><span class="nx">m</span><span class="p">.</span><span class="nx">p</span><span class="p">.</span><span class="nf">ptr</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">runqput</span><span class="p">(</span><span class="nx">_p_</span><span class="p">,</span> <span class="nx">newg</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">mainStarted</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">wakep</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">runqput</span><span class="p">(</span><span class="nx">_p_</span> <span class="o">*</span><span class="nx">p</span><span class="p">,</span> <span class="nx">gp</span> <span class="o">*</span><span class="nx">g</span><span class="p">,</span> <span class="nx">next</span> <span class="kt">bool</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">randomizeScheduler</span> <span class="o">&amp;&amp;</span> <span class="nx">next</span> <span class="o">&amp;&amp;</span> <span class="nf">fastrandn</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">next</span> <span class="p">=</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">next</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">retryNext</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">oldnext</span> <span class="o">:=</span> <span class="nx">_p_</span><span class="p">.</span><span class="nx">runnext</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">!</span><span class="nx">_p_</span><span class="p">.</span><span class="nx">runnext</span><span class="p">.</span><span class="nf">cas</span><span class="p">(</span><span class="nx">oldnext</span><span class="p">,</span> <span class="nf">guintptr</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Pointer</span><span class="p">(</span><span class="nx">gp</span><span class="p">)))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">goto</span> <span class="nx">retryNext</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">oldnext</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// Kick the old runnext out to the regular run queue.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">gp</span> <span class="p">=</span> <span class="nx">oldnext</span><span class="p">.</span><span class="nf">ptr</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">retry</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">h</span> <span class="o">:=</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">LoadAcq</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">_p_</span><span class="p">.</span><span class="nx">runqhead</span><span class="p">)</span> <span class="c1">// load-acquire, synchronize with consumers
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">t</span> <span class="o">:=</span> <span class="nx">_p_</span><span class="p">.</span><span class="nx">runqtail</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">t</span><span class="o">-</span><span class="nx">h</span> <span class="p">&lt;</span> <span class="nb">uint32</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nx">_p_</span><span class="p">.</span><span class="nx">runq</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">_p_</span><span class="p">.</span><span class="nx">runq</span><span class="p">[</span><span class="nx">t</span><span class="o">%</span><span class="nb">uint32</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nx">_p_</span><span class="p">.</span><span class="nx">runq</span><span class="p">))].</span><span class="nf">set</span><span class="p">(</span><span class="nx">gp</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">atomic</span><span class="p">.</span><span class="nf">StoreRel</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">_p_</span><span class="p">.</span><span class="nx">runqtail</span><span class="p">,</span> <span class="nx">t</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="c1">// store-release, makes the item available for consumption
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">return</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nf">runqputslow</span><span class="p">(</span><span class="nx">_p_</span><span class="p">,</span> <span class="nx">gp</span><span class="p">,</span> <span class="nx">h</span><span class="p">,</span> <span class="nx">t</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// the queue is not full, now the put above must succeed
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">goto</span> <span class="nx">retry</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="协程饥饿问题">协程饥饿问题</h2>
+<p>假设每个线程的任务都比较长，一直执行本地队列的协程任务的话，会不会造成全局队列的任务无法被调度呢？</p>
+<p>解决方法：
+按照一定的概率： 从全局队列中拿部分任务g放入本地队列调度，一定程度可以解决饥饿问题</p>
+<p>解决方法： schedule里面有个 <code>schetick%61</code>, 也就是说每执行61次，就从全局队列中拿出任务执行</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">schedule</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">gp</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// Check the global runnable queue once in a while to ensure fairness.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// Otherwise two goroutines can completely occupy the local runqueue
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// by constantly respawning each other.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">if</span> <span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">p</span><span class="p">.</span><span class="nf">ptr</span><span class="p">().</span><span class="nx">schedtick</span><span class="o">%</span><span class="mi">61</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nx">sched</span><span class="p">.</span><span class="nx">runqsize</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">lock</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">lock</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// 从全局队列中获取任务
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nx">gp</span> <span class="p">=</span> <span class="nf">globrunqget</span><span class="p">(</span><span class="nx">_g_</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">p</span><span class="p">.</span><span class="nf">ptr</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">sched</span><span class="p">.</span><span class="nx">lock</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">//...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="切换协程的时机">切换协程的时机</h3>
+<ol>
+<li>主动挂起
+<ol>
+<li>调用 gopark()方法</li>
+</ol>
+</li>
+<li>系统调用完成时
+<ol>
+<li>比如linux 下 netpoll,涉及到底层的调用，使用了 <code>existscall()</code></li>
+</ol>
+</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">gopark</span><span class="p">(</span><span class="nx">unlockf</span> <span class="kd">func</span><span class="p">(</span><span class="o">*</span><span class="nx">g</span><span class="p">,</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span><span class="p">)</span> <span class="kt">bool</span><span class="p">,</span> <span class="nx">lock</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span><span class="p">,</span> <span class="nx">reason</span> <span class="nx">waitReason</span><span class="p">,</span> <span class="nx">traceEv</span> <span class="kt">byte</span><span class="p">,</span> <span class="nx">traceskip</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">reason</span> <span class="o">!=</span> <span class="nx">waitReasonSleep</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">checkTimeouts</span><span class="p">()</span> <span class="c1">// timeouts may expire while two goroutines keep the scheduler busy
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mp</span> <span class="o">:=</span> <span class="nf">acquirem</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">gp</span> <span class="o">:=</span> <span class="nx">mp</span><span class="p">.</span><span class="nx">curg</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">status</span> <span class="o">:=</span> <span class="nf">readgstatus</span><span class="p">(</span><span class="nx">gp</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">status</span> <span class="o">!=</span> <span class="nx">_Grunning</span> <span class="o">&amp;&amp;</span> <span class="nx">status</span> <span class="o">!=</span> <span class="nx">_Gscanrunning</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">throw</span><span class="p">(</span><span class="s">&#34;gopark: bad g status&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mp</span><span class="p">.</span><span class="nx">waitlock</span> <span class="p">=</span> <span class="nx">lock</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mp</span><span class="p">.</span><span class="nx">waitunlockf</span> <span class="p">=</span> <span class="nx">unlockf</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">gp</span><span class="p">.</span><span class="nx">waitreason</span> <span class="p">=</span> <span class="nx">reason</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mp</span><span class="p">.</span><span class="nx">waittraceev</span> <span class="p">=</span> <span class="nx">traceEv</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mp</span><span class="p">.</span><span class="nx">waittraceskip</span> <span class="p">=</span> <span class="nx">traceskip</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">releasem</span><span class="p">(</span><span class="nx">mp</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// can&#39;t do anything that might move the G between Ms here.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nf">mcall</span><span class="p">(</span><span class="nx">park_m</span><span class="p">)</span> <span class="c1">// 切换栈
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>time.Sleep</code> 休眠线程 其实就是调用 的<code>gopark()</code> 方法</p>
+<h3 id="基于协作的抢占式调度">基于协作的抢占式调度</h3>
+<p>我们知道 有些方法不可能自己主动调用 park的，如下， 只是一个死循环，没有调用任何方法</p>
+<ul>
+<li>基于系统调用和主动挂起，协程可能无法调度</li>
+<li>基于协作式的抢占调度:业务主动调用 <code>morestack()</code></li>
+<li>基于信号的抢占式调度,强制线程使用 <code>doSigPreempt()</code></li>
+</ul>
+<p>解决方法就是使用信号</p>
+<h4 id="线程信号">线程信号</h4>
+<ul>
+<li>操作系统中，有很多基于信号的底层通信方式</li>
+<li>比如  SIGPIPE /SIGURG/SIGHUP</li>
+<li>线程可以注册对应信号的处理函数</li>
+</ul>
+<p>一个协程占着一个线程 肯定不对，我们就可以使用一个基于信号的抢占式调度</p>
+<h5 id="信号原理">信号原理</h5>
+<ul>
+<li>注册 sigurg 信号处理函数</li>
+<li>gc工作时候，向目标线程发送信号
+信号</li>
+</ul>
+<p>查看源码 <code>doSigPreempt</code> 方法</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// doSigPreempt handles a preemption signal on gp.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">doSigPreempt</span><span class="p">(</span><span class="nx">gp</span> <span class="o">*</span><span class="nx">g</span><span class="p">,</span> <span class="nx">ctxt</span> <span class="o">*</span><span class="nx">sigctxt</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Check if this G wants to be preempted and is safe to
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// preempt.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nf">wantAsyncPreempt</span><span class="p">(</span><span class="nx">gp</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">ok</span><span class="p">,</span> <span class="nx">newpc</span> <span class="o">:=</span> <span class="nf">isAsyncSafePoint</span><span class="p">(</span><span class="nx">gp</span><span class="p">,</span> <span class="nx">ctxt</span><span class="p">.</span><span class="nf">sigpc</span><span class="p">(),</span> <span class="nx">ctxt</span><span class="p">.</span><span class="nf">sigsp</span><span class="p">(),</span> <span class="nx">ctxt</span><span class="p">.</span><span class="nf">siglr</span><span class="p">());</span> <span class="nx">ok</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// Adjust the PC and inject a call to asyncPreempt.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nx">ctxt</span><span class="p">.</span><span class="nf">pushCall</span><span class="p">(</span><span class="nx">abi</span><span class="p">.</span><span class="nf">FuncPCABI0</span><span class="p">(</span><span class="nx">asyncPreempt</span><span class="p">),</span> <span class="nx">newpc</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Acknowledge the preemption.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">atomic</span><span class="p">.</span><span class="nf">Xadd</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">gp</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">preemptGen</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">atomic</span><span class="p">.</span><span class="nf">Store</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">gp</span><span class="p">.</span><span class="nx">m</span><span class="p">.</span><span class="nx">signalPending</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">GOOS</span> <span class="o">==</span> <span class="s">&#34;darwin&#34;</span> <span class="o">||</span> <span class="nx">GOOS</span> <span class="o">==</span> <span class="s">&#34;ios&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">atomic</span><span class="p">.</span><span class="nf">Xadd</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">pendingPreemptSignals</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">die</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">i</span><span class="o">++</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">go</span> <span class="nf">die</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">go</span> <span class="nf">die</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">die</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// fmt.Printf(&#34;%+v\n&#34;, unsafe.Sizeof(ni}
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="协程太多的问题">协程太多的问题</h2>
+<ul>
+<li>文件打开数限制</li>
+<li>内存限制</li>
+<li>调度开销过大</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;time&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;math&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">die</span><span class="p">(</span><span class="nx">i</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// i := 0
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// for {
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// 	i++
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">math</span><span class="p">.</span><span class="nx">MaxInt32</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">go</span> <span class="nf">die</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Hour</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"> 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="解决方案">解决方案</h3>
+<h4 id="处理协程太多的方案">处理协程太多的方案</h4>
+<ul>
+<li>优化业务逻辑</li>
+<li>利用 channel的缓冲区</li>
+<li>协程池</li>
+<li>调整系统资源</li>
+</ul>
+<h5 id="channel-缓存区">channel 缓存区</h5>
+<ul>
+<li>利用channel缓存机制</li>
+<li>启动协程前，向channel送入一个空结构体</li>
+<li>协程结束，取出一个空结构体</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;time&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;math&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">die</span><span class="p">(</span><span class="nx">i</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">ch</span> <span class="kd">chan</span> <span class="kd">struct</span><span class="p">{})</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="o">&lt;-</span><span class="nx">ch</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">ch</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{},</span> <span class="mi">3000</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 同时可以执行的协程不会超过 3000个
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">math</span><span class="p">.</span><span class="nx">MaxInt32</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">ch</span> <span class="o">&lt;-</span> <span class="kd">struct</span><span class="p">{}{}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">go</span> <span class="nf">die</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span> <span class="nx">ch</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Hour</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h5 id="协程池-tunny">协程池 (tunny)</h5>
+<ul>
+<li>预创建一定数量协程</li>
+<li>将任务送入协程池队列</li>
+</ul>
+<p>慎用线程池：</p>
+<ul>
+<li>go的线程，相当于池化了</li>
+<li>二级池化会增加系统复杂度</li>
+<li>go语言初衷是希望协程即用即毁，不要池化</li>
+</ul>
+<h2 id="协程源码总结">协程源码总结</h2>
+<ul>
+<li>runtime里面，协程是一个可以被调度的 g 结构体</li>
+<li>从线程的调度看，协程是一段程序，自带执行现场</li>
+<li>GMP模型
+<ul>
+<li>通过p结构体，达成缓存部分G的目的</li>
+<li>p本质是一个 G的本地队列，避免全局并发等待</li>
+<li>窃取式工作分配机制能够更加充分利用线程资源</li>
+</ul>
+</li>
+<li>协程顺序执行会有饥饿问题</li>
+<li>协程执行中间，主动将协程挂起，执行其他协程</li>
+<li>完成系统调用时挂起，也可以主动挂起（让出位置给其他协程）</li>
+</ul>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-05-11
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/">课外课程学习</a>
+          </div>
+      <nav class="post-nav">
+        
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E6%BA%90%E7%A0%81%E8%B5%8F%E6%9E%901%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8/">
+            <span class="next-text nav-default">go语言源码赏析1</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-07-10 18:20:21 \u002b0800 \u002b0800',
+        title: 'go语言源码赏析2(协程)',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://lyr-2000.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-09-23 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.6d2c4f127d59e1dce56e2845adf7d359011b86d8fc907e98877eb35bd445b2b3.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js/back_btn.js"></script>
+<script src="/js/docsearch.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+ 
+  <div id="BR_cornner">
+    <div id='darkThemeBtn'>T</div> 
+  </div> 
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<script defer async>
+
+  mermaid.initialize({startOnLoad:true});
+</script>
+</body>
+</html>
