@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>go语言源码赏析3(锁) - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="atomic 原理 原子操作是一 种硬件层面加锁的机制 保证操作一个变量的时候，其他协程、线程无法访问 只能用于简单变量的简单操作 sema锁 信号量锁/信号锁 核心" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.101.0 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E6%BA%90%E7%A0%81%E8%B5%8F%E6%9E%903%E9%94%81/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/post.css">
+
+
+<meta property="og:title" content="go语言源码赏析3(锁)" />
+<meta property="og:description" content="atomic 原理 原子操作是一 种硬件层面加锁的机制 保证操作一个变量的时候，其他协程、线程无法访问 只能用于简单变量的简单操作 sema锁 信号量锁/信号锁 核心" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E6%BA%90%E7%A0%81%E8%B5%8F%E6%9E%903%E9%94%81/" /><meta property="og:image" content="https://tva1.sinaimg.cn/large/0076Ry2fly1fqlda2okmuj31hc0u0hdq.jpg" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-07-11T23:36:04+08:00" />
+<meta property="article:modified_time" content="2022-05-11T20:02:48+08:00" />
+
+<meta itemprop="name" content="go语言源码赏析3(锁)">
+<meta itemprop="description" content="atomic 原理 原子操作是一 种硬件层面加锁的机制 保证操作一个变量的时候，其他协程、线程无法访问 只能用于简单变量的简单操作 sema锁 信号量锁/信号锁 核心"><meta itemprop="datePublished" content="2022-07-11T23:36:04+08:00" />
+<meta itemprop="dateModified" content="2022-05-11T20:02:48+08:00" />
+<meta itemprop="wordCount" content="998"><meta itemprop="image" content="https://tva1.sinaimg.cn/large/0076Ry2fly1fqlda2okmuj31hc0u0hdq.jpg">
+<meta itemprop="keywords" content="课外课程学习," /><meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://tva1.sinaimg.cn/large/0076Ry2fly1fqlda2okmuj31hc0u0hdq.jpg"/>
+
+<meta name="twitter:title" content="go语言源码赏析3(锁)"/>
+<meta name="twitter:description" content="atomic 原理 原子操作是一 种硬件层面加锁的机制 保证操作一个变量的时候，其他协程、线程无法访问 只能用于简单变量的简单操作 sema锁 信号量锁/信号锁 核心"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body >
+  
+  
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="globalbg"></div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel" >
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	<div class="customByLyr">
+  
+			<img class="lazyload"  draggable="false"  data-original="https://tva1.sinaimg.cn/large/0076Ry2fly1fqlda2okmuj31hc0u0hdq.jpg" />
+		</div>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">go语言源码赏析3(锁)</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-07-11 </span>
+        <div class="post-category">
+            <a href="/categories/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/"> 课外课程学习 </a>
+            </div>
+          <span class="more-meta"> 约 998 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#atomic-原理">atomic 原理</a></li>
+        <li><a href="#sema锁">sema锁</a>
+          <ul>
+            <li><a href="#sema释放锁">sema释放锁</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h2 id="atomic-原理">atomic 原理</h2>
+<ul>
+<li>原子操作是一 种<strong>硬件层面</strong>加锁的机制</li>
+<li>保证操作一个变量的时候，其他协程、线程无法访问</li>
+<li>只能用于简单变量的简单操作</li>
+</ul>
+<h2 id="sema锁">sema锁</h2>
+<ul>
+<li>信号量锁/信号锁</li>
+<li>核心是一个 uint32,含义是同时可以并发的数量</li>
+<li>每个 sema锁对应一个semaroot结构体</li>
+<li>semaRoot中有一个平衡二叉树用于协程排队</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">cansemacquire</span><span class="p">(</span><span class="nx">addr</span> <span class="o">*</span><span class="kt">uint32</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">v</span> <span class="o">:=</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">Load</span><span class="p">(</span><span class="nx">addr</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">v</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">Cas</span><span class="p">(</span><span class="nx">addr</span><span class="p">,</span> <span class="nx">v</span><span class="p">,</span> <span class="nx">v</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">semrelease1</span><span class="p">(</span><span class="nx">addr</span> <span class="o">*</span><span class="kt">uint32</span><span class="p">,</span> <span class="nx">handoff</span> <span class="kt">bool</span><span class="p">,</span> <span class="nx">skipframes</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">root</span> <span class="o">:=</span> <span class="nf">semroot</span><span class="p">(</span><span class="nx">addr</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">atomic</span><span class="p">.</span><span class="nf">Xadd</span><span class="p">(</span><span class="nx">addr</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Easy case: no waiters?
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// This check must happen after the xadd, to avoid a missed wakeup
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// (see loop in semacquire).
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">Load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">root</span><span class="p">.</span><span class="nx">nwait</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Harder case: search for a waiter and wake it.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nf">lockWithRank</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">root</span><span class="p">.</span><span class="nx">lock</span><span class="p">,</span> <span class="nx">lockRankRoot</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">atomic</span><span class="p">.</span><span class="nf">Load</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">root</span><span class="p">.</span><span class="nx">nwait</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// The count is already consumed by another goroutine,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// so no need to wake up another goroutine.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nf">unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">root</span><span class="p">.</span><span class="nx">lock</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">s</span><span class="p">,</span> <span class="nx">t0</span> <span class="o">:=</span> <span class="nx">root</span><span class="p">.</span><span class="nf">dequeue</span><span class="p">(</span><span class="nx">addr</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">s</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">atomic</span><span class="p">.</span><span class="nf">Xadd</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">root</span><span class="p">.</span><span class="nx">nwait</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">root</span><span class="p">.</span><span class="nx">lock</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">s</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span> <span class="c1">// May be slow or even yield, so unlock first
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">acquiretime</span> <span class="o">:=</span> <span class="nx">s</span><span class="p">.</span><span class="nx">acquiretime</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">acquiretime</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">mutexevent</span><span class="p">(</span><span class="nx">t0</span><span class="o">-</span><span class="nx">acquiretime</span><span class="p">,</span> <span class="mi">3</span><span class="o">+</span><span class="nx">skipframes</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">s</span><span class="p">.</span><span class="nx">ticket</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nf">throw</span><span class="p">(</span><span class="s">&#34;corrupted semaphore ticket&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">handoff</span> <span class="o">&amp;&amp;</span> <span class="nf">cansemacquire</span><span class="p">(</span><span class="nx">addr</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">s</span><span class="p">.</span><span class="nx">ticket</span> <span class="p">=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">readyWithTime</span><span class="p">(</span><span class="nx">s</span><span class="p">,</span> <span class="mi">5</span><span class="o">+</span><span class="nx">skipframes</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">s</span><span class="p">.</span><span class="nx">ticket</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="nf">getg</span><span class="p">().</span><span class="nx">m</span><span class="p">.</span><span class="nx">locks</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// Direct G handoff
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// readyWithTime has added the waiter G as runnext in the
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// current P; we now call the scheduler so that we start running
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// the waiter G immediately.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// Note that waiter inherits our time slice: this is desirable
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// to avoid having a highly contended semaphore hog the P
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// indefinitely. goyield is like Gosched, but it emits a
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// &#34;preempted&#34; trace event instead and, more importantly, puts
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// the current G on the local runq instead of the global one.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// We only do this in the starving regime (handoff=true), as in
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// the non-starving case it is possible for a different waiter
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// to acquire the semaphore while we are yielding/scheduling,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// and this would be wasteful. We wait instead to enter starving
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// regime, and then we start to do direct handoffs of ticket and
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// P.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// See issue 33747 for discussion.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nf">goyield</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">semaRoot</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">lock</span>  <span class="nx">mutex</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">treap</span> <span class="o">*</span><span class="nx">sudog</span> <span class="c1">// root of balanced tree of unique waiters.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">nwait</span> <span class="kt">uint32</span> <span class="c1">// Number of waiters. Read w/o the lock.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// leaseSudog to allocate and free them.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">sudog</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// The following fields are protected by the hchan.lock of the
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// channel this sudog is blocking on. shrinkstack depends on
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// this for sudogs involved in channel ops.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="nx">g</span> <span class="o">*</span><span class="nx">g</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">next</span> <span class="o">*</span><span class="nx">sudog</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">prev</span> <span class="o">*</span><span class="nx">sudog</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">elem</span> <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span> <span class="c1">// data element (may point to stack)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// The following fields are never accessed concurrently.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// For channels, waitlink is only accessed by g.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// For semaphores, all fields (including the ones above)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// are only accessed when holding a semaRoot lock.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="nx">acquiretime</span> <span class="kt">int64</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">releasetime</span> <span class="kt">int64</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ticket</span>      <span class="kt">uint32</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// isSelect indicates g is participating in a select, so
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// g.selectDone must be CAS&#39;d to win the wake-up race.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">isSelect</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// success indicates whether communication over channel c
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// succeeded. It is true if the goroutine was awoken because a
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// value was delivered over channel c, and false if awoken
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// because c was closed.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">success</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">parent</span>   <span class="o">*</span><span class="nx">sudog</span> <span class="c1">// semaRoot binary tree
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">waitlink</span> <span class="o">*</span><span class="nx">sudog</span> <span class="c1">// g.waiting list or semaRoot
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">waittail</span> <span class="o">*</span><span class="nx">sudog</span> <span class="c1">// semaRoot
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">c</span>        <span class="o">*</span><span class="nx">hchan</span> <span class="c1">// channel
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>sudog 是一个平衡二叉树</p>
+<p>sudog运行时用来存放处于阻塞状态的 goroutine 的一个上层抽象，是用来实现用户态信号量的主要机制之一
+例如当一个 goroutine 因为等待 channel 的数据需要进行阻塞时，sudog 会将 goroutine 及其用于等待数据的位置进行记录。阻塞的sudog组成一个树堆</p>
+<p><a href="https://juejin.cn/post/6955370086450331684">参考文章</a></p>
+<h3 id="sema释放锁">sema释放锁</h3>
+<ol>
+<li>获取锁： 协程休眠，进入堆树</li>
+<li>释放锁： 从堆树中取出一个协程，唤醒</li>
+<li>sema退化成专用的休眠队列（sema为0）</li>
+</ol>
+<center>
+<div class="mermaid">
+    
+graph TB
+
+semaroot--&gt;sudog
+sudog--&gt;sudog1
+sudog--&gt;sudog2
+
+
+</div>
+</center>
+<ul>
+<li>sema锁是 runtime常用的工具</li>
+<li>sema 经常被用作休眠队列</li>
+</ul>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-05-11
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/">课外课程学习</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86error/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">go语言处理error</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E6%BA%90%E7%A0%81%E8%B5%8F%E6%9E%902%E5%8D%8F%E7%A8%8B/">
+            <span class="next-text nav-default">go语言源码赏析2(协程)</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-07-11 23:36:04 \u002b0800 \u002b0800',
+        title: 'go语言源码赏析3(锁)',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://lyr-2000.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-09-23 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://cdn.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.6d2c4f127d59e1dce56e2845adf7d359011b86d8fc907e98877eb35bd445b2b3.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js/back_btn.js"></script>
+<script src="/js/docsearch.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+ 
+  <div id="BR_cornner">
+    <div id='darkThemeBtn'>T</div> 
+  </div> 
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<script defer async>
+
+  mermaid.initialize({startOnLoad:true});
+</script>
+</body>
+</html>
