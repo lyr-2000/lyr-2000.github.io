@@ -16,14 +16,14 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="LYR" /><meta name="description" content="Brog调度原理 安全性隔离： • 早期采用 Chroot jail，后期版本基于 Namespace。 性能隔离： • 采用基于 Cgroup 的容器技术实现。 • 在线任务（prod" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+<meta name="author" content="LYR" /><meta name="description" content="kubernates 的起源 kubernates 最初起源于谷歌的 borg, kubernates 最初目标是为应用的容器化编排部署提供一个最小化的平台，包含几个基本功能： 将应用水平扩容到多个集群 为扩容的实例提" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
 
 
 
 
 
 
-<meta name="generator" content="Hugo 0.101.0 with theme even" />
+<meta name="generator" content="Hugo 0.102.1 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/k8s/%E9%9A%94%E7%A6%BB%E6%80%A7%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" />
@@ -42,19 +42,19 @@
 
 
 <meta property="og:title" content="隔离性实现原理" />
-<meta property="og:description" content="Brog调度原理 安全性隔离： • 早期采用 Chroot jail，后期版本基于 Namespace。 性能隔离： • 采用基于 Cgroup 的容器技术实现。 • 在线任务（prod" />
+<meta property="og:description" content="kubernates 的起源 kubernates 最初起源于谷歌的 borg, kubernates 最初目标是为应用的容器化编排部署提供一个最小化的平台，包含几个基本功能： 将应用水平扩容到多个集群 为扩容的实例提" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/k8s/%E9%9A%94%E7%A6%BB%E6%80%A7%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" /><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2021-08-14T22:42:48+08:00" />
 <meta property="article:modified_time" content="2021-08-14T22:42:48+08:00" />
 
 <meta itemprop="name" content="隔离性实现原理">
-<meta itemprop="description" content="Brog调度原理 安全性隔离： • 早期采用 Chroot jail，后期版本基于 Namespace。 性能隔离： • 采用基于 Cgroup 的容器技术实现。 • 在线任务（prod"><meta itemprop="datePublished" content="2021-08-14T22:42:48+08:00" />
+<meta itemprop="description" content="kubernates 的起源 kubernates 最初起源于谷歌的 borg, kubernates 最初目标是为应用的容器化编排部署提供一个最小化的平台，包含几个基本功能： 将应用水平扩容到多个集群 为扩容的实例提"><meta itemprop="datePublished" content="2021-08-14T22:42:48+08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48+08:00" />
-<meta itemprop="wordCount" content="559">
+<meta itemprop="wordCount" content="637">
 <meta itemprop="keywords" content="k8s," /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="隔离性实现原理"/>
-<meta name="twitter:description" content="Brog调度原理 安全性隔离： • 早期采用 Chroot jail，后期版本基于 Namespace。 性能隔离： • 采用基于 Cgroup 的容器技术实现。 • 在线任务（prod"/>
+<meta name="twitter:description" content="kubernates 的起源 kubernates 最初起源于谷歌的 borg, kubernates 最初目标是为应用的容器化编排部署提供一个最小化的平台，包含几个基本功能： 将应用水平扩容到多个集群 为扩容的实例提"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -190,7 +190,7 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/k8s/"> k8s </a>
             </div>
-          <span class="more-meta"> 约 559 字 </span>
+          <span class="more-meta"> 约 637 字 </span>
           <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -203,6 +203,7 @@ input.PC_MARK1:focus{
   <ul>
     <li>
       <ul>
+        <li><a href="#kubernates-的起源">kubernates 的起源</a></li>
         <li><a href="#brog调度原理">Brog调度原理</a>
           <ul>
             <li><a href="#chroot解释">chroot解释</a></li>
@@ -216,7 +217,15 @@ input.PC_MARK1:focus{
 </div>
 
     <div class="post-content">
-      <h2 id="brog调度原理">Brog调度原理</h2>
+      <h2 id="kubernates-的起源">kubernates 的起源</h2>
+<ul>
+<li>kubernates 最初起源于谷歌的 borg, kubernates 最初目标是为应用的容器化编排部署提供一个最小化的平台，包含几个基本功能：</li>
+</ul>
+<ol>
+<li>将应用水平扩容到多个集群</li>
+<li>为扩容的实例提供福贼均衡的策略</li>
+</ol>
+<h2 id="brog调度原理">Brog调度原理</h2>
 <p>安全性隔离：
 • 早期采用 Chroot jail，后期版本基于 Namespace。
 性能隔离：

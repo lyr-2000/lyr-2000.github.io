@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.101.0 with theme even" />
+<meta name="generator" content="Hugo 0.102.1 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/k8s/%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/" />
@@ -51,7 +51,7 @@
 <meta itemprop="name" content="命令使用">
 <meta itemprop="description" content="命令使用 ​ kubectl命令 核心点： 通过 yaml 配置文件 定义了 我在 平台上运行什么命令 然后 k8s 通过 配置 文件的命令配置 保存起来，调用自己的接口 来 开启容器"><meta itemprop="datePublished" content="2022-04-03T21:33:48+08:00" />
 <meta itemprop="dateModified" content="2022-04-03T21:33:48+08:00" />
-<meta itemprop="wordCount" content="1599"><meta itemprop="image" content="https://tva2.sinaimg.cn/large/0072Vf1pgy1fodqop5rd7j31kw148npj.jpg">
+<meta itemprop="wordCount" content="2800"><meta itemprop="image" content="https://tva2.sinaimg.cn/large/0072Vf1pgy1fodqop5rd7j31kw148npj.jpg">
 <meta itemprop="keywords" content="K8s," /><meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://tva2.sinaimg.cn/large/0072Vf1pgy1fodqop5rd7j31kw148npj.jpg"/>
 
@@ -195,8 +195,8 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/k8s/"> K8s </a>
             </div>
-          <span class="more-meta"> 约 1599 字 </span>
-          <span class="more-meta"> 预计阅读 4 分钟 </span>
+          <span class="more-meta"> 约 2800 字 </span>
+          <span class="more-meta"> 预计阅读 6 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -219,6 +219,18 @@ input.PC_MARK1:focus{
           <ul>
             <li><a href="#实践--使用k8s管理业务应用">实践&ndash;使用k8s管理业务应用</a></li>
             <li><a href="#kubectl-命令工作流程">kubectl 命令工作流程</a></li>
+          </ul>
+        </li>
+        <li><a href="#创建一个-nginx-pod">创建一个 nginx pod</a>
+          <ul>
+            <li><a href="#容器什么周期时间设置处理函数">容器什么周期时间设置处理函数</a></li>
+            <li><a href="#init容器">init容器</a></li>
+            <li><a href="#k8s-用探针检查-pod的健康性">k8s 用探针检查 pod的健康性</a></li>
+          </ul>
+        </li>
+        <li><a href="#为-容器和pods-分配-cpu资源">为 容器和PODS 分配 CPU资源</a>
+          <ul>
+            <li><a href="#创建命名空间">创建命名空间</a></li>
           </ul>
         </li>
       </ul>
@@ -365,7 +377,7 @@ input.PC_MARK1:focus{
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="p">$</span> <span class="n">systemctl</span> <span class="n">status</span> <span class="n">kubelet</span>
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="n">systemctl</span> <span class="n">status</span> <span class="n">kubelet</span>
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>kubectl：二进制命令行工具</p>
@@ -379,10 +391,10 @@ input.PC_MARK1:focus{
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="p">$</span> <span class="n">kubectl</span> <span class="n">-h</span>
-</span></span><span class="line"><span class="cl"><span class="p">$</span> <span class="n">kubectl</span> <span class="n">get</span> <span class="n">-h</span>
-</span></span><span class="line"><span class="cl"><span class="p">$</span> <span class="n">kubectl</span> <span class="n">create</span> <span class="n">-h</span>
-</span></span><span class="line"><span class="cl"><span class="p">$</span> <span class="n">kubectl</span> <span class="n">create</span> <span class="n">namespace</span> <span class="n">-h</span>
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="n">kubectl</span> <span class="n">-h</span>
+</span></span><span class="line"><span class="cl"><span class="n">kubectl</span> <span class="n">get</span> <span class="n">-h</span>
+</span></span><span class="line"><span class="cl"><span class="n">kubectl</span> <span class="n">create</span> <span class="n">-h</span>
+</span></span><span class="line"><span class="cl"><span class="n">kubectl</span> <span class="n">create</span> <span class="n">namespace</span> <span class="n">-h</span>
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>kubectl如何管理集群资源</p>
@@ -391,7 +403,295 @@ input.PC_MARK1:focus{
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="p">$</span> <span class="n">kubectl</span> <span class="n">get</span> <span class="n">po</span> <span class="n">-v</span><span class="p">=</span><span class="n">7</span>
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="n">kubectl</span> <span class="n">get</span> <span class="n">po</span> <span class="n">-v</span><span class="p">=</span><span class="n">7</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="创建一个-nginx-pod">创建一个 nginx pod</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/265997618">配置文件格式参考</a></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l">apps/v1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l">Deployment</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">metadata</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l">ns-test</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">nginx-deployment</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">selector</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l">nginx</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="m">2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">containers</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">my-nginx</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">images</span><span class="p">:</span><span class="w"> </span><span class="l">nginx</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">resources</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">limits</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;128M&#34;</span><span class="w"> </span><span class="c"># 限制内存使用</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;500M&#34;</span><span class="w"> </span><span class="c"># 设置 cpu 500毫秒的执行时间</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">template</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">metadata</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l">nginx</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">containers</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">nginx</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">nginx:alpine</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span>- <span class="nt">containerPort</span><span class="p">:</span><span class="w"> </span><span class="m">80</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">kubectl create -f nginx.yaml
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="容器什么周期时间设置处理函数">容器什么周期时间设置处理函数</h3>
+<p>容器生命周期钩子使它能够感知其自身生命周期管理中的事件，并在相应的时刻到来时运行由用户指定的处理程序代码。k8s为容器提供了两种生命周期钩子：</p>
+<p>postStart：于容器创建完成之后立即运行的钩子处理器（handler），不过k8s无法确保它一定会于容器中的entrypoint之前运行</p>
+<p>preStop：于容器终止操作之前立即运行的钩子处理器，它以同步的方式调用，因此在其完成之前会阻塞删除容器的操作调用。</p>
+<p>钩子处理器的实现方法由Exec和HTTP两种，前一种在钩子事件触发时直接在当前容器中运行由用户定义的命令，后一种则是在当前容器中向某url发起http请求。postStart和preStop处理器定义在spec.lifecycle嵌套字段中。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">containers</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">lifecycle-demo-container</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">nginx</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">lifecycle</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">postStart</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">exec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;/bin/sh&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;-c&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;echo Hello from the postStart handler &gt; /usr/share/message&#34;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">preStop</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">exec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;/usr/sbin/nginx&#34;</span><span class="p">,</span><span class="s2">&#34;-s&#34;</span><span class="p">,</span><span class="s2">&#34;quit&#34;</span><span class="p">]</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="w"> </span><span class="nt">containers</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">hadoop</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;{{ .Values.image.hadoop.repository }}:{{ .Values.image.hadoop.tag }}&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">imagePullPolicy</span><span class="p">:</span><span class="w"> </span>{{<span class="w"> </span><span class="l">.Values.image.hadoop.pullPolicy | quote }}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">lifecycle</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">preStop</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">httpGet</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="m">8080</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l">shutdown          </span><span class="w"> </span><span class="c">#这个请求发送到http://&lt;Pod_IP&gt;:8080/shutdown </span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="init容器">init容器</h3>
+<p>Pod 能够具有多个容器，应用运行在容器里面，但是它也可能有一个或多个先于应用容器启动的 Init 容器。</p>
+<p>Init 容器与普通的容器非常像，除了如下两点：</p>
+<p>Init 容器总是运行到成功完成为止。
+每个 Init 容器都必须在下一个 Init 容器启动之前成功完成</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l">v1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l">Pod</span><span class="w"> </span><span class="c"># 创建一个 pod</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">metadata</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">test-init-main</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l">myapp</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l">v1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">containers</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">my-busybox</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">busybox</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;sh&#39;</span><span class="p">,</span><span class="s1">&#39;-c&#39;</span><span class="p">,</span><span class="s1">&#39;echo Main app is running &amp;&amp; sleep 3600&#39;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">initContainers</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">init-myservice</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">busybox</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;sh&#39;</span><span class="p">,</span><span class="s1">&#39;-c&#39;</span><span class="p">,</span><span class="s1">&#39;until nslookup myservice; do echo waiting for myservice; sleep 2; done;&#39;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">init-mydb</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">busybox</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;sh&#39;</span><span class="p">,</span><span class="s1">&#39;-c&#39;</span><span class="p">,</span><span class="s1">&#39;until nslookup mydb; do echo waiting for mydb; sleep 2; done;&#39;</span><span class="p">]</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="k8s-用探针检查-pod的健康性">k8s 用探针检查 pod的健康性</h3>
+<p>对线上业务来说，保证服务的正常稳定是重中之重，对故障服务的及时处理避免影响业务以及快速恢复一直是开发运维的难点。Kubernetes提供了健康检查服务，对于检测到故障服务会被及时自动下线，以及通过重启服务的方式使服务自动恢复。</p>
+<h4 id="探针的作用">探针的作用</h4>
+<p>探针是 kubelet 对容器执行的定期诊断。要执行诊断，kubelet 调用容器实现 的Handler 处理程序。</p>
+<p>有3种处理程序：</p>
+<p>ExecAction: 容器内执行指定命令。如果命令退出时返回码为0，则认为诊断错误
+tcpSocketAction: 对容器的Ip地址上的指定端口执行TCP检查。 如果端口打开，则诊断为是成功的
+HttpGetAction:  调用http请求</p>
+<p><img src="https://img-blog.csdnimg.cn/20190531223756606.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dhbmc3MjU=,size_16,color_FFFFFF,t_70" alt="https://img-blog.csdnimg.cn/20190531223756606.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dhbmc3MjU=,size_16,color_FFFFFF,t_70"></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l">v1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l">Pod</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">metadata</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="l">liveness</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">liveness-http-wfq</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">containers</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">liveness</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">googlecontainer/liveness</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">args</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="l">/server</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">livenessProbe</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">httpGet</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l">/healthz</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="m">8080</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">httpHeaders</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">X-Custom-Header</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l">Awesome</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="m">3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="m">3</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="为-容器和pods-分配-cpu资源">为 容器和PODS 分配 CPU资源</h2>
+<h3 id="创建命名空间">创建命名空间</h3>
+<p>创建一个命名空间，将资源隔离</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">kubectl create namespace cpu-example
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>创建一个容器的POD，容器会请求 0.5个CPU，而且最多限制使用一个 CPu，参考</p>
+<p><a href="https://blog.csdn.net/wowenlong/article/details/109291302">参考文章</a></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">apiVersion: v1
+</span></span><span class="line"><span class="cl">kind: Pod
+</span></span><span class="line"><span class="cl">metadata:
+</span></span><span class="line"><span class="cl">  name: nginx2
+</span></span><span class="line"><span class="cl">spec:
+</span></span><span class="line"><span class="cl">  containers:
+</span></span><span class="line"><span class="cl">  - name: nginx2
+</span></span><span class="line"><span class="cl">    image: nginx:test
+</span></span><span class="line"><span class="cl">    ports:
+</span></span><span class="line"><span class="cl">    - containerPort: <span class="m">80</span>
+</span></span><span class="line"><span class="cl">    resources:
+</span></span><span class="line"><span class="cl">      limits:
+</span></span><span class="line"><span class="cl">        cpu: 200m
+</span></span><span class="line"><span class="cl">        memory: 128Mi
+</span></span><span class="line"><span class="cl">      requests:
+</span></span><span class="line"><span class="cl">        cpu: 200m
+</span></span><span class="line"><span class="cl">        memory: 128Mi
 </span></span></code></pre></td></tr></table>
 </div>
 </div>
@@ -431,7 +731,11 @@ input.PC_MARK1:focus{
           <a href="/tags/k8s/">K8s</a>
           </div>
       <nav class="post-nav">
-        
+        <a class="prev" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/k8s/k8s-service%E5%AF%B9%E8%B1%A1/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">k8s service对象</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/k8s/%E4%BA%91%E8%AE%A1%E7%AE%97/">
             <span class="next-text nav-default">云计算</span>
             <span class="next-text nav-mobile">下一篇</span>

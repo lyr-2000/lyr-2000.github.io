@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.101.0 with theme even" />
+<meta name="generator" content="Hugo 0.102.1 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E4%BA%91%E5%8E%9F%E7%94%9F%E5%8E%9F%E7%90%86/docker%E5%AD%A6%E4%B9%A0/linux-namespace%E8%AF%A6%E8%A7%A3/" />
@@ -51,7 +51,7 @@
 <meta itemprop="name" content="linux namespace详解">
 <meta itemprop="description" content="linux namespace详解 ​ 1 2 3 4 5 6 7 8 9 10 lyr@DESKTOP-FSVN6C0:~$ lsns # 查看 linux系统多有哪些namespace NS TYPE NPROCS PID USER COMMAND 4026531835 cgroup 2 12 lyr -bash 4026531837 user 2 12 lyr -bash 4026531992 net 2 12"><meta itemprop="datePublished" content="2022-03-17T00:08:48+08:00" />
 <meta itemprop="dateModified" content="2022-03-17T00:08:48+08:00" />
-<meta itemprop="wordCount" content="380"><meta itemprop="image" content="https://tva3.sinaimg.cn/large/0072Vf1pgy1foxkix1n7kj31kw0w0tzl.jpg">
+<meta itemprop="wordCount" content="866"><meta itemprop="image" content="https://tva3.sinaimg.cn/large/0072Vf1pgy1foxkix1n7kj31kw0w0tzl.jpg">
 <meta itemprop="keywords" content="Docker学习," /><meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://tva3.sinaimg.cn/large/0072Vf1pgy1foxkix1n7kj31kw0w0tzl.jpg"/>
 
@@ -195,8 +195,8 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/docker%E5%AD%A6%E4%B9%A0/"> Docker学习 </a>
             </div>
-          <span class="more-meta"> 约 380 字 </span>
-          <span class="more-meta"> 预计阅读 1 分钟 </span>
+          <span class="more-meta"> 约 866 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -214,6 +214,7 @@ input.PC_MARK1:focus{
             <li><a href="#unshare-命令">unshare 命令</a></li>
           </ul>
         </li>
+        <li><a href="#namespace-隔离原理">namespace 隔离原理</a></li>
       </ul>
     </li>
   </ul>
@@ -332,7 +333,46 @@ input.PC_MARK1:focus{
 </span></span><span class="line"><span class="cl">    link/sit 0.0.0.0 brd 0.0.0.0
 </span></span></code></pre></td></tr></table>
 </div>
+</div><h2 id="namespace-隔离原理">namespace 隔离原理</h2>
+<ol>
+<li>UTS namespace ，隔离主机名和域名，每个docker 容器都可以有独立的域名和主机名，在网络上可以被视为单独的一个机器，而不是宿主机的一个进程</li>
+<li>IPC namespace, 进程间通信，（inter-process comminucation) ，涉及的ipc资源包括常见的信号量、消息队列和共享内存。 同一个IPC namespace 下的进程彼此可见，不同IPC namespace下的进程则互相不可见。</li>
+<li>PID namespace , 两个不同namespace 的进程可以有相同的pid, 操作系统维护着一个 root namespace, 进程内核为所有的pid namespace 维护一个树状结构，最顶层的是系统初始化创建的root namespace, 创建新的 pid namespace 被称为 child namespace (树的子节点)</li>
+</ol>
+<p>通过这种方式，不同的pid namespace 会形成一个层级体系。所属父节点可以看到子节点中的进程，冰可以通过信号等方式对子节点中的进程产生影响。反过来缺不能看到父节点 pid namespace中的任何内容。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">sudo unshare --fork --pid --mmount-proc bash
+</span></span><span class="line"><span class="cl">ps aux
+</span></span></code></pre></td></tr></table>
 </div>
+</div><p>unshare 与 clone很新鲜，不过 UNshare 不需要启动新的进程，而是运行在原先的进程上。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># sudo unshare --fork --pid --mount-proc bash</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1"># ps aux</span>
+</span></span><span class="line"><span class="cl">USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+</span></span><span class="line"><span class="cl">root         <span class="m">1</span>  1.0  0.1 <span class="m">117088</span>  <span class="m">3484</span> pts/0    S    12:37   0:00 bash
+</span></span><span class="line"><span class="cl">root       <span class="m">115</span>  0.0  0.0 <span class="m">155452</span>  <span class="m">1852</span> pts/0    R+   12:37   0:00 ps aux
+</span></span><span class="line"><span class="cl"><span class="o">[</span>root@VM-0-7-centos ~<span class="o">]</span><span class="c1">#</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们通过 unshare 命令 就可以隔离系统进程了【这是一个单独 的namespace】</p>
+
     </div>
 
     <div class="post-copyright">
