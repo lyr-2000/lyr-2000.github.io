@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.104.2 with theme even" />
+<meta name="generator" content="Hugo 0.104.3 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/mysql/mysql%E6%9F%A5%E8%AF%A2%E5%8E%BB%E9%87%8D%E6%80%BB%E7%BB%93/" />
@@ -51,7 +51,7 @@
 <meta itemprop="name" content="mysql查询去重总结">
 <meta itemprop="description" content="mysql查询去重总结 ​ 错误做法： distinct 去重 ， distinct去重只能去重单个字段 group by 去重, group by 是用来分组的，不能用于去重 分组查询中选用非分组列"><meta itemprop="datePublished" content="2022-03-04T13:43:48+08:00" />
 <meta itemprop="dateModified" content="2022-03-04T13:43:48+08:00" />
-<meta itemprop="wordCount" content="776"><meta itemprop="image" content="https://tva3.sinaimg.cn/large/005WQYV9gy1fqdf874afuj31hc0u0qis.jpg">
+<meta itemprop="wordCount" content="989"><meta itemprop="image" content="https://tva3.sinaimg.cn/large/005WQYV9gy1fqdf874afuj31hc0u0qis.jpg">
 <meta itemprop="keywords" content="mysql," /><meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://tva3.sinaimg.cn/large/005WQYV9gy1fqdf874afuj31hc0u0qis.jpg"/>
 
@@ -195,7 +195,7 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/mysql/"> mysql </a>
             </div>
-          <span class="more-meta"> 约 776 字 </span>
+          <span class="more-meta"> 约 989 字 </span>
           <span class="more-meta"> 预计阅读 2 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -214,7 +214,12 @@ input.PC_MARK1:focus{
             <li></li>
           </ul>
         </li>
-        <li><a href="#使用记录">使用记录</a></li>
+        <li><a href="#使用记录">使用记录</a>
+          <ul>
+            <li><a href="#mysql-8新特性">mysql 8新特性</a></li>
+            <li><a href="#降序索引-">降序索引-</a></li>
+          </ul>
+        </li>
       </ul>
     </li>
   </ul>
@@ -432,7 +437,26 @@ input.PC_MARK1:focus{
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><h5 id="窗口函数">窗口函数</h5>
-<p>mysql8 才支持窗口函数，这里 不做介绍</p>
+<p>mysql8 才支持窗口函数，这里 做一下介绍</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">rank</span><span class="p">()</span><span class="w">  </span><span class="n">over</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="n">partition</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">customer_id</span><span class="w">  </span><span class="k">order</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">amount</span><span class="w"> </span><span class="k">desc</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">ranking</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">from</span><span class="w"> </span><span class="n">payment</span><span class="w"> 
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>每一个顾客为一个窗口，只在窗口内部做ranking操作</p>
 <h2 id="使用记录">使用记录</h2>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -476,6 +500,34 @@ input.PC_MARK1:focus{
 </span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="k">order</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">paper_id</span><span class="w"> </span><span class="p">,</span><span class="n">rank_no</span><span class="w">  
 </span></span></span><span class="line"><span class="cl"><span class="w"> 
 </span></span></span><span class="line"><span class="cl"><span class="w">   
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="mysql-8新特性">mysql 8新特性</h3>
+<p>mysql8 除了窗口函数还有隐藏索引，上面已经介绍了窗口函数，这里介绍隐藏索引</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">show</span><span class="w"> </span><span class="k">index</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="o">`</span><span class="n">payment</span><span class="o">`</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">alter</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="n">payment</span><span class="w"> </span><span class="k">alter</span><span class="w"> </span><span class="k">index</span><span class="w"> </span><span class="n">fk_payment_rental</span><span class="w"> </span><span class="n">invisible</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">alter</span><span class="w"> </span><span class="n">talbe</span><span class="w"> </span><span class="n">payment</span><span class="w"> </span><span class="k">alter</span><span class="w"> </span><span class="k">index</span><span class="w"> </span><span class="n">fk_payment_rental</span><span class="w"> </span><span class="n">visible</span><span class="w"> </span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="降序索引-">降序索引-</h3>
+<p>8.0 之前只支持升序索引</p>
+<p>我们给成绩排名，经常给从高到低排序， 升序索引对付这种性能不好， 数据库索引甚至用不了。</p>
+<p>很多不来能走索引覆盖的语句，升序索引无法覆盖，降序索引解决了这种问题</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">create</span><span class="w"> </span><span class="k">index</span><span class="w"> </span><span class="n">idx1</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">payment</span><span class="w"> </span><span class="p">(</span><span class="n">payment_date</span><span class="w"> </span><span class="k">desc</span><span class="p">);</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div>
