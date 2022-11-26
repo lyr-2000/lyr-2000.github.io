@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.106.0 with theme even" />
+<meta name="generator" content="Hugo 0.107.0 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E4%B8%AD%E9%97%B4%E4%BB%B6/zookeeper/zookeeper%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" />
@@ -375,7 +375,7 @@ input.PC_MARK1:focus{
 </span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
 </span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">tryLock</span><span class="o">()</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">        <span class="c1">//如果currentPath为空表示为第一次尝试加锁
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span><span class="o">(</span><span class="n">currentPath</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">currentPath</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&lt;=</span> <span class="n">0</span><span class="o">){</span>
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span><span class="o">(</span><span class="n">currentPath</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">currentPath</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="o">){</span>
 </span></span><span class="line"><span class="cl">            <span class="c1">//创建临时顺序节点
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">currentPath</span> <span class="o">=</span> <span class="n">zkClient</span><span class="o">.</span><span class="na">createEphemeralSequential</span><span class="o">(</span><span class="n">PATH</span> <span class="o">+</span> <span class="s">&#34;/&#34;</span><span class="o">,</span> <span class="s">&#34;lock&#34;</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">        <span class="o">}</span>
@@ -383,12 +383,12 @@ input.PC_MARK1:focus{
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">childrens</span> <span class="o">=</span> <span class="n">zkClient</span><span class="o">.</span><span class="na">getChildren</span><span class="o">(</span><span class="n">PATH</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">        <span class="n">Collections</span><span class="o">.</span><span class="na">sort</span><span class="o">(</span><span class="n">childrens</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">        <span class="c1">//将最小的节点和自己做比较，如果相等，则认为拿到锁,直接返回
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="o">(</span><span class="n">currentPath</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">PATH</span> <span class="o">+</span> <span class="s">&#34;/&#34;</span> <span class="o">+</span> <span class="n">childrens</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">0</span><span class="o">)))</span> <span class="o">{</span>
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="o">(</span><span class="n">currentPath</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">PATH</span> <span class="o">+</span> <span class="s">&#34;/&#34;</span> <span class="o">+</span> <span class="n">childrens</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">)))</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">        <span class="o">}</span><span class="k">else</span><span class="o">{</span>
 </span></span><span class="line"><span class="cl">            <span class="c1">//不等则拿锁失败，同时找到比自己大一点的节点
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="n">Collections</span><span class="o">.</span><span class="na">binarySearch</span><span class="o">(</span><span class="n">childrens</span><span class="o">,</span><span class="n">currentPath</span><span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="n">PATH</span> <span class="o">+</span> <span class="s">&#34;/&#34;</span><span class="o">,</span> <span class="s">&#34;&#34;</span><span class="o">));</span>
-</span></span><span class="line"><span class="cl">            <span class="n">beforePath</span> <span class="o">=</span> <span class="n">PATH</span> <span class="o">+</span> <span class="s">&#34;/&#34;</span> <span class="o">+</span> <span class="n">childrens</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">index</span> <span class="o">-</span> <span class="n">1</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">beforePath</span> <span class="o">=</span> <span class="n">PATH</span> <span class="o">+</span> <span class="s">&#34;/&#34;</span> <span class="o">+</span> <span class="n">childrens</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">index</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">        <span class="o">}</span>
 </span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">    <span class="o">}</span>
@@ -412,7 +412,7 @@ input.PC_MARK1:focus{
 </span></span><span class="line"><span class="cl">        <span class="c1">//监听前面一个节点
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">zkClient</span><span class="o">.</span><span class="na">subscribeDataChanges</span><span class="o">(</span><span class="n">beforePath</span><span class="o">,</span> <span class="n">iZkDataListener</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">zkClient</span><span class="o">.</span><span class="na">exists</span><span class="o">(</span><span class="n">beforePath</span><span class="o">))</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">countDownLatch</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CountDownLatch</span><span class="o">(</span><span class="n">1</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">countDownLatch</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CountDownLatch</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">            <span class="k">try</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">                <span class="n">countDownLatch</span><span class="o">.</span><span class="na">await</span><span class="o">();</span>
 </span></span><span class="line"><span class="cl">            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
@@ -540,7 +540,6 @@ input.PC_MARK1:focus{
 <script 
  
     src="https://fastly.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
-
 
 
 

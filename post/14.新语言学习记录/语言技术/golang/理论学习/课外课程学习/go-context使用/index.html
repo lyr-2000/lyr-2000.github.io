@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>go-context使用 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="go context 的使用 context 包 &amp;ndash; 核心方法 context 包的核心 API 有四个： • context.WithValue：设置键值对，并且返 回一个新的 context 实例 • context.WithCancel • context.WithDeadline • context" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.107.0 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go-context%E4%BD%BF%E7%94%A8/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/post.css">
+
+
+<meta property="og:title" content="go-context使用" />
+<meta property="og:description" content="go context 的使用 context 包 &ndash; 核心方法 context 包的核心 API 有四个： • context.WithValue：设置键值对，并且返 回一个新的 context 实例 • context.WithCancel • context.WithDeadline • context" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go-context%E4%BD%BF%E7%94%A8/" /><meta property="og:image" content="https://tva2.sinaimg.cn/large/9bd9b167gy1fwrswro7q9j21hc0u0wm8.jpg" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-11-26T15:26:05+08:00" />
+<meta property="article:modified_time" content="2022-05-11T20:02:48+08:00" />
+
+<meta itemprop="name" content="go-context使用">
+<meta itemprop="description" content="go context 的使用 context 包 &ndash; 核心方法 context 包的核心 API 有四个： • context.WithValue：设置键值对，并且返 回一个新的 context 实例 • context.WithCancel • context.WithDeadline • context"><meta itemprop="datePublished" content="2022-11-26T15:26:05+08:00" />
+<meta itemprop="dateModified" content="2022-05-11T20:02:48+08:00" />
+<meta itemprop="wordCount" content="5253"><meta itemprop="image" content="https://tva2.sinaimg.cn/large/9bd9b167gy1fwrswro7q9j21hc0u0wm8.jpg">
+<meta itemprop="keywords" content="课外课程学习," /><meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://tva2.sinaimg.cn/large/9bd9b167gy1fwrswro7q9j21hc0u0wm8.jpg"/>
+
+<meta name="twitter:title" content="go-context使用"/>
+<meta name="twitter:description" content="go context 的使用 context 包 &ndash; 核心方法 context 包的核心 API 有四个： • context.WithValue：设置键值对，并且返 回一个新的 context 实例 • context.WithCancel • context.WithDeadline • context"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body >
+  
+  
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="globalbg"></div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel" >
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	<div class="customByLyr">
+  
+			<img class="lazyload"  draggable="false"  data-original="https://tva2.sinaimg.cn/large/9bd9b167gy1fwrswro7q9j21hc0u0wm8.jpg" />
+		</div>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">go-context使用</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-11-26 </span>
+        <div class="post-category">
+            <a href="/categories/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/"> 课外课程学习 </a>
+            </div>
+          <span class="more-meta"> 约 5253 字 </span>
+          <span class="more-meta"> 预计阅读 11 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#go-context-的使用">go context 的使用</a>
+          <ul>
+            <li><a href="#valuectx-的实现">valueCtx 的实现</a></li>
+            <li><a href="#context--其他用法">context  其他用法</a></li>
+            <li><a href="#dbconn-超时控制">DB.conn 超时控制</a></li>
+            <li><a href="#http-库中-context的使用">http 库中 context的使用</a></li>
+            <li><a href="#error-groups-使用">error groups 使用</a></li>
+            <li><a href="#cancelctx-的实现原理">cancelCtx 的实现原理</a></li>
+            <li><a href="#timerctx-实现原理">timerCtx 实现原理</a></li>
+            <li><a href="#面试要点">面试要点</a></li>
+            <li><a href="#context-包---使用注意事项">context 包&ndash; 使用注意事项</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h2 id="go-context-的使用">go context 的使用</h2>
+<p><strong>context 包 &ndash; 核心方法</strong></p>
+<p>context 包的核心 API 有四个： • context.WithValue：设置键值对，并且返 回一个新的 context 实例
+• context.WithCancel
+• context.WithDeadline
+• context.WithTimeout：</p>
+<p>三者都返回一个 可取消的 context 实例，和取消函数</p>
+<p>注意： context 实例不可变，每次都是新创建的</p>
+<p>context 包提供核心方法4个：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">方法</th>
+<th style="text-align:center">解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Deadline</td>
+<td style="text-align:center">过期时间，如果ok 为false，说明没有十二指过期时间</td>
+</tr>
+<tr>
+<td style="text-align:center">Done</td>
+<td style="text-align:center">返回一个 channel，一般用于监听context实例的信号，比如过期，或者正常关闭</td>
+</tr>
+<tr>
+<td style="text-align:center">Err</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">Deadline</td>
+<td style="text-align:center">过期时间，如果ok 为false，说明没有设置过期时间</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Context</span> <span class="kd">interface</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 如果 ok 为 false 表示 没有设置过期时间
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nf">Deadline</span><span class="p">()</span> <span class="p">(</span><span class="nx">deadline</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">,</span> <span class="nx">ok</span> <span class="kt">bool</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">Done</span><span class="p">()</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">Err</span><span class="p">()</span> <span class="kt">error</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">Value</span><span class="p">(</span><span class="nx">key</span> <span class="nx">any</span><span class="p">)</span> <span class="nx">any</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>context 包- 安全传递数据</p>
+<p>context包我们用来做2件事情：</p>
+<ul>
+<li>安全传递数据</li>
+<li>控制链路</li>
+</ul>
+<p>安全传递数据，是指在请求执行上下文中线程安全地传递数据，依赖于 withValue 方法
+因为Go 本身没有 thread-local 机制，所以大部分类似功能都是借助于context 实现</p>
+<p>例子：</p>
+<ul>
+<li>链路追踪的 trace id</li>
+<li>压力测试标记位</li>
+<li>分库分表中间件中传递 sharding hint</li>
+<li>orm 中间件传递 SQL hint</li>
+<li>web框架传递上下文</li>
+</ul>
+<p>父context  无法访问子context 添加的内容，如果逼不得已要在 子context 中获取到某些值，只能在 父context 放入一个 map，后面拿到map 进行修改，但是这种做法明显已经有问题了，说明代码非常糟糕,真要这样做建议重构部分代码,这样做不仅将传送的参数透明化了，还让代码难以维护。</p>
+<h3 id="valuectx-的实现">valueCtx 的实现</h3>
+<p>valueCtx 用于存储 key-value 数据， 特点：</p>
+<ul>
+<li>典型的<strong>装饰器模式</strong>： 在已有 Context的基础上附加一个存储key-value 的功能</li>
+<li>只能存储 一个key,val ， 为什么不用map？</li>
+<li>map 要求是 comparable的key , 而有时候我们用的不是 comparable的key</li>
+<li>context 包设计理念就是 context是不可变的</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// WithValue返回一个父类的副本，其中与键相关的值是
+</span></span></span><span class="line"><span class="cl"><span class="c1">// val.
+</span></span></span><span class="line"><span class="cl"><span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 仅在请求范围内的数据中使用上下文值，这些数据在进程和//API中传输，而不是在函数中传递可选参数。
+</span></span></span><span class="line"><span class="cl"><span class="c1">// APIs，而不是用于向函数传递可选参数。
+</span></span></span><span class="line"><span class="cl"><span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 提供的键必须是可比较的，并且不应该是类型为
+</span></span></span><span class="line"><span class="cl"><span class="c1">//字符串或任何其他内置类型，以避免使用上下文的
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 使用上下文的包之间发生碰撞。WithValue的用户应该定义自己的
+</span></span></span><span class="line"><span class="cl"><span class="c1">//键的类型。为了避免在分配给一个
+</span></span></span><span class="line"><span class="cl"><span class="c1">//接口{}时，上下文键通常具有具体的类型
+</span></span></span><span class="line"><span class="cl"><span class="c1">// struct{}。另外，导出的上下文键变量的静态
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 类型应该是一个指针或接口。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">WithValue</span><span class="p">(</span><span class="nx">parent</span> <span class="nx">Context</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">val</span> <span class="nx">any</span><span class="p">)</span> <span class="nx">Context</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">parent</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="s">&#34;cannot create context from nil parent&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">key</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="s">&#34;nil key&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//https://sorcererxw.com/articles/go-comparable-type 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="p">!</span><span class="nx">reflectlite</span><span class="p">.</span><span class="nf">TypeOf</span><span class="p">(</span><span class="nx">key</span><span class="p">).</span><span class="nf">Comparable</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="s">&#34;key is not comparable&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">valueCtx</span><span class="p">{</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">val</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// A valueCtx carries a key-value pair. It implements Value for that key and
+</span></span></span><span class="line"><span class="cl"><span class="c1">// delegates all other calls to the embedded Context.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">valueCtx</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">Context</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">key</span><span class="p">,</span> <span class="nx">val</span> <span class="nx">any</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">valueCtx</span><span class="p">)</span> <span class="nf">Value</span><span class="p">(</span><span class="nx">key</span> <span class="nx">any</span><span class="p">)</span> <span class="nx">any</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">c</span><span class="p">.</span><span class="nx">key</span> <span class="o">==</span> <span class="nx">key</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">c</span><span class="p">.</span><span class="nx">val</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nf">value</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">value</span><span class="p">(</span><span class="nx">c</span> <span class="nx">Context</span><span class="p">,</span> <span class="nx">key</span> <span class="nx">any</span><span class="p">)</span> <span class="nx">any</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl">		<span class="k">switch</span> <span class="nx">ctx</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.(</span><span class="kd">type</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">case</span> <span class="o">*</span><span class="nx">valueCtx</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">key</span> <span class="o">==</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">key</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">return</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">val</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">c</span> <span class="p">=</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">Context</span>
+</span></span><span class="line"><span class="cl">		<span class="k">case</span> <span class="o">*</span><span class="nx">cancelCtx</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">key</span> <span class="o">==</span> <span class="o">&amp;</span><span class="nx">cancelCtxKey</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">return</span> <span class="nx">c</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">c</span> <span class="p">=</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">Context</span>
+</span></span><span class="line"><span class="cl">		<span class="k">case</span> <span class="o">*</span><span class="nx">timerCtx</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">key</span> <span class="o">==</span> <span class="o">&amp;</span><span class="nx">cancelCtxKey</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">return</span> <span class="o">&amp;</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">cancelCtx</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">c</span> <span class="p">=</span> <span class="nx">ctx</span><span class="p">.</span><span class="nx">Context</span>
+</span></span><span class="line"><span class="cl">		<span class="k">case</span> <span class="o">*</span><span class="nx">emptyCtx</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">		<span class="k">default</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nx">c</span><span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="context--其他用法">context  其他用法</h3>
+<ol>
+<li>time.AfterFunc</li>
+</ol>
+<p>另外一种超时控制是采用 time.AfterFunc：一般这种用 法我们会认为是定时任务，而不是超时控制。
+这种超时控制有两个弊端：
+• 如果不主动取消，那么 AfterFunc 是必然会执行的
+• 如果主动取消，那么在业务正常结束到主动取消之 间，有一个短时间的时间差</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">timer</span> <span class="o">:=</span> <span class="nx">time</span><span class="p">.</span><span class="nf">AfterFunc</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span> <span class="p">,</span><span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;--&#34;</span><span class="p">)})</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34; do something &#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nx">timer</span><span class="p">.</span><span class="nf">Stop</span><span class="p">()</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="dbconn-超时控制">DB.conn 超时控制</h3>
+<p>数据库连接池就有这样用， 连接是延迟关闭的，比如用完数据库连接，不会自动关闭，而会返回池子里面等，下一次执行的时候，如果 连接已经关闭就释放连接，没有就继续用</p>
+<p>超时控制有至少2个分支</p>
+<ul>
+<li>正常分支</li>
+<li>超时分支</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">		<span class="k">select</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">ctx</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// 删除连接请求，并确保删除后没有发送任何值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// 移除后对其进行处理。 [客户端上层超时了，要返回]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nx">db</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">			<span class="nb">delete</span><span class="p">(</span><span class="nx">db</span><span class="p">.</span><span class="nx">connRequests</span><span class="p">,</span> <span class="nx">reqKey</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">db</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">			<span class="nx">atomic</span><span class="p">.</span><span class="nf">AddInt64</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">db</span><span class="p">.</span><span class="nx">waitDuration</span><span class="p">,</span> <span class="nb">int64</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nf">Since</span><span class="p">(</span><span class="nx">waitStart</span><span class="p">)))</span>
+</span></span><span class="line"><span class="cl">			<span class="k">select</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">default</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">			<span class="k">case</span> <span class="nx">ret</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="o">&lt;-</span><span class="nx">req</span><span class="p">:</span> <span class="c1">// 从 channel中获取 连接
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>				<span class="k">if</span> <span class="nx">ok</span> <span class="o">&amp;&amp;</span> <span class="nx">ret</span><span class="p">.</span><span class="nx">conn</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"> <span class="c1">// 如果有的话执行 db.putConn(ret.conn, ret.err, false) ，目的是释放掉这个连接
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>					<span class="nx">db</span><span class="p">.</span><span class="nf">putConn</span><span class="p">(</span><span class="nx">ret</span><span class="p">.</span><span class="nx">conn</span><span class="p">,</span> <span class="nx">ret</span><span class="p">.</span><span class="nx">err</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">ctx</span><span class="p">.</span><span class="nf">Err</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"> <span class="c1">// 尝试从 reqchannel 中取出连接
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">case</span> <span class="nx">ret</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="o">&lt;-</span><span class="nx">req</span><span class="p">:</span> <span class="c1">//...
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="释放连接原理">释放连接原理</h4>
+<p>连接被是过后是需要被释放的</p>
+<p>释放连接的逻辑封装在DB实例中</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">DB</span><span class="p">)</span> <span class="nf">putConn</span><span class="p">(</span><span class="nx">dc</span> <span class="o">*</span><span class="nx">driverConn</span><span class="p">,</span> <span class="nx">err</span> <span class="kt">error</span><span class="p">,</span> <span class="nx">resetSession</span> <span class="kt">bool</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 释放连接的操作加锁
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">db</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// debug的信息
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="p">!</span><span class="nx">dc</span><span class="p">.</span><span class="nx">inUse</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">debugGetPut</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;putConn(%v) DUPLICATE was: %s\n\nPREVIOUS was: %s&#34;</span><span class="p">,</span> <span class="nx">dc</span><span class="p">,</span> <span class="nf">stack</span><span class="p">(),</span> <span class="nx">db</span><span class="p">.</span><span class="nx">lastPut</span><span class="p">[</span><span class="nx">dc</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="s">&#34;sql: connection returned that was never out&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">debugGetPut</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">db</span><span class="p">.</span><span class="nx">lastPut</span><span class="p">[</span><span class="nx">dc</span><span class="p">]</span> <span class="p">=</span> <span class="nf">stack</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 标记driverConn处理不可用的状态
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">dc</span><span class="p">.</span><span class="nx">inUse</span> <span class="p">=</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">fn</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">dc</span><span class="p">.</span><span class="nx">onPut</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">fn</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">dc</span><span class="p">.</span><span class="nx">onPut</span> <span class="p">=</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// 本方法的入参中有参数err
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// 当会话获取出这个连接后，发现这个连接过期了、或者被标记上来lastErr时，再调用这个putConn方法时，同时会将这个错误传递进来，然后在这里判断，当出现坏掉的连接时就不直接把这个连接放回空闲连接池了。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="nx">driver</span><span class="p">.</span><span class="nx">ErrBadConn</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// Don&#39;t reuse bad connections.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// Since the conn is considered bad and is being discarded, treat it
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// as closed. Don&#39;t decrement the open count here, finalClose will
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// take care of that.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 这个方法的作用如下：
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 他会去判断当前DB维护的map的容量，也就是前面提到的那种情况：当DB允许打开连接，但是现在的连接数已经达到当前DB允许打开的最大连接数上限了，那么针对接下来想要获取连接的请求的处理逻辑就是，构建一个req channel，放入connRequests这个map中，表示他们正在等待连接的建立。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 换句话说，这时系统时繁忙的，业务处于高峰，那么问题来了，现在竟然出现了一个坏掉的连接，那为了把对业务线的影响降到最低，是不是得主动新建一个新的连接放到空闲连接池中呢？
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 	db.maybeOpenNewConnections() 函数主要干的就是这个事。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 	方法详情如下
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">    	func (db *DB) maybeOpenNewConnections() {
+</span></span></span><span class="line"><span class="cl"><span class="cm">					numRequests := len(db.connRequests)
+</span></span></span><span class="line"><span class="cl"><span class="cm">					if db.maxOpen &gt; 0 {
+</span></span></span><span class="line"><span class="cl"><span class="cm">						numCanOpen := db.maxOpen - db.numOpen
+</span></span></span><span class="line"><span class="cl"><span class="cm">					if numRequests &gt; numCanOpen {
+</span></span></span><span class="line"><span class="cl"><span class="cm">						numRequests = numCanOpen
+</span></span></span><span class="line"><span class="cl"><span class="cm">					}
+</span></span></span><span class="line"><span class="cl"><span class="cm">			}
+</span></span></span><span class="line"><span class="cl"><span class="cm">			for numRequests &gt; 0 {
+</span></span></span><span class="line"><span class="cl"><span class="cm">						db.numOpen++ // optimistically
+</span></span></span><span class="line"><span class="cl"><span class="cm">						numRequests--
+</span></span></span><span class="line"><span class="cl"><span class="cm">						if db.closed {
+</span></span></span><span class="line"><span class="cl"><span class="cm">							return
+</span></span></span><span class="line"><span class="cl"><span class="cm">						}
+</span></span></span><span class="line"><span class="cl"><span class="cm">				  // 它只是往这个	openerCh channel中写入一个空的结构体，会有专门的协程负责创建连接
+</span></span></span><span class="line"><span class="cl"><span class="cm">					db.openerCh &lt;- struct{}{}
+</span></span></span><span class="line"><span class="cl"><span class="cm">			}
+</span></span></span><span class="line"><span class="cl"><span class="cm">		}
+</span></span></span><span class="line"><span class="cl"><span class="cm">    */</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">db</span><span class="p">.</span><span class="nf">maybeOpenNewConnections</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 　解锁，关闭连接，返回
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">db</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">dc</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">putConnHook</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">putConnHook</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span> <span class="nx">dc</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 如果DB已经关闭了，标记 resetSession为 false
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">db</span><span class="p">.</span><span class="nx">closed</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// Connections do not need to be reset if they will be closed.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// Prevents writing to resetterCh after the DB has closed.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 当DB都已经关了，意味着DB里面的连接池都没有了，那当然不需要关闭连接池中的连接了～
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">resetSession</span> <span class="p">=</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 如果DB没有关闭的话，进入if代码块
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">resetSession</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 将dricerConn中的Conn验证转换为driver.SessionResetter
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">resetSession</span> <span class="p">=</span> <span class="nx">dc</span><span class="p">.</span><span class="nx">ci</span><span class="p">.(</span><span class="nx">driver</span><span class="p">.</span><span class="nx">SessionResetter</span><span class="p">);</span> <span class="nx">resetSession</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="c1">// 在此处锁定driverConn，以便在连接重置之前不会释放。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="c1">// 必须在将连接放入池之前获取锁，以防止在重置之前将其取出
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="nx">dc</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 真正将连接放回空闲连接池中
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// 满足connRequest或将driverConn放入空闲池并返回true或false
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">  	func (db *DB) putConnDBLocked(dc *driverConn, err error) bool {
+</span></span></span><span class="line"><span class="cl"><span class="cm">  			// 检测如果DB都关闭块，直接返回flase
+</span></span></span><span class="line"><span class="cl"><span class="cm">				if db.closed {
+</span></span></span><span class="line"><span class="cl"><span class="cm">					return false
+</span></span></span><span class="line"><span class="cl"><span class="cm">				}
+</span></span></span><span class="line"><span class="cl"><span class="cm">				// 如果DB当前打开的连接数大于DB能打开的最大的连接数，返回false
+</span></span></span><span class="line"><span class="cl"><span class="cm">				if db.maxOpen &gt; 0 &amp;&amp; db.numOpen &gt; db.maxOpen {
+</span></span></span><span class="line"><span class="cl"><span class="cm">					return false
+</span></span></span><span class="line"><span class="cl"><span class="cm">				}
+</span></span></span><span class="line"><span class="cl"><span class="cm">				//如果等待获取连接的map中有存货
+</span></span></span><span class="line"><span class="cl"><span class="cm">		 if c := len(db.connRequests); c &gt; 0 {
+</span></span></span><span class="line"><span class="cl"><span class="cm">		 		
+</span></span></span><span class="line"><span class="cl"><span class="cm">				var req chan connRequest
+</span></span></span><span class="line"><span class="cl"><span class="cm">				var reqKey uint64
+</span></span></span><span class="line"><span class="cl"><span class="cm">				// 取出map中的第一个key
+</span></span></span><span class="line"><span class="cl"><span class="cm">				for reqKey, req = range db.connRequests {
+</span></span></span><span class="line"><span class="cl"><span class="cm">					break
+</span></span></span><span class="line"><span class="cl"><span class="cm">				}
+</span></span></span><span class="line"><span class="cl"><span class="cm">				// 将这个key，value再map中删除
+</span></span></span><span class="line"><span class="cl"><span class="cm">				delete(db.connRequests, reqKey) // Remove from pending requests.
+</span></span></span><span class="line"><span class="cl"><span class="cm">				// 重新标记这个连接是可用的状态
+</span></span></span><span class="line"><span class="cl"><span class="cm">				if err == nil {
+</span></span></span><span class="line"><span class="cl"><span class="cm">					dc.inUse = true
+</span></span></span><span class="line"><span class="cl"><span class="cm">				}
+</span></span></span><span class="line"><span class="cl"><span class="cm">				// 将这个连接放入到 req channel中，给等待连接到会话使用
+</span></span></span><span class="line"><span class="cl"><span class="cm">				req &lt;- connRequest{
+</span></span></span><span class="line"><span class="cl"><span class="cm">					conn: dc,
+</span></span></span><span class="line"><span class="cl"><span class="cm">					err:  err,
+</span></span></span><span class="line"><span class="cl"><span class="cm">				}
+</span></span></span><span class="line"><span class="cl"><span class="cm">				return true
+</span></span></span><span class="line"><span class="cl"><span class="cm">				
+</span></span></span><span class="line"><span class="cl"><span class="cm">		// 来到这个if，说明此时没有任何请求在等待获取连接，并且没有发生错误，DB也没有关闭
+</span></span></span><span class="line"><span class="cl"><span class="cm">		} else if err == nil &amp;&amp; !db.closed {
+</span></span></span><span class="line"><span class="cl"><span class="cm">				// 比较当前空闲连接池的大小（默认是2） 和 freeConn空闲连接数的数量
+</span></span></span><span class="line"><span class="cl"><span class="cm">				// 意思是，如果空闲的连接超出了这个规定的阈值，空闲连接是需要被收回的。
+</span></span></span><span class="line"><span class="cl"><span class="cm">				if db.maxIdleConnsLocked() &gt; len(db.freeConn) {
+</span></span></span><span class="line"><span class="cl"><span class="cm">				  // 收回
+</span></span></span><span class="line"><span class="cl"><span class="cm">					db.freeConn = append(db.freeConn, dc)
+</span></span></span><span class="line"><span class="cl"><span class="cm">					db.startCleanerLocked()
+</span></span></span><span class="line"><span class="cl"><span class="cm">					return true
+</span></span></span><span class="line"><span class="cl"><span class="cm">				}
+</span></span></span><span class="line"><span class="cl"><span class="cm">				// 如果空闲连接还没到阈值，保留这个连接当作空闲连接
+</span></span></span><span class="line"><span class="cl"><span class="cm">				db.maxIdleClosed++
+</span></span></span><span class="line"><span class="cl"><span class="cm">		}		
+</span></span></span><span class="line"><span class="cl"><span class="cm">				// 收回空闲连接返回false
+</span></span></span><span class="line"><span class="cl"><span class="cm">				return false
+</span></span></span><span class="line"><span class="cl"><span class="cm">}
+</span></span></span><span class="line"><span class="cl"><span class="cm">  */</span>
+</span></span><span class="line"><span class="cl">  
+</span></span><span class="line"><span class="cl">  <span class="c1">// 如果将连接成功放入了空闲连接池，或者将连接成功给了等待连接到会话使用，此处返回true
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// 收回空闲连接返回false
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// 代码详情就是在上面的这段注释中
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">added</span> <span class="o">:=</span> <span class="nx">db</span><span class="p">.</span><span class="nf">putConnDBLocked</span><span class="p">(</span><span class="nx">dc</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">db</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">  <span class="c1">// 如果
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="p">!</span><span class="nx">added</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 如果DB没有关闭，进入if
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">if</span> <span class="nx">resetSession</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">dc</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">dc</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 重新校验，如果连接关闭了，进入if
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="p">!</span><span class="nx">resetSession</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">  
+</span></span><span class="line"><span class="cl">  <span class="c1">// 如果负责重置 conn状态的线程阻塞住了，那么标记这个driverConn为lastErr
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">select</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">default</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// If the resetterCh is blocking then mark the connection
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="c1">// as bad and continue on.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">dc</span><span class="p">.</span><span class="nx">lastErr</span> <span class="p">=</span> <span class="nx">driver</span><span class="p">.</span><span class="nx">ErrBadConn</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">dc</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="nx">db</span><span class="p">.</span><span class="nx">resetterCh</span> <span class="o">&lt;-</span> <span class="nx">dc</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="mysql-连接数限制">mysql 连接数限制</h4>
+<p>数据库连接池的大小到底设置为多少，得根据业务流量以及数据库所在机器的性能综合考虑。</p>
+<p>mysql连接数到配置在 my.cnf中，具体的参数是max_connections。</p>
+<p>当业务流量异常猛烈时，很可能会出现这个问题：to many connections</p>
+<p>对于操纵系统内核来说，当他接受到一个tcp请求就会在本地创建一个由文件系统管理的socket文件。在linux中我们将它叫做文件句柄。</p>
+<p>linux为防止单一进程将系统资源全部耗费掉，会限制进程最大能打开的连接数为1024，这意味着，哪怕通过改配置文件，将mysql能打开的连接池设置为9999，事实上它能打开的文件数最多不会超过1024。</p>
+<p>这个问题也好解决：</p>
+<p>命令：设置单个进程能打开的最大连接数为65535</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="nb">ulimit</span> -HSn <span class="m">65535</span>
+</span></span><span class="line"><span class="cl"><span class="nb">ulimit</span> -a 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># core file size: 进程崩溃是转储文件大小限制</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># man loaded memort 最大锁定内存大小</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># open file 能打开的文件句柄数</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 这些变量定义在 /etc/security/limits.conf配置文件中。</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="参考文章">参考文章</h4>
+<p><a href="https://blog.csdn.net/Jiangtagong/article/details/116201951">参考文章</a></p>
+<h3 id="http-库中-context的使用">http 库中 context的使用</h3>
+<p>http.Request 使用 context作为字段</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Request</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// ctx是客户端或服务器的上下文。它只应该
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// 通过使用WithContext复制整个请求来修改。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// 它没有被导出，以防止人们使用错误的Context
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// 和突变同一请求的调用者所持有的上下文。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">Request</span><span class="p">)</span> <span class="nf">WithContext</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">)</span> <span class="o">*</span><span class="nx">Request</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">ctx</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="s">&#34;nil context&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">r2</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">Request</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="o">*</span><span class="nx">r2</span> <span class="p">=</span> <span class="o">*</span><span class="nx">r</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">r2</span><span class="p">.</span><span class="nx">ctx</span> <span class="p">=</span> <span class="nx">ctx</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//遗留行为；TODO：尝试删除。问题23544
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">r2</span><span class="p">.</span><span class="nx">URL</span> <span class="p">=</span> <span class="nf">cloneURL</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">URL</span><span class="p">)</span> <span class="c1">// legacy behavior; TODO: try to remove. Issue 23544
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">return</span> <span class="nx">r2</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span>  <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">req</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">newCtx</span> <span class="o">:=</span> <span class="nx">req</span><span class="p">.</span><span class="nf">WithContext</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nf">TODO</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="error-groups-使用">error groups 使用</h3>
+<p>通过 errorGroup 获取多个任务执行中是否有任意失败</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;context&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;errors&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;golang.org/x/sync/errgroup&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">eg</span> <span class="o">:=</span> <span class="nx">errgroup</span><span class="p">.</span><span class="nx">Group</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">ctx</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">TODO</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">_</span> <span class="p">=</span> <span class="nx">ctx</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">i</span> <span class="o">:=</span> <span class="nx">i</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">eg</span><span class="p">.</span><span class="nf">Go</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="kt">error</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="nx">i</span> <span class="o">==</span> <span class="mi">8</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">return</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;error&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nx">ctx</span><span class="p">.</span><span class="nf">Err</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="p">})</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">err</span> <span class="o">:=</span> <span class="nx">eg</span><span class="p">.</span><span class="nf">Wait</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="cancelctx-的实现原理">cancelCtx 的实现原理</h3>
+<p>cancelCtx 是典型的装饰器模式： 在已有的Context基础上，添加取消功能。</p>
+<p>核心功能：</p>
+<ul>
+<li>Done 方法是通过类似于 double-check 的机制写的。这种原子操作和说结合的用法比较罕见。</li>
+<li>利用 children来维护所有的衍生节点，难点在于他是如何维护衍生节点的</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// 一个cancelCtx可以被取消。当被取消时，它也会取消任何实现了canceller的儿童
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 实现canceller。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">cancelCtx</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">Context</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mu</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">Mutex</span> <span class="c1">// 保护以下字段
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">done</span> <span class="nx">atomic</span><span class="p">.</span><span class="nx">Value</span> <span class="c1">// of chan struct{}, lazily created, closed by first cancel call
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">children</span> <span class="kd">map</span><span class="p">[</span><span class="nx">canceller</span><span class="p">]</span><span class="err">结构</span><span class="p">{}</span><span class="err">。</span><span class="c1">// 被第一次取消调用设置为nil
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">err</span> <span class="kt">error</span> <span class="c1">// 被第一次取消调用设置为非零
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>children：核心是儿子把自己加进去父亲的
+children 字段里面。
+但是因为 Context 里面存在非常多的层级，
+所以父亲不一定是 cancelCtx，因此本质上
+是找最近属于 cancelCtx 类型的祖先，然后
+儿子把自己加进去。
+cancel 就是遍历 children，挨个调用
+cancel。然后儿子调用孙子的 cancel，子子
+孙孙无穷匮也。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="k">if</span> <span class="nx">p</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nf">parentCancelCtx</span><span class="p">(</span><span class="nx">parent</span><span class="p">);</span> <span class="nx">ok</span> <span class="p">{</span> <span class="c1">// 最近的 cancelCtx祖先，将 child 加进祖先的child里面
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">p</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">p</span><span class="p">.</span><span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// parent has already been canceled
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="nx">child</span><span class="p">.</span><span class="nf">cancel</span><span class="p">(</span><span class="kc">false</span><span class="p">,</span> <span class="nx">p</span><span class="p">.</span><span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 得到 最近的 祖先 cancelCtx 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="nx">p</span><span class="p">.</span><span class="nx">children</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">p</span><span class="p">.</span><span class="nx">children</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="nx">canceler</span><span class="p">]</span><span class="kd">struct</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//将 child 加入
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="nx">p</span><span class="p">.</span><span class="nx">children</span><span class="p">[</span><span class="nx">child</span><span class="p">]</span> <span class="p">=</span> <span class="kd">struct</span><span class="p">{}{}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">p</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">atomic</span><span class="p">.</span><span class="nf">AddInt32</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">goroutines</span><span class="p">,</span> <span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">select</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">//找不到祖先的 cancelCtx 就 监听 parent 或者自己的信号
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">case</span> <span class="o">&lt;-</span><span class="nx">parent</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">child</span><span class="p">.</span><span class="nf">cancel</span><span class="p">(</span><span class="kc">false</span><span class="p">,</span> <span class="nx">parent</span><span class="p">.</span><span class="nf">Err</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">        <span class="k">case</span> <span class="o">&lt;-</span><span class="nx">child</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span> <span class="c1">//子节点调用了 cancelFunc 获取到取消信号了
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">cancelCtx</span><span class="p">)</span> <span class="nf">Done</span><span class="p">()</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{}</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">d</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nf">Load</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">d</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">d</span><span class="p">.(</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">c</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">defer</span> <span class="nx">c</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">d</span> <span class="p">=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nf">Load</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">d</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">d</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">c</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nf">Store</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">d</span><span class="p">.(</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>cancelCtx 实现原理：</p>
+<ul>
+<li>关闭所有 的 children</li>
+<li>关闭 done 这个 channel : 这个符合谁创建谁关闭原则</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// cancel关闭c.done，取消c的每个子节点，并且，如果
+</span></span></span><span class="line"><span class="cl"><span class="c1">// removeFromParent为true，将c从其父的孩子中移除。 true, removes c from its parent&#39;s children.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">cancelCtx</span><span class="p">)</span> <span class="nf">cancel</span><span class="p">(</span><span class="nx">removeFromParent</span> <span class="kt">bool</span><span class="p">,</span> <span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="s">&#34;context: internal error: missing cancel error&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">c</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">c</span><span class="p">.</span><span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">c</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="c1">// already canceled
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">c</span><span class="p">.</span><span class="nx">err</span> <span class="p">=</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">d</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nf">Load</span><span class="p">().(</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">d</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">c</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nf">Store</span><span class="p">(</span><span class="nx">closedchan</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">close</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">child</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">c</span><span class="p">.</span><span class="nx">children</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// NOTE: acquiring the child&#39;s lock while holding parent&#39;s lock.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 注意：在持有父方锁的同时获得子方的锁。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">child</span><span class="p">.</span><span class="nf">cancel</span><span class="p">(</span><span class="kc">false</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">c</span><span class="p">.</span><span class="nx">children</span> <span class="p">=</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">c</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">removeFromParent</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nf">removeChild</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">c</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="timerctx-实现原理">timerCtx 实现原理</h3>
+<p>timerCtx 也是装饰器模式：在已有 cancelCtx
+的基础上增加了超时的功能。
+实现要点：</p>
+<ul>
+<li>WithTimeout 和 WithDeadline 本质一样</li>
+<li>WithDeadline 里面，在创建 timerCtx 的时候
+利用 time.AfterFunc 来实现超时</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">	<span class="nf">propagateCancel</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">c</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">dur</span> <span class="o">:=</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Until</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">dur</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">c</span><span class="p">.</span><span class="nf">cancel</span><span class="p">(</span><span class="kc">true</span><span class="p">,</span> <span class="nx">DeadlineExceeded</span><span class="p">)</span> <span class="c1">// 截止日期已过
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">c</span><span class="p">,</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="nx">c</span><span class="p">.</span><span class="nf">cancel</span><span class="p">(</span><span class="kc">false</span><span class="p">,</span> <span class="nx">Canceled</span><span class="p">)</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">c</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">defer</span> <span class="nx">c</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">c</span><span class="p">.</span><span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 开启定时任务，超时自己主动 cancel自己
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="nx">c</span><span class="p">.</span><span class="nx">timer</span> <span class="p">=</span> <span class="nx">time</span><span class="p">.</span><span class="nf">AfterFunc</span><span class="p">(</span><span class="nx">dur</span><span class="p">,</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">c</span><span class="p">.</span><span class="nf">cancel</span><span class="p">(</span><span class="kc">true</span><span class="p">,</span> <span class="nx">DeadlineExceeded</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">})</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">c</span><span class="p">,</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="nx">c</span><span class="p">.</span><span class="nf">cancel</span><span class="p">(</span><span class="kc">true</span><span class="p">,</span> <span class="nx">Canceled</span><span class="p">)</span> <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="面试要点">面试要点</h3>
+<ul>
+<li>context.Context 使用创建： 上下文传递和超时控制</li>
+<li>context.Context 原理：
+<ul>
+<li>父亲如何控制儿子： 通过儿子主动加入到父亲的children里面，父亲只需要遍历就可以</li>
+<li>valueCtx 和 timeCtx原理</li>
+</ul>
+</li>
+</ul>
+<h3 id="context-包---使用注意事项">context 包&ndash; 使用注意事项</h3>
+<ul>
+<li>一般只用做方法参数，而且是作为第一个参数；</li>
+<li>所有公共方法，除非是 util，helper 之类的方法，否则都加上 context 参数；</li>
+<li>不要用作结构体字段，除非你的结构体本身也是表达一个上下文的概念</li>
+</ul>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-05-11
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/">课外课程学习</a>
+          </div>
+      <nav class="post-nav">
+        
+        <a class="next" href="/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/golang/%E7%90%86%E8%AE%BA%E5%AD%A6%E4%B9%A0/%E8%AF%BE%E5%A4%96%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/go%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86error/">
+            <span class="next-text nav-default">go语言处理error</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2022-11-26 15:26:05 \u002b0800 \u002b0800',
+        title: 'go-context使用',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://lyr-2000.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-09-23 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://fastly.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.6d2c4f127d59e1dce56e2845adf7d359011b86d8fc907e98877eb35bd445b2b3.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js/back_btn.js"></script>
+<script src="/js/docsearch.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "2991187e127fb95e62db841ea946bc06",
+		indexName: "blog",
+		appId: "UVGAU2QDTQ",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "2991187e127fb95e62db841ea946bc06",
+	 indexName: "blog",
+	 appId: "UVGAU2QDTQ",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+ 
+  <div id="BR_cornner">
+    <div id='darkThemeBtn'>T</div> 
+  </div> 
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<script defer async>
+
+  mermaid.initialize({startOnLoad:true});
+</script>
+</body>
+</html>
