@@ -51,7 +51,7 @@
 <meta itemprop="name" content="Golang_语言的基础语法">
 <meta itemprop="description" content="if 条件语句 1 2 3 4 5 6 7 8 9 10 11 12 13 if condition1 { } else if condition2 { }else { } // if 的简短语句 // 同 for 一样， if 语句可以在白条鸡表达式前面执行一个简单的语句 if v:= x-100; v&lt;0 {"><meta itemprop="datePublished" content="2021-08-14T22:42:48+08:00" />
 <meta itemprop="dateModified" content="2021-08-14T22:42:48+08:00" />
-<meta itemprop="wordCount" content="1825">
+<meta itemprop="wordCount" content="1968">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Golang_语言的基础语法"/>
 <meta name="twitter:description" content="if 条件语句 1 2 3 4 5 6 7 8 9 10 11 12 13 if condition1 { } else if condition2 { }else { } // if 的简短语句 // 同 for 一样， if 语句可以在白条鸡表达式前面执行一个简单的语句 if v:= x-100; v&lt;0 {"/>
@@ -188,7 +188,7 @@ input.PC_MARK1:focus{
       <div class="post-meta">
         <span class="post-time"> 2021-08-14 </span>
         
-          <span class="more-meta"> 约 1825 字 </span>
+          <span class="more-meta"> 约 1968 字 </span>
           <span class="more-meta"> 预计阅读 4 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
@@ -218,6 +218,7 @@ input.PC_MARK1:focus{
             <li><a href="#注意事项">注意事项</a></li>
           </ul>
         </li>
+        <li><a href="#sql--drivervaluer-和-sqlsanner">sql  driver.Valuer 和 sql.Sanner</a></li>
       </ul>
     </li>
   </ul>
@@ -955,7 +956,67 @@ input.PC_MARK1:focus{
 <p>• Interface 是可能为 nil 的，所以针对 interface 的使用一定要预
 先判空，否则会引起程序 crash(nil panic)
 • Struct 初始化意味着空间分配，对 struct 的引用不会出现空指针</p>
-
+<h2 id="sql--drivervaluer-和-sqlsanner">sql  driver.Valuer 和 sql.Sanner</h2>
+<p>实现 scan 方法 实现获取自定义类型</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">j</span> <span class="o">*</span><span class="nx">JsonColumn</span><span class="p">[</span><span class="nx">T</span><span class="p">])</span> <span class="nf">Scan</span><span class="p">(</span><span class="nx">src</span> <span class="nx">any</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">bs</span> <span class="p">[]</span><span class="kt">byte</span>
+</span></span><span class="line"><span class="cl">	<span class="k">switch</span> <span class="nx">val</span> <span class="p">=</span> <span class="nx">src</span><span class="p">.(</span><span class="kd">type</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">bs</span> <span class="p">=</span> <span class="nx">val</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="o">*</span><span class="p">[]</span><span class="kt">byte</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">bs</span> <span class="p">=</span> <span class="o">*</span><span class="nx">val</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="nx">sql</span><span class="p">.</span><span class="nx">RawBytes</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">bs</span><span class="p">=</span> <span class="nx">val</span>
+</span></span><span class="line"><span class="cl">	<span class="k">case</span> <span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">RawBytes</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">bs</span><span class="p">=</span> <span class="o">*</span><span class="nx">val</span>
+</span></span><span class="line"><span class="cl">	<span class="k">default</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;不支持 scan src类型&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">err</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">Unmarshal</span><span class="p">(</span><span class="nx">bs</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">j</span><span class="p">.</span><span class="nx">Val</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span><span class="o">!=</span><span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">j</span><span class="p">.</span><span class="nx">Valid</span> <span class="p">=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//  返回字符串 bytes
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">j</span> <span class="nx">JsonColumn</span><span class="p">[</span><span class="nx">T</span><span class="p">])</span> <span class="nf">Value</span><span class="p">()</span> <span class="p">(</span><span class="nx">driver</span><span class="p">.</span><span class="nx">Value</span><span class="p">,</span><span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">json</span><span class="p">.</span><span class="nf">Marshal</span><span class="p">(</span><span class="nx">j</span><span class="p">.</span><span class="nx">Val</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
     </div>
 
     <div class="post-copyright">
