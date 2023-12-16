@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.109.0 with theme even" />
+<meta name="generator" content="Hugo 0.121.1 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/java/%E5%A4%A7%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E4%BC%98%E5%8C%96/%E9%98%BF%E9%87%8Coss-%E5%89%8D%E7%AB%AF%E7%9B%B4%E4%BC%A0%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%B8%8A%E4%BC%A0%E9%89%B4%E6%9D%83%E7%AD%89/" />
@@ -41,19 +41,9 @@
 <link rel="stylesheet" href="/css/post.css">
 
 
-<meta property="og:title" content="阿里oss前端直传 鉴权生成签名" />
-<meta property="og:description" content="阿里oss 客户端上传学习 参考大佬的 demo 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 spring: resources: static-locations: classpath:templates/ # OSS相关配置信息 aliyun: oss: endpoint: mtest-oss.oss-cn-beijing.aliyuncs.com # oss对外服务的访问域名 accessKeyId: # 访问" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/14.%E6%96%B0%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/%E8%AF%AD%E8%A8%80%E6%8A%80%E6%9C%AF/java/%E5%A4%A7%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E4%BC%98%E5%8C%96/%E9%98%BF%E9%87%8Coss-%E5%89%8D%E7%AB%AF%E7%9B%B4%E4%BC%A0%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%B8%8A%E4%BC%A0%E9%89%B4%E6%9D%83%E7%AD%89/" /><meta property="article:section" content="post" />
-<meta property="article:published_time" content="2021-08-14T22:42:48+08:00" />
-<meta property="article:modified_time" content="2021-08-14T22:42:48+08:00" />
-<meta itemprop="name" content="阿里oss前端直传 鉴权生成签名">
-<meta itemprop="description" content="阿里oss 客户端上传学习 参考大佬的 demo 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 spring: resources: static-locations: classpath:templates/ # OSS相关配置信息 aliyun: oss: endpoint: mtest-oss.oss-cn-beijing.aliyuncs.com # oss对外服务的访问域名 accessKeyId: # 访问"><meta itemprop="datePublished" content="2021-08-14T22:42:48+08:00" />
-<meta itemprop="dateModified" content="2021-08-14T22:42:48+08:00" />
-<meta itemprop="wordCount" content="1526">
-<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="阿里oss前端直传 鉴权生成签名"/>
-<meta name="twitter:description" content="阿里oss 客户端上传学习 参考大佬的 demo 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 spring: resources: static-locations: classpath:templates/ # OSS相关配置信息 aliyun: oss: endpoint: mtest-oss.oss-cn-beijing.aliyuncs.com # oss对外服务的访问域名 accessKeyId: # 访问"/>
+
+
+
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -498,53 +488,53 @@ input.PC_MARK1:focus{
 </span><span class="lnt">46
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nn">io.github.lyr2000.dissertation.controller.openapi</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1">// import io.github.lyr2000.dissertation.components.OssAuthcUtil;
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kn">import</span> <span class="nn">io.github.lyr2000.dissertation.pojo.dto.ResultBean</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">io.github.lyr2000.dissertation.service.FileService</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">lombok.extern.slf4j.Slf4j</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.springframework.beans.factory.annotation.Autowired</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.GetMapping</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.PostMapping</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestMapping</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RestController</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">javax.annotation.Resource</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">javax.servlet.http.HttpServletRequest</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">javax.servlet.http.HttpServletResponse</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.util.Map</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="cm">/**
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span><span class="w"> </span><span class="nn">io.github.lyr2000.dissertation.controller.openapi</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// import io.github.lyr2000.dissertation.components.OssAuthcUtil;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.github.lyr2000.dissertation.pojo.dto.ResultBean</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.github.lyr2000.dissertation.service.FileService</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">lombok.extern.slf4j.Slf4j</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.beans.factory.annotation.Autowired</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.web.bind.annotation.GetMapping</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.web.bind.annotation.PostMapping</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.web.bind.annotation.RequestMapping</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.web.bind.annotation.RestController</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">javax.annotation.Resource</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">javax.servlet.http.HttpServletRequest</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">javax.servlet.http.HttpServletResponse</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">java.util.Map</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="cm">/**
 </span></span></span><span class="line"><span class="cl"><span class="cm"> * @author lyr
 </span></span></span><span class="line"><span class="cl"><span class="cm"> * @description oss鉴权
 </span></span></span><span class="line"><span class="cl"><span class="cm"> * @create 2021-11-20 14:42
-</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
-</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
-</span></span><span class="line"><span class="cl"><span class="nd">@RestController</span>
-</span></span><span class="line"><span class="cl"><span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">&#34;/free/&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">OssController</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nd">@Resource</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">FileService</span> <span class="n">ossService</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nd">@GetMapping</span><span class="o">(</span><span class="s">&#34;/policy&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResultBean</span> <span class="nf">policy</span><span class="o">()</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">ResultBean</span> <span class="n">result</span> <span class="o">=</span> <span class="n">ossService</span><span class="o">.</span><span class="na">getPolicy</span><span class="o">();</span>
-</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;服务端生成签名:{}&#34;</span><span class="o">,</span><span class="n">result</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nd">@PostMapping</span><span class="o">(</span><span class="s">&#34;/callback&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResultBean</span> <span class="nf">callback</span><span class="o">(</span><span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">ResultBean</span> <span class="n">ossCallbackResult</span> <span class="o">=</span> <span class="n">ossService</span><span class="o">.</span><span class="na">callback</span><span class="o">(</span><span class="n">request</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;oss成功的回调:{}&#34;</span><span class="o">,</span><span class="n">ossCallbackResult</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">ossCallbackResult</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>
-</span></span><span class="line"><span class="cl"><span class="o">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nd">@Slf4j</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nd">@RestController</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nd">@RequestMapping</span><span class="p">(</span><span class="s">&#34;/free/&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">OssController</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Resource</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">FileService</span><span class="w"> </span><span class="n">ossService</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@GetMapping</span><span class="p">(</span><span class="s">&#34;/policy&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResultBean</span><span class="w"> </span><span class="nf">policy</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">ResultBean</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ossService</span><span class="p">.</span><span class="na">getPolicy</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">log</span><span class="p">.</span><span class="na">info</span><span class="p">(</span><span class="s">&#34;服务端生成签名:{}&#34;</span><span class="p">,</span><span class="n">result</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@PostMapping</span><span class="p">(</span><span class="s">&#34;/callback&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResultBean</span><span class="w"> </span><span class="nf">callback</span><span class="p">(</span><span class="n">HttpServletRequest</span><span class="w"> </span><span class="n">request</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">ResultBean</span><span class="w"> </span><span class="n">ossCallbackResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ossService</span><span class="p">.</span><span class="na">callback</span><span class="p">(</span><span class="n">request</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">log</span><span class="p">.</span><span class="na">info</span><span class="p">(</span><span class="s">&#34;oss成功的回调:{}&#34;</span><span class="p">,</span><span class="n">ossCallbackResult</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">ossCallbackResult</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -702,159 +692,159 @@ input.PC_MARK1:focus{
 </span><span class="lnt">152
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nn">io.github.lyr2000.dissertation.service.impl</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">cn.hutool.json.JSONObject</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">cn.hutool.json.JSONUtil</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.aliyun.oss.OSS</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.aliyun.oss.OSSClient</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.aliyun.oss.common.utils.BinaryUtil</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.aliyun.oss.model.MatchMode</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.aliyun.oss.model.PolicyConditions</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">io.github.lyr2000.common.dto.Result</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">io.github.lyr2000.dissertation.components.AliYunOssPropertis</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">io.github.lyr2000.dissertation.pojo.dto.OssCallbackParam</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">io.github.lyr2000.dissertation.pojo.dto.ResultBean</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">io.github.lyr2000.dissertation.service.FileService</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">lombok.Data</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">lombok.ToString</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">lombok.extern.slf4j.Slf4j</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.springframework.beans.factory.annotation.Autowired</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.springframework.beans.factory.annotation.Value</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Profile</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.springframework.stereotype.Component</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.springframework.stereotype.Service</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.springframework.web.multipart.MultipartFile</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">javax.annotation.PostConstruct</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">javax.annotation.Resource</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">javax.servlet.http.HttpServletRequest</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.text.SimpleDateFormat</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.util.Date</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="cm">/**
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span><span class="w"> </span><span class="nn">io.github.lyr2000.dissertation.service.impl</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">cn.hutool.json.JSONObject</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">cn.hutool.json.JSONUtil</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.aliyun.oss.OSS</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.aliyun.oss.OSSClient</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.aliyun.oss.common.utils.BinaryUtil</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.aliyun.oss.model.MatchMode</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.aliyun.oss.model.PolicyConditions</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.github.lyr2000.common.dto.Result</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.github.lyr2000.dissertation.components.AliYunOssPropertis</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.github.lyr2000.dissertation.pojo.dto.OssCallbackParam</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.github.lyr2000.dissertation.pojo.dto.ResultBean</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.github.lyr2000.dissertation.service.FileService</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">lombok.Data</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">lombok.ToString</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">lombok.extern.slf4j.Slf4j</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.beans.factory.annotation.Autowired</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.beans.factory.annotation.Value</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.context.annotation.Profile</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.stereotype.Component</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.stereotype.Service</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.web.multipart.MultipartFile</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">javax.annotation.PostConstruct</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">javax.annotation.Resource</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">javax.servlet.http.HttpServletRequest</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">java.text.SimpleDateFormat</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">java.util.Date</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="cm">/**
 </span></span></span><span class="line"><span class="cl"><span class="cm"> * @author lyr
 </span></span></span><span class="line"><span class="cl"><span class="cm"> * @description 阿里OSS 文件
 </span></span></span><span class="line"><span class="cl"><span class="cm"> * @create 2021-11-19 15:39
-</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
-</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
-</span></span><span class="line"><span class="cl"><span class="nd">@Service</span>
-</span></span><span class="line"><span class="cl"><span class="nd">@ToString</span>
-</span></span><span class="line"><span class="cl"><span class="nd">@Data</span>
-</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AliyunOssFileServiceImpl</span> <span class="kd">implements</span> <span class="n">FileService</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// @Value(&#34;${aliyun.oss.accessKey}&#34;)
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// private String accessKey;
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">//
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// @Value(&#34;${aliyun.oss.accessKeySecret}&#34;)
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// private String accessKeySecret;
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@Resource</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">AliYunOssPropertis</span> <span class="n">propertis</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">Result</span><span class="o">&lt;?&gt;</span> <span class="n">uploadFile</span><span class="o">(</span><span class="n">MultipartFile</span> <span class="n">file</span><span class="o">,</span> <span class="n">String</span> <span class="n">originLocalFileName</span><span class="o">,</span> <span class="n">String</span> <span class="n">uploadUID</span><span class="o">,</span>
-</span></span><span class="line"><span class="cl">                                <span class="kt">int</span> <span class="n">partCnt</span><span class="o">,</span> <span class="kt">int</span> <span class="n">totalCnt</span><span class="o">)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">Result</span><span class="o">&lt;?&gt;</span> <span class="n">uploadVideo</span><span class="o">(</span><span class="n">MultipartFile</span> <span class="n">file</span><span class="o">)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nd">@Value</span><span class="o">(</span><span class="s">&#34;${aliyun.oss.policy.expire}&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">int</span> <span class="n">ALIYUN_OSS_EXPIRE</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">    <span class="nd">@Value</span><span class="o">(</span><span class="s">&#34;${aliyun.oss.maxSize}&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">int</span> <span class="n">ALIYUN_OSS_MAX_SIZE</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">    <span class="nd">@Value</span><span class="o">(</span><span class="s">&#34;${aliyun.oss.callback}&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">ALIYUN_OSS_CALLBACK</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">    <span class="nd">@Value</span><span class="o">(</span><span class="s">&#34;${aliyun.oss.bucketName}&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">ALIYUN_OSS_BUCKET_NAME</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">    <span class="nd">@Value</span><span class="o">(</span><span class="s">&#34;${aliyun.oss.endpoint}&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">ALIYUN_OSS_ENDPOINT</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">    <span class="nd">@Value</span><span class="o">(</span><span class="s">&#34;${aliyun.oss.dir.prefix}&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">ALIYUN_OSS_DIR_PREFIX</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nd">@PostConstruct</span>
-</span></span><span class="line"><span class="cl">    <span class="nd">@Profile</span><span class="o">({</span><span class="s">&#34;test&#34;</span><span class="o">,</span><span class="s">&#34;tests&#34;</span><span class="o">})</span>
-</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">printProfiles</span><span class="o">()</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;aliyun profiles = {}&#34;</span><span class="o">,</span><span class="k">this</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nd">@Slf4j</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nd">@Service</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nd">@ToString</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nd">@Data</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">AliyunOssFileServiceImpl</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">FileService</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// @Value(&#34;${aliyun.oss.accessKey}&#34;)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// private String accessKey;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// @Value(&#34;${aliyun.oss.accessKeySecret}&#34;)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// private String accessKeySecret;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Resource</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">AliYunOssPropertis</span><span class="w"> </span><span class="n">propertis</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Result</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">uploadFile</span><span class="p">(</span><span class="n">MultipartFile</span><span class="w"> </span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">originLocalFileName</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">uploadUID</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                                </span><span class="kt">int</span><span class="w"> </span><span class="n">partCnt</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">totalCnt</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Result</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">uploadVideo</span><span class="p">(</span><span class="n">MultipartFile</span><span class="w"> </span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Value</span><span class="p">(</span><span class="s">&#34;${aliyun.oss.policy.expire}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ALIYUN_OSS_EXPIRE</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Value</span><span class="p">(</span><span class="s">&#34;${aliyun.oss.maxSize}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ALIYUN_OSS_MAX_SIZE</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Value</span><span class="p">(</span><span class="s">&#34;${aliyun.oss.callback}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">ALIYUN_OSS_CALLBACK</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Value</span><span class="p">(</span><span class="s">&#34;${aliyun.oss.bucketName}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">ALIYUN_OSS_BUCKET_NAME</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Value</span><span class="p">(</span><span class="s">&#34;${aliyun.oss.endpoint}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">ALIYUN_OSS_ENDPOINT</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Value</span><span class="p">(</span><span class="s">&#34;${aliyun.oss.dir.prefix}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">ALIYUN_OSS_DIR_PREFIX</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@PostConstruct</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Profile</span><span class="p">({</span><span class="s">&#34;test&#34;</span><span class="p">,</span><span class="s">&#34;tests&#34;</span><span class="p">})</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">printProfiles</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">log</span><span class="p">.</span><span class="na">info</span><span class="p">(</span><span class="s">&#34;aliyun profiles = {}&#34;</span><span class="p">,</span><span class="k">this</span><span class="p">.</span><span class="na">toString</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="cm">/**
 </span></span></span><span class="line"><span class="cl"><span class="cm">     * //  * 生成前端直传 token
 </span></span></span><span class="line"><span class="cl"><span class="cm">     * //  * @return
 </span></span></span><span class="line"><span class="cl"><span class="cm">     * //
-</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">// @Override
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// public String generateUploadToken() {
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">//     return null;
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// }
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@Resource</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">OSSClient</span> <span class="n">ossClient</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResultBean</span> <span class="nf">getPolicy</span><span class="o">()</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">JSONObject</span> <span class="n">resultBean</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JSONObject</span><span class="o">();</span>
-</span></span><span class="line"><span class="cl">        <span class="c1">// 存储目录
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">String</span> <span class="n">dir</span> <span class="o">=</span> <span class="n">ALIYUN_OSS_DIR_PREFIX</span>  <span class="o">+</span> <span class="s">&#34;/&#34;</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">        <span class="c1">// 签名有效期
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">long</span> <span class="n">expireEndTime</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">()</span> <span class="o">+</span> <span class="n">ALIYUN_OSS_EXPIRE</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">        <span class="n">Date</span> <span class="n">expiration</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Date</span><span class="o">(</span><span class="n">expireEndTime</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">        <span class="c1">// 文件大小
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">long</span> <span class="n">maxSize</span> <span class="o">=</span> <span class="n">ALIYUN_OSS_MAX_SIZE</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl">        <span class="c1">// 回调
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">OssCallbackParam</span> <span class="n">callback</span> <span class="o">=</span> <span class="k">new</span> <span class="n">OssCallbackParam</span><span class="o">();</span>
-</span></span><span class="line"><span class="cl">        <span class="n">callback</span><span class="o">.</span><span class="na">setCallbackUrl</span><span class="o">(</span><span class="n">ALIYUN_OSS_CALLBACK</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">        <span class="n">callback</span><span class="o">.</span><span class="na">setCallbackBody</span><span class="o">(</span><span class="s">&#34;filename=${object}&amp;size=${size}&amp;mimeType=${mimeType}&amp;height=${imageInfo.height}&amp;width=${imageInfo.width}&#34;</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">        <span class="n">callback</span><span class="o">.</span><span class="na">setCallbackBodyType</span><span class="o">(</span><span class="s">&#34;application/x-www-form-urlencoded&#34;</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">        <span class="c1">// 提交节点
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">String</span> <span class="n">action</span> <span class="o">=</span> <span class="s">&#34;https://&#34;</span><span class="o">+</span><span class="n">propertis</span><span class="o">.</span><span class="na">getEndpoint</span><span class="o">();</span>
-</span></span><span class="line"><span class="cl">        <span class="cm">/*&#34;https://&#34; + ALIYUN_OSS_ENDPOINT;*/</span>
-</span></span><span class="line"><span class="cl">        <span class="k">try</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">PolicyConditions</span> <span class="n">policyConds</span> <span class="o">=</span> <span class="k">new</span> <span class="n">PolicyConditions</span><span class="o">();</span>
-</span></span><span class="line"><span class="cl">            <span class="n">policyConds</span><span class="o">.</span><span class="na">addConditionItem</span><span class="o">(</span><span class="n">PolicyConditions</span><span class="o">.</span><span class="na">COND_CONTENT_LENGTH_RANGE</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">maxSize</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">policyConds</span><span class="o">.</span><span class="na">addConditionItem</span><span class="o">(</span><span class="n">MatchMode</span><span class="o">.</span><span class="na">StartWith</span><span class="o">,</span> <span class="n">PolicyConditions</span><span class="o">.</span><span class="na">COND_KEY</span><span class="o">,</span> <span class="n">dir</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">String</span> <span class="n">postPolicy</span> <span class="o">=</span> <span class="n">ossClient</span><span class="o">.</span><span class="na">generatePostPolicy</span><span class="o">(</span><span class="n">expiration</span><span class="o">,</span> <span class="n">policyConds</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">            <span class="kt">byte</span><span class="o">[]</span> <span class="n">binaryData</span> <span class="o">=</span> <span class="n">postPolicy</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&#34;utf-8&#34;</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">String</span> <span class="n">policy</span> <span class="o">=</span> <span class="n">BinaryUtil</span><span class="o">.</span><span class="na">toBase64String</span><span class="o">(</span><span class="n">binaryData</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">String</span> <span class="n">signature</span> <span class="o">=</span> <span class="n">ossClient</span><span class="o">.</span><span class="na">calculatePostSignature</span><span class="o">(</span><span class="n">postPolicy</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">String</span> <span class="n">callbackData</span> <span class="o">=</span> <span class="n">BinaryUtil</span><span class="o">.</span><span class="na">toBase64String</span><span class="o">(</span><span class="n">JSONUtil</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="n">callback</span><span class="o">).</span><span class="na">toString</span><span class="o">().</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&#34;utf-8&#34;</span><span class="o">));</span>
-</span></span><span class="line"><span class="cl">            <span class="n">resultBean</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;accessid&#34;</span><span class="o">,</span> <span class="n">ossClient</span><span class="o">.</span><span class="na">getCredentialsProvider</span><span class="o">().</span><span class="na">getCredentials</span><span class="o">().</span><span class="na">getAccessKeyId</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">            <span class="n">resultBean</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;policy&#34;</span><span class="o">,</span> <span class="n">policy</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">resultBean</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;signature&#34;</span><span class="o">,</span> <span class="n">signature</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">resultBean</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;dir&#34;</span><span class="o">,</span> <span class="n">dir</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">resultBean</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;expire&#34;</span><span class="o">,</span> <span class="n">String</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">expireEndTime</span> <span class="o">/</span> <span class="mi">1000</span><span class="o">));</span>
-</span></span><span class="line"><span class="cl">            <span class="n">resultBean</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;callback&#34;</span><span class="o">,</span> <span class="n">callbackData</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">            <span class="n">resultBean</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;host&#34;</span><span class="o">,</span> <span class="n">action</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">            <span class="c1">// 返回结果
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;签名生成失败&#34;</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="k">new</span> <span class="n">ResultBean</span><span class="o">(</span><span class="n">ResultBean</span><span class="o">.</span><span class="na">RESCODE_SIGNATION_FAILED</span><span class="o">,</span> <span class="n">ResultBean</span><span class="o">.</span><span class="na">RESMSG_SIGNATION_FAILED</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">new</span> <span class="n">ResultBean</span><span class="o">(</span><span class="n">ResultBean</span><span class="o">.</span><span class="na">RESCODE_SUCCESS</span><span class="o">,</span> <span class="n">ResultBean</span><span class="o">.</span><span class="na">RESMSG_SUCCESS</span><span class="o">,</span> <span class="n">resultBean</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
-</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResultBean</span> <span class="nf">callback</span><span class="o">(</span><span class="n">HttpServletRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">JSONObject</span> <span class="n">resultBean</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JSONObject</span><span class="o">();</span>
-</span></span><span class="line"><span class="cl">        <span class="n">String</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="na">getParameter</span><span class="o">(</span><span class="s">&#34;filename&#34;</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">        <span class="n">filename</span> <span class="o">=</span> <span class="s">&#34;https://&#34;</span><span class="o">.</span><span class="na">concat</span><span class="o">(</span><span class="n">ALIYUN_OSS_ENDPOINT</span><span class="o">).</span><span class="na">concat</span><span class="o">(</span><span class="s">&#34;/&#34;</span><span class="o">).</span><span class="na">concat</span><span class="o">(</span><span class="n">filename</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">        <span class="n">resultBean</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;filename&#34;</span><span class="o">,</span> <span class="n">filename</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">        <span class="n">resultBean</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;size&#34;</span><span class="o">,</span> <span class="n">request</span><span class="o">.</span><span class="na">getParameter</span><span class="o">(</span><span class="s">&#34;size&#34;</span><span class="o">));</span>
-</span></span><span class="line"><span class="cl">        <span class="n">resultBean</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;mimeType&#34;</span><span class="o">,</span> <span class="n">request</span><span class="o">.</span><span class="na">getParameter</span><span class="o">(</span><span class="s">&#34;mimeType&#34;</span><span class="o">));</span>
-</span></span><span class="line"><span class="cl">        <span class="n">resultBean</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;width&#34;</span><span class="o">,</span> <span class="n">request</span><span class="o">.</span><span class="na">getParameter</span><span class="o">(</span><span class="s">&#34;width&#34;</span><span class="o">));</span>
-</span></span><span class="line"><span class="cl">        <span class="n">resultBean</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&#34;height&#34;</span><span class="o">,</span> <span class="n">request</span><span class="o">.</span><span class="na">getParameter</span><span class="o">(</span><span class="s">&#34;height&#34;</span><span class="o">));</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">new</span> <span class="n">ResultBean</span><span class="o">(</span><span class="n">ResultBean</span><span class="o">.</span><span class="na">RESCODE_SUCCESS</span><span class="o">,</span> <span class="n">ResultBean</span><span class="o">.</span><span class="na">RESMSG_SUCCESS</span><span class="o">,</span> <span class="n">resultBean</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">// @Override
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// public Result&lt;?&gt; uploadFile(MultipartFile file, int sliceIndex, int totalCnt, String originName) {
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">//      return null;
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// }
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>
-</span></span></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// @Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// public String generateUploadToken() {</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//     return null;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// }</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Resource</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">OSSClient</span><span class="w"> </span><span class="n">ossClient</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResultBean</span><span class="w"> </span><span class="nf">getPolicy</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">JSONObject</span><span class="w"> </span><span class="n">resultBean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">JSONObject</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 存储目录</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ALIYUN_OSS_DIR_PREFIX</span><span class="w">  </span><span class="o">+</span><span class="w"> </span><span class="s">&#34;/&#34;</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 签名有效期</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="n">expireEndTime</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">currentTimeMillis</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ALIYUN_OSS_EXPIRE</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">1000</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Date</span><span class="w"> </span><span class="n">expiration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Date</span><span class="p">(</span><span class="n">expireEndTime</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 文件大小</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="n">maxSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ALIYUN_OSS_MAX_SIZE</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">1024</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">1024</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 回调</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">OssCallbackParam</span><span class="w"> </span><span class="n">callback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">OssCallbackParam</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">callback</span><span class="p">.</span><span class="na">setCallbackUrl</span><span class="p">(</span><span class="n">ALIYUN_OSS_CALLBACK</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">callback</span><span class="p">.</span><span class="na">setCallbackBody</span><span class="p">(</span><span class="s">&#34;filename=${object}&amp;size=${size}&amp;mimeType=${mimeType}&amp;height=${imageInfo.height}&amp;width=${imageInfo.width}&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">callback</span><span class="p">.</span><span class="na">setCallbackBodyType</span><span class="p">(</span><span class="s">&#34;application/x-www-form-urlencoded&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 提交节点</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">action</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;https://&#34;</span><span class="o">+</span><span class="n">propertis</span><span class="p">.</span><span class="na">getEndpoint</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="cm">/*&#34;https://&#34; + ALIYUN_OSS_ENDPOINT;*/</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">PolicyConditions</span><span class="w"> </span><span class="n">policyConds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">PolicyConditions</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">policyConds</span><span class="p">.</span><span class="na">addConditionItem</span><span class="p">(</span><span class="n">PolicyConditions</span><span class="p">.</span><span class="na">COND_CONTENT_LENGTH_RANGE</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">maxSize</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">policyConds</span><span class="p">.</span><span class="na">addConditionItem</span><span class="p">(</span><span class="n">MatchMode</span><span class="p">.</span><span class="na">StartWith</span><span class="p">,</span><span class="w"> </span><span class="n">PolicyConditions</span><span class="p">.</span><span class="na">COND_KEY</span><span class="p">,</span><span class="w"> </span><span class="n">dir</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">postPolicy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ossClient</span><span class="p">.</span><span class="na">generatePostPolicy</span><span class="p">(</span><span class="n">expiration</span><span class="p">,</span><span class="w"> </span><span class="n">policyConds</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kt">byte</span><span class="o">[]</span><span class="w"> </span><span class="n">binaryData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">postPolicy</span><span class="p">.</span><span class="na">getBytes</span><span class="p">(</span><span class="s">&#34;utf-8&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">policy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BinaryUtil</span><span class="p">.</span><span class="na">toBase64String</span><span class="p">(</span><span class="n">binaryData</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">signature</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ossClient</span><span class="p">.</span><span class="na">calculatePostSignature</span><span class="p">(</span><span class="n">postPolicy</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">callbackData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BinaryUtil</span><span class="p">.</span><span class="na">toBase64String</span><span class="p">(</span><span class="n">JSONUtil</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="n">callback</span><span class="p">).</span><span class="na">toString</span><span class="p">().</span><span class="na">getBytes</span><span class="p">(</span><span class="s">&#34;utf-8&#34;</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">resultBean</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&#34;accessid&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ossClient</span><span class="p">.</span><span class="na">getCredentialsProvider</span><span class="p">().</span><span class="na">getCredentials</span><span class="p">().</span><span class="na">getAccessKeyId</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">resultBean</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&#34;policy&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">policy</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">resultBean</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&#34;signature&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">signature</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">resultBean</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&#34;dir&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">dir</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">resultBean</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&#34;expire&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="p">.</span><span class="na">valueOf</span><span class="p">(</span><span class="n">expireEndTime</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">1000</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">resultBean</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&#34;callback&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">callbackData</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">resultBean</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&#34;host&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">action</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// 返回结果</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">Exception</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">log</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="s">&#34;签名生成失败&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ResultBean</span><span class="p">(</span><span class="n">ResultBean</span><span class="p">.</span><span class="na">RESCODE_SIGNATION_FAILED</span><span class="p">,</span><span class="w"> </span><span class="n">ResultBean</span><span class="p">.</span><span class="na">RESMSG_SIGNATION_FAILED</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ResultBean</span><span class="p">(</span><span class="n">ResultBean</span><span class="p">.</span><span class="na">RESCODE_SUCCESS</span><span class="p">,</span><span class="w"> </span><span class="n">ResultBean</span><span class="p">.</span><span class="na">RESMSG_SUCCESS</span><span class="p">,</span><span class="w"> </span><span class="n">resultBean</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResultBean</span><span class="w"> </span><span class="nf">callback</span><span class="p">(</span><span class="n">HttpServletRequest</span><span class="w"> </span><span class="n">request</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">JSONObject</span><span class="w"> </span><span class="n">resultBean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">JSONObject</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">filename</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="na">getParameter</span><span class="p">(</span><span class="s">&#34;filename&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">filename</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;https://&#34;</span><span class="p">.</span><span class="na">concat</span><span class="p">(</span><span class="n">ALIYUN_OSS_ENDPOINT</span><span class="p">).</span><span class="na">concat</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">).</span><span class="na">concat</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">resultBean</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&#34;filename&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">resultBean</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&#34;size&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="na">getParameter</span><span class="p">(</span><span class="s">&#34;size&#34;</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">resultBean</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&#34;mimeType&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="na">getParameter</span><span class="p">(</span><span class="s">&#34;mimeType&#34;</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">resultBean</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&#34;width&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="na">getParameter</span><span class="p">(</span><span class="s">&#34;width&#34;</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">resultBean</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&#34;height&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="na">getParameter</span><span class="p">(</span><span class="s">&#34;height&#34;</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ResultBean</span><span class="p">(</span><span class="n">ResultBean</span><span class="p">.</span><span class="na">RESCODE_SUCCESS</span><span class="p">,</span><span class="w"> </span><span class="n">ResultBean</span><span class="p">.</span><span class="na">RESMSG_SUCCESS</span><span class="p">,</span><span class="w"> </span><span class="n">resultBean</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// @Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// public Result&lt;?&gt; uploadFile(MultipartFile file, int sliceIndex, int totalCnt, String originName) {</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//      return null;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// }</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="配置">配置</h3>
 <div class="highlight"><div class="chroma">
@@ -997,7 +987,7 @@ input.PC_MARK1:focus{
   <span class="copyright-year">
     &copy; 
     2021-09-23 - 
-    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+    2023<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
   </span>
 </div>
 

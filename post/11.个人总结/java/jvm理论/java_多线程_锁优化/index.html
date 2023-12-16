@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.109.0 with theme even" />
+<meta name="generator" content="Hugo 0.121.1 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/jvm%E7%90%86%E8%AE%BA/java_%E5%A4%9A%E7%BA%BF%E7%A8%8B_%E9%94%81%E4%BC%98%E5%8C%96/" />
@@ -41,19 +41,9 @@
 <link rel="stylesheet" href="/css/post.css">
 
 
-<meta property="og:title" content="java_多线程_锁优化" />
-<meta property="og:description" content="**在并发编程中，多个线程访问同一个共享资源时，我们必须考虑如何维护数据的原子性。**在 JDK1.5 之前，Java 是依靠 Synchronized 关键字实现锁功能来做到这点的" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/jvm%E7%90%86%E8%AE%BA/java_%E5%A4%9A%E7%BA%BF%E7%A8%8B_%E9%94%81%E4%BC%98%E5%8C%96/" /><meta property="article:section" content="post" />
-<meta property="article:published_time" content="2021-08-17T13:48:22+08:00" />
-<meta property="article:modified_time" content="2021-08-17T13:48:22+08:00" />
-<meta itemprop="name" content="java_多线程_锁优化">
-<meta itemprop="description" content="**在并发编程中，多个线程访问同一个共享资源时，我们必须考虑如何维护数据的原子性。**在 JDK1.5 之前，Java 是依靠 Synchronized 关键字实现锁功能来做到这点的"><meta itemprop="datePublished" content="2021-08-17T13:48:22+08:00" />
-<meta itemprop="dateModified" content="2021-08-17T13:48:22+08:00" />
-<meta itemprop="wordCount" content="2471">
-<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="java_多线程_锁优化"/>
-<meta name="twitter:description" content="**在并发编程中，多个线程访问同一个共享资源时，我们必须考虑如何维护数据的原子性。**在 JDK1.5 之前，Java 是依靠 Synchronized 关键字实现锁功能来做到这点的"/>
+
+
+
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -272,58 +262,58 @@ input.PC_MARK1:focus{
 </span><span class="lnt">51
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 关键字在实例方法上，锁为当前实例
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">method1</span><span class="o">()</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">	    <span class="c1">// code
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="o">}</span>
-</span></span><span class="line"><span class="cl">	
-</span></span><span class="line"><span class="cl">	<span class="c1">// 关键字在代码块上，锁为括号里面的对象
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">method2</span><span class="o">()</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">	    <span class="n">Object</span> <span class="n">o</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">();</span>
-</span></span><span class="line"><span class="cl">	    <span class="kd">synchronized</span> <span class="o">(</span><span class="n">o</span><span class="o">)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">	        <span class="c1">// code
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	    <span class="o">}</span>
-</span></span><span class="line"><span class="cl">	<span class="o">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"> <span class="kd">public</span> <span class="kt">void</span> <span class="nf">method2</span><span class="o">();</span>
-</span></span><span class="line"><span class="cl">    <span class="n">descriptor</span><span class="o">:</span> <span class="o">()</span><span class="n">V</span>
-</span></span><span class="line"><span class="cl">    <span class="n">flags</span><span class="o">:</span> <span class="n">ACC_PUBLIC</span>
-</span></span><span class="line"><span class="cl">    <span class="n">Code</span><span class="o">:</span>
-</span></span><span class="line"><span class="cl">      <span class="n">stack</span><span class="o">=</span><span class="mi">2</span><span class="o">,</span> <span class="n">locals</span><span class="o">=</span><span class="mi">4</span><span class="o">,</span> <span class="n">args_size</span><span class="o">=</span><span class="mi">1</span>
-</span></span><span class="line"><span class="cl">         <span class="mi">0</span><span class="o">:</span> <span class="k">new</span>           <span class="err">#</span><span class="mi">2</span>                  
-</span></span><span class="line"><span class="cl">         <span class="mi">3</span><span class="o">:</span> <span class="n">dup</span>
-</span></span><span class="line"><span class="cl">         <span class="mi">4</span><span class="o">:</span> <span class="n">invokespecial</span> <span class="err">#</span><span class="mi">1</span>                  
-</span></span><span class="line"><span class="cl">         <span class="mi">7</span><span class="o">:</span> <span class="n">astore_1</span>
-</span></span><span class="line"><span class="cl">         <span class="mi">8</span><span class="o">:</span> <span class="n">aload_1</span>
-</span></span><span class="line"><span class="cl">         <span class="mi">9</span><span class="o">:</span> <span class="n">dup</span>
-</span></span><span class="line"><span class="cl">        <span class="mi">10</span><span class="o">:</span> <span class="n">astore_2</span>
-</span></span><span class="line"><span class="cl">        <span class="mi">11</span><span class="o">:</span> <span class="n">monitorenter</span> <span class="c1">//monitorenter 指令
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="mi">12</span><span class="o">:</span> <span class="n">aload_2</span>
-</span></span><span class="line"><span class="cl">        <span class="mi">13</span><span class="o">:</span> <span class="n">monitorexit</span>  <span class="c1">//monitorexit  指令
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="mi">14</span><span class="o">:</span> <span class="k">goto</span>          <span class="mi">22</span>
-</span></span><span class="line"><span class="cl">        <span class="mi">17</span><span class="o">:</span> <span class="n">astore_3</span>
-</span></span><span class="line"><span class="cl">        <span class="mi">18</span><span class="o">:</span> <span class="n">aload_2</span>
-</span></span><span class="line"><span class="cl">        <span class="mi">19</span><span class="o">:</span> <span class="n">monitorexit</span>
-</span></span><span class="line"><span class="cl">        <span class="mi">20</span><span class="o">:</span> <span class="n">aload_3</span>
-</span></span><span class="line"><span class="cl">        <span class="mi">21</span><span class="o">:</span> <span class="n">athrow</span>
-</span></span><span class="line"><span class="cl">        <span class="mi">22</span><span class="o">:</span> <span class="k">return</span>
-</span></span><span class="line"><span class="cl">      <span class="n">Exception</span> <span class="n">table</span><span class="o">:</span>
-</span></span><span class="line"><span class="cl">         <span class="n">from</span>    <span class="n">to</span>  <span class="n">target</span> <span class="n">type</span>
-</span></span><span class="line"><span class="cl">            <span class="mi">12</span>    <span class="mi">14</span>    <span class="mi">17</span>   <span class="n">any</span>
-</span></span><span class="line"><span class="cl">            <span class="mi">17</span>    <span class="mi">20</span>    <span class="mi">17</span>   <span class="n">any</span>
-</span></span><span class="line"><span class="cl">      <span class="n">LineNumberTable</span><span class="o">:</span>
-</span></span><span class="line"><span class="cl">        <span class="n">line</span> <span class="mi">18</span><span class="o">:</span> <span class="mi">0</span>
-</span></span><span class="line"><span class="cl">        <span class="n">line</span> <span class="mi">19</span><span class="o">:</span> <span class="mi">8</span>
-</span></span><span class="line"><span class="cl">        <span class="n">line</span> <span class="mi">21</span><span class="o">:</span> <span class="mi">12</span>
-</span></span><span class="line"><span class="cl">        <span class="n">line</span> <span class="mi">22</span><span class="o">:</span> <span class="mi">22</span>
-</span></span><span class="line"><span class="cl">      <span class="n">StackMapTable</span><span class="o">:</span> <span class="n">number_of_entries</span> <span class="o">=</span> <span class="mi">2</span>
-</span></span><span class="line"><span class="cl">        <span class="n">frame_type</span> <span class="o">=</span> <span class="mi">255</span> <span class="cm">/* full_frame */</span>
-</span></span><span class="line"><span class="cl">          <span class="n">offset_delta</span> <span class="o">=</span> <span class="mi">17</span>
-</span></span><span class="line"><span class="cl">          <span class="n">locals</span> <span class="o">=</span> <span class="o">[</span> <span class="kd">class</span> <span class="nc">com</span><span class="o">/</span><span class="n">demo</span><span class="o">/</span><span class="n">io</span><span class="o">/</span><span class="n">SyncTest</span><span class="o">,</span> <span class="kd">class</span> <span class="nc">java</span><span class="o">/</span><span class="n">lang</span><span class="o">/</span><span class="n">Object</span><span class="o">,</span> <span class="kd">class</span> <span class="nc">java</span><span class="o">/</span><span class="n">lang</span><span class="o">/</span><span class="n">Object</span> <span class="o">]</span>
-</span></span><span class="line"><span class="cl">          <span class="n">stack</span> <span class="o">=</span> <span class="o">[</span> <span class="kd">class</span> <span class="nc">java</span><span class="o">/</span><span class="n">lang</span><span class="o">/</span><span class="n">Throwable</span> <span class="o">]</span>
-</span></span><span class="line"><span class="cl">        <span class="n">frame_type</span> <span class="o">=</span> <span class="mi">250</span> <span class="cm">/* chop */</span>
-</span></span><span class="line"><span class="cl">          <span class="n">offset_delta</span> <span class="o">=</span> <span class="mi">4</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 关键字在实例方法上，锁为当前实例</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="kd">public</span><span class="w"> </span><span class="kd">synchronized</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">method1</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	    </span><span class="c1">// code</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="c1">// 关键字在代码块上，锁为括号里面的对象</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">method2</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	    </span><span class="n">Object</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Object</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	    </span><span class="kd">synchronized</span><span class="w"> </span><span class="p">(</span><span class="n">o</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	        </span><span class="c1">// code</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">method2</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">descriptor</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="n">V</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">flags</span><span class="p">:</span><span class="w"> </span><span class="n">ACC_PUBLIC</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Code</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">stack</span><span class="o">=</span><span class="n">2</span><span class="p">,</span><span class="w"> </span><span class="n">locals</span><span class="o">=</span><span class="n">4</span><span class="p">,</span><span class="w"> </span><span class="n">args_size</span><span class="o">=</span><span class="n">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="n">0</span><span class="p">:</span><span class="w"> </span><span class="k">new</span><span class="w">           </span><span class="err">#</span><span class="n">2</span><span class="w">                  
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="n">3</span><span class="p">:</span><span class="w"> </span><span class="n">dup</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="n">4</span><span class="p">:</span><span class="w"> </span><span class="n">invokespecial</span><span class="w"> </span><span class="err">#</span><span class="n">1</span><span class="w">                  
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="n">7</span><span class="p">:</span><span class="w"> </span><span class="n">astore_1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="n">8</span><span class="p">:</span><span class="w"> </span><span class="n">aload_1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="n">9</span><span class="p">:</span><span class="w"> </span><span class="n">dup</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">10</span><span class="p">:</span><span class="w"> </span><span class="n">astore_2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">11</span><span class="p">:</span><span class="w"> </span><span class="n">monitorenter</span><span class="w"> </span><span class="c1">//monitorenter 指令</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">12</span><span class="p">:</span><span class="w"> </span><span class="n">aload_2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">13</span><span class="p">:</span><span class="w"> </span><span class="n">monitorexit</span><span class="w">  </span><span class="c1">//monitorexit  指令</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">14</span><span class="p">:</span><span class="w"> </span><span class="k">goto</span><span class="w">          </span><span class="n">22</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">17</span><span class="p">:</span><span class="w"> </span><span class="n">astore_3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">18</span><span class="p">:</span><span class="w"> </span><span class="n">aload_2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">19</span><span class="p">:</span><span class="w"> </span><span class="n">monitorexit</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">20</span><span class="p">:</span><span class="w"> </span><span class="n">aload_3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">21</span><span class="p">:</span><span class="w"> </span><span class="n">athrow</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">22</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">Exception</span><span class="w"> </span><span class="n">table</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="n">from</span><span class="w">    </span><span class="n">to</span><span class="w">  </span><span class="n">target</span><span class="w"> </span><span class="n">type</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">12</span><span class="w">    </span><span class="n">14</span><span class="w">    </span><span class="n">17</span><span class="w">   </span><span class="n">any</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">17</span><span class="w">    </span><span class="n">20</span><span class="w">    </span><span class="n">17</span><span class="w">   </span><span class="n">any</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">LineNumberTable</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">line</span><span class="w"> </span><span class="n">18</span><span class="p">:</span><span class="w"> </span><span class="n">0</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">line</span><span class="w"> </span><span class="n">19</span><span class="p">:</span><span class="w"> </span><span class="n">8</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">line</span><span class="w"> </span><span class="n">21</span><span class="p">:</span><span class="w"> </span><span class="n">12</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">line</span><span class="w"> </span><span class="n">22</span><span class="p">:</span><span class="w"> </span><span class="n">22</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">StackMapTable</span><span class="p">:</span><span class="w"> </span><span class="n">number_of_entries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">frame_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">255</span><span class="w"> </span><span class="cm">/* full_frame */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">offset_delta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">17</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">locals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="kd">class</span> <span class="nc">com</span><span class="o">/</span><span class="n">demo</span><span class="o">/</span><span class="n">io</span><span class="o">/</span><span class="n">SyncTest</span><span class="p">,</span><span class="w"> </span><span class="kd">class</span> <span class="nc">java</span><span class="o">/</span><span class="n">lang</span><span class="o">/</span><span class="n">Object</span><span class="p">,</span><span class="w"> </span><span class="kd">class</span> <span class="nc">java</span><span class="o">/</span><span class="n">lang</span><span class="o">/</span><span class="n">Object</span><span class="w"> </span><span class="o">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">stack</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="kd">class</span> <span class="nc">java</span><span class="o">/</span><span class="n">lang</span><span class="o">/</span><span class="n">Throwable</span><span class="w"> </span><span class="o">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">frame_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">250</span><span class="w"> </span><span class="cm">/* chop */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">offset_delta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">4</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>JVM 中的同步是基于进入和退出管程（Monitor）对象实现的。每个对象实例都会有一个 Monitor，Monitor 可以和对象一起创建、销毁。Monitor 是由 ObjectMonitor 实现，而 ObjectMonitor 是由 C++ 的 ObjectMonitor.hpp 文件实现，如下所示：</p>
 <p>偏向锁的作用就是，当一个线程再次访问这个同步代码或方法时，该线程只需去对象头的 Mark Word 中去判断一下是否有偏向锁指向它的 ID，无需再进入 Monitor 去竞争对象了。<strong>当对象被当做同步锁并有一个线程抢到了锁时，锁标志位还是 01，“是否偏向锁”标志位设置为 1，并且记录抢到锁的线程 ID，表示进入偏向锁状态。</strong></p>
@@ -458,7 +448,7 @@ input.PC_MARK1:focus{
   <span class="copyright-year">
     &copy; 
     2021-09-23 - 
-    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+    2023<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
   </span>
 </div>
 
