@@ -278,8 +278,14 @@ input.PC_MARK1:focus{
 
     <div class="post-content">
       <h1 id="数据结构合集">数据结构合集</h1>
-<p><a href="https://blog.csdn.net/cywosp/article/details/23397179">https://blog.csdn.net/cywosp/article/details/23397179</a></p>
-<p><a href="https://blog.csdn.net/qq_43621789/article/details/106917404">https://blog.csdn.net/qq_43621789/article/details/106917404</a></p>
+<p><a href="https://blog.csdn.net/cywosp/article/details/23397179" target="_blank" rel="noopener">
+  https://blog.csdn.net/cywosp/article/details/23397179
+</a>
+</p>
+<p><a href="https://blog.csdn.net/qq_43621789/article/details/106917404" target="_blank" rel="noopener">
+  https://blog.csdn.net/qq_43621789/article/details/106917404
+</a>
+</p>
 <h1 id="一致性哈希算法">一致性哈希算法</h1>
 <h2 id="哈希算法好坏的定义">哈希算法好坏的定义</h2>
 <p>1、平衡性(Balance)：平衡性是指哈希的结果能够尽可能分布到所有的缓冲中去，这样可以使得所有的缓冲空间都得到利用。很多哈希算法都能够满足这一条件。</p>
@@ -290,7 +296,10 @@ input.PC_MARK1:focus{
 <p>Hash算法解决的是集群管理中请求访问的路由的问题,一般是根据一个请求的某个key值取余,路由到相应的服务器,比如,Key的hashCode是52,服务器的数目是3,取余之后为1,则该key对应的节点是Node1,由于HashCode随机性比较强，所以使用余数Hash路由算法就可以保证缓存数据在整个缓存服务器集群中有比较均衡的分布,这就是余数Hash的算法,==但是这种算法会有一个问题就是集群扩容了或者服务器下线了,那么取余的方式,原来Key映射到节点可能不会是Node1,可能会导致某个节点的请求压力变大,一致性哈希解决了普通余数Hash算法伸缩性差的问题，可以保证在上线、下线服务器的情况下尽量有多的请求命中原来路由到的服务器。==</p>
 <h3 id="环形hash空间">环形Hash空间</h3>
 <p>按照常用的hash算法来将对应的key哈希到一个具有2^32次方个桶的空间中，即0~(2^32)-1的数字空间中。现在我们可以将这些数字头尾相连，想象成一个闭合的环形。如下图</p>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330205552.png" alt=""></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330205552.png" alt=""  />
+</p>
+</p>
 <p>==为什么是2^32个桶空间？==</p>
 <ul>
 <li>当hash是一个32位无符号整型时，就是2^32，如果用64位，那就是2^64</li>
@@ -303,7 +312,10 @@ input.PC_MARK1:focus{
 <li>Hash(object3) = key3；</li>
 <li>Hash(object4) = key4；</li>
 </ul>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330205841.png" alt=""></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330205841.png" alt=""  />
+</p>
+</p>
 <p><strong>将机器通过hash算法映射到环上</strong></p>
 <p>在采用一致性哈希算法的分布式集群中将新的机器加入，其原理是通过使用与对象存储一样的Hash算法将机器也映射到环中（一般情况下对机器的hash计算是采用机器的IP或者机器唯一的别名作为输入值），然后以顺时针的方向计算，将所有对象存储到离自己最近的机器中。</p>
 <p>假设现在有NODE1，NODE2，NODE3三台机器，通过Hash算法得到对应的KEY值，映射到环中，其示意图如下：</p>
@@ -312,18 +324,27 @@ input.PC_MARK1:focus{
 <li>Hash(NODE2) = KEY2;</li>
 <li>Hash(NODE3) = KEY3;</li>
 </ul>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330205925.png" alt=""></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330205925.png" alt=""  />
+</p>
+</p>
 <p>==此图是最理想的情况，三个点正好均匀分布==</p>
 <p>通过上图可以看出==对象与机器处于同一哈希空间中==，这样==按顺时针转动object1存储到了NODE1中，object3存储到了NODE2中，object2、object4存储到了NODE3中。==在这样的部署环境中，hash环是不会变更的，因此，通过算出对象的hash值就能快速的定位到对应的机器中，这样就能找到对象真正的存储位置了。</p>
 <h3 id="机器的删除与添加">机器的删除与添加</h3>
 <p>普通hash求余算法最为不妥的地方就是在有机器的添加或者删除之后会照成大量的对象存储位置失效，这样就大大的不满足单调性了。下面来分析一下一致性哈希算法是如何处理的。</p>
 <p><strong>1. 节点（机器）的删除</strong></p>
 <p>以上面的分布为例，如果NODE2出现故障被删除了，那么按照顺时针迁移的方法，object3将会被迁移到NODE3中，这样仅仅是object3的映射位置发生了变化，其它的对象没有任何的改动。如下图：</p>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330210054.png" alt=""></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330210054.png" alt=""  />
+</p>
+</p>
 <p>==如果使用之前的hash算法，服务器数量发生改变时，所有服务器的所有缓存在同一时间失效了，而使用一致性哈希算法时，服务器的数量如果发生改变，并不是所有缓存都会失效，而是只有部分缓存会失效，前端的缓存仍然能分担整个系统的压力，而不至于所有压力都在同一时间集中到后端服务器上。==</p>
 <p><strong>2. 节点（机器）的添加</strong></p>
 <p>如果往集群中添加一个新的节点NODE4，通过对应的哈希算法得到KEY4，并映射到环中，如下图：</p>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330210202.png" alt=""></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330210202.png" alt=""  />
+</p>
+</p>
 <p>通过按顺时针迁移的规则，那么object2被迁移到了NODE4中，其它对象还保持这原有的存储位置。通过对节点的添加和删除的分析，一致性哈希算法在保持了单调性的同时，还是数据的迁移达到了最小，这样的算法对分布式集群来说是非常合适的，避免了大量数据迁移，减小了服务器的的压力。</p>
 <p>==注意，上面两种情况节点的分布不平均了，会导致某一台服务器的数据量过多==</p>
 <h4 id="平衡性">平衡性</h4>
@@ -331,7 +352,10 @@ input.PC_MARK1:focus{
 <ul>
 <li>==“虚拟节点”（ virtual node ）是实际节点（机器）在 hash 空间的复制品（ replica ），一实际个节点（机器）对应了若干个“虚拟节点”，这个对应个数也成为“复制个数”，“虚拟节点”在 hash 空间中以hash值排列。==</li>
 </ul>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330210411.png" alt=""></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330210411.png" alt=""  />
+</p>
+</p>
 <p>根据上图可知对象的映射关系：object1-&gt;NODE1-1，object2-&gt;NODE1-2，object3-&gt;NODE3-2，object4-&gt;NODE3-1。通过虚拟节点的引入，对象的分布就比较均衡了。</p>
 <p>==“虚拟节点”的hash计算可以采用对应节点的IP地址加数字后缀的方式。例如假设NODE1的IP地址为192.168.1.100。引入“虚拟节点”前，计算 cache A 的 hash 值：==
 Hash(“192.168.1.100”);
@@ -351,7 +375,10 @@ Hash(“192.168.1.100#2”); // NODE1-2</p>
 <li>将新元素插入到该位置后</li>
 <li>重复步骤2~5</li>
 </ol>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210217202351.gif" alt="img"></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210217202351.gif" alt="img"  />
+</p>
+</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -410,7 +437,10 @@ Hash(“192.168.1.100#2”); // NODE1-2</p>
 <li>如果最小元素不是未排序序列的第一个元素，将其和未排序序列第一个元素互换</li>
 <li>重复1、2步，直到排序结束。</li>
 </ol>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210218172932.gif" alt="img"></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210218172932.gif" alt="img"  />
+</p>
+</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -476,7 +506,10 @@ Hash(“192.168.1.100#2”); // NODE1-2</p>
 <li>针对所有的元素重复以上的步骤，除了最后一个。</li>
 <li>持续每次对越来越少的元素重复上面的步骤，直到没有任何一对数字需要比较。</li>
 </ol>
-<p><img src="https://images.morethink.cn/bubble.gif" alt="img"></p>
+<p><p class="md__image">
+  <img src="https://images.morethink.cn/bubble.gif" alt="img"  />
+</p>
+</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -539,7 +572,10 @@ Hash(“192.168.1.100#2”); // NODE1-2</p>
 <li>递归地（recursively）把小于基准值元素的子数列和大于基准值元素的子数列排序。</li>
 </ol>
 <p>递归到最底部时，数列的大小是零或一，也就是已经排序好了。这个算法一定会结束，因为在每次的迭代（iteration）中，它至少会把一个元素摆到它最后的位置去。</p>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210218173618.gif" alt="img"></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210218173618.gif" alt="img"  />
+</p>
+</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -622,7 +658,10 @@ Hash(“192.168.1.100#2”); // NODE1-2</p>
 <li>将上述序列再次归并，形成 floor(n/4)个序列，每个序列包含四个元素；</li>
 <li>重复步骤2，直到所有元素排序完毕。</li>
 </ol>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210218193935.gif" alt="img"></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210218193935.gif" alt="img"  />
+</p>
+</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -992,7 +1031,10 @@ Hash(“192.168.1.100#2”); // NODE1-2</p>
 <li>每趟排序，根据对应的增量 ti，将待排序列分割成若干长度为 m 的子序列，分别对各子表进行直接插入排序。仅增量因子为 1 时，整个序列作为一个表来处理，表长度即为整个序列的长度。</li>
 </ol>
 <p>效果如下：</p>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210218202425.png" alt="img"></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210218202425.png" alt="img"  />
+</p>
+</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1103,16 +1145,25 @@ Hash(“192.168.1.100#2”); // NODE1-2</p>
 <p>什么是跳表</p>
 </blockquote>
 <p>多层的有序链表，越上层，节点数越少
-<img src="https://gitee.com/super-jimwang/img/raw/master/img/20210306215440.png" alt=""></p>
+<p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210306215440.png" alt=""  />
+</p>
+</p>
 <blockquote>
 <p>跳表如何查询</p>
 </blockquote>
 <p>从最上面那层开始，从左往右遍历，直到下一个节点比要查询的值大，往下一层走。循环。</p>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210306215532.png" alt=""></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210306215532.png" alt=""  />
+</p>
+</p>
 <blockquote>
 <p>跳表的实现结构</p>
 </blockquote>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210306215550.png" alt=""></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210306215550.png" alt=""  />
+</p>
+</p>
 <blockquote>
 <p>为什么用跳表而不用红黑树</p>
 </blockquote>
@@ -1130,7 +1181,10 @@ Hash(“192.168.1.100#2”); // NODE1-2</p>
 <p><strong>注意</strong>：
 (01) 特性(3)中的叶子节点，是只为空(NIL或null)的节点。
 (02) 特性(5)，确保没有一条路径会比其他路径长出俩倍。==因而，红黑树是相对是接近平衡的二叉树。==</p>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210216221031.png" alt="image-20210216221031160"></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210216221031.png" alt="image-20210216221031160"  />
+</p>
+</p>
 <p><strong>==为什么有平衡二叉树了还需要红黑树</strong>==</p>
 <ul>
 <li>因为平衡二叉树太严格了，导致每次操作都需要左旋或者右旋来调整</li>
@@ -1142,9 +1196,15 @@ Hash(“192.168.1.100#2”); // NODE1-2</p>
 <p><strong>红黑树的时间复杂度为: O(lgn)</strong></p>
 <p><strong>一棵含有n个节点的红黑树的高度至多为2log(n+1)</strong>.</p>
 <h3 id="操作">操作</h3>
-<p><a href="https://blog.csdn.net/wuzhenwei0419/article/details/84554049">https://blog.csdn.net/wuzhenwei0419/article/details/84554049</a></p>
+<p><a href="https://blog.csdn.net/wuzhenwei0419/article/details/84554049" target="_blank" rel="noopener">
+  https://blog.csdn.net/wuzhenwei0419/article/details/84554049
+</a>
+</p>
 <h4 id="红黑树的左旋">红黑树的左旋</h4>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330212100.png" alt=""></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330212100.png" alt=""  />
+</p>
+</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1200,7 +1260,10 @@ Hash(“192.168.1.100#2”); // NODE1-2</p>
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><h4 id="红黑树的右旋">红黑树的右旋</h4>
-<p><img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330212509.png" alt=""></p>
+<p><p class="md__image">
+  <img src="https://gitee.com/super-jimwang/img/raw/master/img/20210330212509.png" alt=""  />
+</p>
+</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1

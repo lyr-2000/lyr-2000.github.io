@@ -216,7 +216,10 @@ input.PC_MARK1:focus{
 <p>好在 Java 里还提供了非阻塞式（NIO）API，<strong>利用非阻塞式 API 就能够实现一个线程处理多个连接了</strong>。那具体如何实现呢？现在普遍都是<strong>采用 Reactor 模式</strong>，包括 Netty 的实现。所以，要想理解 Netty 的实现，接下来我们就需要先了解一下 Reactor 模式。</p>
 <h2 id="reactor-模式">Reactor 模式</h2>
 <p>下面是 Reactor 模式的类结构图，其中 Handle 指的是 I/O 句柄，在 Java 网络编程里，它本质上就是一个网络连接。<strong>Event Handler 很容易理解</strong>，就是一个事件处理器，其中 <strong>handle_event() 方法处理 I/O 事件</strong>，也就是每个 Event Handler 处理一个 I/O Handle；get_handle() 方法可以返回这个 I/O 的 Handle。Synchronous Event Demultiplexer 可以理解为操作系统提供的 I/O 多路复用 API，例如 POSIX 标准里的 select() 以及 Linux 里面的 epoll()。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_04_22_39_10image-20211004223910115.png" alt="image-20211004223910115"></p>
+<p><p class="md__image">
+  <img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_04_22_39_10image-20211004223910115.png" alt="image-20211004223910115"  />
+</p>
+</p>
 <p>Reactor 模式的核心自然是<strong>Reactor 这个类</strong>，其中 register_handler() 和 remove_handler() 这两个方法可以注册和删除一个事件处理器；<strong>handle_events() 方式是核心</strong>，也是 Reactor 模式的发动机，这个方法的核心逻辑如下：首先通过同步事件多路选择器提供的 select() 方法监听网络事件，<strong>当有网络事件就绪后，就遍历事件处理器来处理该网络事件</strong>。由于<strong>网络事件是源源不断的</strong>，所以在主程序中启动 Reactor 模式，需要以 <code>while(true){}</code> 的方式<strong>调用 handle_events() 方法。</strong></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -256,7 +259,10 @@ input.PC_MARK1:focus{
 <li>一个 eventloop 一个线程</li>
 <li>即 一个线程处理多个网络连接</li>
 </ol>
-<p><img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_04_22_42_11image-20211004224211189.png" alt="image-20211004224211189"></p>
+<p><p class="md__image">
+  <img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_04_22_42_11image-20211004224211189.png" alt="image-20211004224211189"  />
+</p>
+</p>
 <p><strong>在 Netty 中，bossGroup 就用来处理连接请求的，而 workerGroup 是用来处理读写请求的</strong>。bossGroup 处理完连接请求后，会将这个连接提交给 workerGroup 来处理， workerGroup 里面有多个 EventLoop，<strong>那新的连接会交给哪个 EventLoop 来处理呢</strong>？这就需要一个<strong>负载均衡算法</strong>，Netty 中目前使用的是<strong>轮询算法</strong>。</p>
 <h2 id="用-netty-实现-echo-程序服务端">用 Netty 实现 Echo 程序服务端</h2>
 <p>下面的示例代码基于 Netty 实现了 echo 程序服务端：首先创建了一个事件处理器（等同于 Reactor 模式中的事件处理器），然后创建了 bossGroup 和 workerGroup，再之后创建并初始化了 ServerBootstrap，代码还是很简单的，不过有两个地方需要注意一下。</p>

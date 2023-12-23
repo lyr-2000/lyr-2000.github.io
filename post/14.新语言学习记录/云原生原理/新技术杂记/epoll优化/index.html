@@ -201,14 +201,20 @@ input.PC_MARK1:focus{
 
     <div class="post-content">
       <h2 id="epoll优化参考">epoll优化参考</h2>
-<p><a href="https://github.com/smallnest/epoller">epoll优化参考-github开源项目</a></p>
+<p><a href="https://github.com/smallnest/epoller" target="_blank" rel="noopener">
+  epoll优化参考-github开源项目
+</a>
+</p>
 <p>设想一个场景：有100万用户同时与一个进程保持着TCP连接，而每一时刻只有几十个或几百个TCP连接是活跃的(接收TCP包)，也就是说在每一时刻进程只需要处理这100万连接中的一小部分连接。那么，如何才能高效的处理这种场景呢？<strong>进程是否在每次询问操作系统收集有事件发生的TCP连接时</strong>，<strong>把这100万个连接告诉操作系统</strong>，然后由<strong>操作系统找出其中有事件发生的几百个连接呢</strong>？实际上，在Linux2.4版本以前，那时的select或者poll事件驱动方式是这样做的。</p>
 <p>这里有个非常明显的问题，即在某一时刻，进程收集有事件的连接时，其实这100万连接中的大部分都是没有事件发生的。因此如果每次收集事件时，都把100万连接的套接字传给操作系统(这首先是用户态内存到内核态内存的大量复制)，而由操作系统内核寻找这些连接上有没有未处理的事件，将会是巨大的资源浪费，然后select和poll就是这样做的，因此它们最多只能处理几千个并发连接。而epoll不这样做，它在Linux内核中申请了一个简易的文件系统，把原先的一个select或poll调用分成了3部分：</p>
 <p>1)调用epoll_create建立一个epoll对象(在epoll文件系统中给这个句柄分配资源)；</p>
 <p>2)调用epoll_ctl向epoll对象中添加这100万个连接的套接字；</p>
 <p>3)调用epoll_wait收集发生事件的连接；</p>
 <p>这样只需要在进程启动时建立1个epoll对象，并在需要的时候向它添加或删除连接就可以了，因此，在实际收集事件时，epoll_wait的效率就会非常高，因为调用epoll_wait时并没有向它传递这100万个连接，内核也不需要去遍历全部的连接。</p>
-<p><a href="https://blog.csdn.net/boshuzhang/article/details/83503147">golang调用 c++代码</a></p>
+<p><a href="https://blog.csdn.net/boshuzhang/article/details/83503147" target="_blank" rel="noopener">
+  golang调用 c++代码
+</a>
+</p>
 <h2 id="其他笔记">其他笔记</h2>
 <p>[[post/14.新语言学习记录/语言技术/Golang/基础语法/golang- epoll 性能优化 | epoll性能优化]]
 [[post/14.新语言学习记录/linux/linux基础原理杂记/cpp语言使用/网络编程/epoll 学习使用 | epoll学习使用]]</p>
