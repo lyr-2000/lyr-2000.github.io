@@ -213,22 +213,22 @@ input.PC_MARK1:focus{
 <p>但<strong>有时线程虽然没有发生阻塞，但仍然会存在执行不下去的情况，这就是所谓的“活锁”</strong>。可以类比现实世界里的例子，路人甲从左手边出门，路人乙从右手边进门，两人为了不相撞，互相谦让，路人甲让路走右手边，路人乙也让路走左手边，结果是两人又相撞了。这种情况，基本上谦让几次就解决了，因为人会交流啊。可是如果这种情况发生在编程世界了，就有可能会一直没完没了地“谦让”下去，成为没有发生阻塞但依然执行不下去的“活锁”。</p>
 <p>解决“<strong>活锁</strong>”的方案很简单，谦让时，<strong>尝试等待一个随机的时间就可以了</strong>。例如上面的那个例子，路人甲走左手边发现前面有人，并不是立刻换到右手边，而是等待一个随机的时间后，再换到右手边；同样，路人乙也不是立刻切换路线，也是等待一个随机的时间再切换。由于路人甲和路人乙等待的时间是随机的，所以同时相撞后再次相撞的概率就很低了。“等待一个随机时间”的方案虽然很简单，却非常有效，Raft 这样知名的分布式一致性算法中也用到了它。</p>
 <h4 id="线程的几种状态">线程的几种状态</h4>
-<p>线程是一个动态执行的过程，它也有一个从产生到死亡的过程，在 Java 中一个线程完整的生命周期一共包含以下五种状态：
-<strong>新建状态（New）</strong>
+<p>线程是一个动态执行的过程，它也有一个从产生到死亡的过程，在 Java 中一个线程完整的生命周期一共包含以下五种状态：<br>
+<strong>新建状态（New）</strong><br>
 当使用 <code>new</code> 关键字和 <code>Thread</code> 类或其子类创建一个线程对象后，那么线程就进入了<code>新建状态</code>，此时它和其它的 Java 对象一样，仅仅由 JVM 分配了内存，并初始化其成员变量值，它会一直保持这个状态直到调用该对象的 <code>start</code> 方法。</p>
-<p><strong>就绪状态（Runnable）</strong>
+<p><strong>就绪状态（Runnable）</strong><br>
 当线程对象调用了 <code>start</code> 方法之后，该线程就进入了就绪状态。就绪状态的线程会放在一个就绪队列中，等待 JVM 里的调度器进行调度。处于就绪状态的线程，随时可能被 CPU 调度执行。</p>
-<p><strong>运行状态（Running）</strong>
+<p><strong>运行状态（Running）</strong><br>
 如果就绪状态的执行被 CPU 调度执行，就可以执行 <code>run</code> 方法，此时线程就处于线程状态。处于运行状态的线程最复杂，它可以变为<code>阻塞状态</code>、<code>就绪状态</code>和<code>死亡状态</code>。需要注意一点，线程变为<code>运行状态</code>之前的状态只能是<code>就绪状态</code>。</p>
-<p><strong>阻塞状态（Blocked）</strong>
+<p><strong>阻塞状态（Blocked）</strong><br>
 线程变为阻塞状态是因为某种原因放弃 CPU 的使用权，暂时停止运行，如果执行了 <code>sleep</code>、<code>suspend</code> 等方法，释放了所占用的资源之后，线程就从<code>运行状态</code>进入<code>阻塞状态</code>。等待睡眠时间结束或者获得设备资源之可以重新进入<code>就绪状态</code>。阻塞可以分为以下三种：</p>
 <ol>
 <li><strong>等待阻塞</strong> 处于<code>运行状态</code>的线程调用<code>wait</code>方法，会使线程进入<code>等待阻塞状态</code></li>
 <li><strong>同步阻塞</strong> 当线程获取 <code>synchronized</code> 同步锁因为同步锁被其他线程占用而失败后，会使线程进入<code>同步阻塞</code></li>
 <li><strong>其它阻塞</strong> 通过调用线程的<code>sleep</code>或<code> join</code>发出了 I/O 请求时，线程就会进入到阻塞状态。当<code>sleep</code>状态超时，<code>join</code>等待线程终止或超时，或者 I/O 处理完毕，线程重新回到<code>就绪状态</code>。</li>
 </ol>
-<p><strong>死亡状态（Dead）</strong>
-一个处于<code>运行状态</code>的线程执行完了 <code>run</code> 方法或者因为其它终止条件发生时，线程就会进入到<code>死亡状态</code>，该线程结束生命周期。
+<p><strong>死亡状态（Dead）</strong><br>
+一个处于<code>运行状态</code>的线程执行完了 <code>run</code> 方法或者因为其它终止条件发生时，线程就会进入到<code>死亡状态</code>，该线程结束生命周期。<br>
 以上线程各种状态的流转用一张图表示如下：</p>
 <p><p class="md__image">
   <img src="https://segmentfault.com/img/remote/1460000021227408" alt="thread-state-transfer.png"  />

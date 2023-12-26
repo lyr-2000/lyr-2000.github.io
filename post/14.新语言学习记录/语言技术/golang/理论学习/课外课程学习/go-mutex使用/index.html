@@ -571,7 +571,7 @@ input.PC_MARK1:focus{
 <li>Mutex 如何做到挂起goroutine的，如何唤醒 goroutine的？ 在这个语境下，只需要回答 sema这个字段以及 runtime_Semacquire 和 runtime_Semrelease 两个调用就可以。</li>
 </ul>
 <h2 id="once-使用">Once 使用</h2>
-<p>sync.Once 一般用于确保某个动作至多执行一次
+<p>sync.Once 一般用于确保某个动作至多执行一次<br>
 普遍用于初始化资源，单例模式</p>
 <p>sync 包 的工具尽量都用指针，如果复制锁对象可能会报错</p>
 <div class="highlight"><div class="chroma">
@@ -931,9 +931,9 @@ input.PC_MARK1:focus{
 <li>locals 会被挪到 victim (缓刑)</li>
 <li>而原来的 victim 会直接被 GC free掉</li>
 </ul>
-<p>复活：
-如果victim 对象被再次使用，就会丢回locals,避免下一次GC回收对象
-优点：
+<p>复活：<br>
+如果victim 对象被再次使用，就会丢回locals,避免下一次GC回收对象<br>
+优点：<br>
 防止GC引发性能抖动问题</p>
 <p>为了减小并发中锁的竞争，sync.pool为每个P（对象cpu线程）分配一个子池子poolLocal，每个poolLocal有private对象和shared共享列表对象，private对象只有对应的P可访问，无需加锁， shared共享列表对象可被其它P共享，需要加锁。</p>
 <h3 id="poolchain-原理">Poolchain 原理</h3>
@@ -1091,11 +1091,11 @@ input.PC_MARK1:focus{
 </span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="开源的-bytebufferpool框架">开源的 bytebufferPool框架</h3>
-<p>我们搞 buffer 缓存，就是希望这些
-buffer 的 size 最好是恰好符合我们希
-望的。过小会扩容，过大会浪费内
-存。
-所以 bytebufferpool 就根据使用次数
+<p>我们搞 buffer 缓存，就是希望这些<br>
+buffer 的 size 最好是恰好符合我们希<br>
+望的。过小会扩容，过大会浪费内<br>
+存。<br>
+所以 bytebufferpool 就根据使用次数<br>
 来决定：</p>
 <ul>
 <li>新创建的多大</li>
@@ -1415,7 +1415,7 @@ buffer 的 size 最好是恰好符合我们希
 </span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="为什么两个计数器要合并">为什么两个计数器要合并</h3>
-<p>　　考虑一下为什么要煞费苦心将 counter 和 waiter 这两个计数合并成一个 uint64 类型的值？似乎可以用两个 uint32 的值来分开表示，然后在操作各自的时候都使用 uint32 的原子操作即可，这样也不用考虑内存对齐的问题。
+<p>　　考虑一下为什么要煞费苦心将 counter 和 waiter 这两个计数合并成一个 uint64 类型的值？似乎可以用两个 uint32 的值来分开表示，然后在操作各自的时候都使用 uint32 的原子操作即可，这样也不用考虑内存对齐的问题。<br>
 　　这样做是因为 counter 和 waiter 这两个计数在使用时需要匹配才行，如果将这两个计数分开表示，那么就要用两次原子操作读取，在这两次原子操作之间就可能产生一些变化使 counter 和 waiter 不再匹配，从而导致一些难以预料的问题。</p>
 <h3 id="源码要点">源码要点</h3>
 <table>
@@ -1500,15 +1500,15 @@ buffer 的 size 最好是恰好符合我们希
 </div><h2 id="channel-编程---发布订阅模式">channel 编程&ndash; 发布订阅模式</h2>
 <ul>
 <li>不带缓冲：要求收发两端都必须要有 goroutine，否则就是阻塞。</li>
-<li>带缓冲：没满或者没空之前都不会阻塞。但是满了
+<li>带缓冲：没满或者没空之前都不会阻塞。但是满了<br>
 或者空了就会阻塞。</li>
 </ul>
 <h3 id="利用-channel-的思路">利用 channel 的思路</h3>
 <ul>
 <li>看做是队列，主要用于传递数据</li>
-<li>利用阻塞特性，可以间接控制住 goroutine 或者
-其它资源的消耗。这种用法有点像是令牌机制。
-那么往 channel 里面读或者取一个数据，就有点
+<li>利用阻塞特性，可以间接控制住 goroutine 或者<br>
+其它资源的消耗。这种用法有点像是令牌机制。<br>
+那么往 channel 里面读或者取一个数据，就有点<br>
 像是拿到一个令牌，拿到令牌才可以做某件事</li>
 </ul>
 <h4 id="实现细节">实现细节</h4>
@@ -1526,21 +1526,21 @@ buffer 的 size 最好是恰好符合我们希
 <li>分配到栈上：不需要考虑 GC</li>
 <li>分配到堆上：需要考虑 GC</li>
 </ul>
-<p>很不幸的，如果用 channel 发送指针，那么必然逃逸。
-编译器无法确定，发送的指针数据最终会被哪个 goroutine
+<p>很不幸的，如果用 channel 发送指针，那么必然逃逸。<br>
+编译器无法确定，发送的指针数据最终会被哪个 goroutine<br>
 接收！</p>
 <h4 id="goroutine泄露问题">goroutine泄露问题</h4>
-<p>如果 channel 使用不当，就会导致 goroutine 泄
+<p>如果 channel 使用不当，就会导致 goroutine 泄<br>
 露：</p>
 <ul>
-<li>只发送不接收，那么发送者一直阻塞，会导致发
+<li>只发送不接收，那么发送者一直阻塞，会导致发<br>
 送者 goroutine 泄露</li>
-<li>只接收不发送，那么接收者一直阻塞，会导致接
+<li>只接收不发送，那么接收者一直阻塞，会导致接<br>
 收者 goroutine 泄露</li>
 <li>读写 nil 都会导致 goroutine 泄露</li>
 </ul>
-<p>基本上可以说，goroutine 泄露都是因为 goroutine
-被阻塞之后没有人唤醒它导致的。
+<p>基本上可以说，goroutine 泄露都是因为 goroutine<br>
+被阻塞之后没有人唤醒它导致的。<br>
 唯一的例外是业务层面上 goroutine 长时间运行。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">

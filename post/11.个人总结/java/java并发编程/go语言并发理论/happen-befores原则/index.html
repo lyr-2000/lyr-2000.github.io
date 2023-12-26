@@ -204,10 +204,10 @@ input.PC_MARK1:focus{
 
     <div class="post-content">
       <h3 id="happen-befores原则-使用">happen-befores原则 使用</h3>
-<p><code>happens-before</code>
-在一个 goroutine 内部，程序的执行顺序和它们的代码指定的顺序是一样的，即使编译器
+<p><code>happens-before</code><br>
+在一个 goroutine 内部，程序的执行顺序和它们的代码指定的顺序是一样的，即使编译器<br>
 或者 CPU 重排了读写顺序，从行为上来看，也和代码指定的顺序一样。</p>
-<p>我们来看一个例子。在下面的代码中，<strong>即使编译器或者 CPU 对 a、b、c 的初始化进行了</strong>
+<p>我们来看一个例子。在下面的代码中，<strong>即使编译器或者 CPU 对 a、b、c 的初始化进行了</strong><br>
 <strong>重排，但是打印结果依然能保证是 1、2、3</strong>，而不会出现 1、0、0 或 1、0、1 等情况。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -233,14 +233,14 @@ input.PC_MARK1:focus{
 </div>
 </div><p>在 Go 语言中，对变量进行零值的初始化就是一个写操作。</p>
 <ol>
-<li>如果对超过机器 word（64bit、32bit 或者其它）大小的值进行读写，那么，就可以看
+<li>如果对超过机器 word（64bit、32bit 或者其它）大小的值进行读写，那么，就可以看<br>
 作是对拆成 word 大小的几个读写无序进行。</li>
-<li>Go <strong>并不提供直接的 CPU 屏障</strong>（CPU fence）来提示编译器或者 CPU 保证顺序性，<strong>而</strong>
+<li>Go <strong>并不提供直接的 CPU 屏障</strong>（CPU fence）来提示编译器或者 CPU 保证顺序性，<strong>而</strong><br>
 <strong>是使用不同架构的内存屏障指令来实现统一的并发原语。</strong></li>
 </ol>
-<p>包级别的变量在同一个文件中是按照声明顺序逐个初始化的，除非初始化它的时候依赖其
-它的变量。同一个包下的多个文件，会按照文件名的排列顺序进行初始化。这个顺序被定
-义在   Go 语言规范中，而不是 Go 的内存模型规范中。你可以看看下面的例子中各个变量
+<p>包级别的变量在同一个文件中是按照声明顺序逐个初始化的，除非初始化它的时候依赖其<br>
+它的变量。同一个包下的多个文件，会按照文件名的排列顺序进行初始化。这个顺序被定<br>
+义在   Go 语言规范中，而不是 Go 的内存模型规范中。你可以看看下面的例子中各个变量<br>
 的值</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -268,18 +268,18 @@ input.PC_MARK1:focus{
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Go 采用的是<strong>依赖分析技术</strong>。不过，依赖分析技术保证
-的顺序只是针对同一包下的变量，而且，只有引用关系是本包变量、函数和非接口的方
+</div><p>Go 采用的是<strong>依赖分析技术</strong>。不过，依赖分析技术保证<br>
+的顺序只是针对同一包下的变量，而且，只有引用关系是本包变量、函数和非接口的方<br>
 法，才能保证它们的顺序性。</p>
-<p><strong>goroutine</strong>
-首先，我们需要明确一个规则：启动 goroutine 的 go 语句的执行，一定 happens
-before 此 goroutine 内的代码执行。
-根据这个规则，我们就可以知道，如果 go 语句传入的参数是一个函数执行的结果，那
+<p><strong>goroutine</strong><br>
+首先，我们需要明确一个规则：启动 goroutine 的 go 语句的执行，一定 happens<br>
+before 此 goroutine 内的代码执行。<br>
+根据这个规则，我们就可以知道，如果 go 语句传入的参数是一个函数执行的结果，那<br>
 么，这个函数一定先于 goroutine 内部的代码被执行。</p>
-<p>我们来看一个例子。在下面的代码中，第 8 行 a 的赋值和第 9 行的 go 语句是在同一个
-goroutine 中执行的，所以，在主 goroutine 看来，第 8 行肯定 happens before 第 9
-行，又由于刚才的保证，第 9 行子 goroutine 的启动 happens before 第 4 行的变量输
-出，那么，我们就可以推断出，第 8 行 happens before 第 4 行。也就是说，在第 4 行打
+<p>我们来看一个例子。在下面的代码中，第 8 行 a 的赋值和第 9 行的 go 语句是在同一个<br>
+goroutine 中执行的，所以，在主 goroutine 看来，第 8 行肯定 happens before 第 9<br>
+行，又由于刚才的保证，第 9 行子 goroutine 的启动 happens before 第 4 行的变量输<br>
+出，那么，我们就可以推断出，第 8 行 happens before 第 4 行。也就是说，在第 4 行打<br>
 印 a 的值的时候，<strong>肯定会打印出“hello world”。</strong></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -307,8 +307,8 @@ goroutine 中执行的，所以，在主 goroutine 看来，第 8 行肯定 happ
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>谨慎地使用这些保证，能够让你的程序按照设想的 happens-before 关系执行，但是不要
-以为完全理解这些概念和保证，就可以随意地制造所谓的各种技巧，否则就很容易掉
+</div><p>谨慎地使用这些保证，能够让你的程序按照设想的 happens-before 关系执行，但是不要<br>
+以为完全理解这些概念和保证，就可以随意地制造所谓的各种技巧，否则就很容易掉<br>
 进“坑”里，而且会给代码埋下了很多的“定时炸弹”。</p>
 
     </div>
