@@ -179,8 +179,8 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/"> 信息安全 </a>
             </div>
-          <span class="more-meta"> 约 1624 字 </span>
-          <span class="more-meta"> 预计阅读 4 分钟 </span>
+          <span class="more-meta"> 约 2408 字 </span>
+          <span class="more-meta"> 预计阅读 5 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -205,6 +205,11 @@ input.PC_MARK1:focus{
         <li><a href="#网络连接相关命令">网络连接相关命令</a>
           <ul>
             <li><a href="#wireshark-软件抓包分析">wireshark 软件抓包分析</a></li>
+          </ul>
+        </li>
+        <li><a href="#子网掩码和静态ip">子网掩码和静态IP</a>
+          <ul>
+            <li><a href="#练习题">练习题</a></li>
           </ul>
         </li>
       </ul>
@@ -367,7 +372,154 @@ chmod是“change mode”的缩写，用于改变文件或目录的权限。4755
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p><code>sudo gpasswd -a lyr wireshark</code>  将用户添加到 wireshark 工作组，gpasswd 是用来管理 /etc/group 和 /etc/gshadow 文件的工具，将用户添加到组中</p>
-
+<h2 id="子网掩码和静态ip">子网掩码和静态IP</h2>
+<p>ip地址就是用来划分广播域的，划分 交换机下面的网络段,<br>
+同一个网段的主机采用广播的形式来通信， 交换机起到的作用就是广播网络信息</p>
+<p>ip 地址 段由网络工程师划分</p>
+<p>例如： 192.168.3.0-255</p>
+<p>前面的 192.168.3 是网络位，后面的 0-255是主机位(给主机分配的ip地址是多少)</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ifconfig
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>子网掩码是用来判断ip地址是否在同一个子网络的</p>
+<p>inet 172.16.10.1  netmask 255.255.255.0</p>
+<p>例如</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">ip:
+</span></span><span class="line"><span class="cl">xxxx xxxx  xxxx xxxxxxx1
+</span></span><span class="line"><span class="cl">&amp;
+</span></span><span class="line"><span class="cl">netmask:
+</span></span><span class="line"><span class="cl">1111..111..1111 00000000
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>每个位置进行与运算得到</p>
+<p>172.16.10.0,</p>
+<p>和</p>
+<p>inet 172.16.10.2  netmask 255.255.255.0</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">ip:
+</span></span><span class="line"><span class="cl">xxxx xxxx  xxxx xxxxxx10
+</span></span><span class="line"><span class="cl">&amp;
+</span></span><span class="line"><span class="cl">netmask:
+</span></span><span class="line"><span class="cl">1111..111..1111 00000000
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>每个位置进行与运算得到</p>
+<p>172.16.10.0,</p>
+<p>不同ip 只要和同一个 netmask 与运算，只要得到的结果一致，就表示这些ip是在一个 网段下</p>
+<p>上面其实还有一个写法叫做<br>
+给一个 ip地址 192.168.2.110 和 255.255.255.0  也可以写成 <code>192.168.2.110/24</code> 这种形式</p>
+<p><code>/24</code> 表示 子网掩码的简写， 前面有24个1 ，后面8个0的意思</p>
+<p><code>/24</code> 这个子网掩码可以分配 2^8 也就是 256个 数字给 主机使用，但是 .0 和 .255的主机位是保留地址</p>
+<p>.0 可以作为网络号，通过网络好可以找到对应网段的网络， .255 则是广播地址，所以 我们一般会说可用的ip地址由 256-2 = 254个</p>
+<p>常见的子网掩码有</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">192.168.2.118/24        00000000.0000000.00000000.111111111
+</span></span><span class="line"><span class="cl">10.0.0.0/8              111111111.00000000.00000000.000000000
+</span></span><span class="line"><span class="cl">10.0.0.0/16             111111111.111111111.00000000.000000000
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>后面的 /num  num越小, 表示网络位越小，主机位越大，能用的 ip地址量就越大</p>
+<p>主机量为 $2^{32-num}-2$</p>
+<p>同一个网段的ip地址，物理线路接通就可以互相通信，不同网段的ip地址，即便是物理线路接通，也不可以互相通信，<br>
+需要路由器才能互相通信！  路由器能帮我们转发给对应网段的主机</p>
+<h3 id="练习题">练习题</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">192.168.100.126/25   --&gt;  192.168.100.126 和子网掩码 255.255.255.128
+</span></span><span class="line"><span class="cl">192.168.100.129/25   --&gt;  192.168.100.129 和子网掩码 255.255.255.128
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">126:
+</span></span><span class="line"><span class="cl">11000000 10101000 01100100 01111110
+</span></span><span class="line"><span class="cl">11111111 11111111 11111111 10000000
+</span></span><span class="line"><span class="cl">= 192.168.100.0
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">129:
+</span></span><span class="line"><span class="cl">11000000 10101000 01100100 10000001
+</span></span><span class="line"><span class="cl">11111111 11111111 11111111 10000000
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">= 192.168.100.1
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>结果不一致，不在一个网段上</p>
+<p>我们电脑有 dhcp 服务(动态ip地址)， 连接路由器会自动向路由器获取一个 ip地址</p>
+<p>我们如果设置固定ip的时候，可能会不同的主机申请同一个ip地址，会导致ip地址冲突(导致无法上网)，这个时候可以申请换一个ip就可以了。</p>
+<p>我们设置子网掩码 的时候，掩码也不是随便写的，只能是下面几个值</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">11111111  255
+</span></span><span class="line"><span class="cl">11111110  254
+</span></span><span class="line"><span class="cl">11111100  252 
+</span></span><span class="line"><span class="cl">11111000  248
+</span></span><span class="line"><span class="cl">11110000  240
+</span></span><span class="line"><span class="cl">11100000  224
+</span></span><span class="line"><span class="cl">11000000  192
+</span></span><span class="line"><span class="cl">10000000  128
+</span></span><span class="line"><span class="cl">00000000  0
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
     </div>
 
     <div class="post-copyright">
@@ -404,7 +556,11 @@ chmod是“change mode”的缩写，用于改变文件或目录的权限。4755
           <a href="/tags/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/">信息安全</a>
           </div>
       <nav class="post-nav">
-        
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/linux%E5%9F%BA%E7%A1%80/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">linux基础</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/sql%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E6%9E%84%E5%BB%BA/">
             <span class="next-text nav-default">sql注入漏洞</span>
             <span class="next-text nav-mobile">下一篇</span>
