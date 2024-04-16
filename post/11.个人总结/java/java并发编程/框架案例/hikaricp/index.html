@@ -190,16 +190,12 @@ input.PC_MARK1:focus{
   <ul>
     <li>
       <ul>
-        <li>
-          <ul>
-            <li><a href="#hikaricp原理">hikaricp原理</a></li>
-          </ul>
-        </li>
-        <li><a href="#fastlist-解决了哪些性能问题">FastList 解决了哪些性能问题</a></li>
-        <li><a href="#concurrentbag-解决了哪些性能问题">ConcurrentBag 解决了哪些性能问题</a></li>
-        <li><a href="#总结">总结</a></li>
+        <li><a href="#hikaricp原理">hikaricp原理</a></li>
       </ul>
     </li>
+    <li><a href="#fastlist-解决了哪些性能问题">FastList 解决了哪些性能问题</a></li>
+    <li><a href="#concurrentbag-解决了哪些性能问题">ConcurrentBag 解决了哪些性能问题</a></li>
+    <li><a href="#总结">总结</a></li>
   </ul>
 </nav>
   </div>
@@ -313,9 +309,11 @@ input.PC_MARK1:focus{
 <p>按照规范步骤，执行完数据库操作之后，需要依次关闭 ResultSet、Statement、Connection，但是总有粗心的同学只是关闭了 Connection，而忘了关闭 ResultSet 和 Statement。为了解决这种问题，最好的办法是<strong>当关闭 Connection 时，能够自动关闭 Statement</strong>。为了达到这个目标，Connection 就需要跟踪创建的 Statement，最简单的办法就是<strong>将创建的 Statement 保存在数组 ArrayList 里</strong>，这样<strong>当关闭 Connection 的时候，就可以依次将数组中的所有 Statement 关闭。</strong></p>
 <p>HiKariCP 觉得用 ArrayList 还是太慢，当通过 <code>conn.createStatement()</code> 创建一个 Statement 时，需要调用 ArrayList 的 add() 方法加入到 ArrayList 中，这个是没有问题的；但是当通过 <code>stmt.close()</code> 关闭 Statement 的时候，需要调用 ArrayList 的 remove() 方法来将其从 ArrayList 中删除，这里是有优化余地的。</p>
 <p>假设一个 Connection 依次创建 6 个 Statement，分别是 S1、S2、S3、S4、S5、S6，按照正常的编码习惯，关闭 Statement 的顺序一般是逆序的，关闭的顺序是：S6、S5、S4、S3、S2、S1，而 ArrayList 的 remove(Object o) 方法是顺序遍历查找，逆序删除而顺序查找，这样的查找效率就太慢了。如何优化呢？很简单，优化成逆序查找就可以了。</p>
-<p><p class="md__image">
-  <img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_04_22_58_51image-20211004225851262.png" alt="image-20211004225851262"  />
-</p>
+<p>
+
+
+<img class="md__image_rel" src="../https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_04_22_58_51image-20211004225851262.png" alt="image-20211004225851262"  />
+
 </p>
 <p>HiKariCP 中的 FastList 相对于 ArrayList 的一个优化点就是将 <code>remove(Object element)</code> 方法的<strong>查找顺序变成了逆序查找</strong>。除此之外，FastList 还有另一个优化点，是 <code>get(int index)</code> 方法没有对 index 参数进行越界检查，HiKariCP 能保证不会越界，<strong>所以不用每次都进行越界检查。</strong></p>
 <p>整体来看，FastList 的优化点还是很简单的。下面我们再来聊聊 HiKariCP 中的另外一个数据结构 ConcurrentBag，看看它又是如何提升性能的。</p>

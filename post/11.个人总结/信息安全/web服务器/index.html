@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>nginx web服务器配置 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="NGINX web服务器配置 https://zhuanlan.zhihu.com/p/112314267 检查nginx 的日志目录 1 2 ls /var/log/nginx/ nginx logformat 配置 nginx服务器日志相关指令主要有两条：一条是log_format，用来设置日志" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.124.1 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/web%E6%9C%8D%E5%8A%A1%E5%99%A8/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/post.css">
+
+
+
+
+
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body >
+  
+  
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="globalbg"></div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel" >
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">nginx web服务器配置</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2024-04-14 </span>
+        <div class="post-category">
+            <a href="/categories/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/"> 信息安全 </a>
+            </div>
+          <span class="more-meta"> 约 5907 字 </span>
+          <span class="more-meta"> 预计阅读 12 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#nginx-web服务器配置">NGINX web服务器配置</a>
+      <ul>
+        <li><a href="#nginx-logformat-配置">nginx logformat 配置</a></li>
+      </ul>
+    </li>
+    <li><a href="#basic认证开启">basic认证开启</a></li>
+    <li><a href="#ssl-证书配置">SSL 证书配置</a></li>
+    <li><a href="#return-和-rewrite跳转">Return 和 rewrite跳转</a>
+      <ul>
+        <li><a href="#1-server-重定向">1. server 重定向</a></li>
+        <li><a href="#location重定向">location重定向</a></li>
+        <li><a href="#rewrite-重定向">rewrite 重定向</a></li>
+      </ul>
+    </li>
+    <li><a href="#gzip-压缩配置">gzip 压缩配置</a></li>
+    <li><a href="#nginx-开启目录访问">Nginx 开启目录访问</a></li>
+    <li><a href="#nginx访问控制">Nginx访问控制</a></li>
+    <li><a href="#nginx匹配符号的优先级">Nginx匹配符号的优先级</a></li>
+    <li><a href="#referer-防盗链">referer 防盗链</a></li>
+    <li><a href="#nginx-中英文自动匹配">nginx 中英文自动匹配</a></li>
+    <li><a href="#应对网站扫描-攻击采集的方法">应对网站扫描/ 攻击/采集的方法</a>
+      <ul>
+        <li><a href="#屏蔽ip">屏蔽ip</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h2 id="nginx-web服务器配置">NGINX web服务器配置</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/112314267" target="_blank" rel="noopener">
+  https://zhuanlan.zhihu.com/p/112314267
+</a>
+</p>
+<p>检查nginx 的日志目录</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">ls /var/log/nginx/
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="nginx-logformat-配置">nginx logformat 配置</h3>
+<p>nginx服务器日志相关指令主要有两条：一条是log_format，用来设置日志格式；另外一条是access_log，用来指定日志文件的存放路径、格式和缓存大小，可以参加ngx_http_log_module。一般在nginx的配置文件中日记配置(/usr/local/nginx/conf/nginx.conf)。</p>
+<p>nginx的log_format有很多可选的参数用于指示服务器的活动状态，默认的是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">log_format  main  &#39;$remote_addr - $remote_user [$time_local] &#34;$request&#34; &#39;
+</span></span><span class="line"><span class="cl">                  &#39;$status $body_bytes_sent &#34;$http_referer&#34; &#39;
+</span></span><span class="line"><span class="cl">                  &#39;&#34;$http_user_agent&#34; &#34;$http_x_forwarded_for&#34;&#39;;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">参数                      说明                                         示例
+</span></span><span class="line"><span class="cl">$remote_addr             客户端地址                                    211.28.65.253
+</span></span><span class="line"><span class="cl">$remote_user             客户端用户名称                                --
+</span></span><span class="line"><span class="cl">$time_local              访问时间和时区                                18/Jul/2012:17:00:01 +0800
+</span></span><span class="line"><span class="cl">$request                 请求的URI和HTTP协议                           &#34;GET /article-10000.html HTTP/1.1&#34;
+</span></span><span class="line"><span class="cl">$http_host               请求地址，即浏览器中你输入的地址（IP或域名）     www.wang.com 192.168.100.100
+</span></span><span class="line"><span class="cl">$status                  HTTP请求状态                                  200
+</span></span><span class="line"><span class="cl">$upstream_status         upstream状态                                  200
+</span></span><span class="line"><span class="cl">$body_bytes_sent         发送给客户端文件内容大小                        1547
+</span></span><span class="line"><span class="cl">$http_referer            url跳转来源                                   https://www.baidu.com/
+</span></span><span class="line"><span class="cl">$http_user_agent         用户终端浏览器等信息                           &#34;Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; SV1; GTB7.0; .NET4.0C;
+</span></span><span class="line"><span class="cl">$ssl_protocol            SSL协议版本                                   TLSv1
+</span></span><span class="line"><span class="cl">$ssl_cipher              交换数据中的算法                               RC4-SHA
+</span></span><span class="line"><span class="cl">$upstream_addr           后台upstream的地址，即真正提供服务的主机地址     10.10.10.100:80
+</span></span><span class="line"><span class="cl">$request_time            整个请求的总时间                               0.205
+</span></span><span class="line"><span class="cl">$upstream_response_time  请求过程中，upstream响应时间                    0.002
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>每个子域名单独配置一个 日志文件</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">    server {
+</span></span><span class="line"><span class="cl">        listen       80;
+</span></span><span class="line"><span class="cl">        server_name  yuying-api.xutongbao.top;
+</span></span><span class="line"><span class="cl"> 
+</span></span><span class="line"><span class="cl">        #配置根目录
+</span></span><span class="line"><span class="cl">        location / {
+</span></span><span class="line"><span class="cl">            proxy_pass http://127.0.0.1:85;
+</span></span><span class="line"><span class="cl">        }
+</span></span><span class="line"><span class="cl">        access_log  logs/access_yuyingapi.log;
+</span></span><span class="line"><span class="cl">        error_log   logs/access_yuyingapi.log;
+</span></span><span class="line"><span class="cl">    }  
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="basic认证开启">basic认证开启</h2>
+<p>秒懂HTTP基本认证(Basic Authentication)</p>
+<p>在网络活动中，身份认证是非常重要的一环。Basic身份认证，是HTTP 1.0中引入的认证方案之一。虽然方案比较古老，同时存在安全缺陷，但由于实现简单，至今仍有不少网站在使用它。</p>
+<p>Basic认证的安全缺陷比较明显，它通过明文传输用户的密码，这会导致严重的安全问题。</p>
+<pre><code>在传输层未加密的情况下，用户明文密码可被中间人截获。
+明文密码一旦泄露，如果用户其他站点也用了同样的明文密码（大概率），那么用户其他站点的安全防线也告破。
+</code></pre>
+<p>关于上述问题的建议：</p>
+<pre><code>传输层未加密的情况下，不要使用Basic认证。
+如果使用Basic认证，登录密码由服务端生成。
+如果可能，不要使用Basic认证。
+
+
+  除了安全缺陷，Basic认证还存在无法吊销认证的情况。 
+</code></pre>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> /usr/local/nginx/conf/passwd
+</span></span><span class="line"><span class="cl"><span class="c1">#生成密码</span>
+</span></span><span class="line"><span class="cl">htpasswd -c ./ip_passwdfile username
+</span></span><span class="line"><span class="cl"><span class="c1">#执行上命令后会要求输入两次密码，./passwdfile 是在当前目录下创建密码文件passwdfile ，username即为需要设置的账号</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="cl"><span class="k">server</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kn">listen</span> <span class="mi">80</span> <span class="s">default_server</span> <span class="s">reuseport</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kn">server_name</span> <span class="s">_</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kn">index</span> <span class="s">index.html</span> <span class="s">index.htm</span> <span class="s">index.php</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kn">root</span>  <span class="s">/home/wwwroot/default</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="kn">auth_basic</span> <span class="s">&#34;请输入账号密码&#34;</span><span class="p">;</span>   <span class="c1">#这里是验证时的提示信息
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kn">auth_basic_user_file</span> <span class="s">/usr/local/nginx/conf/passwd/ip_passwdfile</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="kn">include</span> <span class="s">enable-php.conf</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="kn">location</span> <span class="s">/nginx_status</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kn">stub_status</span> <span class="no">on</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="kn">access_log</span>   <span class="no">off</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="kn">location</span> <span class="p">~</span> <span class="sr">.*.(gif|jpg|jpeg|png|bmp|swf)$</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kn">expires</span>      <span class="s">30d</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="kn">location</span> <span class="p">~</span> <span class="sr">.*.(js|css)?$</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kn">expires</span>      <span class="s">12h</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="kn">location</span> <span class="p">~</span> <span class="sr">/.well-known</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kn">allow</span> <span class="s">all</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="kn">location</span> <span class="p">~</span> <span class="sr">/.</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kn">deny</span> <span class="s">all</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="kn">access_log</span>  <span class="s">/home/wwwlogs/access.log</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>再访问站点，提示需要输入用户名和密码才可以访问，此方法适合不宜公开的站点，或不想对其专门做账号登录系统的时候。这样可避免被弱口令扫描，无疑再上了一把锁。</p>
+<h2 id="ssl-证书配置">SSL 证书配置</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">http</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">include</span>       <span class="s">mime.types</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">default_type</span>  <span class="s">application/octet-stream</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">sendfile</span>        <span class="no">on</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">keepalive_timeout</span>  <span class="mi">65</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kn">server</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">#监听443端口
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kn">listen</span> <span class="mi">443</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">#你的域名
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kn">server_name</span> <span class="s">huiblog.top</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl">    <span class="kn">ssl</span> <span class="no">on</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">#ssl证书的pem文件路径
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kn">ssl_certificate</span>  <span class="s">/root/card/huiblog.top.pem</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">#ssl证书的key文件路径
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kn">ssl_certificate_key</span> <span class="s">/root/card/huiblog.top.key</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">location</span> <span class="s">/</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">     <span class="kn">proxy_pass</span>  <span class="s">http://公网地址:项目端口号</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kn">server</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">listen</span> <span class="mi">80</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">server_name</span> <span class="s">huiblog.top</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">#将请求转成https
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kn">rewrite</span> <span class="s">^(.*)</span>$ <span class="s">https://</span><span class="nv">$host$1</span> <span class="s">permanent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="return-和-rewrite跳转">Return 和 rewrite跳转</h2>
+<p>return 比 rewrite 更高效，因为它在 Nginx 的内部进行处理，不会引起额外的请求-响应往返。 rewrite 会引发额外的请求-响应往返，因此相对于 return 来说，性能稍差一些。 如果只是简单的重定向需求，推荐使用 return，而如果需要更复杂的 URI 重写逻辑，则可以使用 rewrite。</p>
+<p>Nginx的重写指令用于改变客户端的URL请求。主要有return和rewrite。两个指令都有重写URL的能力，但rewrite支持更复杂的功能。</p>
+<h3 id="1-server-重定向">1. server 重定向</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="cl"><span class="k">server</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kn">listen</span> <span class="mi">80</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kn">server_name</span> <span class="s">www.olddomain.com</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kn">return</span> <span class="mi">301</span> <span class="nv">$scheme://www.newdomain.com$request_uri</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="location重定向">location重定向</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">location = /tutorial/learning-nginx {
+</span></span><span class="line"><span class="cl">     return 301 $scheme://example.com/nginx/understanding-nginx
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="rewrite-重定向">rewrite 重定向</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">location = /nginx-tutorial 
+</span></span><span class="line"><span class="cl">{ 
+</span></span><span class="line"><span class="cl">    rewrite ^/nginx-tutorial?$ /somePage.html last; 
+</span></span><span class="line"><span class="cl">}
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">location = /
+</span></span><span class="line"><span class="cl">{
+</span></span><span class="line"><span class="cl">    if ($http_user_agent ~* (mobile|nokia|iphone|ipad|android|samsung|htc|blackberry)) {
+</span></span><span class="line"><span class="cl">      rewrite ^(.*) https://m.example.com$1 redirect;
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="gzip-压缩配置">gzip 压缩配置</h2>
+<p>Nginx 开启 gzip，不仅能提高网站打开速度，还能节约网站流量。</p>
+<p><a href="https://zhuanlan.zhihu.com/p/366556769" target="_blank" rel="noopener">
+  参考博客
+</a>
+</p>
+<p>gzip配置的常用参数</p>
+<p>gzip on|off; #是否开启gzip</p>
+<p>gzip_buffers 32 4K| 16 8K #缓冲(压缩在内存中缓冲几块? 每块多大?)</p>
+<p>gzip_comp_level [1-9] #推荐6 压缩级别(级别越高,压的越小,越浪费CPU计算资源)</p>
+<p>gzip_disable #正则匹配UA 什么样的Uri不进行gzip</p>
+<p>gzip_min_length 200 # 开始压缩的最小长度(再小就不要压缩了,意义不在)</p>
+<p>gzip_http_version 1.0|1.1 # 开始压缩的http协议版本(可以不设置,目前几乎全是1.1协议)</p>
+<p>gzip_proxied # 设置请求者代理服务器,该如何缓存内容</p>
+<p>gzip_types text/plain application/xml # 对哪些类型的文件用压缩 如txt,xml,html ,css</p>
+<p>gzip_vary on|off # 是否传输gzip压缩标志</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl">	<span class="n">gzip</span> <span class="n">on</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">gzip_buffers</span> <span class="mi">32</span> <span class="mi">4</span><span class="n">K</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">gzip_comp_level</span> <span class="mi">6</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">gzip_min_length</span> <span class="mi">100</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">gzip_types</span> <span class="n">application</span><span class="o">/</span><span class="n">javascript</span> <span class="n">text</span><span class="o">/</span><span class="n">css</span> <span class="n">text</span><span class="o">/</span><span class="n">xml</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">gzip_disable</span> <span class="s2">&#34;MSIE [1-6]\.&#34;</span><span class="p">;</span> <span class="c1">#配置禁用gzip条件，支持正则。此处表示ie6及以下不启用gzip（因为ie低版本不支持）</span>
+</span></span><span class="line"><span class="cl">        <span class="n">gzip_vary</span> <span class="n">on</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Content-Encoding:gzip 说明开启了gzip压缩</p>
+<p>Transfet-Encoding:chunked 说明压缩后分块传输</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="cl"><span class="c1"># $gzip_ratio计算请求的压缩率，$body_bytes_sent请求体大小
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">log_format</span>  <span class="s">main</span>  <span class="s">&#39;</span><span class="nv">$remote_addr</span> <span class="s">-</span> <span class="nv">$remote_user</span> <span class="s">[</span><span class="nv">$time_local]</span> <span class="s">&#34;</span><span class="nv">$host&#34;</span> <span class="s">-</span> <span class="s">&#34;</span><span class="nv">$request&#34;</span> <span class="s">&#39;</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#39;</span><span class="nv">$gzip_ratio</span> <span class="s">-</span> <span class="nv">$body_bytes_sent</span> <span class="s">-</span> <span class="nv">$request_time&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">access_log</span>  <span class="s">logs/access.log</span>  <span class="s">main</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 开启gzip
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">gzip</span> <span class="no">off</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 启用gzip压缩的最小文件，小于设置值的文件将不会压缩
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">gzip_min_length</span> <span class="mi">1k</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># gzip 压缩级别，1-9，数字越大压缩的越好，也越占用CPU时间，后面会有详细说明
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">gzip_comp_level</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 进行压缩的文件类型。javascript有多种形式。其中的值可以在 mime.types 文件中找到。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">gzip_types</span> <span class="s">text/plain</span> <span class="s">application/javascript</span> <span class="s">application/x-javascript</span> <span class="s">text/css</span> <span class="s">application/xml</span> <span class="s">text/javascript</span> <span class="s">application/x-httpd-php</span> <span class="s">image/jpeg</span> <span class="s">image/gif</span> <span class="s">image/png</span> <span class="s">application/vnd.ms-fontobject</span> <span class="s">font/ttf</span> <span class="s">font/opentype</span> <span class="s">font/x-woff</span> <span class="s">image/svg+xml</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 是否在http header中添加Vary: Accept-Encoding，建议开启
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">gzip_vary</span> <span class="no">on</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 禁用IE 1-6 gzip
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">gzip_disable</span> <span class="s">&#34;MSIE</span> <span class="s">[1-6]\.&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 设置压缩所需要的缓冲区大小     
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">gzip_buffers</span> <span class="mi">32</span> <span class="mi">4k</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 设置gzip压缩针对的HTTP协议版本
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">gzip_http_version</span> <span class="mi">1</span><span class="s">.0</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="nginx-开启目录访问">Nginx 开启目录访问</h2>
+<p>autoindex on; //开启目录浏览功能；</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="cl"><span class="k">location</span> <span class="s">/</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">root</span> <span class="s">/data/www/file</span> <span class="s">//指定实际目录绝对路径；</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="s">autoindex</span> <span class="no">on</span><span class="p">;</span> <span class="kn">//开启目录浏览功能；</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="s">autoindex_exact_size</span> <span class="no">off</span><span class="p">;</span> <span class="kn">//关闭详细文件大小统计，让文件大小显示MB，GB单位，默认为b；</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="s">autoindex_localtime</span> <span class="no">on</span><span class="p">;</span> <span class="kn">//开启以服务器本地时区显示文件修改日期！</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="err">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="nginx访问控制">Nginx访问控制</h2>
+<p>访问控制的2种方式, 一种是 OSI模型的四层传输层,一种是在七层应用层, 主机防火墙就是四层控制(ip,传输层), Nginx是七层控制(应用层的软件)</p>
+<p>例如 firewallcmd</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">systemctl start firewalld.service
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="nginx匹配符号的优先级">Nginx匹配符号的优先级</h2>
+<p>符号优先级 =  ~  ~*  无符号</p>
+<p>有= 的优先级最大,然后依次排布,例如</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">touch jpg 
+</span></span><span class="line"><span class="cl">  location ~ /jpg {
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      return 501
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  location = /jpg {
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      return 502
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  location ~* /jpg {
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      return 503
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  location  /jpg {
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      return 505
+</span></span><span class="line"><span class="cl">    }
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>$args                    #请求中的参数值
+$query_string            #同 $args
+$arg_NAME                #GET请求中NAME的值
+$is_args                 #如果请求中有参数，值为&quot;?&quot;，否则为空字符串
+$uri                     #请求中的当前URI(不带请求参数，参数位于$args)，可以不同于浏览器传递的$request_uri的值，它可以通过内部重定向，或者使用index指令进行修改，$uri不包含主机名，如&quot;/foo/bar.html&quot;。
+$document_uri            #同 $uri
+$document_root           #当前请求的文档根目录或别名
+$host                    #优先级：HTTP请求行的主机名&gt;&ldquo;HOST&quot;请求头字段&gt;符合请求的服务器名.请求中的主机头字段，如果请求中的主机头不可用，则为服务器处理请求的服务器名称
+$hostname                #主机名
+$https                   #如果开启了SSL安全模式，值为&quot;on&rdquo;，否则为空字符串。
+$binary_remote_addr      #客户端地址的二进制形式，固定长度为4个字节
+$body_bytes_sent         #传输给客户端的字节数，响应头不计算在内；这个变量和Apache的mod_log_config模块中的&quot;%B&quot;参数保持兼容
+$bytes_sent              #传输给客户端的字节数
+$connection              #TCP连接的序列号
+$connection_requests     #TCP连接当前的请求数量
+$content_length          #&ldquo;Content-Length&rdquo; 请求头字段
+$content_type            #&ldquo;Content-Type&rdquo; 请求头字段
+$cookie_name             #cookie名称
+$limit_rate              #用于设置响应的速度限制
+$msec                    #当前的Unix时间戳
+$nginx_version           #nginx版本
+$pid                     #工作进程的PID
+$pipe                    #如果请求来自管道通信，值为&quot;p&quot;，否则为&quot;.&quot;
+$proxy_protocol_addr     #获取代理访问服务器的客户端地址，如果是直接访问，该值为空字符串
+$realpath_root           #当前请求的文档根目录或别名的真实路径，会将所有符号连接转换为真实路径
+$remote_addr             #客户端地址
+$remote_port             #客户端端口
+$remote_user             #用于HTTP基础认证服务的用户名
+$request                 #代表客户端的请求地址
+$request_body            #客户端的请求主体：此变量可在location中使用，将请求主体通过proxy_pass，fastcgi_pass，uwsgi_pass和scgi_pass传递给下一级的代理服务器
+$request_body_file       #将客户端请求主体保存在临时文件中。文件处理结束后，此文件需删除。如果需要之一开启此功能，需要设置client_body_in_file_only。如果将次文件传 递给后端的代理服务器，需要禁用request body，即设置proxy_pass_request_body off，fastcgi_pass_request_body off，uwsgi_pass_request_body off，or scgi_pass_request_body off
+$request_completion      #如果请求成功，值为&quot;OK&quot;，如果请求未完成或者请求不是一个范围请求的最后一部分，则为空
+$request_filename        #当前连接请求的文件路径，由root或alias指令与URI请求生成
+$request_length          #请求的长度 (包括请求的地址，http请求头和请求主体)
+$request_method          #HTTP请求方法，通常为&quot;GET&quot;或&quot;POST&quot;
+$request_time            #处理客户端请求使用的时间,单位为秒，精度毫秒； 从读入客户端的第一个字节开始，直到把最后一个字符发送给客户端后进行日志写入为止。
+$request_uri             #这个变量等于包含一些客户端请求参数的原始URI，它无法修改，请查看$uri更改或重写URI，不包含主机名，例如：&quot;/cnphp/test.php?arg=freemouse&quot;
+$scheme                  #请求使用的Web协议，&ldquo;http&rdquo; 或 &ldquo;https&rdquo;
+$server_addr             #服务器端地址，需要注意的是：为了避免访问linux系统内核，应将ip地址提前设置在配置文件中
+$server_name             #服务器名
+$server_port             #服务器端口
+$server_protocol         #服务器的HTTP版本，通常为 &ldquo;HTTP/1.0&rdquo; 或 &ldquo;HTTP/1.1&rdquo;
+$status                  #HTTP响应代码
+$time_iso8601            #服务器时间的ISO 8610格式
+$time_local              #服务器时间（LOG Format 格式）
+$cookie_NAME             #客户端请求Header头中的cookie变量，前缀&quot;$cookie_&ldquo;加上cookie名称的变量，该变量的值即为cookie名称的值
+$http_NAME               #匹配任意请求头字段；变量名中的后半部分NAME可以替换成任意请求头字段，如在配置文件中需要获取http请求头：&ldquo;Accept-Language&rdquo;，$http_accept_language即可
+$http_cookie
+$http_host               #请求地址，即浏览器中你输入的地址（IP或域名）
+$http_referer            #url跳转来源,用来记录从那个页面链接访问过来的
+$http_user_agent         #用户终端浏览器等信息
+$http_x_forwarded_for
+$sent_http_NAME          #可以设置任意http响应头字段；变量名中的后半部分NAME可以替换成任意响应头字段，如需要设置响应头Content-length，$sent_http_content_length即可
+$sent_http_cache_control
+$sent_http_connection
+$sent_http_content_type
+$sent_http_keep_alive
+$sent_http_last_modified
+$sent_http_location
+$sent_http_transfer_encoding</p>
+<h2 id="referer-防盗链">referer 防盗链</h2>
+<p><a href="https://zhuanlan.zhihu.com/p/463197529" target="_blank" rel="noopener">
+  https://zhuanlan.zhihu.com/p/463197529
+</a>
+</p>
+<p>Nginx 用于实现防盗链功能的模块为 refer 模块,其依据的原理是: 如果网站盗用了你的图片，那么用户在点击或者查看这个盗链内容时，发送 http 请求的头部中的 referer 字段将为该盗版网站的 url。这样我们通过获取这个头部信息，知道 http 发起请求的页面，然后判断这个地址是否是我们的合法页面，不是则判断为盗链。Nginx 的 referer 模块中有3个指令，用法分别如下：</p>
+<p>ngx_http_referer_module模块用于阻止&quot;Refer&quot;头字段中具有无效值的来源非法的域名请求。使用适当的&quot;Referer&quot;字段值创建请求非常容易，这些伪造的&quot;Referer&quot;字段可能会包括一些不合法的字段。本模块的目的不是彻底阻止此类请求，而是阻止常规浏览器发送的大量非允许&quot;Refer&quot;请求。还需应考虑到，即使对于有效的请求，常规浏览器也不应发送&quot;Referer&quot;字段。</p>
+<p>none：请求头缺少Referer字段，即空Referer</p>
+<p>blocked：请求头Referer字段不为空（即存在Referer），但是值被代理或者防火墙删除了，这些值不以“http://”或“https://”开头，通俗点说就是允许“http://”或&quot;https//&ldquo;以外的请求。</p>
+<p>server_names：Referer请求头白名单。</p>
+<p>arbitrary string：任意字符串，定义服务器名称或可选的URI前缀，主机名可以使用*号开头或结尾，Referer字段中的服务器端口将被忽略掉。</p>
+<p>regular expression：正则表达式，以“~”开头，在“http://”或&quot;https://&ldquo;之后的文本匹配。</p>
+<p><strong>下面是示例:</strong></p>
+<p>配置合法的Referer为*.test.com*.dingtalkcloud.com 和 无Referer（none）(浏览器直接访问，就没有Referer) ; 其他非法Referer请求过来时， $invalid_referer 值为1 ， 就return 403</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">server</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">listen</span> <span class="mi">80</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">server_name</span> <span class="n">app123456</span><span class="o">.</span><span class="n">eapps</span><span class="o">.</span><span class="n">dingtalkcloud</span><span class="o">.</span><span class="n">com</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">client_max_body_size</span> <span class="mi">100</span><span class="n">m</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">proxy_buffering</span> <span class="n">off</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">proxy_read_timeout</span>  <span class="mi">3600</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">access_log</span> <span class="o">/</span><span class="k">var</span><span class="o">/</span><span class="nb">log</span><span class="o">/</span><span class="n">nginx</span><span class="o">/</span><span class="n">app123456</span><span class="o">.</span><span class="n">eapps</span><span class="o">.</span><span class="n">dingtalkcloud</span><span class="o">.</span><span class="n">com</span><span class="o">-</span><span class="n">access</span><span class="o">.</span><span class="n">log</span> <span class="n">main</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">error_log</span> <span class="o">/</span><span class="k">var</span><span class="o">/</span><span class="nb">log</span><span class="o">/</span><span class="n">nginx</span><span class="o">/</span><span class="n">app123456</span><span class="o">.</span><span class="n">eapps</span><span class="o">.</span><span class="n">dingtalkcloud</span><span class="o">.</span><span class="n">com</span><span class="o">.</span><span class="n">com</span><span class="o">-</span><span class="n">error</span><span class="o">.</span><span class="n">log</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="o">$</span><span class="n">host</span> <span class="o">!=</span> <span class="s1">&#39;app123456.eapps.dingtalkcloud.com&#39;</span><span class="p">)</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl">              <span class="k">return</span> <span class="mi">403</span> <span class="p">;</span> 
+</span></span><span class="line"><span class="cl">          <span class="p">}</span> 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">valid_referers</span> <span class="n">server_names</span> <span class="n">none</span> <span class="o">*.</span><span class="n">test</span><span class="o">.</span><span class="n">com</span> <span class="o">*.</span><span class="n">dingtalkcloud</span><span class="o">.</span><span class="n">com</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="o">$</span><span class="n">invalid_referer</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="mi">403</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">add_header</span> <span class="s1">&#39;X-Permitted-Cross-Domain-Policies&#39;</span> <span class="s1">&#39;master-only&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">add_header</span> <span class="s1">&#39;X-Content-Type-Options&#39;</span> <span class="s1">&#39;nosniff&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">add_header</span> <span class="s1">&#39;X-XSS-Protection&#39;</span> <span class="s1">&#39;1; mode=block&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">add_header</span> <span class="s1">&#39;X-Frame-Options&#39;</span> <span class="s1">&#39;SAMEORIGIN&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">add_header</span> <span class="s1">&#39;X-Download-Options&#39;</span> <span class="s1">&#39;noopen&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">location</span> <span class="o">/</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">proxy_pass</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="mi">123456</span><span class="o">-</span><span class="n">dingtalk</span><span class="o">-</span><span class="n">h5</span><span class="o">-</span><span class="n">dev</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">com</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">proxy_http_version</span> <span class="mf">1.1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">proxy_set_header</span> <span class="n">Upgrade</span> <span class="o">$</span><span class="n">http_upgrade</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">proxy_set_header</span> <span class="n">Connection</span> <span class="s2">&#34;upgrade&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">proxy_set_header</span> <span class="n">X</span><span class="o">-</span><span class="n">Real</span><span class="o">-</span><span class="ne">IP</span> <span class="o">$</span><span class="n">remote_addr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">proxy_set_header</span> <span class="n">X</span><span class="o">-</span><span class="n">Forwarded</span><span class="o">-</span><span class="n">For</span> <span class="o">$</span><span class="n">proxy_add_x_forwarded_for</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">location</span> <span class="o">/</span><span class="n">cb</span><span class="o">/</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">proxy_pass</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">cb</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">proxy_http_version</span> <span class="mf">1.1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">proxy_set_header</span> <span class="n">Upgrade</span> <span class="o">$</span><span class="n">http_upgrade</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">proxy_set_header</span> <span class="n">Connection</span> <span class="s2">&#34;upgrade&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">proxy_set_header</span> <span class="n">X</span><span class="o">-</span><span class="n">Real</span><span class="o">-</span><span class="ne">IP</span> <span class="o">$</span><span class="n">remote_addr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">proxy_set_header</span> <span class="n">X</span><span class="o">-</span><span class="n">Forwarded</span><span class="o">-</span><span class="n">For</span> <span class="o">$</span><span class="n">proxy_add_x_forwarded_for</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="nginx-中英文自动匹配">nginx 中英文自动匹配</h2>
+<p><a href="https://xn--6o0a585a.gitbook.io/devops/fu-wu/nginx/nginx-gen-ju-bu-tong-liu-lan-qi-yu-yan-pei-zhi-tiao-zhuan" target="_blank" rel="noopener">
+  参考博客
+</a>
+</p>
+<p>判断 Accept-Language 来实现</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="cl"><span class="c1">#根据http请求头中的accept-language转发到不同的页面
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">if</span> <span class="s">(</span><span class="nv">$http_accept_language</span> <span class="p">~</span><span class="sr">*</span> <span class="s">^zh)</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">set</span> <span class="nv">$lang</span> <span class="s">&#34;/index_cn.jsp&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="s">(</span><span class="nv">$http_accept_language</span> <span class="s">!~*</span> <span class="s">^zh)</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">set</span> <span class="nv">$lang</span> <span class="s">&#34;/index_en.jsp&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"> 
+</span></span><span class="line"><span class="cl"><span class="k">location</span> <span class="p">=</span><span class="s">/</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">proxy_set_header</span> <span class="s">Host</span> <span class="nv">$host</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">proxy_set_header</span> <span class="s">X-Real-IP</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">proxy_set_header</span> <span class="s">X-Forwarded-For</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">proxy_pass</span> <span class="s">http://localhost:8080</span><span class="nv">$lang</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="应对网站扫描-攻击采集的方法">应对网站扫描/ 攻击/采集的方法</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#禁垃圾蜘蛛
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">if</span> <span class="s">(</span><span class="nv">$http_user_agent</span> <span class="p">~</span><span class="sr">*</span> <span class="s">&#34;CheckMarkNetwork|Synapse|Bingbot|Googlebot|Nimbostratus-Bot|Dark|scraper|LMAO|Hakai|Gemini|Wappalyzer|masscan|crawler4j|Mappy|Center|eright|aiohttp|MauiBot|Crawler|researchscan|Dispatch|AlphaBot|Census|ips-agent|NetcraftSurveyAgent|ToutiaoSpider|EasyHttp|Iframely|sysscan|fasthttp|muhstik|DeuSu|mstshash|HTTP_Request|ExtLinksBot|package|SafeDNSBot|CPython|SiteExplorer|SSH|MegaIndex|BUbiNG|CCBot|NetTrack|Digincore|aiHitBot|SurdotlyBot|null|SemrushBot|Test|Copied|ltx71|Nmap|DotBot|AdsBot|InetURL|Pcore-HTTP|PocketParser|Wotbox|newspaper|DnyzBot|redback|PiplBot|SMTBot|WinHTTP|Auto</span> <span class="s">Spider</span> <span class="mi">1</span><span class="s">.0|GrabNet|TurnitinBot|Go-Ahead-Got-It|Download</span> <span class="s">Demon|Go!Zilla|GetWeb!|GetRight|libwww-perl|Cliqzbot|MailChimp|SMTBot|Dataprovider|XoviBot|linkdexbot|SeznamBot|Qwantify|spbot|evc-batch|zgrab|Go-http-client|FeedDemon|JikeSpider|Indy</span> <span class="s">Library|Alexa</span> <span class="s">Toolbar|AskTbFXTV|AhrefsBot|CrawlDaddy|CoolpadWebkit|Java|UniversalFeedParser|ApacheBench|Microsoft</span> <span class="s">URL</span> <span class="s">Control|Swiftbot|ZmEu|jaunty|Python-urllib|lightDeckReports</span> <span class="s">Bot|YYSpider|DigExt|HttpClient|MJ12bot|EasouSpider|LinkpadBot|Ezooms|YoudaoBot|YandexBot|Rogerbot|exabot|ia_archiver|Teoma|gigabot|DOCOMO</span> <span class="s">Sprider|AhrefsBot|SemrushBot|Sosospider|Yahoo!</span> <span class="s">Slurp</span> <span class="s">China|Yahoo!</span> <span class="s">Slurp|MSNBot|MSNot-media|FlightDeckReports</span> <span class="s">Bot|Bytespider|Mail.RU_Bot&#34;)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#禁攻击采集
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">if</span> <span class="s">(</span><span class="nv">$http_user_agent</span> <span class="p">~</span><span class="sr">*</span> <span class="s">&#34;FeedDemon|BOT/0.1</span> <span class="s">(BOT</span> <span class="s">for</span> <span class="s">JCE)|CrawlDaddy|Java|Jullo|Feedly|UniversalFeedParser|ApacheBench&#34;)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#过滤url参数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">set</span> <span class="nv">$URL</span> <span class="nv">$request_uri</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="s">(</span><span class="nv">$URL</span> <span class="p">~</span><span class="sr">*</span> <span class="s">&#34;member|plus|base|data|dede|public|plug|Vote|tool|feed|components|skin|tinyMCE|version|sysimage|wp-content|wp-admin|static|common|face|shell|swfupload|utility|convert|sitemap|siteserver|BackupDB|file|user|system|upimg|install|wap|multiupload|ewebeditor|office|wallet|backup|bitcoin|maccms|vendor|apply|bjebhgm|photo|module|external|Analytics|tools|subdomains|notes|md5|ckeditor|bbs|ajax|zhuitanyun|logbaak|help|weki|dxyylc|Somnus|manage|J4H7eFjWoBa3bO6U|SiteFiles|dowds|source|ucenter|phpcms|language|TeatchClass|taglib|sql|allowurl|shitan|root|wp-login|houtai|admin001|htadmin|clock2|webadmin&#34;)</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#禁特殊后缀
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">location</span> <span class="p">~</span><span class="sr">*</span> <span class="s">\.(asp|xml|jsp|aspx|dev|aspx|ewebeditor|sql|xsl|asmx|htaccess|ini|env|git|project|cgi|md5|ajax.js|swf|tpl.php)</span>$ <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#禁止非GET方式的抓取
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">if</span> <span class="s">(</span><span class="nv">$request_method</span> <span class="s">!~</span> <span class="s">^(GET)</span>$<span class="s">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#禁止特殊请求方式
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">if</span> <span class="s">(</span><span class="nv">$request_method</span> <span class="p">~</span><span class="sr">*</span> <span class="s">&#34;HEAD|DELETE|OPTIONS|POST&#34;</span> <span class="s">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#禁特殊请求工具
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">if</span> <span class="s">(</span><span class="nv">$http_user_agent</span> <span class="p">~</span><span class="sr">*</span> <span class="s">&#34;Wget|Curl&#34;</span> <span class="s">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#禁部分爬取工具
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">if</span> <span class="s">(</span><span class="nv">$http_user_agent</span> <span class="p">~</span><span class="sr">*</span> <span class="s">&#34;crawl|curb|git|Wtrace|Scrapy|python|http://www.snsbianpofanghu.com/&#34;</span> <span class="s">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#禁压缩包
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">location</span> <span class="p">~</span><span class="sr">*</span> <span class="s">\.(tgz|bak|zip|rar|tar|gz|bz2|xz|tar.gz)</span>$ <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="cl"><span class="c1">#UA 不全，十有八九不是正常访问，禁
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">if</span> <span class="s">(</span><span class="nv">$http_user_agent</span> <span class="p">=</span> <span class="s">&#34;Mozilla&#34;)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#UA 不全，十有八九不是正常访问，禁
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">if</span> <span class="s">(</span><span class="nv">$http_user_agent</span> <span class="p">=</span> <span class="s">&#34;Mozilla/5\.0&#34;)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#UA 不全，十有八九不是正常访问，禁
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">if</span> <span class="s">(</span><span class="nv">$http_user_agent</span> <span class="p">=</span> <span class="s">&#34;Mozilla/4\.0&#34;)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#禁空 UA  
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">if</span> <span class="s">(http_user_agent</span> <span class="p">~</span><span class="sr">*</span> <span class="s">^http_user_agent</span> <span class="p">~</span><span class="sr">*</span> <span class="s">^http_user_agent</span> <span class="p">~</span><span class="sr">*</span> <span class="s">^)</span> <span class="p">{</span>  
+</span></span><span class="line"><span class="cl">    <span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kn">break</span><span class="p">;</span>  
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="屏蔽ip">屏蔽ip</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-nginx" data-lang="nginx"><span class="line"><span class="cl"><span class="c1">#屏蔽ip
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">deny</span> <span class="mi">113</span><span class="s">.92.157.0/24</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">deny</span> <span class="mi">223</span><span class="s">.199.0.0/16</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">deny</span> <span class="mi">192</span><span class="s">.74.225.105</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#限制所有ip访问频次
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="k">limit_req_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=allips:100m</span> <span class="s">rate=30r/m</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">limit_req</span> <span class="s">zone=allips</span> <span class="s">burst=5</span> <span class="s">nodelay</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#限制指定蜘蛛访问频次
+</span></span><span class="line"><span class="cl">limit_req_zone  $anti_spider  zone=one:100m rate=30r/m;
+</span></span><span class="line"><span class="cl">limit_req zone=one burst=5 nodelay;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">server
+</span></span><span class="line"><span class="cl">{
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">if ($http_user_agent ~* &#34;Sogou web spider|YisouSpider&#34;) {
+</span></span><span class="line"><span class="cl">    set $anti_spider $http_user_agent;
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2024-04-14
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/">信息安全</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/php%E5%8E%9F%E7%90%86/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">php原理</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E4%BF%A1%E6%81%AF%E5%AE%89%E5%85%A8/linux%E5%9F%BA%E7%A1%80/">
+            <span class="next-text nav-default">linux基础</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2024-04-14 19:08:58 \u002b0000 UTC',
+        title: 'nginx web服务器配置',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://lyr-2000.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-09-23 - 
+    2024<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://fastly.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.6d2c4f127d59e1dce56e2845adf7d359011b86d8fc907e98877eb35bd445b2b3.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js/back_btn.js"></script>
+<script src="/js/docsearch.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "ca56155675cf2d76ff16be2f41c14d4e",
+		indexName: "blog",
+		appId: "Q0KHZE8QIK",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "ca56155675cf2d76ff16be2f41c14d4e",
+	 indexName: "blog",
+	 appId: "Q0KHZE8QIK",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+ 
+  <div id="BR_cornner">
+    <div id='darkThemeBtn'>T</div> 
+  </div> 
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<script defer async>
+
+  mermaid.initialize({startOnLoad:true});
+</script>
+</body>
+</html>

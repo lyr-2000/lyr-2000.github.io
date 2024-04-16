@@ -193,21 +193,17 @@ input.PC_MARK1:focus{
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li>
+    <li><a href="#sql--drivervaluer-和-sqlsanner">sql  driver.Valuer 和 sql.Sanner</a></li>
+    <li><a href="#隔离级别深入理解">隔离级别深入理解</a>
       <ul>
-        <li><a href="#sql--drivervaluer-和-sqlsanner">sql  driver.Valuer 和 sql.Sanner</a></li>
-        <li><a href="#隔离级别深入理解">隔离级别深入理解</a>
-          <ul>
-            <li><a href="#串行化读">串行化读</a></li>
-            <li><a href="#可重复度">可重复度</a></li>
-            <li><a href="#读已提交">读已提交</a></li>
-            <li><a href="#读未提交">读未提交</a></li>
-            <li><a href="#prepared-statement-使用">prepared statement 使用</a></li>
-          </ul>
-        </li>
-        <li><a href="#go-sqlmock">go sqlmock</a></li>
+        <li><a href="#串行化读">串行化读</a></li>
+        <li><a href="#可重复度">可重复度</a></li>
+        <li><a href="#读已提交">读已提交</a></li>
+        <li><a href="#读未提交">读未提交</a></li>
+        <li><a href="#prepared-statement-使用">prepared statement 使用</a></li>
       </ul>
     </li>
+    <li><a href="#go-sqlmock">go sqlmock</a></li>
   </ul>
 </nav>
   </div>
@@ -307,9 +303,11 @@ input.PC_MARK1:focus{
 </span></span></code></pre></td></tr></table>
 </div>
 </div><h2 id="隔离级别深入理解">隔离级别深入理解</h2>
-<p><p class="md__image">
-  <img src="https://s2.loli.net/2022/12/03/ShxY2GEy9Ps6cg8.png" alt="图 1"  />
-</p>
+<p>
+
+
+<img class="md__image_rel" src="../https://s2.loli.net/2022/12/03/ShxY2GEy9Ps6cg8.png" alt="图 1"  />
+
 </p>
 <ul>
 <li>序列化</li>
@@ -318,37 +316,45 @@ input.PC_MARK1:focus{
 <li>读未提交</li>
 </ul>
 <h3 id="串行化读">串行化读</h3>
-<p><p class="md__image">
-  <img src="https://s2.loli.net/2022/12/03/9zmhAKU1WdsZy8L.png" alt="图 2"  />
-</p>
+<p>
+
+
+<img class="md__image_rel" src="../https://s2.loli.net/2022/12/03/9zmhAKU1WdsZy8L.png" alt="图 2"  />
+
 </p>
 <p>挨个执行事务</p>
 <h3 id="可重复度">可重复度</h3>
-<p><p class="md__image">
-  <img src="https://s2.loli.net/2022/12/03/S5WIGBrEjTk2JUf.png" alt="图 3"  />
-</p>
+<p>
+
+
+<img class="md__image_rel" src="../https://s2.loli.net/2022/12/03/S5WIGBrEjTk2JUf.png" alt="图 3"  />
+
 </p>
 <p>t1 提交事务，t2看不到修改</p>
 <p>A 事务 无法看到 B事务的修改， A事务在一个select语句执行结果总是相同 ，满足事务的隔离性，事务之间互不影响</p>
 <h3 id="读已提交">读已提交</h3>
-<p><p class="md__image">
-  <img src="https://s2.loli.net/2022/12/03/axBdDyLR482oGp3.png" alt="图 4"  />
-</p>
+<p>
+
+
+<img class="md__image_rel" src="../https://s2.loli.net/2022/12/03/axBdDyLR482oGp3.png" alt="图 4"  />
+
 </p>
 <p>t1 没提交前，t2看不到修改</p>
 <h3 id="读未提交">读未提交</h3>
-<p><p class="md__image">
-  <img src="https://s2.loli.net/2022/12/03/nR4JL3V7YfjZ2MP.png" alt="图 5"  />
-</p>
+<p>
+
+
+<img class="md__image_rel" src="../https://s2.loli.net/2022/12/03/nR4JL3V7YfjZ2MP.png" alt="图 5"  />
+
 </p>
 <h4 id="脏读">脏读</h4>
 <p>A事务看到B事务没提交的修改</p>
 <h4 id="不可重复读">不可重复读</h4>
 <p>一个事务内两次查询同一行结果不一致，  未提交度和已提交读都是不可重复读</p>
 <h4 id="幻读">幻读</h4>
-<p>读到 其他事务插入的新数据，  mysql innodb 引擎的可重复度是不会引发幻读的！<br>
+<p>读到 其他事务插入的新数据，  mysql innodb 引擎的可重复度是不会引发幻读的！
 原理是 MVCC机制</p>
-<p>InnoDB 是如何解决幻读的？<br>
+<p>InnoDB 是如何解决幻读的？
 在读已提交的情况下，及时采用了 MVCC 方式也会出现幻读，如果我们同时开启事务A 和 事务B， 现在事务A 中进行某个条件的查询，读取的时候采用排他锁，在事务B 中增加一条复核该条件范围的数据，并提及，然后事务A中再查询该条件范围的数据，就会发现结果集中多了一条数据，这样便出现了幻读</p>
 <p>select * from t where d=0 就是快照读，对于同一个事务来说，每次读到的结果是一样的。</p>
 <p><code>select *from t where d=0 in share mode</code> 或 <code>select * from t where d=0 for update</code> 就是当前读，总是读取当前数据行的最新版本，关于数据行版本问题可参考事务究竟有没有被隔离</p>

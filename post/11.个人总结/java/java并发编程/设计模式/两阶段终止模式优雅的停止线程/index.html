@@ -188,14 +188,10 @@ input.PC_MARK1:focus{
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li>
+    <li><a href="#如何理解两阶段终止模式">如何理解两阶段终止模式</a>
       <ul>
-        <li><a href="#如何理解两阶段终止模式">如何理解两阶段终止模式</a>
-          <ul>
-            <li><a href="#实现核心">实现核心</a></li>
-            <li><a href="#线程池的关闭">线程池的关闭</a></li>
-          </ul>
-        </li>
+        <li><a href="#实现核心">实现核心</a></li>
+        <li><a href="#线程池的关闭">线程池的关闭</a></li>
       </ul>
     </li>
   </ul>
@@ -209,9 +205,10 @@ input.PC_MARK1:focus{
 <p>既然不建议使用 stop() 方法，那在 Java 领域，我们又该如何优雅地终止线程呢？</p>
 <h2 id="如何理解两阶段终止模式">如何理解两阶段终止模式</h2>
 <p>前辈们经过认真对比分析，已经总结出了一套成熟的方案，叫做<strong>两阶段终止模式</strong>。顾名思义，就是将终止过程分成两个阶段，其中第一个阶段主要是线程 T1 向线程 T2<strong>发送终止指令</strong>，而第二阶段则是线程 T2<strong>响应终止指令</strong>。</p>
-<p><p class="md__image">
-  <img src="https://001.geekbang.org/resource/image/9b/e5/9bbc6fa7fb4d631484aa953626cf6ae5.png" alt="img"  />
-</p>
+<p>
+
+<img class="md__image_abs" src="https://001.geekbang.org/resource/image/9b/e5/9bbc6fa7fb4d631484aa953626cf6ae5.png" alt="img"  />
+
 </p>
 <p>从这个图里你会发现，Java 线程进入终止状态的前提是线程进入 RUNNABLE 状态，而实际上线程也可能处在休眠状态，也就是说，我们要想终止一个线程，首先要把线程的状态从休眠状态转换到 RUNNABLE 状态。如何做到呢？这个要靠 Java Thread 类提供的<strong>interrupt() 方法</strong>，它可以将休眠状态的线程转换到 RUNNABLE 状态。</p>
 <p>线程转换到 RUNNABLE 状态之后，我们如何再将其终止呢？RUNNABLE 状态转换到终止状态，优雅的方式是让 Java 线程自己执行完 run() 方法，所以一般我们采用的方法是<strong>设置一个标志位</strong>，然后线程会在合适的时机检查这个标志位，如果发现符合终止条件，则自动退出 run() 方法。这个过程其实就是我们前面提到的第二阶段：<strong>响应终止指令</strong>。</p>

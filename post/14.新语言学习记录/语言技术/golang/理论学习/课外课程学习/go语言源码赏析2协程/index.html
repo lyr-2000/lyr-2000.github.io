@@ -193,40 +193,36 @@ input.PC_MARK1:focus{
   <div class="post-toc-content">
     <nav id="TableOfContents">
   <ul>
-    <li>
+    <li><a href="#go语言源码-协程">go语言源码-协程</a>
       <ul>
-        <li><a href="#go语言源码-协程">go语言源码-协程</a>
-          <ul>
-            <li><a href="#协程的底层结构">协程的底层结构</a></li>
-          </ul>
-        </li>
-        <li><a href="#gmp-模型介绍">GMP 模型介绍</a>
-          <ul>
-            <li><a href="#单线程循环">单线程循环</a></li>
-            <li><a href="#go10-采用多线程循环">go1.0 采用多线程循环</a></li>
-          </ul>
-        </li>
-        <li><a href="#gmp模型">GMP模型</a>
-          <ul>
-            <li><a href="#p的作用">p的作用</a></li>
-          </ul>
-        </li>
-        <li><a href="#线程调度的顺序工作窃取机制">线程调度的顺序（工作窃取机制）</a></li>
-        <li><a href="#新建协程的过程">新建协程的过程</a></li>
-        <li><a href="#协程饥饿问题">协程饥饿问题</a>
-          <ul>
-            <li><a href="#切换协程的时机">切换协程的时机</a></li>
-            <li><a href="#基于协作的抢占式调度">基于协作的抢占式调度</a></li>
-          </ul>
-        </li>
-        <li><a href="#协程太多的问题">协程太多的问题</a>
-          <ul>
-            <li><a href="#解决方案">解决方案</a></li>
-          </ul>
-        </li>
-        <li><a href="#协程源码总结">协程源码总结</a></li>
+        <li><a href="#协程的底层结构">协程的底层结构</a></li>
       </ul>
     </li>
+    <li><a href="#gmp-模型介绍">GMP 模型介绍</a>
+      <ul>
+        <li><a href="#单线程循环">单线程循环</a></li>
+        <li><a href="#go10-采用多线程循环">go1.0 采用多线程循环</a></li>
+      </ul>
+    </li>
+    <li><a href="#gmp模型">GMP模型</a>
+      <ul>
+        <li><a href="#p的作用">p的作用</a></li>
+      </ul>
+    </li>
+    <li><a href="#线程调度的顺序工作窃取机制">线程调度的顺序（工作窃取机制）</a></li>
+    <li><a href="#新建协程的过程">新建协程的过程</a></li>
+    <li><a href="#协程饥饿问题">协程饥饿问题</a>
+      <ul>
+        <li><a href="#切换协程的时机">切换协程的时机</a></li>
+        <li><a href="#基于协作的抢占式调度">基于协作的抢占式调度</a></li>
+      </ul>
+    </li>
+    <li><a href="#协程太多的问题">协程太多的问题</a>
+      <ul>
+        <li><a href="#解决方案">解决方案</a></li>
+      </ul>
+    </li>
+    <li><a href="#协程源码总结">协程源码总结</a></li>
   </ul>
 </nav>
   </div>
@@ -660,9 +656,11 @@ runableQueue--&gt;execute2
 <p><code>p</code>结构体维护了一个 本地队列，可以无锁访问( <em>Queue of runnable goroutines. Accessed without lock.</em> )，因为只有一个线程去访问</p>
 <p>p的队列是一个  256长度的 数组，利用 <code>runqhead</code>和<code>runqtail</code> 实现了一个循环队列（本地可执行队列其实就只是个长度为256的数组，利用两个指针实现的循环队列）</p>
 <p><code>p.runnext</code> 是指向下一个可执行协程的指针</p>
-<p><p class="md__image">
-  <img src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_07_10_20_23_06.png" alt=""  />
-</p>
+<p>
+
+
+<img class="md__image_rel" src="../https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2022_07_10_20_23_06.png" alt=""  />
+
 </p>
 <p>通过查看源码，我们知道 p和 m是绑定在一起的</p>
 <h3 id="p的作用">p的作用</h3>
@@ -1937,7 +1935,7 @@ sequenceDiagram
 </div>
 </div><h2 id="协程饥饿问题">协程饥饿问题</h2>
 <p>假设每个线程的任务都比较长，一直执行本地队列的协程任务的话，会不会造成全局队列的任务无法被调度呢？</p>
-<p>解决方法：<br>
+<p>解决方法：
 按照一定的概率： 从全局队列中拿部分任务g放入本地队列调度，一定程度可以解决饥饿问题</p>
 <p>解决方法： schedule里面有个 <code>schetick%61</code>, 也就是说每执行61次，就从全局队列中拿出任务执行</p>
 <div class="highlight"><div class="chroma">
@@ -2052,7 +2050,7 @@ sequenceDiagram
 <h5 id="信号原理">信号原理</h5>
 <ul>
 <li>注册 sigurg 信号处理函数</li>
-<li>gc工作时候，向目标线程发送信号<br>
+<li>gc工作时候，向目标线程发送信号
 信号</li>
 </ul>
 <p>查看源码 <code>doSigPreempt</code> 方法</p>
