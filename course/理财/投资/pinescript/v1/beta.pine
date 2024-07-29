@@ -1,0 +1,30 @@
+//@version=5
+strategy("Strategy Profit Visualization", overlay=true)
+
+// 定义进场条件（可以根据您的策略逻辑进行调整）
+fastMA = ta.ema(close, 10)
+slowMA = ta.ema(close, 30)
+enterLong = ta.crossover(fastMA, slowMA)
+enterShort = ta.crossunder(fastMA, slowMA)
+
+// 定义进出场逻辑
+if enterLong
+    strategy.entry("Long", strategy.long)
+
+if enterShort
+    strategy.entry("Short", strategy.short)
+
+// 获取策略的净收益
+netProfit = strategy.netprofit
+
+// 绘制策略净收益值
+plot(netProfit, title="Net Profit", color=color.blue, linewidth=2)
+
+// 在图表上显示策略当前净收益
+var string labelProfit = na
+labelProfit := label.new(bar_index, high, str.tostring(netProfit), color=color.blue, style=label.style_labelup, textcolor=color.white, size=label.size_small)
+
+// 更新标签位置
+if not na(labelProfit)
+    label.set_xy(labelProfit, bar_index, close + ta.atr(14) * 0.5)
+    label.set_text(labelProfit, str.tostring(netProfit))

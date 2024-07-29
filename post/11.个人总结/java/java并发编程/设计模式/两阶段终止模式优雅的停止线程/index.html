@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.124.1 with theme even" />
+<meta name="generator" content="Hugo 0.114.0 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E4%B8%A4%E9%98%B6%E6%AE%B5%E7%BB%88%E6%AD%A2%E6%A8%A1%E5%BC%8F%E4%BC%98%E9%9B%85%E7%9A%84%E5%81%9C%E6%AD%A2%E7%BA%BF%E7%A8%8B/" />
@@ -206,8 +206,7 @@ input.PC_MARK1:focus{
 <h2 id="如何理解两阶段终止模式">如何理解两阶段终止模式</h2>
 <p>前辈们经过认真对比分析，已经总结出了一套成熟的方案，叫做<strong>两阶段终止模式</strong>。顾名思义，就是将终止过程分成两个阶段，其中第一个阶段主要是线程 T1 向线程 T2<strong>发送终止指令</strong>，而第二阶段则是线程 T2<strong>响应终止指令</strong>。</p>
 <p>
-
-<img class="md__image_abs" src="https://001.geekbang.org/resource/image/9b/e5/9bbc6fa7fb4d631484aa953626cf6ae5.png" alt="img"  />
+<img class="md__image_http" src="https://static001.geekbang.org/resource/image/9b/e5/9bbc6fa7fb4d631484aa953626cf6ae5.png" alt="img"  />
 
 </p>
 <p>从这个图里你会发现，Java 线程进入终止状态的前提是线程进入 RUNNABLE 状态，而实际上线程也可能处在休眠状态，也就是说，我们要想终止一个线程，首先要把线程的状态从休眠状态转换到 RUNNABLE 状态。如何做到呢？这个要靠 Java Thread 类提供的<strong>interrupt() 方法</strong>，它可以将休眠状态的线程转换到 RUNNABLE 状态。</p>
@@ -261,46 +260,46 @@ input.PC_MARK1:focus{
 </span><span class="lnt">39
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">Proxy</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 线程终止标志位</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">volatile</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">terminated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="n">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 采集线程</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Thread</span><span class="w"> </span><span class="n">rptThread</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 启动采集功能</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">synchronized</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">start</span><span class="p">(){</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 不允许同时启动多个采集线程</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">started</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">terminated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">rptThread</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Thread</span><span class="p">(()</span><span class="o">-&gt;</span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">terminated</span><span class="p">){</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 省略采集、回传实现</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">report</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 每隔两秒钟采集、回传一次数据</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">Thread</span><span class="p">.</span><span class="na">sleep</span><span class="p">(</span><span class="n">2000</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">InterruptedException</span><span class="w"> </span><span class="n">e</span><span class="p">){</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="c1">// 重新设置线程中断状态</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">Thread</span><span class="p">.</span><span class="na">currentThread</span><span class="p">().</span><span class="na">interrupt</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">// 执行到此处说明线程马上终止</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">});</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">rptThread</span><span class="p">.</span><span class="na">start</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 终止采集功能</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">synchronized</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">stop</span><span class="p">(){</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 设置中断标志位</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">terminated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 中断线程 rptThread</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">rptThread</span><span class="p">.</span><span class="na">interrupt</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">Proxy</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 线程终止标志位
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kd">volatile</span> <span class="kt">boolean</span> <span class="n">terminated</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">boolean</span> <span class="n">started</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 采集线程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">Thread</span> <span class="n">rptThread</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 启动采集功能
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">start</span><span class="o">(){</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 不允许同时启动多个采集线程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="o">(</span><span class="n">started</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">started</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">terminated</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">rptThread</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(()-&gt;{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">while</span> <span class="o">(!</span><span class="n">terminated</span><span class="o">){</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 省略采集、回传实现
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">report</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 每隔两秒钟采集、回传一次数据
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="n">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">2000</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">){</span>
+</span></span><span class="line"><span class="cl">          <span class="c1">// 重新设置线程中断状态
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>          <span class="n">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">interrupt</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="c1">// 执行到此处说明线程马上终止
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">started</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">});</span>
+</span></span><span class="line"><span class="cl">    <span class="n">rptThread</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 终止采集功能
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">stop</span><span class="o">(){</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 设置中断标志位
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">terminated</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 中断线程 rptThread
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">rptThread</span><span class="o">.</span><span class="na">interrupt</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="线程池的关闭">线程池的关闭</h3>
 <p>Java 领域用的最多的还是线程池，而不是手动地创建线程。那我们该如何优雅地终止线程池呢？</p>
@@ -316,6 +315,7 @@ input.PC_MARK1:focus{
 <p><strong>两阶段终止模式是一种应用很广泛的并发设计模式</strong>，在 Java 语言中使用两阶段终止模式来优雅地终止线程，需要注意两个关键点：一个是仅检查终止标志位是不够的，因为线程的状态可能处于休眠态；另一个是仅检查线程的中断状态也是不够的，因为我们依赖的第三方类库很可能没有正确处理中断异常。</p>
 <p>当你使用 Java 的线程池来管理线程的时候，需要依赖线程池提供的 shutdown() 和 shutdownNow() 方法来终止线程池。<strong>不过在使用时需要注意它们的应用场景</strong>，<strong>尤其是在使用 shutdownNow() 的时候，一定要谨慎。</strong></p>
 
+      
     </div>
 
     <div class="post-copyright">

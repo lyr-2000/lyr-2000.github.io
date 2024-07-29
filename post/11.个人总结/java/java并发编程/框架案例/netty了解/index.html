@@ -23,7 +23,7 @@
 
 
 
-<meta name="generator" content="Hugo 0.124.1 with theme even" />
+<meta name="generator" content="Hugo 0.114.0 with theme even" />
 
 
 <link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/java/java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/%E6%A1%86%E6%9E%B6%E6%A1%88%E4%BE%8B/netty%E4%BA%86%E8%A7%A3/" />
@@ -213,9 +213,7 @@ input.PC_MARK1:focus{
 <h2 id="reactor-模式">Reactor 模式</h2>
 <p>下面是 Reactor 模式的类结构图，其中 Handle 指的是 I/O 句柄，在 Java 网络编程里，它本质上就是一个网络连接。<strong>Event Handler 很容易理解</strong>，就是一个事件处理器，其中 <strong>handle_event() 方法处理 I/O 事件</strong>，也就是每个 Event Handler 处理一个 I/O Handle；get_handle() 方法可以返回这个 I/O 的 Handle。Synchronous Event Demultiplexer 可以理解为操作系统提供的 I/O 多路复用 API，例如 POSIX 标准里的 select() 以及 Linux 里面的 epoll()。</p>
 <p>
-
-
-<img class="md__image_rel" src="../https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_04_22_39_10image-20211004223910115.png" alt="image-20211004223910115"  />
+<img class="md__image_http" src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_04_22_39_10image-20211004223910115.png" alt="image-20211004223910115"  />
 
 </p>
 <p>Reactor 模式的核心自然是<strong>Reactor 这个类</strong>，其中 register_handler() 和 remove_handler() 这两个方法可以注册和删除一个事件处理器；<strong>handle_events() 方式是核心</strong>，也是 Reactor 模式的发动机，这个方法的核心逻辑如下：首先通过同步事件多路选择器提供的 select() 方法监听网络事件，<strong>当有网络事件就绪后，就遍历事件处理器来处理该网络事件</strong>。由于<strong>网络事件是源源不断的</strong>，所以在主程序中启动 Reactor 模式，需要以 <code>while(true){}</code> 的方式<strong>调用 handle_events() 方法。</strong></p>
@@ -258,9 +256,7 @@ input.PC_MARK1:focus{
 <li>即 一个线程处理多个网络连接</li>
 </ol>
 <p>
-
-
-<img class="md__image_rel" src="../https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_04_22_42_11image-20211004224211189.png" alt="image-20211004224211189"  />
+<img class="md__image_http" src="https://cdn.jsdelivr.net/gh/lyr-2000/images_repo_2021_ASUS/2021_10_04_22_42_11image-20211004224211189.png" alt="image-20211004224211189"  />
 
 </p>
 <p><strong>在 Netty 中，bossGroup 就用来处理连接请求的，而 workerGroup 是用来处理读写请求的</strong>。bossGroup 处理完连接请求后，会将这个连接提交给 workerGroup 来处理， workerGroup 里面有多个 EventLoop，<strong>那新的连接会交给哪个 EventLoop 来处理呢</strong>？这就需要一个<strong>负载均衡算法</strong>，Netty 中目前使用的是<strong>轮询算法</strong>。</p>
@@ -324,63 +320,64 @@ input.PC_MARK1:focus{
 </span><span class="lnt">52
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 事件处理器</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">final</span><span class="w"> </span><span class="n">EchoServerHandler</span><span class="w"> </span><span class="n">serverHandler</span><span class="w"> 
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">EchoServerHandler</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">//boss 线程组  </span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">EventLoopGroup</span><span class="w"> </span><span class="n">bossGroup</span><span class="w"> 
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">NioEventLoopGroup</span><span class="p">(</span><span class="n">1</span><span class="p">);</span><span class="w"> 
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">//worker 线程组  </span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">EventLoopGroup</span><span class="w"> </span><span class="n">workerGroup</span><span class="w"> 
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">NioEventLoopGroup</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">ServerBootstrap</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ServerBootstrap</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">b</span><span class="p">.</span><span class="na">group</span><span class="p">(</span><span class="n">bossGroup</span><span class="p">,</span><span class="w"> </span><span class="n">workerGroup</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="p">.</span><span class="na">channel</span><span class="p">(</span><span class="n">NioServerSocketChannel</span><span class="p">.</span><span class="na">class</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="p">.</span><span class="na">childHandler</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">ChannelInitializer</span><span class="o">&lt;</span><span class="n">SocketChannel</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="nd">@Override</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">initChannel</span><span class="p">(</span><span class="n">SocketChannel</span><span class="w"> </span><span class="n">ch</span><span class="p">){</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="n">ch</span><span class="p">.</span><span class="na">pipeline</span><span class="p">().</span><span class="na">addLast</span><span class="p">(</span><span class="n">serverHandler</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">});</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//bind 服务端端口  </span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">ChannelFuture</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="na">bind</span><span class="p">(</span><span class="n">9090</span><span class="p">).</span><span class="na">sync</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">f</span><span class="p">.</span><span class="na">channel</span><span class="p">().</span><span class="na">closeFuture</span><span class="p">().</span><span class="na">sync</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 终止工作线程组</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">workerGroup</span><span class="p">.</span><span class="na">shutdownGracefully</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 终止 boss 线程组</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">bossGroup</span><span class="p">.</span><span class="na">shutdownGracefully</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"> 
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">//socket 连接处理器</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">class</span> <span class="nc">EchoServerHandler</span><span class="w"> </span><span class="kd">extends</span><span class="w"> 
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ChannelInboundHandlerAdapter</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 处理读事件  </span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@Override</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">channelRead</span><span class="p">(</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ChannelHandlerContext</span><span class="w"> </span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="n">msg</span><span class="p">){</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">ctx</span><span class="p">.</span><span class="na">write</span><span class="p">(</span><span class="n">msg</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 处理读完成事件</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@Override</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">channelReadComplete</span><span class="p">(</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ChannelHandlerContext</span><span class="w"> </span><span class="n">ctx</span><span class="p">){</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">ctx</span><span class="p">.</span><span class="na">flush</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 处理异常事件</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@Override</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">exceptionCaught</span><span class="p">(</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ChannelHandlerContext</span><span class="w"> </span><span class="n">ctx</span><span class="p">,</span><span class="w">  </span><span class="n">Throwable</span><span class="w"> </span><span class="n">cause</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">cause</span><span class="p">.</span><span class="na">printStackTrace</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">ctx</span><span class="p">.</span><span class="na">close</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 事件处理器
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">final</span> <span class="n">EchoServerHandler</span> <span class="n">serverHandler</span> 
+</span></span><span class="line"><span class="cl">  <span class="o">=</span> <span class="k">new</span> <span class="n">EchoServerHandler</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//boss 线程组  
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">EventLoopGroup</span> <span class="n">bossGroup</span> 
+</span></span><span class="line"><span class="cl">  <span class="o">=</span> <span class="k">new</span> <span class="n">NioEventLoopGroup</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span> 
+</span></span><span class="line"><span class="cl"><span class="c1">//worker 线程组  
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">EventLoopGroup</span> <span class="n">workerGroup</span> 
+</span></span><span class="line"><span class="cl">  <span class="o">=</span> <span class="k">new</span> <span class="n">NioEventLoopGroup</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">ServerBootstrap</span> <span class="n">b</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ServerBootstrap</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">  <span class="n">b</span><span class="o">.</span><span class="na">group</span><span class="o">(</span><span class="n">bossGroup</span><span class="o">,</span> <span class="n">workerGroup</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">   <span class="o">.</span><span class="na">channel</span><span class="o">(</span><span class="n">NioServerSocketChannel</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">   <span class="o">.</span><span class="na">childHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">ChannelInitializer</span><span class="o">&lt;</span><span class="n">SocketChannel</span><span class="o">&gt;()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">     <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">     <span class="kd">public</span> <span class="kt">void</span> <span class="nf">initChannel</span><span class="o">(</span><span class="n">SocketChannel</span> <span class="n">ch</span><span class="o">){</span>
+</span></span><span class="line"><span class="cl">       <span class="n">ch</span><span class="o">.</span><span class="na">pipeline</span><span class="o">().</span><span class="na">addLast</span><span class="o">(</span><span class="n">serverHandler</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">     <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">});</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">//bind 服务端端口  
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">ChannelFuture</span> <span class="n">f</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="na">bind</span><span class="o">(</span><span class="mi">9090</span><span class="o">).</span><span class="na">sync</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">  <span class="n">f</span><span class="o">.</span><span class="na">channel</span><span class="o">().</span><span class="na">closeFuture</span><span class="o">().</span><span class="na">sync</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 终止工作线程组
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">workerGroup</span><span class="o">.</span><span class="na">shutdownGracefully</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 终止 boss 线程组
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">bossGroup</span><span class="o">.</span><span class="na">shutdownGracefully</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl"> 
+</span></span><span class="line"><span class="cl"><span class="c1">//socket 连接处理器
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">class</span> <span class="nc">EchoServerHandler</span> <span class="kd">extends</span> 
+</span></span><span class="line"><span class="cl">    <span class="n">ChannelInboundHandlerAdapter</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 处理读事件  
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">channelRead</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ChannelHandlerContext</span> <span class="n">ctx</span><span class="o">,</span> <span class="n">Object</span> <span class="n">msg</span><span class="o">){</span>
+</span></span><span class="line"><span class="cl">      <span class="n">ctx</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">msg</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 处理读完成事件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">channelReadComplete</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ChannelHandlerContext</span> <span class="n">ctx</span><span class="o">){</span>
+</span></span><span class="line"><span class="cl">      <span class="n">ctx</span><span class="o">.</span><span class="na">flush</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 处理异常事件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">exceptionCaught</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ChannelHandlerContext</span> <span class="n">ctx</span><span class="o">,</span>  <span class="n">Throwable</span> <span class="n">cause</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">cause</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">      <span class="n">ctx</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="总结">总结</h3>
 <p>Netty 是一个款优秀的网络编程框架，性能非常好，为了实现高性能的目标，Netty 做了很多优化，例如优化了 ByteBuffer、支持零拷贝等等，和并发编程相关的就是它的线程模型了。Netty 的线程模型设计得很精巧，每个网络连接都关联到了一个线程上，这样做的好处是：对于一个网络连接，读写操作都是单线程执行的，从而避免了并发程序的各种问题。</p>
 
+      
     </div>
 
     <div class="post-copyright">

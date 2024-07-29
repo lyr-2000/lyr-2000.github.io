@@ -1,0 +1,62 @@
+//MaybeThatGuy
+//@version=5
+indicator("ADX Divergence Indicator", shorttitle = "ADXDI", overlay = true)
+
+//inputs
+createalert = input(false, "Create Alerts")
+adxlength = input(14, "ADX Length")
+adxsmoothing = input(14, "ADX Smoothing")
+threshold = input(10, "ADX Threshold", tooltip = "The minimum required value of the ADX to plot a signal.")
+
+//calculations
+[diplus, diminus, adx] = ta.dmi(adxlength, adxsmoothing)
+diplusrising = ta.rising(diplus, 1)
+diplusfalling = ta.falling(diplus, 2)
+diminusrising = ta.rising(diminus, 1)
+diminusfalling = ta.falling(diminus, 2)
+adxrising = ta.rising(adx, 1)
+adxfalling = ta.falling(adx, 1)
+bounce = adx < adx[1] and adx[1] > adx[2]
+ema = ta.ema(close, 9)
+ema1 = ta.ema(close, 14)
+
+bullish1 = false
+bearish1 = false
+bullish = false
+bearish = false
+
+if diplusrising and diminusfalling
+    bullish1 := true
+if diminusrising and diplusfalling
+    bearish1 := true
+
+if diplus > diminus
+    bullish1 := false
+if diminus > diplus
+    bearish1 := false
+    
+for i = 0 to 3
+    if bounce and bullish1[i]
+        bullish := true
+    if bounce and bearish1[i]
+        bearish := true
+
+if ema > ema[1] or ema < ema1 or adx < threshold
+    bearish := false
+if ema > ema[1] or ema > ema1 or adx < threshold
+    bullish := false
+if bullish and bearish
+    bullish := false
+if bullish and bearish
+    bearish := false
+
+//plotting divergences
+plotshape(bullish, "Bullish Divergence", shape.circle, location.belowbar, color.green, size=size.small)
+plotshape(bearish, "Bearish Divergence", shape.circle, location.abovebar, color.red, size=size.small)
+
+//create alert
+if createalert
+    if bullish[1]
+        alert("Bullish ADX Divergence")
+    if bearish[1]
+        alert("Bearish ADX Divergence")

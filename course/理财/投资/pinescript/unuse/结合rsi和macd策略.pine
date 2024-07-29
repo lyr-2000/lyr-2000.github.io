@@ -1,0 +1,70 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © kgynofomo
+// https://www.tradingview.com/script/vfisjWXN-Rise-Sense-Capital-RSI-MACD-Spot-Buying-Indicator/
+// 理论上是可以用,而且比较可靠的, 时间周期设置为1天
+
+//@version=5
+indicator("Rise Sense Capital - RSI MACD Spot Buying Indicator",overlay = true)
+
+//策略發想：KR陳
+//指標開發：kgynofomo
+
+//MACD
+fast_length = input(title = "Fast Length | 快綫周期", defval = 12)
+slow_length = input(title = "Slow Length | 慢綫周期", defval = 26)
+src = input(title = "Source | MACD資料源", defval = close)
+signal_length = input.int(title = "Signal Smoothing | 信號綫周期",  minval = 1, maxval = 50, defval = 9, display = display.data_window)
+sma_source = "EMA"
+sma_signal = "EMA"
+// Calculating
+fast_ma = sma_source == "SMA" ? ta.sma(src, fast_length) : ta.ema(src, fast_length)
+slow_ma = sma_source == "SMA" ? ta.sma(src, slow_length) : ta.ema(src, slow_length)
+macd = fast_ma - slow_ma
+signal = sma_signal == "SMA" ? ta.sma(macd, signal_length) : ta.ema(macd, signal_length)
+hist = macd - signal
+
+//RSI
+RSI_length = input.int(14, "RSI Length | RSI長度")
+srcrsi = input(title = "RSI Source | RSI資料源", defval = close)
+RSI = ta.rsi(srcrsi,RSI_length)
+
+//RSI condition
+buycondition1 = RSI[1]<30
+//macd condition
+buycondition2 = hist[2]>hist[1] and hist[1]<hist
+
+
+buycondition = buycondition1 and buycondition2
+
+// plotshape(,style = shape.triangledown,location = location.abovebar,color = color.red,size = size.tiny,text = "+",textcolor = color.white)
+plotshape(buycondition,style = shape.labelup,location = location.belowbar,color = color.green,size = size.tiny,text = "Spot buy",textcolor = color.white,title = "買入信號")
+
+alertcondition(buycondition, title='RSI MACD 策略买入机会', message="买起来！")
+
+// 计算ATRV
+atr = ta.atr(26)
+// 计算DIF
+ema12 = ta.ema(close, fast_length)
+ema26 = ta.ema(close, slow_length)
+atrmacd = ((ema12 - ema26) / atr) * 100
+
+// 计算DEA
+atrsignal = ta.ema(atrmacd, signal_length)
+atrhist = atrmacd - atrsignal
+
+//atrmacd condition
+atrmacdbuycondition1 = atrhist[1]<atrhist
+atrbuycondition = buycondition1 and atrmacdbuycondition1
+
+plotshape(atrbuycondition,style = shape.triangleup,location = location.abovebar,color = color.green,size = size.tiny,text = "",textcolor = color.white,title = "買入信號加成")
+
+
+
+//watermark
+Pos1Table=position.bottom_center
+Siz1Table = size.normal
+
+macdTable = table.new(Pos1Table, 1, 1, frame_color=na, frame_width=2, border_color=color.black, border_width=1)
+table.cell(macdTable, 0, 0, "策略發想: KR陳 | 指標撰寫: @kgynofomo | 適用時區: 12H/16H/D/W", text_color=color.white, text_size =Siz1Table,bgcolor = na)
+
+

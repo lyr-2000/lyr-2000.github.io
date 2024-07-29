@@ -1,0 +1,170 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+
+// Credits to the original Script - Range Filter DonovanWall https://www.tradingview.com/script/lut7sBgG-Range-Filter-DW/
+// This version is the old version of the Range Filter with less settings to tinker with
+
+//@version=5
+indicator(title='robot-@beta B&S Signals', shorttitle='robot@beta@strategy', overlay=true)
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+//Functions
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//Range Size Function
+rng_size(x, qty, n) =>
+//    AC       = Cond_EMA(abs(x - x[1]), 1, n)
+    wper = n * 2 - 1
+    avrng = ta.ema(math.abs(x - x[1]), n)
+    AC = ta.ema(avrng, wper) * qty
+    rng_size = AC
+    rng_size
+
+//Range Filter Function
+rng_filt(x, rng_, n) =>
+    r = rng_
+    var rfilt = array.new_float(2, x)
+    array.set(rfilt, 1, array.get(rfilt, 0))
+    if x - r > array.get(rfilt, 1)
+        array.set(rfilt, 0, x - r)
+    if x + r < array.get(rfilt, 1)
+        array.set(rfilt, 0, x + r)
+    rng_filt1 = array.get(rfilt, 0)
+
+    hi_band = rng_filt1 + r
+    lo_band = rng_filt1 - r
+    rng_filt = rng_filt1
+    [hi_band, lo_band, rng_filt]
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+//Inputs
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//Range Source
+rng_src = input(defval=close, title='Swing Source')
+
+//Range Period
+rng_per = input.int(defval=20, minval=1, title='Swing Period')
+
+//Range Size Inputs
+rng_qty = input.float(defval=3.5, minval=0.0000001, title='Swing Multiplier')
+
+//Bar Colors
+use_barcolor = input(defval=false, title='Bar Colors On/Off')
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+//Definitions
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//Range Filter Values
+[h_band, l_band, filt] = rng_filt(rng_src, rng_size(rng_src, rng_qty, rng_per), rng_per)
+
+//Direction Conditions
+var fdir = 0.0
+fdir := filt > filt[1] ? 1 : filt < filt[1] ? -1 : fdir
+upward = fdir == 1 ? 1 : 0
+downward = fdir == -1 ? 1 : 0
+
+//Trading Condition
+longCond = rng_src > filt and rng_src > rng_src[1] and upward > 0 or rng_src > filt and rng_src < rng_src[1] and upward > 0
+shortCond = rng_src < filt and rng_src < rng_src[1] and downward > 0 or rng_src < filt and rng_src > rng_src[1] and downward > 0
+
+CondIni = 0
+CondIni := longCond ? 1 : shortCond ? -1 : CondIni[1]
+longCondition = longCond and CondIni[1] == -1
+shortCondition = shortCond and CondIni[1] == 1
+
+//Colors
+filt_color = upward ? #05ff9b : downward ? #ff0583 : #cccccc
+bar_color = upward and rng_src > filt ? rng_src > rng_src[1] ? #05ff9b : #00b36b : downward and rng_src < filt ? rng_src < rng_src[1] ? #ff0583 : #b8005d : #cccccc
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+//Outputs
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//Filter Plot
+filt_plot = plot(filt, color=filt_color, linewidth=3, title='Filter', transp=67)
+
+//Band Plots
+h_band_plot = plot(h_band, color=color.new(#05ff9b, 100), title='High Band')
+l_band_plot = plot(l_band, color=color.new(#ff0583, 100), title='Low Band')
+
+//Band Fills
+fill(h_band_plot, filt_plot, color=color.new(#00b36b, 92), title='High Band Fill')
+fill(l_band_plot, filt_plot, color=color.new(#b8005d, 92), title='Low Band Fill')
+
+//Bar Color
+barcolor(use_barcolor ? bar_color : na)
+
+//Plot Buy and Sell Labels
+
+color color_data = na 
+
+// 检查条件
+if close > open
+    color_data := #f6f9f6
+else if close < open
+    color_data := color.rgb(117, 13, 143)
+else if close < high
+    color_data := color.yellow
+else
+    color_data := color.rgb(14, 11, 171)
+
+
+
+// 设置横盘阈值 (例如，价格变化小于 1%)
+float range_threshold = 1.0  // 1% 阈值
+
+// 设置横盘判断时间段（例如 14 个周期）
+int lookback_period = 14
+
+// 计算当前时间段内的最高价和最低价
+float high_price = ta.highest(high, lookback_period)
+float low_price = ta.lowest(low, lookback_period)
+
+// 计算价格范围百分比
+float price_range_percent = (high_price - low_price) / low_price * 100
+
+// 判断是否横盘（价格范围百分比小于阈值）
+bool is_sideways = price_range_percent < range_threshold
+
+
+// plotshape(longCondition and not is_sideways, title='Buy Signal', text="P:BUY", textcolor=color_data, style=shape.labelup, size=size.normal, location=location.belowbar, color=color.new(color.green, 0))
+// plotshape(shortCondition and not is_sideways, title='Sell Signal', text="P:SELL", textcolor=color_data, style=shape.labeldown, size=size.normal, location=location.abovebar, color=color.new(color.red, 0))
+
+// plotshape(longCondition and  is_sideways, title='Buy Signal', text="BUY(sideway)", textcolor=color_data, style=shape.labelup, size=size.normal, location=location.belowbar, color=color.new(color.green, 0))
+// plotshape(shortCondition and  is_sideways, title='Sell Signal', text="SELL(sideway)", textcolor=color_data, style=shape.labeldown, size=size.normal, location=location.abovebar, color=color.new(color.red, 0))
+
+
+float buynum = na 
+
+if longCondition
+    buynum := high 
+
+if not na(buynum[1])
+    buynum := buynum[1]
+
+profit = 0
+if shortCondition
+    profit :=int(100 * (low - buynum) / high)
+    buynum := na
+
+if longCondition and not is_sideways
+    label.new(bar_index, low, str.tostring("BUY"), color = color.lime, style = label.style_label_up)
+if longCondition and is_sideways
+    label.new(bar_index, low, str.tostring("BUY(横盘)"), color = color.lime, style = label.style_label_up)
+// 
+if shortCondition and is_sideways
+    label.new(bar_index, low, str.tostring("SELL (横盘) %"+str.tostring(value=profit)), color = #e78395, style = label.style_label_up)
+if shortCondition and not is_sideways
+    label.new(bar_index, low, str.tostring("SELL (危险) %"+str.tostring(value=profit)), color = #ec0909, style = label.style_label_up)
+
+
+// todo:
+
+//Alerts
+alertcondition(longCondition, title='Buy Alert(做多)', message='BUY')
+alertcondition(shortCondition, title='Sell Alert(出逃)', message='SELL')
+// tag = "SELL"
+alertcondition(longCondition and not is_sideways, title='(DownTrend)做空信号', message='BUY')
+
+

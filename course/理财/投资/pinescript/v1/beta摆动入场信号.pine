@@ -1,0 +1,266 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+
+// Credits to the original Script - Range Filter DonovanWall https://www.tradingview.com/script/lut7sBgG-Range-Filter-DW/
+// This version is the old version of the Range Filter with less settings to tinker with
+
+//@version=5
+indicator(title='robot-@beta B&S Signals', shorttitle='robot@beta@strategy', overlay=true)
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+// 说明: 脚本是基于 VuManChu Swing 魔改的
+// 代办:  1. 维嘉斯通道判断, 布林带策略结合, 标准差判断, 趋势判断等
+// 
+// 
+// 
+// 
+//Functions
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// --- step 1
+
+// 设置横盘阈值 (例如，价格变化小于 1%)
+float range_threshold = 10.000095  // 1% 阈值
+
+// 设置横盘判断时间段（例如 14 个周期）
+int lookback_period =  45
+
+// 计算当前时间段内的最高价和最低价
+float high_price = ta.highest(high, lookback_period)
+float low_price = ta.lowest(low, lookback_period)
+
+// 计算价格范围百分比
+float price_range_percent = (high_price - low_price) / low_price * 100
+
+// 判断是否横盘（价格范围百分比小于阈值）
+bool is_sideways = price_range_percent < range_threshold
+// --- 优化
+
+
+
+
+
+//Range Size Function
+rng_size(x, qty, n) =>
+//    AC       = Cond_EMA(abs(x - x[1]), 1, n)
+    wper = n * 2 - 1
+    avrng = ta.ema(math.abs(x - x[1]), n)
+    AC = ta.ema(avrng, wper) * qty
+    rng_size = AC
+    rng_size
+
+//Range Filter Function
+rng_filt(x, rng_, n) =>
+    r = rng_
+    var rfilt = array.new_float(2, x)
+    array.set(rfilt, 1, array.get(rfilt, 0))
+    if x - r > array.get(rfilt, 1)
+        array.set(rfilt, 0, x - r)
+    if x + r < array.get(rfilt, 1)
+        array.set(rfilt, 0, x + r)
+    rng_filt1 = array.get(rfilt, 0)
+
+    hi_band = rng_filt1 + r
+    lo_band = rng_filt1 - r
+    rng_filt = rng_filt1
+    [hi_band, lo_band, rng_filt]
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+//Inputs
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//Range Source
+rng_src = input(defval=close, title='Swing Source')
+
+//Range Period
+rng_per = input.int(defval=20, minval=1, title='Swing Period')
+
+//Range Size Inputs
+rng_qty = input.float(defval=3.5, minval=0.0000001, title='Swing Multiplier')
+
+//Bar Colors
+use_barcolor = input(defval=false, title='Bar Colors On/Off')
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+//Definitions
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//Range Filter Values
+[h_band, l_band, filt] = rng_filt(rng_src, rng_size(rng_src, rng_qty, rng_per), rng_per)
+
+//Direction Conditions
+var fdir = 0.0
+fdir := filt > filt[1] ? 1 : filt < filt[1] ? -1 : fdir
+upward = fdir == 1 ? 1 : 0
+downward = fdir == -1 ? 1 : 0
+
+//Trading Condition
+longCond1 = rng_src > filt and rng_src > rng_src[1] and upward > 0 or rng_src > filt and rng_src < rng_src[1] and upward > 0
+shortCond1 = rng_src < filt and rng_src < rng_src[1] and downward > 0 or rng_src < filt and rng_src > rng_src[1] and downward > 0
+
+CondIni = 0
+
+if longCond1
+    // buy 
+    CondIni := 1
+else if shortCond1
+    CondIni := -1
+else 
+    CondIni := CondIni[1]
+
+// CondIni := longCond1 ? 1 : shortCond1 ? -1 : CondIni[1]
+
+// 还拿着币
+holdingCoin = false
+if holdingCoin[1]
+    holdingCoin := holdingCoin[1]
+
+// 这里定义四种趋势 
+growFast = false 
+downFast = false
+
+fakeGrow = false 
+fakeDown = false 
+
+shouldBuy = false 
+shouldSell = false
+
+longCondition = longCond1 and CondIni[1] == -1
+shortCondition = shortCond1 and CondIni[1] == 1
+
+
+// todo: 判断横盘 和布林带
+
+// 设置布林带参数
+int period = 20 // 布林带的周期
+float std_dev = 2.0 // 标准差倍数
+
+// 计算布林带
+[bb_upper, bb_middle, bb_lower] = ta.bb(close, period, std_dev)
+
+// 只有处于布林带里面的,才买入
+if shouldBuy and bb_upper <= low
+    // 飞的太高,可能是插针
+    is_sideways := true
+
+
+if not is_sideways and longCondition
+    growFast := true 
+else if longCondition
+    fakeGrow := true
+
+if not is_sideways and shortCondition
+    growFast := true 
+else if shortCondition
+    fakeGrow := true
+
+if shortCondition and holdingCoin //grow and down
+    shouldSell := true 
+    holdingCoin := false
+
+else if growFast and holdingCoin == false
+    shouldBuy := true
+    holdingCoin := true
+
+
+//Colors
+filt_color = upward ? #05ff9b : downward ? #ff0583 : #cccccc
+bar_color = upward and rng_src > filt ? rng_src > rng_src[1] ? #05ff9b : #00b36b : downward and rng_src < filt ? rng_src < rng_src[1] ? #ff0583 : #b8005d : #cccccc
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+//Outputs
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//Filter Plot
+filt_plot = plot(filt, color=filt_color, linewidth=3, title='Filter', transp=67)
+
+//Band Plots
+h_band_plot = plot(h_band, color=color.new(#05ff9b, 100), title='High Band')
+l_band_plot = plot(l_band, color=color.new(#ff0583, 100), title='Low Band')
+
+//Band Fills
+fill(h_band_plot, filt_plot, color=color.new(#00b36b, 92), title='High Band Fill')
+fill(l_band_plot, filt_plot, color=color.new(#b8005d, 92), title='Low Band Fill')
+
+//Bar Color
+barcolor(use_barcolor ? bar_color : na)
+
+//Plot Buy and Sell Labels
+
+ 
+
+
+ 
+
+float buyat = 0
+
+if shouldBuy
+    buyat := close 
+else if buyat[1] > 0 
+    buyat := buyat[1]
+
+float earnCoin = 0
+float currentEarn = 0
+if earnCoin[1] > 0
+    earnCoin := earnCoin[1]
+
+if shouldSell
+    // 信号延迟可能会导致 2~4%的亏损
+    float red = high * (4/100)
+    d = (low- (red) - buyat)/close
+    currentEarn := d*100
+    earnCoin += currentEarn
+    buyat := 0
+
+// plot(earnCoin,"earn ")
+// 历史策略收益为0,直接禁用掉 
+disableBuy = false
+if disableBuy[1] == true
+    disableBuy := true
+// plot(earnCoin, "earn")
+haslabel = false
+if not disableBuy
+    if earnCoin>=0
+        if shouldSell
+            label = label.new(bar_index, low, str.tostring("SELL:")+str.tostring(""+str.tostring(value=int(currentEarn)))+"%", color = #ec0909, style = label.style_label_up)
+            label.set_textcolor(id=label,textcolor=color.white)
+            haslabel := true
+
+        if shouldBuy
+            label = label.new(bar_index, low, str.tostring("BUY"), color = color.green, style = label.style_label_down)
+            label.set_textcolor(id=label,textcolor=color.white)
+            haslabel := true
+
+        if fakeGrow and currentEarn > 5 and not haslabel
+            // 是否逃离
+            label = label.new(bar_index, low, str.tostring(""+str.tostring(value=int(currentEarn)))+"%", color = color.new(#4e1ede, 0), style = label.style_label_down)
+            label.set_textcolor(id=label,textcolor=color.white)
+
+        else if fakeGrow  and not shouldBuy and not haslabel and currentEarn>0
+            label = label.new(bar_index, low, str.tostring("(横盘点)"), color = color.new(#4e1ede, 0), style = label.style_label_down)
+            label.set_textcolor(id=label,textcolor=color.white)
+
+    else if not disableBuy // 用该策略已经出现亏损,则后续禁用买入信号
+        disableBuy := true
+
+// if disableBuy
+//     if shouldSell
+//         label = label.new(bar_index, low, str.tostring("SELL:")+str.tostring(value=int(currentEarn)) + "%", color = color.rgb(187, 25, 4), style = label.style_label_down)
+//         label.set_textcolor(id=label,textcolor=color.white)
+
+//     if shouldBuy
+//         label = label.new(bar_index, low, str.tostring("BUY"), color = #161c16, style = label.style_label_up)
+//         label.set_textcolor(id=label,textcolor=color.white)
+
+// todo:
+
+
+//Alerts
+// 买入信号
+alertcondition(shouldBuy and not disableBuy, title='Buy Alert(做多)', message='BUY')
+// 卖出信号
+alertcondition(shouldSell, title='Sell Alert(出逃)', message='SELL')
+
+// todo: 做空信号
+// alertcondition(shortCondition and not is_sideways, title='(DownTrend)做空信号', message='Short Enter')
+
+

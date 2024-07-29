@@ -1,0 +1,383 @@
+
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Milvetti  
+
+//@version=5
+indicator("RSI Multi Strategies With Overlay Signals","RSI Strategies [M]",overlay = false)
+
+
+ma(source, length, type) =>
+    switch type
+        "SMA" => ta.sma(source, length)
+        "Bollinger Bands" => ta.sma(source, length)
+        "EMA" => ta.ema(source, length)
+        "SMMA (RMA)" => ta.rma(source, length)
+        "WMA" => ta.wma(source, length)
+        "VWMA" => ta.vwma(source, length)
+
+rsiLengthInput = input.int(14, minval=1, title="RSI Length", group="RSI Settings")
+rsiSourceInput = input.source(close, "Source", group="RSI Settings")
+rsiObLevel = input.float(70,"OB-OS ",inline = "Over",group = "RSI Settings")
+rsiOsLevel = input.float(30," ",inline = "Over",tooltip ="RSI Overbought and Oversold levels",group = "RSI Settings")
+showDivergence = input.bool(false, title="Show Divergence", group="RSI Settings", display = display.data_window)
+
+showMa = input(true,"Show Ma",group = "MA Settings")
+maTypeInput = input.string("SMA", title="MA Type", options=["SMA", "Bollinger Bands", "EMA", "SMMA (RMA)", "WMA", "VWMA"], group="MA Settings", display = display.data_window)
+maLengthInput = input.int(14, title="MA Length", group="MA Settings", display = display.data_window)
+bbMultInput = input.float(2.0, minval=0.001, maxval=50, title="BB StdDev", group="MA Settings", display = display.data_window)
+
+up = ta.rma(math.max(ta.change(rsiSourceInput), 0), rsiLengthInput)
+down = ta.rma(-math.min(ta.change(rsiSourceInput), 0), rsiLengthInput)
+rsi = down == 0 ? 100 : up == 0 ? 0 : 100 - (100 / (1 + up / down))
+rsiMA = ma(rsi, maLengthInput, maTypeInput)
+isBB = maTypeInput == "Bollinger Bands"
+
+rsiPlot = plot(rsi, "RSI", color=#7E57C2)
+plot(showMa ?  rsiMA : na, "RSI-based MA", color=color.yellow)
+rsiUpperBand = plot(rsiObLevel, "RSI Upper Band", color=#787B86)
+midline = plot(50, "RSI Middle Band", color=color.new(#787B86, 50))
+rsiLowerBand = plot(rsiOsLevel, "RSI Lower Band", color=#787B86)
+fill(rsiUpperBand, rsiLowerBand, color=color.rgb(126, 87, 194, 90), title="RSI Background Fill")
+bbUpperBand = plot(isBB ? rsiMA + ta.stdev(rsi, maLengthInput) * bbMultInput : na, title = "Upper Bollinger Band", color=color.green)
+bbLowerBand = plot(isBB ? rsiMA - ta.stdev(rsi, maLengthInput) * bbMultInput : na, title = "Lower Bollinger Band", color=color.green)
+fill(bbUpperBand, bbLowerBand, color= isBB ? color.new(color.green, 90) : na, title="Bollinger Bands Background Fill")
+
+midLinePlot = plot(50, color = na, editable = false, display = display.none)
+fill(rsiPlot, midLinePlot, 100, rsiObLevel, top_color = color.new(color.green, 0), bottom_color = color.new(color.green, 100),  title = "Overbought Gradient Fill")
+fill(rsiPlot, midLinePlot, rsiOsLevel,  0,  top_color = color.new(color.red, 100), bottom_color = color.new(color.red, 0),      title = "Oversold Gradient Fill")
+
+
+
+// Divergence
+lookbackRight = 3
+lookbackLeft = 3
+rangeUpper = 60
+rangeLower = 5
+bearColor = color.red
+bullColor = color.green
+textColor = color.white
+noneColor = color.new(color.white, 100)
+
+plFound = na(ta.pivotlow(rsi, lookbackLeft, lookbackRight)) ? false : true
+phFound = na(ta.pivothigh(rsi, lookbackLeft, lookbackRight)) ? false : true
+_inRange(cond) =>
+	bars = ta.barssince(cond == true)
+	rangeLower <= bars and bars <= rangeUpper
+
+//------------------------------------------------------------------------------
+// Regular Bullish
+// rsi: Higher Low
+
+rsiHL = rsi[lookbackRight] > ta.valuewhen(plFound, rsi[lookbackRight], 1) and _inRange(plFound[1])
+
+// Price: Lower Low
+
+priceLL = low[lookbackRight] < ta.valuewhen(plFound, low[lookbackRight], 1)
+bullCondAlert = priceLL and rsiHL and plFound
+bullCond = showDivergence and bullCondAlert
+
+plot(
+     plFound ? rsi[lookbackRight] : na,
+     offset=-lookbackRight,
+     title="Regular Bullish",
+     linewidth=2,
+     color=(bullCond ? bullColor : noneColor)
+     )
+
+plotshape(
+	 bullCond ? rsi[lookbackRight] : na,
+	 offset=-lookbackRight,
+	 title="Regular Bullish Label",
+	 text=" Bull ",
+	 style=shape.labelup,
+	 location=location.absolute,
+	 color=bullColor,
+	 textcolor=textColor
+	 )
+
+//------------------------------------------------------------------------------
+// Regular Bearish
+// rsi: Lower High
+
+rsiLH = rsi[lookbackRight] < ta.valuewhen(phFound, rsi[lookbackRight], 1) and _inRange(phFound[1])
+
+// Price: Higher High
+
+priceHH = high[lookbackRight] > ta.valuewhen(phFound, high[lookbackRight], 1)
+
+bearCondAlert = priceHH and rsiLH and phFound
+bearCond = showDivergence and bearCondAlert
+
+plot(
+	 phFound ? rsi[lookbackRight] : na,
+	 offset=-lookbackRight,
+	 title="Regular Bearish",
+	 linewidth=2,
+	 color=(bearCond ? bearColor : noneColor)
+	 )
+
+plotshape(
+	 bearCond ? rsi[lookbackRight] : na,
+	 offset=-lookbackRight,
+	 title="Regular Bearish Label",
+	 text=" Bear ",
+	 style=shape.labeldown,
+	 location=location.absolute,
+	 color=bearColor,
+	 textcolor=textColor
+	 )
+
+
+
+// =====[ Buy Inputs ]=====
+gBuy = "Buy Signals"
+
+onBuyEnterSignal = input(true," ",inline = "BuyEnter",group = gBuy)
+buyEnterSignal = input.string(
+     "RSI Entered OS Zone",
+     "Buy Signal",
+     options = ["RSI Entered OS Zone","RSI Exits OS Zone","RSI Crossed Up 50","RSI Crossed Up RSI MA Below 50","RSI Crossed Up RSI MA Below OS","RSI Divergence"],
+     inline = "BuyEnter",
+     group = gBuy
+     )
+
+onBuyExitSignal = input(true," ",inline = "BuyExit",group = gBuy)
+buyExitSignal = input.string(
+     "RSI Entered OB Zone",
+     "Exit Signal",
+     options = ["RSI Entered OB Zone","RSI Exits OB Zone","RSI Crossed Down 50","RSI Crossed Down RSI MA Above 50","RSI Crossed Down RSI MA Above OB","RSI Divergence"],
+     inline = "BuyExit",
+     group = gBuy
+     )
+
+
+buySl = input(false,"SL(%)",inline = "SL",group = gBuy)
+buySlP = input.float(1," ",inline = "SL",group = gBuy)/100
+
+buyTp = input(false,"TP(%)",inline = "TP",group = gBuy)
+buyTpP = input.float(2," ",inline = "TP",group = gBuy)/100
+
+
+buyAtrSl = input(false,"ATR SL",inline = "ATR",group = gBuy)
+buyAtrLen = input.int(20,"Length",inline = "ATR",group = gBuy)
+buyAtrMult = input.float(1,"Mult",inline = "ATR",group = gBuy)
+
+buyRrTp = input(false," ",inline = "rrTp",group = gBuy)
+buyRR = input.float(2,"R/R TP",inline = "rrTp",group = gBuy)
+
+
+
+// =====[ Sell İnputs ]=====
+gSell = "Sell Signals"
+
+onSellEnterSignal = input(true," ",inline = "SellEnter",group = gSell)
+sellEnterSignal = input.string(
+     "RSI Entered OB Zone",
+     "Sell Signal",
+     options = ["RSI Entered OB Zone","RSI Exits OB Zone","RSI Crossed Down 50","RSI Crossed Down RSI MA Above 50","RSI Crossed Down RSI MA Above OB","RSI Divergence"],
+     tooltip = "RDue to the divergence algorithm, rsi divergence signals are triggered after 3 bars",
+     inline = "SellEnter",
+     group = gSell
+     )
+
+onSellExitSignal = input(true," ",inline = "SellExit",group = gSell)
+sellExitSignal = input.string(
+     "RSI Entered OS Zone",
+     "Exit Signal",
+     options = ["RSI Entered OS Zone","RSI Exits OS Zone","RSI Crossed Up 50","RSI Crossed Up RSI MA Below 50","RSI Crossed Up RSI MA Below OS","RSI Divergence"],
+     tooltip = "RDue to the divergence algorithm, rsi divergence signals are triggered after 3 bars",
+     inline = "SellExit",
+     group = gSell)
+
+
+sellSl = input(false,"SL(%)",inline = "SL",group = gSell)
+sellSlP = input.float(1," ",inline = "SL",group = gSell)/100
+
+sellTp = input(false,"TP(%)",inline = "TP",group = gSell)
+sellTpP = input.float(2," ",inline = "TP",group = gSell)/100
+
+
+sellAtrSl = input(false,"ATR SL",inline = "ATR",group = gSell)
+sellAtrLen = input.int(20,"Length",inline = "ATR",group = gSell)
+sellAtrMult = input.float(1,"Mult",inline = "ATR",group = gSell)
+
+
+sellRrTp = input(false," ",inline = "rrTp",group = gSell)
+sellRR = input.float(2,"R/R TP",inline = "rrTp",group = gSell)
+
+
+// =====[ Functions ]=====
+getTf(string x) =>
+    v = str.tonumber(x)
+    result = x
+    if result==""
+        result:="Chart"    
+
+    if result=="Chart" or result=="1D" or result=="3D" or result=="1W" or result=="1M" or result=="3M" or result=="6M" or result=="12M" or result=="1S" or result=="5S" or result=="10S" or result=="15S" or result=="30S" 
+        result :=result
+    else if v<60
+        result+="m"
+    else if v>=60
+        mod = v
+        mod %= 60
+        if mod==0 
+            result:= str.tostring(v/60) + "h"
+        else
+            result+="m"   
+    result
+
+twAlert(string header,string message,string symbol=syminfo.ticker,string tf=timeframe.period,string price="price")=>
+    priceInfo = price == "price" ? str.tostring(close,format.mintick): price
+    alertMes= header
+    alertMes+= "\n" + symbol + " | " + getTf(tf)
+    alertMes+= "\n" + "Price: " +  priceInfo
+    alertMes+= "\n" + message
+    alertMes
+
+// =====[ Buy Signals ]=====
+buySignal = switch buyEnterSignal
+    "RSI Entered OS Zone" => ta.crossunder(rsi,rsiOsLevel)
+    "RSI Exits OS Zone" => ta.crossover(rsi,rsiOsLevel)
+    "RSI Crossed Up 50" => ta.crossover(rsi,50)
+    "RSI Crossed Up RSI MA Below 50" => ta.crossover(rsi,rsiMA) and rsi<=50
+    "RSI Crossed Up RSI MA Below OS" => ta.crossover(rsi,rsiMA) and rsi<=rsiOsLevel
+    "RSI Divergence" => bullCond
+
+exitBuySignal = switch buyExitSignal
+    "RSI Entered OB Zone" => ta.crossover(rsi,rsiObLevel)
+    "RSI Exits OB Zone" => ta.crossunder(rsi,rsiObLevel)
+    "RSI Crossed Down 50" => ta.crossunder(rsi,50)
+    "RSI Crossed Down RSI MA Above 50" => ta.crossunder(rsi,rsiMA) and rsi>=50
+    "RSI Crossed Down RSI MA Above OB" => ta.crossunder(rsi,rsiMA) and rsi>=rsiObLevel
+    "RSI Divergence" => bearCond
+    => false
+
+
+// =====[ Sell Signals ]=====
+sellSignal = switch sellEnterSignal
+    "RSI Entered OB Zone" => ta.crossover(rsi,rsiObLevel)
+    "RSI Exits OB Zone" => ta.crossunder(rsi,rsiObLevel)
+    "RSI Crossed Down 50" => ta.crossunder(rsi,50)
+    "RSI Crossed Down RSI MA Above 50" => ta.crossunder(rsi,rsiMA) and rsi>=50
+    "RSI Crossed Down RSI MA Above OB" => ta.crossunder(rsi,rsiMA) and rsi>=rsiObLevel
+    "RSI Divergence" => bearCond
+    => false
+
+exitSellSignal = switch sellExitSignal
+    "RSI Entered OS Zone" => ta.crossunder(rsi,rsiOsLevel)
+    "RSI Exits OS Zone" => ta.crossover(rsi,rsiOsLevel)
+    "RSI Crossed Up 50" => ta.crossover(rsi,50)
+    "RSI Crossed Up RSI MA Below 50" => ta.crossover(rsi,rsiMA) and rsi<=50
+    "RSI Crossed Up RSI MA Below OS" => ta.crossover(rsi,rsiMA) and rsi<=rsiOsLevel
+    "RSI Divergence" => bullCond
+
+
+var pos = 0
+var entry = 0.0
+var sl = 0.0
+var tp =0.0
+
+buyAtr = ta.atr(buyAtrLen)
+sellAtr = ta.atr(sellAtrLen)
+
+newBuySignal = false
+newBuyExitSignal = false
+
+newSellSignal = false
+newSellExitSignal = false
+
+
+
+
+
+
+// =====[ Runtime Errors ]=====
+if (buySl and buyAtrSl) or (sellSl and sellAtrSl)
+    runtime.error("Please select only one of the two stop loss options.")
+
+if (buyTp and buyRrTp) or (sellTp and sellRrTp)
+    runtime.error("Please select only one of the two take profit options.")
+
+
+// =====[ Buy Signals ]=====
+if ((pos==0 and buySignal) or (pos==-1 and buyEnterSignal==sellExitSignal and buySignal))  and onBuyEnterSignal
+    newBuySignal :=true
+    entry:=close
+    sl:= buySl ? entry*(1-buySlP) : buyAtrSl ? entry- buyAtr*buyAtrMult : 0.0
+    tp:= buyRrTp ? entry+ math.abs(entry-sl)*buyRR : buyTp ? entry*(1+buyTpP) : 0.0
+    pos:=1
+    alert(twAlert("Milvetti Rsi Indicator","RSI Buy Signal"),alert.freq_once_per_bar_close)
+
+
+// =====[ Buy Exit Signals ]=====
+if pos>0 and exitBuySignal and onBuyExitSignal
+    newBuyExitSignal :=true
+    pos:=0
+    alert(twAlert("Milvetti Rsi Indicator","RSI Exit Buy"),alert.freq_once_per_bar_close)
+
+// =====[ Buy Tp ]=====
+if pos>0 and ta.crossover(high,tp) and tp!=0
+    pos:=0
+    alert(twAlert("Milvetti Rsi Indicator","RSI Buy | TP"),alert.freq_once_per_bar)
+
+// =====[ Buy Sl ]=====
+if pos>0 and ta.crossunder(low,sl) and sl!=0
+    pos:=0
+    alert(twAlert("Milvetti Rsi Indicator","RSI Buy | SL"),alert.freq_once_per_bar)
+
+
+
+
+// =====[ Sell Entry Signals ]=====
+if ((pos==0 and sellSignal) or (pos==1 and sellEnterSignal==buyExitSignal and sellSignal)) and onSellEnterSignal
+
+    newSellSignal :=true
+    entry:=close
+    sl:= sellSl ? entry*(1+sellSlP) : sellAtrSl ? entry+ sellAtr*sellAtrMult : 0.0
+    tp:= sellRrTp ? entry- math.abs(entry-sl)*sellRR : sellTp ? entry*(1-sellTpP) : 0.0
+    pos:=-1
+    alert(twAlert("Milvetti Rsi Indicator","RSI Sell Signal"),alert.freq_once_per_bar_close)
+
+// =====[ Sell Exit Signals ]=====
+if pos<0 and exitSellSignal and onSellExitSignal
+    newSellExitSignal :=true
+    pos:=0
+    alert(twAlert("Milvetti Rsi Indicator","RSI Exit Sell"),alert.freq_once_per_bar_close)
+
+// =====[ Sell Tp  ]=====
+if pos<0 and ta.crossunder(low,tp) and tp!=0
+    pos:=0
+    alert(twAlert("Milvetti Rsi Indicator","RSI Sell | TP"),alert.freq_once_per_bar)
+
+// =====[ Sell Sl ]=====
+if pos<0 and ta.crossover(high,sl) and sl!=0
+    pos:=0
+    alert(twAlert("Milvetti Rsi Indicator","RSI Sell | TP"),alert.freq_once_per_bar)
+
+
+// =====[ Bottom Signals ]=====
+plotshape(newBuySignal,"Buy",shape.labelup,location = location.bottom,color=color.green,text="Buy",textcolor = color.white,size=size.auto)
+plotshape(newSellSignal,"Sell",shape.labeldown,location = location.top,color=color.red,text="Sell",textcolor = color.white,size=size.auto)
+
+plotshape(newBuyExitSignal,"Exit Buy",shape.labeldown,location = location.top,color=color.red,text="Exit",textcolor = color.white,size=size.auto)
+plotshape(newSellExitSignal,"Exit Sell",shape.labelup,location = location.bottom,color=color.green,text="Exit",textcolor = color.white,size=size.auto)
+
+
+
+
+// =====[ Overlay Signals ]=====
+plotshape(newBuySignal,"Buy",shape.labelup,location = location.belowbar,color=color.green,text="Buy",textcolor = color.white,size=size.auto,force_overlay = true)
+plotshape(newSellSignal,"Sell",shape.labeldown,location = location.abovebar,color=color.red,text="Sell",textcolor = color.white,size=size.auto,force_overlay = true)
+
+plotshape(newBuyExitSignal,"Exit Buy",shape.labeldown,location = location.abovebar,color=color.red,text="Exit",textcolor = color.white,size=size.auto,force_overlay = true)
+plotshape(newSellExitSignal,"Exit Sell",shape.labelup,location = location.belowbar,color=color.green,text="Exit",textcolor = color.white,size=size.auto,force_overlay = true)
+
+
+
+// =====[ Position Tracker ]=====
+plotTp = plot(tp!=0 and (pos!=0 or newBuySignal or newSellSignal) ? tp : na ,"TP",color=color.new(color.green,70),style = plot.style_linebr,force_overlay = true)
+plotSl = plot(sl!=0 and (pos!=0 or newBuySignal or newSellSignal) ? sl : na ,"SL",color=color.new(color.red,70),style = plot.style_linebr,force_overlay = true)
+plotEntry = plot(entry!=0 and (pos!=0 or newBuySignal or newSellSignal) and (tp!=0 or sl!=0) ? entry : na,"Entry",color=color.new(color.gray,70),style = plot.style_linebr,force_overlay = true)
+
+fill(plotEntry,plotTp,color = color.new(color.green,70),title = "TP")
+fill(plotEntry,plotSl,color = color.new(color.red,70),title = "SL")

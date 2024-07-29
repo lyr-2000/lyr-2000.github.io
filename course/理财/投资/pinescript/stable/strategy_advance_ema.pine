@@ -1,0 +1,47 @@
+//@version=5
+strategy(title='Sinais de Compra e Venda Avançados com EMA TREND CLOUD', shorttitle="(Strategy)Sinais Avançados", overlay=true)
+
+// Parâmetros dos Indicadores de EMA Cloud
+fastLen = input(title='Fast EMA Length', defval=9)
+slowLen = input(title='Slow EMA Length', defval=20)
+
+// Parâmetros dos Outros Indicadores
+lengthRSI = input(14, title="RSI Length")
+rsiOverbought = input(70, title="RSI Overbought Level")
+rsiOversold = input(30, title="RSI Oversold Level")
+stochK = input(14, title="Stochastic %K")
+stochD = input(3, title="Stochastic %D")
+obvEmaLength = input(20, title="OBV EMA Length")
+
+// Cálculo das EMAs para o EMA Cloud
+fastEMA = ta.ema(close, fastLen)
+slowEMA = ta.ema(close, slowLen)
+
+// Cálculos dos Outros Indicadores
+rsiValue = ta.rsi(close, lengthRSI)
+k = ta.sma(ta.stoch(close, high, low, stochK), stochD)
+d = ta.sma(k, stochD)
+obv = ta.cum(volume * math.sign(ta.change(close)))
+obvEma = ta.ema(obv, obvEmaLength)
+
+// Condições Combinadas de Compra e Venda
+combinedBuyCondition = ta.crossover(fastEMA, slowEMA) and (rsiValue < rsiOversold or k > d or ta.crossover(obv, obvEma))
+combinedSellCondition = ta.crossunder(fastEMA, slowEMA) and (rsiValue > rsiOverbought or k < d or ta.crossunder(obv, obvEma))
+
+// Sinais no Gráfico
+plotshape(series=combinedBuyCondition, title="Buy Signal", location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small)
+plotshape(series=combinedSellCondition, title="Sell Signal", location=location.abovebar, color=color.red, style=shape.triangledown, size=size.small)
+
+// Alertas
+alertcondition(combinedBuyCondition, title="Buy Alert", message="Potential buy signal detected!")
+alertcondition(combinedSellCondition, title="Sell Alert", message="Potential sell signal detected!")
+
+
+
+
+strategy.entry('Long', strategy.long, when = combinedBuyCondition )
+
+strategy.close("Long",when=combinedSellCondition)
+
+p1 = close/100 /syminfo.mintick
+strategy.exit("TPL1", "Long", profit=20*p1)
