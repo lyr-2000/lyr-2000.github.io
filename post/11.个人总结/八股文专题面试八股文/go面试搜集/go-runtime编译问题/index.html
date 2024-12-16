@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>编译问题 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="为什么go不需要动态加载外部库 Go语言不需要动态加载外部库的原因主要源于其静态编译的设计哲学和语言的核心特性。以下是详细的原因和解释： 全部依" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.114.0 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/go-runtime%E7%BC%96%E8%AF%91%E9%97%AE%E9%A2%98/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/post.css">
+
+
+
+
+
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body >
+  
+  
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="globalbg"></div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel" >
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">编译问题</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2024-12-15 </span>
+        <div class="post-category">
+            <a href="/categories/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/"> go面试搜集 </a>
+            </div>
+          <span class="more-meta"> 约 5606 字 </span>
+          <span class="more-meta"> 预计阅读 12 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#为什么go不需要动态加载外部库">为什么go不需要动态加载外部库</a></li>
+        <li><a href="#运行时的独立性">运行时的独立性</a></li>
+      </ul>
+    </li>
+    <li><a href="#单核心cpu">单核心CPU</a>
+      <ul>
+        <li><a href="#中断是什么-执行过程">中断是什么 执行过程？</a></li>
+        <li><a href="#mq如果消费异常会怎么样">MQ如果消费异常会怎么样</a></li>
+        <li><a href="#如果一个接口有高并发流量过来-你要怎么保障数据库高可用性">如果一个接口有高并发流量过来 你要怎么保障数据库高可用性</a></li>
+      </ul>
+    </li>
+    <li><a href="#讲一下协程和线程的区别从多个角度说明讲一下golang协程是如何调度的和java线程的区别">讲一下协程和线程的区别？从多个角度说明，讲一下golang协程是如何调度的，和java线程的区别</a></li>
+    <li><a href="#gmp-模型的整个过程">GMP 模型的整个过程</a></li>
+    <li><a href="#页的概念">页的概念</a>
+      <ul>
+        <li><a href="#page-fault-缺页中断">Page Fault 缺页中断</a></li>
+      </ul>
+    </li>
+    <li><a href="#syncmap原理">sync.Map原理</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h3 id="为什么go不需要动态加载外部库">为什么go不需要动态加载外部库</h3>
+<p>Go语言不需要动态加载外部库的原因主要源于其静态编译的设计哲学和语言的核心特性。以下是详细的原因和解释：</p>
+<p>全部依赖打包进可执行文件：
+Go 编译器会将所有依赖的库和运行时组件（runtime）打包到最终的可执行文件中。
+因此，生成的二进制文件是一个完整的、独立的程序，运行时不需要额外的动态链接库（如 .so、.dll 文件）。
+无需动态链接：</p>
+<ul>
+<li>在编译阶段，所有的符号解析和链接工作都已经完成。</li>
+<li>可执行文件在运行时直接运行，不依赖外部库。</li>
+</ul>
+<h3 id="运行时的独立性">运行时的独立性</h3>
+<p>内置运行时（runtime）：
+Go 自带垃圾回收（GC）和协程调度（goroutine scheduler）等运行时特性，这些特性不依赖操作系统或动态库。
+与需要外部运行时支持（如 JVM、.NET CLR 或 Python 解释器）的语言相比，Go 程序更加独立。
+跨版本兼容性：</p>
+<ul>
+<li>动态库的一个问题是库的 API 和 ABI 可能会随着版本升级而变化。</li>
+<li>静态编译的 Go 程序避免了这个问题，因为它已经将代码和依赖打包到一起。</li>
+</ul>
+<p>垃圾回收机制：</p>
+<ul>
+<li>JVM使用垃圾回收器（如G1、CMS等）来自动管理内存。它通过标记-清除、复制和分代收集等算法来回收不再使用的对象。</li>
+<li>垃圾回收的触发条件包括内存不足、系统调用等。</li>
+</ul>
+<h2 id="单核心cpu">单核心CPU</h2>
+<p>问题考点的深度知识讲解：单核CPU的运作涉及几个核心概念：</p>
+<ol>
+<li>
+<p><strong>进程与线程</strong>：进程是操作系统分配资源的基本单位，而线程是进程内的执行单位。单核CPU在执行时，只能在多个进程/线程之间快速切换。</p>
+</li>
+<li>
+<p><strong>时间片</strong>：为了实现看似并发的执行，操作系统为每个进程分配一个时间片。时间片是一个小时间段，CPU在这个时间段内执行一个进程，完成后暂停该进程并切换到下一个进程。</p>
+</li>
+<li>
+<p><strong>调度算法</strong>：调度算法决定了哪个进程在何时获得CPU的控制权。常见的调度算法有：</p>
+</li>
+</ol>
+<ul>
+<li>先来先服务（FCFS）：按照进程到达的顺序来执行。</li>
+<li>最短作业优先（SJF）：选择执行时间最短的进程。</li>
+<li>时间片轮转（RR）：为每个进程分配相同的时间片，循环执行。</li>
+</ul>
+<p>多核CPU的工作原理主要依赖于以下几个方面：</p>
+<ol>
+<li>
+<p><strong>并行处理</strong>：多核CPU可以同时运行多个线程或进程，这样可以有效地利用CPU资源。例如，在一个四核CPU上，理论上可以同时执行四个独立的任务。</p>
+</li>
+<li>
+<p><strong>共享资源</strong>：多个核心通常共享某些资源，如缓存（L1、L2、L3）。这意味着核心之间可以快速共享数据，而不需要通过主内存进行繁琐的读写，从而减少延迟。</p>
+</li>
+<li>
+<p><strong>负载均衡</strong>：操作系统和应用程序需要对任务进行合理调度，以确保各个核心的负载尽可能均衡。这通常通过调度算法来实现，比如轮询调度、最小负载优先等。</p>
+</li>
+<li>
+<p><strong>编程模型</strong>：为了充分利用多核CPU，开发者需要使用并行编程的模型，如多线程编程、分布式计算等。这需要对程序的设计进行考虑，以确保可以在多个核心上有效执行。</p>
+</li>
+</ol>
+<p>伪代码示例：
+假设我们有一个简单的任务需要在多个核心上并行执行，可以如下设计伪代码：</p>
+<h3 id="中断是什么-执行过程">中断是什么 执行过程？</h3>
+<ol>
+<li>
+<p>中断请求：当外部设备需要CPU处理某个任务时，会发送中断请求信号。</p>
+</li>
+<li>
+<p>CPU检测中断：CPU在执行指令时会定期检查是否有中断请求。</p>
+</li>
+<li>
+<p>保存上下文：如果检测到中断请求，CPU会保存当前的执行上下文（如程序计数器PC、寄存器等），以便在中断处理完毕后能够恢复。</p>
+</li>
+<li>
+<p>跳转到中断向量表：每种中断都有一个对应的中断向量，CPU会根据中断类型找到相应的中断服务例程（ISR），并跳转到该地址执行。</p>
+</li>
+<li>
+<p>执行中断处理程序：ISR会处理具体的中断事件，比如读取输入数据、发送输出等。</p>
+</li>
+<li>
+<p>恢复上下文：处理完成后，CPU会恢复之前保存的上下文，继续执行被中断的程序。</p>
+</li>
+</ol>
+<p>通过这种机制，操作系统能够有效管理多任务、响应用户输入和处理外部事件，从而实现更高效的计算和资源利用。了解中断的工作原理对于深入理解操作系统、实时系统和嵌入式系统等领域非常重要。</p>
+<h3 id="mq如果消费异常会怎么样">MQ如果消费异常会怎么样</h3>
+<p>当消费异常发生时，MQ系统通常会有以下几种处理机制：</p>
+<ol>
+<li>消息重试：大多数MQ系统会将消费失败的消息重新放回队列，允许消费者再次尝试消费。重试次数通常是有限制的，超过次数后可能会将消息转移到“死信队列”。</li>
+<li>死信队列：这是一个特殊的队列，用于存放那些经过多次重试仍然无法处理的消息。开发者可以定期检查死信队列，并手动处理这些消息。</li>
+<li>监控与报警：可以设置监控机制，当消费异常发生时，及时报警，方便开发人员进行排查和修复。</li>
+</ol>
+<h3 id="如果一个接口有高并发流量过来-你要怎么保障数据库高可用性">如果一个接口有高并发流量过来 你要怎么保障数据库高可用性</h3>
+<ol>
+<li>
+<p>数据库负载均衡：通过使用负载均衡器，将请求分发到多个数据库实例，避免单个数据库实例过载。可以使用像Nginx或HAProxy这样的负载均衡工具。</p>
+</li>
+<li>
+<p>数据库连接池：使用连接池技术来管理数据库连接，避免频繁创建和销毁连接造成的性能开销。可以使用像HikariCP或Druid这样的连接池。</p>
+</li>
+<li>
+<p>数据库读写分离：将读请求和写请求分开，使用主从复制架构，将读请求分发到从数据库，从而减轻主数据库的压力。</p>
+</li>
+<li>
+<p>数据库缓存：引入缓存机制（如Redis或Memcached），对于频繁访问的数据进行缓存，减少对数据库的直接访问。</p>
+</li>
+<li>
+<p>数据库分片：对数据进行分片，将数据分布到多个数据库中，从而提升并发处理能力。</p>
+</li>
+</ol>
+<h2 id="讲一下协程和线程的区别从多个角度说明讲一下golang协程是如何调度的和java线程的区别">讲一下协程和线程的区别？从多个角度说明，讲一下golang协程是如何调度的，和java线程的区别</h2>
+<ol>
+<li><strong>基本概念</strong>：</li>
+</ol>
+<ul>
+<li><strong>线程</strong>是操作系统提供的基本执行单位，具有独立的栈空间和程序计数器，由操作系统内核管理。</li>
+<li><strong>协程</strong>是用户级别的轻量级线程，由程序运行时（如Go运行时）管理，多个协程通常共享同一线程的栈空间。</li>
+</ul>
+<ol start="2">
+<li><strong>创建和销毁成本</strong>：</li>
+</ol>
+<ul>
+<li>创建一个线程的开销相对较大，通常在几百KB内存，并且需要操作系统调度。</li>
+<li>创建协程的开销非常小，通常在几KB内存，且创建和销毁速度快。</li>
+</ul>
+<ol start="3">
+<li><strong>调度机制</strong>：</li>
+</ol>
+<ul>
+<li>Java的线程调度由操作系统内核负责，采用抢占式调度，线程状态转换相对较慢。</li>
+<li>Go的协程调度是由Go运行时（runtime）实现的，使用M:N调度模型，其中M表示系统线程数，N表示协程数。Go运行时会根据协程的执行状态和I/O操作来动态调度协程，优化CPU的使用效率。</li>
+</ul>
+<ol start="4">
+<li><strong>上下文切换</strong>：</li>
+</ol>
+<ul>
+<li>
+<p>线程的上下文切换涉及到内核态和用户态的切换，开销较大。</p>
+</li>
+<li>
+<p>协程的上下文切换在用户态完成，不涉及内核的切换，因此开销非常小。</p>
+</li>
+<li>
+<p>Java线程之间通常使用锁和条件变量来实现同步，容易导致死锁等问题。</p>
+</li>
+<li>
+<p>Go语言使用通道（channel）来实现协程之间的通信，具有更高的安全性和易用性。</p>
+</li>
+</ul>
+<p>操作系统内核态和用户态的区别，何时进入内核态or用户态
+解题思路
+踩一下
+正确答案：操作系统内核态和用户态的区别在于它们的运行权限和访问资源的能力。内核态拥有对系统硬件和资源的完全控制权限，而用户态则受到限制，不能直接访问硬件资源。进程在执行系统调用、产生中断或异常时会从用户态切换到内核态；而在完成任务后，进程又会从内核态返回到用户态。</p>
+<p>解答思路：首先，可以从定义入手，解释内核态和用户态各自的功能和权限。其次，举例说明何时发生态的切换，以及切换的机制。最后，可以探讨切换带来的性能影响和安全性。</p>
+<p>问题考点的深度知识讲解：</p>
+<ol>
+<li>内核态和用户态的定义：</li>
+</ol>
+<ul>
+<li>内核态（Kernel Mode）：操作系统内核运行的模式，允许执行任何CPU指令和访问任何内存地址。此态下，程序可以直接与硬件交互，包括访问文件系统、网络等。</li>
+<li>用户态（User Mode）：应用程序运行的模式，受限于内核的保护机制，不能直接访问硬件，只能通过系统调用与内核进行交互。</li>
+</ul>
+<ol start="2">
+<li>切换机制：</li>
+</ol>
+<ul>
+<li>切换到内核态：当用户程序需要访问硬件资源或执行特权操作时，会使用系统调用（如read、write等）。此时，CPU会产生一个软中断，进入内核态。</li>
+<li>切换到用户态：完成内核操作后，系统会通过返回指令（如ret）将控制权转回用户程序，切换到用户态。</li>
+</ul>
+<ol start="3">
+<li>性能影响和安全性：</li>
+</ol>
+<ul>
+<li>切换的频繁发生会增加上下文切换的开销，影响系统性能，因此在设计操作系统时需要尽量减少不必要的切换。</li>
+<li>内核态和用户态的划分是操作系统实现安全性的重要策略，防止用户程序对系统资源的直接访问，降低潜在的安全风险。</li>
+</ul>
+<p><strong>slice和array的区别，讲一下底层的结构</strong>
+array本质是一个固定数组, 内存层面就是一块固定的内存区域,不会改变, 传递的时候是拷贝一份完整数据.
+slice本质上是一个动态数组的封装,底层指向不是一个固定内存,可以重新指向新的内存,传递的时候底层指向相同的内存.</p>
+<p><strong>channel的用途和使用上要注意的点，底层的结构是怎样的</strong>
+channel是golang中协程之间的数据交互的重要工具,相当于与进程内的一个消息队列.
+注意点: 最重要的是chan的close处理, 不然很容易出现异常, 1写数据goroutine中调用close, 2不要多次调用close, 3使用信号通知chan close了
+底层结构: 环形队列(缓存数据, 无缓存的时候用不上), 读goroutine 队列(链表),  写goroutine 队列(链表),  锁</p>
+<p>作者：忧桑ing
+链接：https://www.nowcoder.com/feed/main/detail/553bd5956bad4548a5fabb2c1f97bb29?sourceSSR=search
+来源：牛客网</p>
+<p><strong>go逃逸分析情况</strong></p>
+<ol>
+<li>
+<p>作用域分析：编译器会分析变量的作用域，判断它是否会在函数返回后继续存在。</p>
+</li>
+<li>
+<p>数据流分析：通过跟踪变量的使用情况，编译器能够检测出变量是否在闭包、 goroutine 等结构中被引用。</p>
+</li>
+<li>
+<p>栈和堆的管理：在Go语言中，栈内存的分配和释放是非常高效的，通常在函数调用结束后自动回收。而堆则需要更复杂的垃圾回收机制，因此在性能要求较高的场景下，优先选择栈分配可以减少内存管理的开销。</p>
+</li>
+</ol>
+<p>伪代码示例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">escapeAnalysisExample</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="nx">x</span> <span class="o">:=</span> <span class="mi">10</span> <span class="c1">// x 是局部变量，逃逸分析后可以在栈上分配
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 这里的 x 会逃逸，因为 goroutine 会在函数外部运行
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在这个例子中，变量 x 在 goroutine 中被引用，因此在逃逸分析中，编译器会决定将 x 分配在堆上，而不是栈上。通过这样的分析，Go语言的编译器能够优化内存使用，提高程序性能。</p>
+<h2 id="gmp-模型的整个过程">GMP 模型的整个过程</h2>
+<p>每个 M执行P的本地队列的G,
+执行完成之后去全局队列上锁 并且获取G 并且执行</p>
+<p>如果全局队列也没有任务调度了，就去其他 的 P的队列中
+获取 G来执行 ，工作窃取机制。</p>
+<p>如果全局队列为空，就会让自身进入自旋状态，等待新的 G执行。</p>
+<p>G 阻塞时的行为
+当一个 Goroutine （G）阻塞，例如等待 I/O、系统调用，或者 sync.Mutex 等操作，会触发以下过程：</p>
+<p>当前 G 暂停执行</p>
+<p>当前正在运行的 G 被标记为阻塞。
+G 的状态从“运行中”变为“等待”。
+如果阻塞是可预测的（如 I/O 或系统调用），调度器会尝试将 M 转为处理其他任务。
+G 从 P 中解除绑定</p>
+<p>P 上的当前 G（正在运行的）会从 P 中解除绑定。
+P 此时会尝试从其本地队列中取出下一个 G，继续执行。
+M 的行为</p>
+<p>如果 M 因 G 阻塞无法运行其他 G：
+系统调用等场景：M 会停留并等待系统调用返回。
+可恢复阻塞：M 会返回 G 的控制权，切换至下一个可运行的 G。
+M 不会闲置，而是尝试从全局队列、其他 P 的队列中窃取任务。
+阻塞的 G 的处理</p>
+<p>阻塞的 G 被放到一个等待队列中，等待解锁/事件触发。
+当阻塞结束（如系统调用完成或信号触发），此 G 会被放回到就绪队列中。
+调度器分配资源</p>
+<p>当 G 恢复时，调度器会检查哪个 P/M 空闲，重新分配资源，让 G 继续运行。</p>
+<h2 id="页的概念">页的概念</h2>
+<p>页是计算机操作系统中的内存管理单位，在虚拟内存系统中起核心作用。它将虚拟地址空间划分为大小相等的块（称为页），并将内存（物理地址空间）也划分为相同大小的块（称为页框，Page Frame）。页使得虚拟地址到物理地址的映射变得高效。</p>
+<p>虚拟内存管理：
+进程的虚拟内存空间通过页表映射到物理内存，允许不同进程共享物理内存。
+内存保护：
+每个页都有访问权限（如读、写、执行），防止进程非法访问。
+减少内存碎片：
+页的固定大小可以更好地组织和分配内存资源，减少内存碎片问题。
+内存与磁盘的交换（分页机制）：
+当内存不足时，页可以被写入磁盘的交换空间，腾出内存空间。</p>
+<p>内存置换页算法（Page Replacement Algorithm）是在操作系统中用于管理虚拟内存的一类算法。当物理内存满了，需要从内存中移除一个页面以便加载新的页面时，操作系统使用这些算法决定哪个页面应该被置换。</p>
+<p>以下是常见的内存置换算法：</p>
+<h3 id="page-fault-缺页中断">Page Fault 缺页中断</h3>
+<p>缺页中断是操作系统中虚拟内存管理的一种机制，当一个进程尝试访问的虚拟地址不在物理内存中时，硬件触发的一种异常。这种异常通常用于将需要的页面从磁盘加载到内存中。</p>
+<p>缺页中断通常在以下情况下发生：</p>
+<p>页面未加载：访问的虚拟页不在物理内存中。
+无效页表项：页表中对应虚拟地址的页表项标记为无效（如未映射或被换出）。
+权限问题：试图以未授权的方式访问页面（例如写入一个只读页面）。</p>
+<ol start="4">
+<li>缺页中断的分类
+根据页面是否在磁盘上，缺页中断可以分为以下两类：</li>
+</ol>
+<ul>
+<li>软缺页（Soft Page Fault）：
+页面并未真正缺失，可能仍在缓存中（例如文件系统的缓存）。
+操作系统直接更新页表，无需从磁盘加载。</li>
+<li>硬缺页（Hard Page Fault）：
+页面确实不存在于物理内存中，需要从磁盘读取页面到内存。
+硬缺页开销较大，读取磁盘的 I/O 操作耗时远高于内存访问。</li>
+</ul>
+<p><a href="https://docs.qq.com/sheet/DQkRORVFKc2dTeXlB?_t=1734282520091&amp;tab=BB08J2" target="_blank" rel="noopener">
+  https://docs.qq.com/sheet/DQkRORVFKc2dTeXlB?_t=1734282520091&tab=BB08J2
+</a>
+</p>
+<p><strong>总结</strong>
+缺页中断是虚拟内存系统中实现页面换入换出的关键机制，核心作用是：</p>
+<p>提供虚拟内存的扩展能力。
+动态分配内存，优化资源使用。
+但需要有效的内存管理策略来减少缺页中断的开销，否则可能出现性能问题，如换页抖动（Thrashing）。</p>
+<h2 id="syncmap原理">sync.Map原理</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-Go" data-lang="Go"><span class="line"><span class="cl"><span class="c1">// [the Go memory model]: https://go.dev/ref/mem
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">type</span> <span class="nx">Map</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mu</span> <span class="nx">Mutex</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// read contains the portion of the map&#39;s contents that are safe for
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// concurrent access (with or without mu held).
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// The read field itself is always safe to load, but must only be stored with
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// mu held.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Entries stored in read may be updated concurrently without mu, but updating
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// a previously-expunged entry requires that the entry be copied to the dirty
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// map and unexpunged with mu held.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">read</span> <span class="nx">atomic</span><span class="p">.</span><span class="nx">Pointer</span><span class="p">[</span><span class="nx">readOnly</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// dirty contains the portion of the map&#39;s contents that require mu to be
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// held. To ensure that the dirty map can be promoted to the read map quickly,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// it also includes all of the non-expunged entries in the read map.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Expunged entries are not stored in the dirty map. An expunged entry in the
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// clean map must be unexpunged and added to the dirty map before a new value
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// can be stored to it.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// If the dirty map is nil, the next write to the map will initialize it by
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// making a shallow copy of the clean map, omitting stale entries.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">dirty</span> <span class="kd">map</span><span class="p">[</span><span class="nx">any</span><span class="p">]</span><span class="o">*</span><span class="nx">entry</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// misses counts the number of loads since the read map was last updated that
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// needed to lock mu to determine whether the key was present.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Once enough misses have occurred to cover the cost of copying the dirty
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// map, the dirty map will be promoted to the read map (in the unamended
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// state) and the next store to the map will make a new dirty copy.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">misses</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
+      
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2024-12-15
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/">go面试搜集</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/%E7%BD%91%E7%BB%9C%E9%97%AE%E9%A2%98/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">网络问题</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/mysql%E4%B8%93%E9%A2%98/">
+            <span class="next-text nav-default">mysql专题</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2024-12-15 14:01:22 \u002b0800 \u002b0800',
+        title: '编译问题',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://lyr-2000.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-09-23 - 
+    2024<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://fastly.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.6d2c4f127d59e1dce56e2845adf7d359011b86d8fc907e98877eb35bd445b2b3.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js/back_btn.js"></script>
+<script src="/js/docsearch.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "ca56155675cf2d76ff16be2f41c14d4e",
+		indexName: "blog",
+		appId: "Q0KHZE8QIK",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "ca56155675cf2d76ff16be2f41c14d4e",
+	 indexName: "blog",
+	 appId: "Q0KHZE8QIK",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+ 
+  <div id="BR_cornner">
+    <div id='darkThemeBtn'>T</div> 
+  </div> 
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<script defer async>
+
+  mermaid.initialize({startOnLoad:true});
+</script>
+</body>
+</html>

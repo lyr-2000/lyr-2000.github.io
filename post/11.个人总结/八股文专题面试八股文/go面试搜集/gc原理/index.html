@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>王者段位java面试视频 - 凌冬的个人博客</title>
+  <title>gc原理 - 凌冬的个人博客</title>
   <meta name="renderer" content="webkit" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="LYR" /><meta name="description" content="王者段位java模式 参考视频 hystrix 降级 限流 配置 中心 阿波罗，config 等 微服务网关 zuul rbac模型 用户和角色是多对多的 一个 角色 多个用户，一个用户 多" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+<meta name="author" content="lyr" /><meta name="description" content="栈内存是函数专用内存，存函数入参出参的，(出栈后内存被释放) 堆内存是程序的共享内存 (需要gc释放和管理) 主流回收算法 引用计数， 销毁速度快 分代" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
 
 
 
@@ -26,7 +26,7 @@
 <meta name="generator" content="Hugo 0.114.0 with theme even" />
 
 
-<link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/%E8%A7%86%E9%A2%91%E8%B5%84%E6%96%99%E5%AE%9E%E6%88%98/%E7%8E%8B%E8%80%85%E6%AE%B5%E4%BD%8Djava/" />
+<link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/gc%E5%8E%9F%E7%90%86/" />
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -172,15 +172,15 @@ input.PC_MARK1:focus{
           <article class="post">
     
     <header class="post-header">
-      <h1 class="post-title">王者段位java面试视频</h1>
+      <h1 class="post-title">gc原理</h1>
 
       <div class="post-meta">
-        <span class="post-time"> 2021-08-17 </span>
+        <span class="post-time"> 2024-12-16 </span>
         <div class="post-category">
-            <a href="/categories/%E5%85%AB%E8%82%A1%E6%96%87/"> 八股文 </a>
+            <a href="/categories/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/"> go面试搜集 </a>
             </div>
-          <span class="more-meta"> 约 746 字 </span>
-          <span class="more-meta"> 预计阅读 2 分钟 </span>
+          <span class="more-meta"> 约 247 字 </span>
+          <span class="more-meta"> 预计阅读 1 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -188,128 +188,35 @@ input.PC_MARK1:focus{
     <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">文章目录</h2>
   <div class="post-toc-content">
-    <nav id="TableOfContents">
-  <ul>
-    <li>
-      <ul>
-        <li><a href="#王者段位java模式">王者段位java模式</a></li>
-        <li><a href="#hystrix-降级-限流">hystrix 降级 限流</a></li>
-        <li><a href="#配置-中心-阿波罗config-等">配置 中心 阿波罗，config 等</a></li>
-        <li><a href="#微服务网关-zuul">微服务网关 zuul</a></li>
-        <li><a href="#rbac模型">rbac模型</a></li>
-        <li><a href="#常见分布式解决方案">常见分布式解决方案</a></li>
-        <li><a href="#rabbitmq-重复消息">rabbitMQ 重复消息</a></li>
-        <li><a href="#redis-和-mysql-双写一致性的问题">redis 和 mysql 双写一致性的问题</a></li>
-        <li><a href="#redis-分布式锁">redis 分布式锁</a></li>
-        <li><a href="#mybatis-二级缓存-hashmap-redis-缓存的区别">mybatis 二级缓存， hashMap redis 缓存的区别</a></li>
-        <li><a href="#数据库的优化">数据库的优化</a></li>
-        <li><a href="#分表策略">分表策略</a></li>
-        <li><a href="#union-的问题">union 的问题</a></li>
-        <li><a href="#索引">索引</a></li>
-        <li><a href="#myisam-和-innodb-索引上面的区别">myisam 和 innodb 索引上面的区别</a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
+    <nav id="TableOfContents"></nav>
   </div>
 </div>
 
     <div class="post-content">
-      <h3 id="王者段位java模式">王者段位java模式</h3>
-<p><a href="https://www.bilibili.com/video/BV1LC4y1a786/?spm_id_from=autoNext" target="_blank" rel="noopener">
-  参考视频
-</a>
+      <p>栈内存是函数专用内存，存函数入参出参的，(出栈后内存被释放)</p>
+<p>堆内存是程序的共享内存 (需要gc释放和管理)</p>
+<p>主流回收算法</p>
+<ol>
+<li>引用计数， 销毁速度快</li>
+<li>分代收集，不同代用不同算法，算法复杂
+3.  标记整理
+4.  标记清除等
+5.  复制算法</li>
+<li>标记清除算法 &ndash;Golang
+<ol>
+<li>三色标记法</li>
+</ol>
+</li>
+</ol>
+<p>标记清除解决了 引用计数无法识别的缺点，但是需要 STW ,暂停程序运行。</p>
+<p>
+
+
+<img class="md__image_rel" src="../images/image.png" alt="alt text"  />
 </p>
-<h3 id="hystrix-降级-限流">hystrix 降级 限流</h3>
-<h3 id="配置-中心-阿波罗config-等">配置 中心 阿波罗，config 等</h3>
-<h3 id="微服务网关-zuul">微服务网关 zuul</h3>
-<h3 id="rbac模型">rbac模型</h3>
-<p>用户和角色是多对多的 一个 角色 多个用户，一个用户 多个 角色</p>
-<p>权限 和 角色关系，一个权限 多个 角色，一个 角色可以多个权限</p>
-<h3 id="常见分布式解决方案">常见分布式解决方案</h3>
-<ol>
-<li>tcc</li>
-<li>最大努力尝试</li>
-<li>最终一致性</li>
-</ol>
-<h3 id="rabbitmq-重复消息">rabbitMQ 重复消息</h3>
-<p><a href="https://blog.csdn.net/lucky_ly/article/details/89590646" target="_blank" rel="noopener">
-  rabbitMQ重复消息参考博客
-</a>
-</p>
-<h3 id="redis-和-mysql-双写一致性的问题">redis 和 mysql 双写一致性的问题</h3>
-<p>先更新 数据库 再删除缓存</p>
-<p>【可能出现的问题，更新完成后， 缓存 还没有删除，可能导致</p>
-<p>短暂的数据不一致问题】</p>
-<p><strong>你直接回答： 没有十全十美的解决方案</strong></p>
-<h3 id="redis-分布式锁">redis 分布式锁</h3>
-<ol>
-<li>setnx 的问题：
-<ul>
-<li>还没有操作完， 这个锁已经过期了
-<ul>
-<li>解决方案： watchdog 看门狗机制</li>
-</ul>
-</li>
-</ul>
-</li>
-</ol>
-<h3 id="mybatis-二级缓存-hashmap-redis-缓存的区别">mybatis 二级缓存， hashMap redis 缓存的区别</h3>
-<p>redis 做分布式缓存， 允许别的服务 同时去使用</p>
-<h3 id="数据库的优化">数据库的优化</h3>
-<ul>
-<li>分库分表</li>
-<li>集群</li>
-<li>explain 解释 优化
-<ul>
-<li>覆盖索引</li>
-<li>回表</li>
-</ul>
-</li>
-</ul>
-<h3 id="分表策略">分表策略</h3>
-<ol>
-<li>设置步长</li>
-<li>按照时间
-<ol>
-<li>今年的放一张表</li>
-<li>这个月的放一张表</li>
-</ol>
-</li>
-<li>hash算法
-<ol>
-<li>算出 在哪张表</li>
-</ol>
-</li>
-</ol>
-<h3 id="union-的问题">union 的问题</h3>
-<ol>
-<li>union 会导致临时表产生</li>
-<li>union和 union all 区别
-<ol>
-<li>union 会去重 【去重的话 会导致效率低】</li>
-<li>union all 不去重</li>
-</ol>
-</li>
-</ol>
-<h3 id="索引">索引</h3>
-<p>直接回答 b + 树，</p>
-<p>b+ 树 和 二叉树 的区别</p>
-<p>b+ 树 有多个子节点， 这样压低了 层数 ，如果是 二叉树的话，数据量比较多</p>
-<p>层数就比较深， b+ 数压低层数，查询效率就会比较高</p>
-<h3 id="myisam-和-innodb-索引上面的区别">myisam 和 innodb 索引上面的区别</h3>
-<p>my 分为2部分 索引 和 数据文件 是 不一样的 ，数据分离，</p>
-<p>查询的话 是先查索引再查数据，会有个回表操作</p>
-<p>这里 我直接 说 myisam 是非聚集索引 查询会回表</p>
-<p>innodb 如果是 主键索引的话，直接 就是 可以 一次查询出来、</p>
-<p>因为 索引和数据是存 一起的，叫做聚集索引</p>
-<p>那 innodb 普通索引是非聚集索引， 索引存的是 主键，查询 会有个回表操作。也就是查询2次<strong>回表效率低</strong></p>
-<p>innodb 可以支持事务， myisam 不支持事务，只能锁表，更新操作 锁表，导致效率太低</p>
-<p>mysql 默认使用 innodb ， innodb 和 myisam 区别是 innodb 行锁，myisam 表锁</p>
-<h5 id="innodb-锁表怎么解决">innodb 锁表怎么解决</h5>
-<pre><code>1. 锁表的话，可能是 因为 范围更新，导致 锁住一个比较大的区间【 这样 近似看成是锁表了】
-2. 数据库备份的时候，好像会锁表
-</code></pre>
+<p>go标记清除算法使用了混合写屏障和三色标记</p>
+<p>Gc过程可以和协程一起执行。</p>
+<p>write barrier 是为了防止gc扫描导致内存变化引起混乱，写屏障在gc特定时间开启，开启后指针传递的时候会给指针标记 本轮不回收，下次Gc时候确定。</p>
 
       
     </div>
@@ -317,12 +224,12 @@ input.PC_MARK1:focus{
     <div class="post-copyright">
   <p class="copyright-item">
     <span class="item-title">文章作者</span>
-    <span class="item-content">LYR</span>
+    <span class="item-content">lyr</span>
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
     <span class="item-content">
-        2021-08-17
+        2024-12-16
         
     </span>
   </p>
@@ -345,15 +252,15 @@ input.PC_MARK1:focus{
   </div>
 </div><footer class="post-footer">
       <div class="post-tags">
-          <a href="/tags/%E5%85%AB%E8%82%A1%E6%96%87/">八股文</a>
+          <a href="/tags/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/">go面试搜集</a>
           </div>
       <nav class="post-nav">
-        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/%E8%A7%86%E9%A2%91%E8%B5%84%E6%96%99%E5%AE%9E%E6%88%98/%E5%B7%A5%E4%BD%9C6%E5%B9%B4%E9%9D%A2%E8%AF%95%E8%A7%86%E9%A2%91/">
-            <i class="iconfont icon-left"></i>
-            <span class="prev-text nav-default">工作6年的面试视频</span>
-            <span class="prev-text nav-mobile">上一篇</span>
-          </a>
         
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/%E7%BD%91%E7%BB%9C%E9%97%AE%E9%A2%98/">
+            <span class="next-text nav-default">网络问题</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
       </nav>
     </footer>
   </article>
@@ -366,8 +273,8 @@ input.PC_MARK1:focus{
     <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
     <script type="text/javascript">
       var gitalk = new Gitalk({
-        id: '2021-08-17 13:48:22 \u002b0800 \u002b0800',
-        title: '王者段位java面试视频',
+        id: '2024-12-16 01:14:53 \u002b0800 \u002b0800',
+        title: 'gc原理',
         clientID: '604ae0a4eff099135503',
         clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
         repo: 'lyr-2000.github.io',

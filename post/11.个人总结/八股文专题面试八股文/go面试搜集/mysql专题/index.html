@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>mysql专题 - 凌冬的个人博客</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="lyr" /><meta name="description" content="题目列表 上来先拷打项目 MYSQL的视图，触发器，两个都说不会（没看过这里的八股） 事务怎么实现的。 mysql集群的数据一致性。 sleep和wa" /><meta name="keywords" content="凌冬的博客, LYR的个人博客, 二次元技术宅" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.114.0 with theme even" />
+
+
+<link rel="canonical" href="https://lyr-2000.github.io/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/mysql%E4%B8%93%E9%A2%98/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<link href="/sass/main.min.4d31fe93a248bf2a033aec98b3dca0e0e3f55453ad76230e57f190d60450d008.css" rel="stylesheet"> 
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/post.css">
+
+
+
+
+
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+
+</head>
+<body >
+  
+  
+  <div>
+    <button class="button pink back">back</button>
+    <button class="button pink go">go</button>
+    <button class="button pink topUrl">top</button>
+    
+  </div>
+  <div id="globalbg"></div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">凌冬的博客</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><li style="display:inline-block;margin-right:10px;">
+			<input type="search" class="mob-docsearch-input" placeholder="Search" />
+		</li><a href="/">
+        <li class="mobile-menu-item">首页</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">归档页</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类</li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于</li>
+      </a><a href="/friends">
+        <li class="mobile-menu-item">友人帐</li>
+      </a>
+	
+	
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel" >
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">凌冬的博客</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">首页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">归档页</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">标签</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">分类</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/about/">关于</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/friends">友人帐</a>
+      </li><li  style="list-style: none;position: relative;left: 360px;bottom: 32px;">
+		<input type="search" class="docsearch-input PC_MARK1" placeholder="Search" />
+	  </li></ul>
+</nav>
+
+<style>
+  .mob-docsearch-input {
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	position: relative;
+    vertical-align: top;
+    width: 93%;
+    margin: auto;
+    margin-left: 7px;
+  
+  }
+  input.PC_MARK1{
+	border: 1px solid #ccc;
+	padding: 6px 0px;
+	border-radius: 3px;
+	padding-left:5px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+input.PC_MARK1:focus{
+		border-color: #66afe9;
+		outline: 0;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+}
+</style>
+
+    </header>
+	
+	
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">mysql专题</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2024-12-15 </span>
+        <div class="post-category">
+            <a href="/categories/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/"> go面试搜集 </a>
+            </div>
+          <span class="more-meta"> 约 2189 字 </span>
+          <span class="more-meta"> 预计阅读 5 分钟 </span>
+        <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#题目列表">题目列表</a></li>
+    <li><a href="#mysql集群数据一致性">mysql集群数据一致性</a></li>
+    <li><a href="#垃圾回收算法">垃圾回收算法</a>
+      <ul>
+        <li><a href="#mysql崩溃恢复如何实现两阶段提交">MySQL崩溃恢复如何实现，两阶段提交</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    <div class="post-content">
+      <h2 id="题目列表">题目列表</h2>
+<p>上来先拷打项目</p>
+<ul>
+<li>MYSQL的视图，触发器，两个都说不会（没看过这里的八股）</li>
+<li>事务怎么实现的。</li>
+<li>mysql集群的数据一致性。</li>
+<li>sleep和wait会释放锁吗。</li>
+<li>spring在哪里用反射。</li>
+<li>springbean是什么。</li>
+<li>linux怎么查看端口占用。</li>
+<li>垃圾回收算法。
+假设有一个10行的文件，每一行的数据之间用:分割成一个个列，给出第三列的全部数据</li>
+<li>手撕快排
+顺便问问大家测开实习能包装成测开吗包装难度大吗
+后续:
+第二天约二面
+再后续:
+boss已读不回，问下大家这种怎么push，前文是面试官迟到，我问问是什么情况
+再再后续:
+距离二面两周之后，约了hr面，也是泡出来了
+再再再后续:
+三面是leader面，让狠狠拷打了测试，感觉寄了，后面感觉面试官都不是很想面了，草草结束，丸辣。为什么三面还要拷打啊。</li>
+</ul>
+<p>作者：芝士雪豹123
+链接：https://www.nowcoder.com/
+来源：牛客网</p>
+<p><strong>事务怎么实现的。</strong>
+解题思路
+踩一下
+正确答案：事务是通过数据库管理系统（DBMS）提供的机制来实现的，主要包括ACID特性（原子性、一致性、隔离性、持久性）来确保操作的完整性和可靠性。具体实现通常涉及日志管理、锁机制和多版本并发控制（MVCC）等技术。</p>
+<p>解答思路：要理解事务的实现，首先需要明确事务的定义及其特性。然后，可以探讨不同数据库如何实现这些特性，包括具体的技术和算法。最后，可以通过简单的伪代码示例来说明事务的基本操作。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="k">BEGIN</span><span class="w"> </span><span class="k">TRANSACTION</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="err">操作</span><span class="mi">1</span><span class="err">：更新账户</span><span class="n">A</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">UPDATE</span><span class="w"> </span><span class="n">Account</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">amount</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">account_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;A&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="err">操作</span><span class="mi">2</span><span class="err">：更新账户</span><span class="n">B</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">UPDATE</span><span class="w"> </span><span class="n">Account</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">amount</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">account_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;B&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">COMMIT</span><span class="w"> </span><span class="k">TRANSACTION</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在这个示例中，BEGIN TRANSACTION标志事务的开始，COMMIT TRANSACTION标志事务的提交。如果在两个更新之间发生错误，可以通过回滚机制撤回到事务开始前的状态，确保原子性和一致性。</p>
+<h2 id="mysql集群数据一致性">mysql集群数据一致性</h2>
+<p>MySQL集群通常采用主从复制的方式来实现数据的冗余和负载均衡。在这种模式下，主节点负责写操作，而从节点负责读操作。为了保持数据一致性，主节点会在每次写入后将变更记录到二进制日志（binlog），然后从节点通过读取这个日志来更新自身的数据。</p>
+<p>例如，假设有一个主节点和两个从节点，主节点执行了一次插入操作，新的数据会被记录在binlog中。从节点会定期读取这个日志并执行相应的操作。</p>
+<p>对于数据的一致性，异步复制可能导致从节点的数据落后于主节点，这在某些场景下可能造成读到过期数据。而半同步复制则会在主节点写入成功后，等待至少一个从节点确认，才能返回给客户端，确保数据一致性。</p>
+<p>此外，在分布式数据库中，一致性协议（如Paxos或Raft）被用于确保在多个节点之间的数据一致性。这些协议通过选举机制和日志复制来保证在网络分区或节点故障时，系统依然能够保持一致性。</p>
+<p>总结来说，MySQL集群的数据一致性依赖于主从复制机制的实现、事务的处理方式，以及在分布式环境下采用的一致性协议。理解这些基础知识可以帮助面试者在面试中更好地回答有关数据库一致性的问题。</p>
+<h2 id="垃圾回收算法">垃圾回收算法</h2>
+<p>正确答案：垃圾回收算法是自动管理内存的一种机制，旨在回收不再使用的对象，释放内存空间。常见的垃圾回收算法包括引用计数法、标记-清除法、标记-整理法和分代收集法等。</p>
+<p>解答思路：</p>
+<ol>
+<li>引用计数法：每个对象都有一个计数器，记录有多少个引用指向它。当引用计数为零时，说明对象不再被使用，可以立即回收。这种方法的一个缺点是无法处理循环引用。</li>
+<li>标记-清除法：系统周期性地标记所有可达对象，然后清除未被标记的对象。这种方法会导致内存碎片，但能有效处理循环引用问题。</li>
+<li>标记-整理法：与标记-清除法类似，但在清除时，将存活的对象移动到内存的一端，以消除碎片。</li>
+<li>分代收集法：根据对象的存活时间将对象分为不同的代，年轻代的对象更可能被回收，因此优先对年轻代进行垃圾回收，以提高效率。</li>
+</ol>
+<h3 id="mysql崩溃恢复如何实现两阶段提交">MySQL崩溃恢复如何实现，两阶段提交</h3>
+<p>MySQL崩溃恢复通常是通过重做日志（Redo Log）和撤销日志（Undo Log）来实现的。两阶段提交（Two-Phase Commit）是一种确保分布式系统中所有参与者都能一致提交的协议。</p>
+<p>解答思路：首先，理解MySQL的崩溃恢复机制。MySQL使用InnoDB存储引擎，该引擎具备崩溃恢复的能力。MySQL的崩溃恢复分为几个步骤：首先，使用重做日志将未提交的事务重做以确保数据一致性；然后，使用撤销日志回滚已提交但未持久化的事务。两阶段提交则是确保在分布式环境中，所有节点在提交事务之前都达成一致。</p>
+<p>问题考点的深度知识讲解：</p>
+<ol>
+<li>
+<p><strong>重做日志（Redo Log）</strong>：重做日志用于记录事务对数据库所做的修改操作。MySQL会在执行事务时将操作记录到重做日志中。即使在数据库崩溃的情况下，重做日志可以帮助恢复未持久化的数据。例如，重做日志的写入是顺序的，这样可以提高性能。</p>
+</li>
+<li>
+<p><strong>撤销日志（Undo Log）</strong>：撤销日志用于回滚未提交的事务。当事务被回滚时，MySQL会利用撤销日志将已更改的数据恢复到事务开始前的状态。撤销日志同样是顺序写入，支持高效的回滚操作。</p>
+</li>
+</ol>
+<p>伪代码示例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">function redoLogRecovery():
+</span></span><span class="line"><span class="cl">openRedoLog()
+</span></span><span class="line"><span class="cl">while (hasMoreRedoEntries()):
+</span></span><span class="line"><span class="cl">entry = readNextRedoEntry()
+</span></span><span class="line"><span class="cl">applyEntryToDatabase(entry)
+</span></span><span class="line"><span class="cl">closeRedoLog()
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">function undoLogRecovery():
+</span></span><span class="line"><span class="cl">openUndoLog()
+</span></span><span class="line"><span class="cl">while (hasMoreUndoEntries()):
+</span></span><span class="line"><span class="cl">entry = readNextUndoEntry()
+</span></span><span class="line"><span class="cl">rollbackEntryInDatabase(entry)
+</span></span><span class="line"><span class="cl">closeUndoLog()
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>两阶段提交（Two-Phase Commit）</strong>：在分布式系统中，确保所有参与者对事务的提交达成一致。第一阶段是准备阶段，所有参与者准备提交并回复；第二阶段是提交阶段，如果所有参与者都准备好了，协调者会通知提交，否则会通知回滚。</p>
+
+      
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">lyr</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2024-12-15
+        
+    </span>
+  </p>
+  
+  
+</div>
+<div class="post-reward">
+  <input type="checkbox" name="reward" id="reward" hidden />
+  <label class="reward-button" for="reward">赞赏支持</label>
+  <div class="qr-code">
+    
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/wechat.jpg">
+        <span>微信打赏</span>
+      </label>
+    <label class="qr-code-image" for="reward">
+        <img class="image" src="/img/reward/alipay.jpg">
+        <span>支付宝打赏</span>
+      </label>
+  </div>
+</div><footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/">go面试搜集</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/go-runtime%E7%BC%96%E8%AF%91%E9%97%AE%E9%A2%98/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">编译问题</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/%E7%BD%91%E6%98%93/">
+            <span class="next-text nav-default">网易</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+        </div>
+        <div id="gitalk-container"></div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      var gitalk = new Gitalk({
+        id: '2024-12-15 13:43:21 \u002b0800 \u002b0800',
+        title: 'mysql专题',
+        clientID: '604ae0a4eff099135503',
+        clientSecret: '403ff7c3a3ff6a91d905110c91eb1651219b7233',
+        repo: 'lyr-2000.github.io',
+        owner: 'lyr-2000',
+        admin: ['lyr-2000'],
+        body: decodeURI(location.href)
+      });
+      gitalk.render('gitalk-container');
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://github.com/gitalk/gitalk">comments powered by gitalk.</a></noscript>
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:lyr-2000@qq.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://lyr-2000.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  <div class="busuanzi-footer">
+    <span id="busuanzi_container_site_pv"> 本站总访问量 <span id="busuanzi_value_site_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次 </span>
+      <span class="division">|</span>
+    <span id="busuanzi_container_site_uv"> 本站总访客数 <span id="busuanzi_value_site_uv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 人 </span>
+  </div>
+
+  <span class="copyright-year">
+    &copy; 
+    2021-09-23 - 
+    2024<span class="heart"><i class="iconfont icon-heart"></i></span><span>LYR</span>
+  </span>
+</div>
+
+
+
+<script 
+ 
+    src="https://fastly.jsdelivr.net/gh/lyr-2000/live2d-widget@latest/autoload.js"></script>
+
+
+
+
+
+
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.6d2c4f127d59e1dce56e2845adf7d359011b86d8fc907e98877eb35bd445b2b3.js"></script>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        tags: 'ams',
+        },
+	  options: {
+		ignoreHtmlClass:'mathjax_ignore',
+	  }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-mml-chtml.js" integrity="sha256-HGLuEfFcsUJGhvB8cQ8nr0gai9EucOOaIxFw7qxmd+w=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+<script src="/js/back_btn.js"></script>
+<script src="/js/docsearch.min.js"></script>
+<script src="/js/lazyload.min.js"></script>
+<script defer="defer" async>
+ 
+  window.addEventListener('load',function() {
+  
+	docsearch({
+		apiKey: "ca56155675cf2d76ff16be2f41c14d4e",
+		indexName: "blog",
+		appId: "Q0KHZE8QIK",
+		inputSelector: '.docsearch-input',
+		debug: false,
+    });
+    docsearch({
+	 apiKey: "ca56155675cf2d76ff16be2f41c14d4e",
+	 indexName: "blog",
+	 appId: "Q0KHZE8QIK",
+	 inputSelector: '.mob-docsearch-input',
+	 debug: false,
+    });
+  });
+ 
+</script>
+  
+ 
+  <div id="BR_cornner">
+    <div id='darkThemeBtn'>T</div> 
+  </div> 
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<script defer async>
+
+  mermaid.initialize({startOnLoad:true});
+</script>
+</body>
+</html>

@@ -179,8 +179,8 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/"> go面试搜集 </a>
             </div>
-          <span class="more-meta"> 约 881 字 </span>
-          <span class="more-meta"> 预计阅读 2 分钟 </span>
+          <span class="more-meta"> 约 2636 字 </span>
+          <span class="more-meta"> 预计阅读 6 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -191,6 +191,18 @@ input.PC_MARK1:focus{
     <nav id="TableOfContents">
   <ul>
     <li><a href="#网易八股面试">网易八股面试</a></li>
+    <li><a href="#解题">解题</a>
+      <ul>
+        <li><a href="#go基础">GO基础</a></li>
+        <li><a href="#mvcc">MVCC</a></li>
+        <li><a href="#案例">案例</a></li>
+        <li><a href="#快照读的关键机制mvcc"><strong>快照读的关键机制：MVCC</strong></a></li>
+        <li><a href="#示例解释"><strong>示例解释</strong></a></li>
+        <li><a href="#为什么快照读查询不到新插入的数据"><strong>为什么快照读查询不到新插入的数据？</strong></a></li>
+        <li><a href="#快照读-vs-当前读"><strong>快照读 VS 当前读</strong></a></li>
+        <li><a href="#总结"><strong>总结</strong></a></li>
+      </ul>
+    </li>
   </ul>
 </nav>
   </div>
@@ -329,6 +341,208 @@ input.PC_MARK1:focus{
 </a>
 
 来源：牛客网</p>
+<h2 id="解题">解题</h2>
+<h3 id="go基础">GO基础</h3>
+<p>定义：Go 的每个包可以有多个 init 函数（甚至在一个文件内），用于初始化代码。
+运行时机：
+先初始化被依赖的包：如果包 A 依赖包 B，则 B 的 init 函数会在 A 的 init 函数前运行。
+同一包内多个文件：按照编译器决定的文件顺序依次执行。
+单文件多个 init 函数：按照代码顺序执行。</p>
+<h3 id="mvcc">MVCC</h3>
+<p>MVCC（Multi-Version Concurrency Control，多版本并发控制） 是 MySQL InnoDB 存储引擎中实现高并发读写性能的关键技术。它通过为每一行数据保存多个版本，允许读操作和写操作并行进行，减少了锁的使用。</p>
+<p>在 MySQL InnoDB 中，即使没有使用 SELECT &hellip; FOR UPDATE，默认的事务隔离级别 可重复读（REPEATABLE READ） 也能够解决幻读问题。这是由于 InnoDB 的 MVCC 和 Next-Key Lock 机制 的配合工作，即使在没有显式加锁的情况下，依然能够避免幻读的发生。</p>
+<p>MVCC 的工作机制
+隐藏的两个字段： 每行记录会存储两个额外的隐藏字段：</p>
+<p>DB_TRX_ID：最近一次对该行修改的事务 ID。
+DB_ROLL_PTR：回滚指针，指向 Undo Log 中的旧版本数据。
+Undo Log：</p>
+<p>当事务对数据进行更新时，旧版本会存储在 Undo Log 中，用于支持 MVCC 的一致性读。
+事务 ID：</p>
+<p>每个事务启动时，InnoDB 分配一个递增的事务 ID（TRX_ID），用来标识事务的版本。
+两种一致性读：</p>
+<p>当前读（Current Read）： 当前读会读取最新版本的数据，并对数据加锁（如 SELECT &hellip; FOR UPDATE、UPDATE）。
+快照读（Snapshot Read）： 读取数据时基于事务开始时的快照视图，避免锁定数据（如普通的 SELECT）。</p>
+<p>详细示例：幻读解决机制
+假设有以下场景：</p>
+<p>初始表数据：</p>
+<p>sql</p>
+<p>id | value
+1  | 100
+3  | 300
+事务 1：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">BEGIN</span><span class="p">;</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="k">FOR</span><span class="w"> </span><span class="k">UPDATE</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>锁定了 id &gt;= 2 的范围，包括 id=3 的行和 2~3 之间的间隙。
+事务 2：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">);</span><span class="w"> </span><span class="c1">-- 被阻塞
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>由于间隙锁，事务 2 在尝试插入 id=2 时会被阻塞，直到事务 1 提交。
+总结：</p>
+<p>通过 Next-Key Lock，MySQL 不仅锁定了现有行，还锁定了满足查询条件的间隙，从而防止了幻读。</p>
+<h3 id="案例">案例</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">2</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- 是快照读，  这个时候插入了 id=3 的数据，下次查询 id&gt;=2 的时候还是查询的快照，这么解释
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>是的，在 <strong>MySQL InnoDB</strong> 中，如果事务的隔离级别是 <strong>可重复读（REPEATABLE READ）</strong> 或更低，<code>SELECT * FROM table WHERE id &gt;= 2</code> 执行的确是 <strong>快照读</strong>（Snapshot Read）。这种情况下，即使在事务运行期间有新的数据插入，事务中的后续查询仍然基于事务开始时的快照视图，无法看到新插入的数据。</p>
+<hr>
+<h3 id="快照读的关键机制mvcc"><strong>快照读的关键机制：MVCC</strong></h3>
+<ol>
+<li>
+<p><strong>事务开始时创建快照</strong>：</p>
+<ul>
+<li>当事务启动时，InnoDB 会为该事务生成一个 <strong>一致性视图（Consistent Read View）</strong>，记录当前能看到的数据版本。</li>
+<li>事务中的所有普通 <code>SELECT</code> 查询都会基于这个快照执行。</li>
+</ul>
+</li>
+<li>
+<p><strong>版本控制（MVCC 原理）</strong>：</p>
+<ul>
+<li>每条记录在 InnoDB 中都存储了多个版本（通过 Undo Log 实现）。</li>
+<li>快照读查询根据事务的快照时间戳（事务 ID），仅读取那些在快照时间点已经提交的数据版本。</li>
+<li>未提交的、更改中的数据对快照读不可见。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="示例解释"><strong>示例解释</strong></h3>
+<p>假设表 <code>table</code> 中初始有以下数据：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="n">id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">value</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="mi">1</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">100</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="mi">3</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">300</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="操作过程">操作过程：</h4>
+<ol>
+<li>
+<p><strong>事务 1</strong> 启动并执行第一次查询：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">BEGIN</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="c1">-- 返回 id=3 的行
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>在事务开始时，InnoDB 创建了一个一致性快照。</li>
+<li>查询结果：<code>id=3</code>。</li>
+</ul>
+</li>
+<li>
+<p><strong>事务 2</strong> 插入新记录并提交：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">BEGIN</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">COMMIT</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li><code>id=2</code> 的新记录已经被提交，但对事务 1 来说不可见，因为事务 1 的快照视图没有包含这条记录。</li>
+</ul>
+</li>
+<li>
+<p><strong>事务 1</strong> 再次查询：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="c1">-- 返回的仍然是快照数据
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>查询结果依旧是 <code>id=3</code>，而不会包括 <code>id=2</code>。</li>
+<li>原因是事务 1 的查询仍然基于事务开始时的快照。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="为什么快照读查询不到新插入的数据"><strong>为什么快照读查询不到新插入的数据？</strong></h3>
+<ol>
+<li>
+<p><strong>快照视图的隔离性</strong>：</p>
+<ul>
+<li>当事务 1 开始时，它只看到在快照创建之前提交的所有数据版本。</li>
+<li>新插入的数据即使提交了，也不在快照视图内。</li>
+</ul>
+</li>
+<li>
+<p><strong>避免“幻读”</strong>：</p>
+<ul>
+<li>虽然没有加锁，快照读通过 MVCC 的机制实现了事务间的隔离性，保证了同一个事务的查询结果一致。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="快照读-vs-当前读"><strong>快照读 VS 当前读</strong></h3>
+<table>
+<thead>
+<tr>
+<th><strong>类型</strong></th>
+<th><strong>特点</strong></th>
+<th><strong>是否加锁</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>快照读</strong></td>
+<td>基于事务开始时的快照，读取的是固定的历史版本数据，查询结果一致。</td>
+<td>否</td>
+</tr>
+<tr>
+<td><strong>当前读</strong></td>
+<td>读取最新版本的数据，可能会阻塞或被阻塞。例如 <code>SELECT ... FOR UPDATE</code> 和 <code>UPDATE</code> 等。</td>
+<td>是</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="总结"><strong>总结</strong></h3>
+<ul>
+<li>当事务使用普通的 <code>SELECT</code> 查询（快照读）时，查询结果是基于事务开始时的快照视图。</li>
+<li>即使在事务运行期间有其他事务插入或修改了数据，快照读查询的结果也不会变化，确保了事务的一致性。</li>
+<li>下次查询 <code>id &gt;= 2</code> 的结果仍然是最初快照中的内容，不会包含新插入的数据。这正是快照读的核心特性。</li>
+</ul>
 
       
     </div>
@@ -367,7 +581,11 @@ input.PC_MARK1:focus{
           <a href="/tags/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/">go面试搜集</a>
           </div>
       <nav class="post-nav">
-        
+        <a class="prev" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/mysql%E4%B8%93%E9%A2%98/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">mysql专题</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
         <a class="next" href="/post/11.%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93/%E5%85%AB%E8%82%A1%E6%96%87%E4%B8%93%E9%A2%98%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/%E7%89%9B%E5%AE%A2%E7%BD%91%E5%8F%8B_%E8%8E%89%E8%8E%89%E4%B8%9D/">
             <span class="next-text nav-default">牛客网友_莉莉丝后端</span>
             <span class="next-text nav-mobile">下一篇</span>
