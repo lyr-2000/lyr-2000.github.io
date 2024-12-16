@@ -179,8 +179,8 @@ input.PC_MARK1:focus{
         <div class="post-category">
             <a href="/categories/go%E9%9D%A2%E8%AF%95%E6%90%9C%E9%9B%86/"> go面试搜集 </a>
             </div>
-          <span class="more-meta"> 约 8975 字 </span>
-          <span class="more-meta"> 预计阅读 18 分钟 </span>
+          <span class="more-meta"> 约 10007 字 </span>
+          <span class="more-meta"> 预计阅读 20 分钟 </span>
         <span id="busuanzi_container_page_pv" class="more-meta"> <span id="busuanzi_value_page_pv"><img src="/img/spinner.svg" alt="spinner.svg"/></span> 次阅读 </span>
       </div>
     </header>
@@ -249,6 +249,12 @@ input.PC_MARK1:focus{
         <li><a href="#2-sender-window发送窗口"><strong>2. Sender Window（发送窗口）</strong></a></li>
         <li><a href="#3-cwnd-与-sender-window-的关系与区别"><strong>3. cwnd 与 Sender Window 的关系与区别</strong></a></li>
         <li><a href="#总结-4"><strong>总结</strong></a></li>
+        <li><a href="#1-接收窗口-receiver-window-rwnd">1. <strong>接收窗口 (Receiver Window, rwnd)</strong></a></li>
+        <li><a href="#2-拥塞窗口-congestion-window-cwnd">2. <strong>拥塞窗口 (Congestion Window, cwnd)</strong></a></li>
+        <li><a href="#3-二者的区别">3. <strong>二者的区别</strong></a></li>
+        <li><a href="#4-协同工作">4. <strong>协同工作</strong></a></li>
+        <li><a href="#5-实际数据流控制">5. <strong>实际数据流控制</strong></a></li>
+        <li><a href="#总结-5">总结</a></li>
       </ul>
     </li>
   </ul>
@@ -1192,6 +1198,46 @@ https是在http的基础上加入了TLS（Transport Layer Security）协议，�
 <li>在实际数据传输中，发送方只能发送 <code>min(cwnd, Receiver Window)</code> 大小的数据量。</li>
 </ul>
 <p>这两者相互配合，共同调节数据传输速率，确保数据能够高效且稳定地在网络中传输。</p>
+<p>TCP的拥塞控制是为了解决网络拥塞问题，避免过多的数据在网络中发送而导致网络性能下降，甚至崩溃。TCP协议通过使用多个机制来控制网络中的数据流，包括 <strong>拥塞窗口（Congestion Window, cwnd）</strong> 和 <strong>接收窗口（Receiver Window, rwnd）</strong>。它们都涉及数据流的控制，但有不同的侧重点和功能。</p>
+<h3 id="1-接收窗口-receiver-window-rwnd">1. <strong>接收窗口 (Receiver Window, rwnd)</strong></h3>
+<p>接收窗口是由接收方（Receiver）维护的，用来表示接收方缓冲区的剩余空间。它的作用是告知发送方自己能够接收的数据量，防止接收方的缓冲区被溢出。</p>
+<ul>
+<li><strong>rwnd</strong> 由接收方的应用程序的接收缓冲区大小决定。</li>
+<li><strong>rwnd</strong> 的大小会随接收方的缓冲区空间变化而动态调整。如果接收方的缓冲区空间不足，它会向发送方报告一个较小的接收窗口，告知发送方不能再发送过多的数据。</li>
+</ul>
+<h3 id="2-拥塞窗口-congestion-window-cwnd">2. <strong>拥塞窗口 (Congestion Window, cwnd)</strong></h3>
+<p>拥塞窗口是由发送方维护的，它用于控制发送方的发送速率。拥塞窗口的大小决定了发送方在网络中可以发送的最大数据量，避免由于过多的数据注入网络造成拥塞。</p>
+<ul>
+<li><strong>cwnd</strong> 由发送方基于网络的当前状态进行动态调整。TCP协议会根据网络的拥塞情况来增加或减少这个窗口的大小。具体来说，TCP会根据网络的反馈（如丢包、RTT等）来调整cwnd：
+<ul>
+<li><strong>慢启动</strong>：开始时cwnd会快速增长。</li>
+<li><strong>拥塞避免</strong>：当网络出现拥塞时，cwnd会增加的速度减慢。</li>
+<li><strong>快重传与快恢复</strong>：如果丢包发生，cwnd会迅速减小，避免继续导致拥塞。</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-二者的区别">3. <strong>二者的区别</strong></h3>
+<ul>
+<li><strong>接收窗口（rwnd）</strong> 关注的是接收方的能力，表示接收方的缓冲区大小；它的大小由接收方决定，并且在接收方的通知中发送给发送方。</li>
+<li><strong>拥塞窗口（cwnd）</strong> 关注的是网络的状态，表示发送方为了避免拥塞而控制发送速率的窗口。它由发送方根据网络的反馈信息（如RTT、丢包等）动态调整。</li>
+</ul>
+<h3 id="4-协同工作">4. <strong>协同工作</strong></h3>
+<p>当发送方准备发送数据时，它会根据 <strong>rwnd</strong> 和 <strong>cwnd</strong> 中的较小值来决定可以发送的数据量。因此，TCP的数据流控制不仅受到接收方的接收能力限制（rwnd），还受到网络的拥塞状态限制（cwnd）。</p>
+<ul>
+<li>如果 <strong>rwnd &gt; cwnd</strong>，则发送方主要受到拥塞控制的限制。</li>
+<li>如果 <strong>cwnd &gt; rwnd</strong>，则发送方主要受到接收方的缓冲限制，避免接收方数据溢出。</li>
+</ul>
+<h3 id="5-实际数据流控制">5. <strong>实际数据流控制</strong></h3>
+<ul>
+<li>每次发送方发送数据时，它会根据当前 <strong>min(cwnd, rwnd)</strong> 的值来决定可以发送多少数据。</li>
+<li><strong>cwnd</strong> 是网络控制的核心，决定了发送方的数据发送速率；<strong>rwnd</strong> 则是接收方的能力限制。</li>
+</ul>
+<h3 id="总结-5">总结</h3>
+<ul>
+<li><strong>Receiver Window (rwnd)</strong>: 接收方的缓冲区空间，告诉发送方可以接收的数据量。</li>
+<li><strong>Congestion Window (cwnd)</strong>: 发送方根据网络的状态（如拥塞情况）调整的数据发送量的限制。</li>
+</ul>
+<p>这两个窗口配合工作，共同保证数据的流量控制和拥塞管理，确保TCP连接的可靠性和稳定性。</p>
 
       
     </div>
